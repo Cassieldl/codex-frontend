@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Codex — verificação silenciosa de sessão</title>
+  </head>
+  <body>
+    <!--
+      Callback do check-sso silencioso do keycloak-js (`onLoad: 'check-sso'`
+      em `src/auth/keycloak.ts`). Carregado num iframe oculto: só repassa a
+      URL de retorno (com o resultado do handshake) para a janela pai, sem
+      montar nenhuma rota da aplicação. Conteúdo mínimo por design — é o
+      padrão documentado do próprio `keycloak-js`.
+    -->
+    <script>
+      parent.postMessage(location.href, location.origin)
+    </script>
+  </body>
+</html>

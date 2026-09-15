@@ -1,0 +1,5 @@
+dist
+.routegen
+node_modules
+src/routeTree.gen.ts
+coverage

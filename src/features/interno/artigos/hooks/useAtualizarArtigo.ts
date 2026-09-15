@@ -1,0 +1,37 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiInterno } from '../../../../services/apiInterno'
+import type { ArtigoAdminDetalhe, ArtigoFormDto } from '../types/artigoAdmin'
+import { artigosAdminKeys } from './artigosAdminKeys'
+
+interface EnvelopeArtigoAdmin {
+  data: ArtigoAdminDetalhe
+  message: string | null
+}
+
+interface VariaveisAtualizarArtigo {
+  id: number
+  dto: ArtigoFormDto
+  etag?: string
+}
+
+/**
+ * `PUT /interno/artigos/{id}` (I26) — role `artigos-atualizar`, `If-Match`
+ * obrigatório. Trocar o `tipo` é permitido (`decisoes.md` B-2) e dispara
+ * reindexação no backend; o cliente não faz nada a mais por isso.
+ *
+ * `409` nunca reseta o modal: a página mantém o formulário aberto com o que
+ * foi digitado e oferece recarregar o registro.
+ */
+export function useAtualizarArtigo() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, dto, etag }: VariaveisAtualizarArtigo) => {
+      const { data } = await apiInterno.put<EnvelopeArtigoAdmin>(`/artigos/${id}`, dto, { etag })
+      return data.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
+    },
+  })
+}

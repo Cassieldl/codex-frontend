@@ -1,0 +1,138 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import {
+  Outlet,
+  RouterProvider,
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+} from '@tanstack/react-router'
+import { render, screen, waitFor } from '@testing-library/react'
+import { http, HttpResponse } from 'msw'
+import { describe, expect, it, vi } from 'vitest'
+import { server } from '../../../test/mocks/server'
+import type { ErroListaItem } from '../types/erro'
+import { ErrosIndexPage } from './erros-index'
+
+const API_URL = import.meta.env.VITE_API_URL
+
+// `ErrosIndexPage` embute `CabecalhoPublico` (M31), que usa `<Link>` do
+// TanStack Router — precisa de um `RouterProvider` de verdade no teste,
+// não só `QueryClientProvider`. `codigo`/`navigate` continuam injetados por
+// prop (não por `Route.useSearch()`), o que mantém a asserção de
+// redirecionamento simples: basta inspecionar o mock, sem ler a URL do router.
+function renderPagina(codigo: string) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const navigate = vi.fn()
+
+  const rootRoute = createRootRoute({ component: Outlet })
+  const rotaErros = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/erros',
+    component: () => <ErrosIndexPage codigo={codigo} navigate={navigate} />,
+  })
+  const routeTree = rootRoute.addChildren([rotaErros])
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: ['/erros'] }),
+  })
+
+  const utils = render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+
+  return { ...utils, navigate }
+}
+
+function respostaPaginada(items: ErroListaItem[], totalCount = items.length) {
+  return HttpResponse.json({ items, totalCount, page: 1, pageSize: 50, totalPages: 1 })
+}
+
+describe('ErrosIndexPage — /erros?codigo=', () => {
+  it('totalCount === 1 navega direto para a página do erro', async () => {
+    const item: ErroListaItem = {
+      slug: 'e0117-ipm-sistemas',
+      codigo: 'E0117',
+      titulo: 'CNPJ do tomador inválido',
+      origem: 'Prefeitura',
+      provedorNome: 'IPM Sistemas',
+      url: '/erros/e0117-ipm-sistemas',
+    }
+    server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([item])))
+
+    const { navigate } = renderPagina('E0117')
+
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith({ href: '/erros/e0117-ipm-sistemas', replace: true }),
+    )
+  })
+
+  it('totalCount > 1 renderiza a lista de desambiguação, sem navegar', async () => {
+    const itemA: ErroListaItem = {
+      slug: 'e0117-ipm-sistemas',
+      codigo: 'E0117',
+      titulo: 'CNPJ do tomador inválido',
+      origem: 'Prefeitura',
+      provedorNome: 'IPM Sistemas',
+      url: '/erros/e0117-ipm-sistemas',
+    }
+    const itemB: ErroListaItem = {
+      slug: 'e0117-betha-sistemas',
+      codigo: 'E0117',
+      titulo: 'Código de verificação inválido',
+      origem: 'Prefeitura',
+      provedorNome: 'Betha Sistemas',
+      url: '/erros/e0117-betha-sistemas',
+    }
+    server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([itemA, itemB])))
+
+    const { navigate } = renderPagina('E0117')
+
+    expect(await screen.findByText('IPM Sistemas')).toBeInTheDocument()
+    expect(screen.getByText('Betha Sistemas')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /IPM Sistemas/ })).toHaveAttribute(
+      'href',
+      '/erros/e0117-ipm-sistemas',
+    )
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it('desambiguação mostra "Geral" (nunca "—") quando o item não tem provedor (U9)', async () => {
+    const itemGeral: ErroListaItem = {
+      slug: 'e0117-geral',
+      codigo: 'E0117',
+      titulo: 'Erro genérico de schema',
+      origem: 'Schema',
+      provedorNome: null,
+      url: '/erros/e0117-geral',
+    }
+    const itemProvedor: ErroListaItem = {
+      slug: 'e0117-ipm-sistemas',
+      codigo: 'E0117',
+      titulo: 'CNPJ do tomador inválido',
+      origem: 'Prefeitura',
+      provedorNome: 'IPM Sistemas',
+      url: '/erros/e0117-ipm-sistemas',
+    }
+    server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([itemGeral, itemProvedor])))
+
+    renderPagina('E0117')
+
+    expect(await screen.findByText('Geral')).toBeInTheDocument()
+    expect(screen.queryByText('—')).not.toBeInTheDocument()
+  })
+
+  it('totalCount === 0 cai no estado "não documentado", sem navegar e sem aparência de erro', async () => {
+    server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([])))
+
+    const { navigate } = renderPagina('E9999')
+
+    expect(
+      await screen.findByText('O Codex ainda não documenta o código "E9999".'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(navigate).not.toHaveBeenCalled()
+  })
+})
