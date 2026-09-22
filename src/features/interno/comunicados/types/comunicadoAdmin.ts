@@ -53,4 +53,11 @@ export interface ComunicadoFormDto {
   versaoProvedorId?: number
   /** ISO-8601 com offset. Obrigatório (M-3) e sempre no futuro, inclusive na edição. */
   expiraEm: string
+  /**
+   * Só I32 (D-1/G1). Nunca é campo de UI no `ComunicadoForm` — quem o define é
+   * `PublicarComunicadoGlobal`, condicionado à role `comunicados-publicar`.
+   * Ausente equivale a `false` no backend: cria em rascunho. Enviar `true` sem
+   * a role é `403`, nunca criação silenciosa em rascunho.
+   */
+  publicar?: boolean
 }

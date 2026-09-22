@@ -4,6 +4,7 @@ import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { AvisosVersao } from '../../../features/provedores/components/AvisosVersao'
 import { ErrosConhecidos } from '../../../features/provedores/components/ErrosConhecidos'
+import { ExemplosVersao } from '../../../features/provedores/components/ExemplosVersao'
 import { TabelaCampos } from '../../../features/provedores/components/TabelaCampos'
 import {
   ErroVersaoProvedorHttp,
@@ -100,6 +101,12 @@ function VersaoProvedorRoute() {
       />
 
       <ErrosConhecidos resumo={versaoPagina.errosResumo} provedorSlug={provedorSlug} />
+
+      <ExemplosVersao
+        exemplos={versaoPagina.exemplos}
+        provedorSlug={provedorSlug}
+        versaoSlug={versaoSlug}
+      />
     </div>
   )
 }

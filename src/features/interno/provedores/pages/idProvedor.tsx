@@ -15,6 +15,7 @@ import { usePublicarAviso } from '../../hooks/usePublicarAviso'
 import { usePublicarProvedor } from '../../hooks/usePublicarProvedor'
 import { AvisoForm, type AvisoFormDto } from '../components/AvisoForm'
 import { ProvedorForm, type ProvedorFormDto } from '../components/ProvedorForm'
+import { TrocarSlugProvedor } from '../components/TrocarSlugProvedor'
 import { VersaoProvedorForm, type VersaoProvedorFormDto } from '../components/VersaoProvedorForm'
 import { useAtualizarAviso } from '../hooks/useAtualizarAviso'
 import { useAtualizarProvedor } from '../hooks/useAtualizarProvedor'
@@ -150,6 +151,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
             {provedor.categoria === 'Nacional' ? 'Nacional' : 'Próprio'} ·{' '}
             {provedor.identificadorInvoicy}
           </p>
+          <p className="font-mono text-xs text-ink/50">/provedores/{provedor.slug}</p>
           <EtiquetaPublicacao
             publicadoProprio={provedor.publicado}
             publicadoEfetivo={provedor.publicado}
@@ -165,6 +167,13 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
             >
               Editar
             </Button>
+          )}
+          {permissoes.provedores.atualizar && (
+            <TrocarSlugProvedor
+              provedorId={provedorId}
+              slugAtual={provedor.slug}
+              etag={provedor.etag}
+            />
           )}
           {permissoes.provedores.publicar && (
             <Button

@@ -67,6 +67,41 @@ describe('usePermissoesInterno', () => {
   })
 })
 
+describe('usePermissoesInterno — exemplos (tela 13)', () => {
+  it('agrupa as roles exemplos-* nos quatro verbos; publicar nunca existe (C1)', () => {
+    keycloak.tokenParsed = {
+      resource_access: {
+        'codex-backend': {
+          roles: ['exemplos-buscar', 'exemplos-adicionar', 'exemplos-atualizar'],
+        },
+      },
+    }
+
+    const { result } = renderHook(() => usePermissoesInterno())
+
+    expect(result.current.exemplos).toEqual({
+      buscar: true,
+      adicionar: true,
+      atualizar: true,
+      remover: false,
+      publicar: false,
+    })
+  })
+
+  it('não confunde exemplos-* com camposversao-*', () => {
+    keycloak.tokenParsed = {
+      resource_access: {
+        'codex-backend': { roles: ['camposversao-adicionar', 'camposversao-remover'] },
+      },
+    }
+
+    const { result } = renderHook(() => usePermissoesInterno())
+
+    expect(result.current.exemplos.adicionar).toBe(false)
+    expect(result.current.exemplos.remover).toBe(false)
+  })
+})
+
 describe('usePermissoesInterno — comunicados (tela 12)', () => {
   it('agrupa as roles comunicados-* nos quatro verbos + publicar', () => {
     keycloak.tokenParsed = {

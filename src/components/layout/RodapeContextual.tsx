@@ -18,6 +18,15 @@ export type ContextoRodape =
   | { tipo: 'erro-com-contexto'; provedorSlug: string; versaoSlug: string }
   /** Erro geral (U9) — próximo passo omitido, não faz sentido apontar para uma versão que não existe. */
   | { tipo: 'erro-sem-contexto' }
+  /** Índice de versões do Layout InvoiCy (tela 6, `/layout`) — FRONT-C. */
+  | { tipo: 'layout' }
+  /**
+   * `/layout/campos/{campoSlug}` enquanto o skeleton de resolução está
+   * visível (A3) — na prática quase nunca aparece de fato, porque a rota
+   * redireciona antes de montar o rodapé; existe para o caso de erro
+   * `404`/`410` nessa rota (FRONT-C).
+   */
+  | { tipo: 'layout-campo' }
 
 export interface RodapeContextualProps {
   contexto: ContextoRodape
@@ -75,6 +84,22 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
       }
     case 'erro-sem-contexto':
       return null
+    case 'layout':
+      return {
+        mensagem: 'Sabe o campo — falta saber como o seu provedor trata ele.',
+        acao: { rotulo: 'Ver os provedores', href: '/provedores' },
+      }
+    case 'layout-campo':
+      return {
+        mensagem:
+          'Um campo do layout está descrito de forma ambígua? Fale com o suporte com o nome do campo.',
+        acao: {
+          rotulo: 'Falar com o suporte',
+          href: `mailto:${CONTEUDO_RODAPE_CONSTANTE.atendimento.emailSuporte}?subject=${encodeURIComponent(
+            'Codex · Layout InvoiCy',
+          )}`,
+        },
+      }
   }
 }
 

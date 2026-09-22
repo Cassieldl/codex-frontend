@@ -26,10 +26,46 @@ describe('EstadoComunicado', () => {
     expect(screen.queryByText('Publicado')).not.toBeInTheDocument()
   })
 
-  it('rascunho encerrado continua "Rascunho" — nunca foi ao ar para poder encerrar', () => {
+  it('rascunho encerrado é "Rascunho vencido" — a janela passou sem ele ir ao ar (D-2)', () => {
     render(<EstadoComunicado publicado={false} encerrado />)
 
-    expect(screen.getByText('Rascunho')).toBeInTheDocument()
+    expect(screen.getByText('Rascunho vencido')).toBeInTheDocument()
+    expect(screen.queryByText('Rascunho')).not.toBeInTheDocument()
     expect(screen.queryByText('Encerrado')).not.toBeInTheDocument()
+    expect(screen.queryByText('Publicado')).not.toBeInTheDocument()
+  })
+
+  it('os quatro estados têm textos distintos entre si', () => {
+    const combinacoes = [
+      { publicado: false, encerrado: false },
+      { publicado: true, encerrado: false },
+      { publicado: true, encerrado: true },
+      { publicado: false, encerrado: true },
+    ]
+
+    const textos = combinacoes.map(({ publicado, encerrado }) => {
+      const { container, unmount } = render(
+        <EstadoComunicado publicado={publicado} encerrado={encerrado} />,
+      )
+      const texto = container.textContent
+      unmount()
+      return texto
+    })
+
+    expect(textos).toEqual(['Rascunho', 'Publicado', 'Encerrado', 'Rascunho vencido'])
+    expect(new Set(textos).size).toBe(4)
+  })
+
+  it('"Encerrado" e "Rascunho vencido" não se distinguem só pelo texto (WCAG 1.4.1)', () => {
+    const { container: encerrado, unmount } = render(<EstadoComunicado publicado encerrado />)
+    const classesEncerrado = encerrado.firstElementChild?.className ?? ''
+    unmount()
+
+    const { container: vencido } = render(<EstadoComunicado publicado={false} encerrado />)
+    const classesVencido = vencido.firstElementChild?.className ?? ''
+
+    expect(classesEncerrado).toContain('border-dashed')
+    expect(classesVencido).toContain('border-dotted')
+    expect(classesVencido).not.toContain('border-dashed')
   })
 })

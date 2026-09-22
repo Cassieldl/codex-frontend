@@ -72,7 +72,9 @@ describe('LinhaResultadoBuscaInterna — PQ-09 (publicado por ITEM)', () => {
     ).not.toBeInTheDocument()
 
     await usuario.click(
-      screen.getByRole('button', { name: 'Copiar link interno de Migrar para ABRASF 2.04' }),
+      screen.getByRole('button', {
+        name: 'Copiar link interno de Migrar para ABRASF 2.04 — leva à listagem de artigos, não ao registro',
+      }),
     )
 
     const copiado = escreverNaAreaDeTransferencia.mock.calls[0][0]
@@ -92,7 +94,9 @@ describe('LinhaResultadoBuscaInterna — PQ-09 (publicado por ITEM)', () => {
 
     expect(screen.getByRole('button', { name: 'Copiar link de Publicado' })).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Copiar link interno de Rascunho do acervo' }),
+      screen.getByRole('button', {
+        name: 'Copiar link interno de Rascunho do acervo — leva à listagem de erros conhecidos, não ao registro',
+      }),
     ).toBeInTheDocument()
     expect(screen.getAllByText('Rascunho')).toHaveLength(1)
   })
@@ -122,5 +126,49 @@ describe('LinhaResultadoBuscaInterna — PQ-09 (publicado por ITEM)', () => {
     )
 
     expect(screen.queryByRole('option')).not.toBeInTheDocument()
+  })
+})
+
+describe('LinhaResultadoBuscaInterna — F-3 (o link interno leva à lista, não ao registro)', () => {
+  it('o rótulo visível do rascunho admite que o destino é a lista', () => {
+    renderizar(criarItem({ titulo: 'RPS inválido', publicado: false }))
+
+    expect(screen.getByText('Copiar link interno (lista)')).toBeInTheDocument()
+    expect(screen.queryByText('Copiar link interno')).not.toBeInTheDocument()
+  })
+
+  it('o aria-label nomeia a listagem de destino e diz que não é o registro', () => {
+    renderizar(criarItem({ titulo: 'RPS inválido', publicado: false }))
+
+    expect(screen.getByRole('button')).toHaveAccessibleName(
+      'Copiar link interno de RPS inválido — leva à listagem de erros conhecidos, não ao registro',
+    )
+  })
+
+  it('a listagem nomeada acompanha o tipo do item, nunca é uma frase fixa', () => {
+    render(
+      <ul>
+        <LinhaResultadoBuscaInterna
+          item={criarItem({ tipo: 'campoLayout', titulo: 'tomador.cnpj', publicado: false })}
+        />
+        <LinhaResultadoBuscaInterna
+          item={criarItem({ tipo: 'provedor', titulo: 'IPM', publicado: false })}
+        />
+      </ul>,
+    )
+
+    const nomes = screen.getAllByRole('button').map((botao) => botao.getAttribute('aria-label'))
+    expect(nomes).toEqual([
+      'Copiar link interno de tomador.cnpj — leva à listagem de campos do layout, não ao registro',
+      'Copiar link interno de IPM — leva à listagem de provedores, não ao registro',
+    ])
+  })
+
+  it('item publicado não ganha a ressalva — o link dele é o registro público mesmo', () => {
+    renderizar(criarItem({ titulo: 'RPS inválido' }))
+
+    expect(screen.getByText('Copiar link')).toBeInTheDocument()
+    expect(screen.getByRole('button')).toHaveAccessibleName('Copiar link de RPS inválido')
+    expect(screen.getByRole('button').getAttribute('aria-label')).not.toContain('listagem')
   })
 })

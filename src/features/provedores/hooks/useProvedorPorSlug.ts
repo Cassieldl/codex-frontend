@@ -9,24 +9,32 @@ interface EnvelopeProvedorDetalhe {
   message: string | null
 }
 
-export type TipoErroProvedor = 'nao_encontrado' | 'despublicado' | 'movido'
+export type TipoErroProvedor = 'nao_encontrado' | 'despublicado'
 
 /**
- * Erro tipado por status HTTP — P3 distingue `404`/`410`/`308`
+ * Erro tipado por status HTTP — P3 distingue `404`/`410`
  * (`analise-backend.md` §4.1/§4.4, M7): nunca `404` mudo para conteúdo que
  * existe mas está em rascunho.
+ *
+ * Não há ramo de `308` aqui — nunca chega ao cliente. `XMLHttpRequest` segue
+ * redirects transparentemente e não expõe status 3xx nem `Location`; a
+ * própria doc do axios registra `maxRedirects` como opção exclusiva do
+ * adapter `http` (Node), porque o adapter `xhr` não tem como implementá-la.
+ * `apiPublico` é axios puro (`services/api.ts`) → adapter XHR no browser.
+ * Um `if (status === 308)` aqui seria um ramo morto que parece tratar o
+ * caso — pior que ramo nenhum (`arquitetura.md` §5.F/PQ-01). O slug
+ * desatualizado é descoberto comparando o canônico do payload contra a URL
+ * atual, em `corrigirUrlCanonica` (usado por `routes/provedores/$provedorSlug/route.tsx`).
  */
 export class ErroProvedorHttp extends Error {
   readonly tipo: TipoErroProvedor
   readonly status: number
-  readonly slugNovo?: string
 
-  constructor(tipo: TipoErroProvedor, status: number, slugNovo?: string) {
+  constructor(tipo: TipoErroProvedor, status: number) {
     super(`Provedor: erro ${tipo} (status ${status})`)
     this.name = 'ErroProvedorHttp'
     this.tipo = tipo
     this.status = status
-    this.slugNovo = slugNovo
   }
 }
 
@@ -36,10 +44,6 @@ function classificarErro(error: unknown): ErroProvedorHttp | null {
 
   if (status === 404) return new ErroProvedorHttp('nao_encontrado', 404)
   if (status === 410) return new ErroProvedorHttp('despublicado', 410)
-  if (status === 308) {
-    const location = error.response?.headers?.location
-    return new ErroProvedorHttp('movido', 308, typeof location === 'string' ? location : undefined)
-  }
   return null
 }
 

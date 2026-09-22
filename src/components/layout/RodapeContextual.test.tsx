@@ -99,6 +99,31 @@ describe('RodapeContextual', () => {
     expect(linksProvedores).toEqual(linksHome)
   })
 
+  it('no contexto "layout", o próximo passo leva para os provedores (§2.7)', async () => {
+    renderComRouter({ tipo: 'layout' })
+
+    expect(
+      await screen.findByText('Sabe o campo — falta saber como o seu provedor trata ele.'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver os provedores' })).toHaveAttribute(
+      'href',
+      '/provedores',
+    )
+  })
+
+  it('no contexto "layout-campo", o próximo passo leva ao e-mail de suporte (§2.7)', () => {
+    render(<RodapeContextual contexto={{ tipo: 'layout-campo' }} />)
+
+    expect(
+      screen.getByText(
+        'Um campo do layout está descrito de forma ambígua? Fale com o suporte com o nome do campo.',
+      ),
+    ).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: 'Falar com o suporte' })
+    expect(link.getAttribute('href')).toContain('mailto:suporte@migrate.info')
+    expect(link.getAttribute('href')).toContain('Codex')
+  })
+
   it('no contexto de artigos, o próximo passo leva para a busca', async () => {
     renderComRouter({ tipo: 'artigos' })
 

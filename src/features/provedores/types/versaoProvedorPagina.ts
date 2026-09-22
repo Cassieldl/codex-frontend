@@ -1,3 +1,4 @@
+import type { ExemploPublico } from './exemplo'
 import type { AvisoPublico } from './provedor'
 
 export type EstadoPreenchimentoCampo = 'Obrigatorio' | 'Opcional' | 'Condicional'
@@ -58,5 +59,7 @@ export interface VersaoProvedorPagina {
   totalCampos: number
   avisos: AvisoPublico[]
   errosResumo: { total: number; itens: ErroResumoPublico[] }
+  /** Cenários de XML da versão (C4) — **sempre presente**, `[]` quando não há nenhum. */
+  exemplos: ExemploPublico[]
   outrasVersoes: { slug: string; rotulo: string }[]
 }

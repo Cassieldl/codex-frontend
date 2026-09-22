@@ -28,6 +28,8 @@ const versaoPaginaFake: VersaoProvedorPagina = {
   totalCampos: 0,
   avisos: [],
   errosResumo: { total: 0, itens: [] },
+  // P4 sempre devolve a coleção, `[]` quando a versão não tem exemplo (C4).
+  exemplos: [],
   outrasVersoes: [],
 }
 

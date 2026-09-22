@@ -7,9 +7,9 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { handlerErroDetalhePadrao } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
 import type { ErroDetalhe } from '../types/erro'
@@ -30,14 +30,22 @@ const erroBase: ErroDetalhe = {
   artigosRelacionados: [],
 }
 
-function renderPagina(erroSlug: string) {
+interface OpcoesRenderPagina {
+  erroSlug: string
+  caminhoAtual?: string
+}
+
+function renderPagina({ erroSlug, caminhoAtual = `/erros/${erroSlug}` }: OpcoesRenderPagina) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const navegar = vi.fn()
 
   const rootRoute = createRootRoute({ component: Outlet })
   const rotaErro = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/erros/$erroSlug',
-    component: () => <ErroDetalhePage erroSlug={erroSlug} />,
+    path: caminhoAtual,
+    component: () => (
+      <ErroDetalhePage erroSlug={erroSlug} caminhoAtual={caminhoAtual} navegar={navegar} />
+    ),
   })
   const rotaArtigo = createRoute({
     getParentRoute: () => rootRoute,
@@ -53,21 +61,23 @@ function renderPagina(erroSlug: string) {
   const routeTree = rootRoute.addChildren([rotaErro, rotaArtigo, rotaBusca])
   const router = createRouter({
     routeTree,
-    history: createMemoryHistory({ initialEntries: [`/erros/${erroSlug}`] }),
+    history: createMemoryHistory({ initialEntries: [caminhoAtual] }),
   })
 
-  return render(
+  const utils = render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+
+  return { ...utils, navegar }
 }
 
 describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
   it('sem artigos ligados (coleção vazia do contrato), a seção não aparece', async () => {
     server.use(handlerErroDetalhePadrao('e0117'))
 
-    renderPagina('e0117')
+    renderPagina({ erroSlug: 'e0117' })
 
     expect(await screen.findByRole('heading', { level: 1, name: 'E0117' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Artigos relacionados' })).not.toBeInTheDocument()
@@ -93,7 +103,7 @@ describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
       ),
     )
 
-    renderPagina(erro.slug)
+    renderPagina({ erroSlug: erro.slug })
 
     expect(await screen.findByRole('heading', { name: 'Artigos relacionados' })).toBeInTheDocument()
     expect(
@@ -105,5 +115,39 @@ describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
     expect(titulos.indexOf('Campos relacionados')).toBeLessThan(
       titulos.indexOf('Artigos relacionados'),
     )
+  })
+})
+
+// F-4 (`arquitetura.md` §5.F) — `erro` nunca teve mecanismo de correção de
+// slug. Estes testes travam que ele passou a ter, no mesmo padrão de
+// `artigo-detalhe.test.tsx`.
+describe('ErroDetalhePage — correção de URL canônica (F-4)', () => {
+  it('não redireciona quando o caminho atual já é o canônico', async () => {
+    server.use(handlerErroDetalhePadrao('e0117'))
+
+    const { navegar } = renderPagina({ erroSlug: 'e0117' })
+
+    await screen.findByRole('heading', { level: 1, name: 'E0117' })
+    expect(navegar).not.toHaveBeenCalled()
+  })
+
+  it('redireciona para /erros/{slug} quando o endereço atual diverge do slug canônico', async () => {
+    const erroComSlugNovo: ErroDetalhe = { ...erroBase, slug: 'e0117-slug-novo' }
+    server.use(
+      http.get(`${API_URL}/erros/e0117-slug-antigo`, () =>
+        HttpResponse.json({ data: erroComSlugNovo, message: null }),
+      ),
+    )
+
+    const { navegar } = renderPagina({
+      erroSlug: 'e0117-slug-antigo',
+      caminhoAtual: '/erros/e0117-slug-antigo',
+    })
+
+    await waitFor(() =>
+      expect(navegar).toHaveBeenCalledWith({ href: '/erros/e0117-slug-novo', replace: true }),
+    )
+    // Enquanto redireciona, o conteúdo não aparece no endereço não-canônico.
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
   })
 })

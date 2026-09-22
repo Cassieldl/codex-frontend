@@ -13,6 +13,7 @@ import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { handleApiError } from '../../../../utils/handleApiError'
 import { useCamposLayoutPorVersao } from '../../camposLayout/hooks/useCamposLayoutPorVersao'
+import { SecaoExemplosVersao } from '../../exemplos/components/SecaoExemplosVersao'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarAviso } from '../../hooks/usePublicarAviso'
 import { usePublicarVersaoProvedor } from '../../hooks/usePublicarVersaoProvedor'
@@ -370,6 +371,13 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
           </div>
         )}
       </section>
+
+      <SecaoExemplosVersao
+        versaoId={versaoId}
+        podeAdicionar={permissoes.exemplos.adicionar}
+        podeAtualizar={permissoes.exemplos.atualizar}
+        podeRemover={permissoes.exemplos.remover}
+      />
 
       <Modal
         isOpen={modalCampoAberto !== null}

@@ -121,13 +121,18 @@ describe('useProvedorPorSlug', () => {
     expect(erro.status).toBe(410)
   })
 
-  it('trata 308 como "movido", distinto de 404/410', async () => {
+  // PQ-01 (`arquitetura.md` §5.F) — o `308` nunca chega ao cliente: o
+  // `XMLHttpRequest` segue o redirect sozinho, e o que o hook recebe de
+  // verdade é um `200` com o recurso do slug NOVO, ainda que a requisição
+  // tenha sido feita para o slug antigo. Este mock simula exatamente o
+  // efeito do auto-follow, não o `308` cru (que nenhum consumidor de browser
+  // observa). Quem decide se a URL precisa ser corrigida é
+  // `corrigirUrlCanonica`, consumido por `route.tsx` — não este hook.
+  it('slug antigo respondido com 200 e o recurso do slug novo (PQ-01) — não é erro', async () => {
+    const provedorComSlugNovo = { ...provedorFake, slug: 'slug-novo' }
     server.use(
       http.get(`${API_URL}/provedores/slug-antigo`, () =>
-        HttpResponse.json(
-          { error: { code: 'PROVEDOR_MOVIDO', message: 'O slug deste provedor mudou.' } },
-          { status: 308, headers: { Location: '/provedores/slug-novo' } },
-        ),
+        HttpResponse.json({ data: provedorComSlugNovo, message: null }),
       ),
     )
 
@@ -135,9 +140,7 @@ describe('useProvedorPorSlug', () => {
       wrapper: envolverComQueryClient(),
     })
 
-    await waitFor(() => expect(result.current.isError).toBe(true))
-    const erro = result.current.error as ErroProvedorHttp
-    expect(erro.tipo).toBe('movido')
-    expect(erro.status).toBe(308)
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.slug).toBe('slug-novo')
   })
 })

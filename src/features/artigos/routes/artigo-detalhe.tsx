@@ -9,7 +9,7 @@ import { ErrorState } from '../../../components/ui/ErrorState'
 import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { SumarioArtigo } from '../../../components/ui/SumarioArtigo'
-import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
+import { corrigirUrlCanonica } from '../../../utils/corrigirUrlCanonica'
 import { handleApiError } from '../../../utils/handleApiError'
 import { EstadoArtigoIndisponivel } from '../components/EstadoArtigoIndisponivel'
 import { EtiquetaTipoArtigo } from '../components/EtiquetaTipoArtigo'
@@ -57,15 +57,14 @@ export function ArtigoDetalhePage({
   // §3.1 — `urlCanonica` é a fonte única: quem decide o endereço do artigo é o
   // backend (`RotaCanonica`), o frontend só obedece. Cobre o caso de alguém
   // abrir `/artigos/como-funciona` e precisar cair em `/como-funciona`.
-  const precisaRedirecionar = Boolean(artigo && artigo.urlCanonica !== caminhoAtual)
+  // `corrigirUrlCanonica` (FRONT-A) valida o destino via `caminhoInternoSeguro`
+  // por baixo — mesmo mecanismo compartilhado com provedor e erro (F-4).
+  const correcao = artigo ? corrigirUrlCanonica(caminhoAtual, artigo.urlCanonica) : null
+  const precisaRedirecionar = Boolean(correcao)
 
   useEffect(() => {
-    if (!artigo || artigo.urlCanonica === caminhoAtual) return
-    // Defesa em profundidade (BAIXO-02): só navega para caminho interno
-    // validado, mesmo vindo do próprio contrato da API.
-    const destino = caminhoInternoSeguro(artigo.urlCanonica)
-    if (destino) navegar({ href: destino, replace: true })
-  }, [artigo, caminhoAtual, navegar])
+    if (correcao) navegar(correcao)
+  }, [correcao, navegar])
 
   useLinkCanonico(artigo?.urlCanonica)
 

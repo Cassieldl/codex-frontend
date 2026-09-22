@@ -1,9 +1,11 @@
 import { isAxiosError } from 'axios'
+import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
 import { handleApiError } from '../../../utils/handleApiError'
 import { ArtigosRelacionados } from '../components/ArtigosRelacionados'
 import { BlocoMensagensObservadas } from '../components/BlocoMensagensObservadas'
@@ -15,6 +17,13 @@ import type { OrigemErro } from '../types/erro'
 
 export interface ErroDetalhePageProps {
   erroSlug: string
+  /**
+   * Caminho em que a página está sendo servida (`/erros/{slug}`) — injetado
+   * pela rota fina. É o que se compara com `/erros/{erro.slug}` para decidir
+   * o redirecionamento (F-4/`arquitetura.md` §5.F).
+   */
+  caminhoAtual: string
+  navegar: (opcoes: NavegacaoCanonica) => void
 }
 
 const ORIGEM_ROTULO: Record<OrigemErro, string> = {
@@ -28,11 +37,22 @@ const ORIGEM_ROTULO: Record<OrigemErro, string> = {
  * (§7.2). `404`/`410` são tratados aqui, distintos (M7) — nunca colapsados
  * em "não encontrado".
  */
-export function ErroDetalhePage({ erroSlug }: ErroDetalhePageProps) {
+export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhePageProps) {
   const { data: erro, isLoading, isError, error, refetch } = useErroPorSlug(erroSlug)
 
   const status = isAxiosError(error) ? error.response?.status : undefined
   const mensagemErro = isAxiosError(error) ? handleApiError(error) : undefined
+
+  // F-4 (`arquitetura.md` §5.F) — `erro` nunca teve mecanismo de correção de
+  // slug, nem certo nem morto. `erro.slug` é o canônico; se divergir do
+  // caminho atual, a página redireciona antes de renderizar o conteúdo —
+  // mesmo mecanismo de `artigo-detalhe.tsx`/`route.tsx` de provedor.
+  const caminhoCanonico = erro ? `/erros/${erro.slug}` : null
+  const correcao = caminhoCanonico ? corrigirUrlCanonica(caminhoAtual, caminhoCanonico) : null
+
+  useEffect(() => {
+    if (correcao) navegar(correcao)
+  }, [correcao, navegar])
 
   // Contexto único de provedor/versão (M10 + rodapé §8): só existe quando o
   // erro aplica a exatamente UMA versão de provedor — com zero (erro geral,
@@ -50,9 +70,11 @@ export function ErroDetalhePage({ erroSlug }: ErroDetalhePageProps) {
       <CabecalhoPublico />
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8">
-        {isLoading && (
+        {(isLoading || correcao) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
-            <span className="sr-only">Carregando o erro…</span>
+            <span className="sr-only">
+              {correcao ? 'Abrindo o endereço oficial do erro…' : 'Carregando o erro…'}
+            </span>
             <Skeleton className="h-10 w-64" />
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-24 w-full" />
@@ -75,7 +97,7 @@ export function ErroDetalhePage({ erroSlug }: ErroDetalhePageProps) {
           <ErrorState message={mensagemErro} onRetry={() => refetch()} />
         )}
 
-        {!isLoading && !isError && erro && (
+        {!isLoading && !isError && erro && !correcao && (
           <>
             <header className="flex flex-col gap-2 border-b border-line pb-6">
               <div className="flex flex-wrap items-center justify-between gap-3">

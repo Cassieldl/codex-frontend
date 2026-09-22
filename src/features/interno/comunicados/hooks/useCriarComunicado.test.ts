@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { server } from '../../../../test/mocks/server'
 import type { ComunicadoAdminDetalhe, ComunicadoFormDto } from '../types/comunicadoAdmin'
 import { useCriarComunicado } from './useCriarComunicado'
+import type { ResultadoCriarComunicado } from './useCriarComunicado'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -107,7 +108,7 @@ describe('useCriarComunicado (I32)', () => {
       wrapper: criarWrapper(queryClient),
     })
 
-    let retorno: ComunicadoAdminDetalhe | undefined
+    let retorno: ResultadoCriarComunicado | undefined
     await act(async () => {
       retorno = await result.current.mutateAsync({
         titulo: 'Instabilidade na SEFIN',
@@ -118,7 +119,74 @@ describe('useCriarComunicado (I32)', () => {
       })
     })
 
-    expect(retorno?.corpo).toBe('Emissões podem demorar até as 18h.')
-    expect(retorno?.id).toBe(90)
+    expect(retorno?.comunicado.corpo).toBe('Emissões podem demorar até as 18h.')
+    expect(retorno?.comunicado.id).toBe(90)
+  })
+})
+
+describe('useCriarComunicado — D-1 (publicar)', () => {
+  it('devolve a message do envelope junto com o comunicado — a tela nunca infere o desfecho', async () => {
+    server.use(
+      http.post(`${API_URL}/interno/comunicados`, () =>
+        HttpResponse.json(
+          { data: { ...detalheCriado, publicado: true }, message: 'Comunicado publicado.' },
+          { status: 201 },
+        ),
+      ),
+    )
+
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const { result } = renderHook(() => useCriarComunicado(), {
+      wrapper: criarWrapper(queryClient),
+    })
+
+    let retorno: ResultadoCriarComunicado | undefined
+    await act(async () => {
+      retorno = await result.current.mutateAsync({
+        titulo: 'Instabilidade na SEFIN',
+        corpo: 'Emissões podem demorar até as 18h.',
+        severidade: 'Alerta',
+        abrangencia: 'Global',
+        expiraEm: '2099-03-01T18:00:00.000Z',
+        publicar: true,
+      })
+    })
+
+    expect(retorno?.mensagem).toBe('Comunicado publicado.')
+    expect(retorno?.comunicado.publicado).toBe(true)
+  })
+
+  it('quem não define publicar continua criando rascunho — o campo nem viaja', async () => {
+    const capturado: { corpo: Record<string, unknown> | null } = { corpo: null }
+    server.use(
+      http.post(`${API_URL}/interno/comunicados`, async ({ request }) => {
+        capturado.corpo = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(
+          { data: detalheCriado, message: 'Comunicado criado como rascunho.' },
+          { status: 201 },
+        )
+      }),
+    )
+
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const { result } = renderHook(() => useCriarComunicado(), {
+      wrapper: criarWrapper(queryClient),
+    })
+
+    let retorno: ResultadoCriarComunicado | undefined
+    await act(async () => {
+      // A tela 12 chama exatamente assim, sem `publicar` — D-1 não muda o
+      // comportamento dela.
+      retorno = await result.current.mutateAsync({
+        titulo: 'Instabilidade na SEFIN',
+        corpo: 'Emissões podem demorar até as 18h.',
+        severidade: 'Alerta',
+        abrangencia: 'Global',
+        expiraEm: '2099-03-01T18:00:00.000Z',
+      })
+    })
+
+    expect(capturado.corpo).not.toHaveProperty('publicar')
+    expect(retorno?.mensagem).toBe('Comunicado criado como rascunho.')
   })
 })

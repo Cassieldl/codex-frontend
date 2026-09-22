@@ -36,6 +36,41 @@ function handlerProvedores() {
   )
 }
 
+const comunicadoCriado = {
+  id: 90,
+  titulo: 'Instabilidade na SEFIN',
+  corpo: 'Emissões podem demorar até as 18h.',
+  severidade: 'Informativo',
+  abrangencia: 'Global',
+  provedorId: null,
+  provedorNome: null,
+  versaoProvedorId: null,
+  versaoRotulo: null,
+  expiraEm: '2099-03-01T18:00:00+00:00',
+  encerrado: false,
+  versaoConcorrencia: 1,
+}
+
+/**
+ * Espelha I32: `publicado` sai do que o backend FEZ e a `message` descreve esse
+ * mesmo fato — nunca o `publicar` que o cliente pediu.
+ */
+function handlerCriar(capturado?: { corpo: Record<string, unknown> | null }) {
+  return http.post(`${API_URL}/interno/comunicados`, async ({ request }) => {
+    const corpo = (await request.json()) as Record<string, unknown>
+    if (capturado) capturado.corpo = corpo
+
+    const publicou = corpo.publicar === true
+    return HttpResponse.json(
+      {
+        data: { ...comunicadoCriado, publicado: publicou },
+        message: publicou ? 'Comunicado publicado.' : 'Comunicado criado como rascunho.',
+      },
+      { status: 201 },
+    )
+  })
+}
+
 function renderizar() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
@@ -69,7 +104,7 @@ describe('PublicarComunicadoGlobal', () => {
     autenticarCom(['comunicados-buscar'])
     renderizar()
 
-    expect(screen.queryByRole('button', { name: 'Publicar comunicado' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /comunicado/i })).not.toBeInTheDocument()
   })
 
   it('só consulta provedores quando o modal abre — o botão está em toda tela interna', async () => {
@@ -91,46 +126,8 @@ describe('PublicarComunicadoGlobal', () => {
     renderizar()
     expect(consultas).toBe(0)
 
-    await usuario.click(screen.getByRole('button', { name: 'Publicar comunicado' }))
+    await usuario.click(screen.getByRole('button', { name: 'Novo comunicado' }))
     await waitFor(() => expect(consultas).toBe(1))
-  })
-
-  it('sucesso fecha o modal e confirma com toast', async () => {
-    const usuario = userEvent.setup()
-    server.use(
-      handlerProvedores(),
-      http.post(`${API_URL}/interno/comunicados`, () =>
-        HttpResponse.json(
-          {
-            data: {
-              id: 90,
-              titulo: 'Instabilidade na SEFIN',
-              corpo: 'Emissões podem demorar até as 18h.',
-              severidade: 'Informativo',
-              abrangencia: 'Global',
-              provedorId: null,
-              provedorNome: null,
-              versaoProvedorId: null,
-              versaoRotulo: null,
-              expiraEm: '2099-03-01T18:00:00+00:00',
-              publicado: false,
-              encerrado: false,
-              versaoConcorrencia: 1,
-            },
-            message: 'Comunicado criado.',
-          },
-          { status: 201 },
-        ),
-      ),
-    )
-
-    renderizar()
-    await usuario.click(screen.getByRole('button', { name: 'Publicar comunicado' }))
-    await preencherFormulario(usuario)
-    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
-
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-    expect(screen.getByRole('status')).toHaveTextContent('Comunicado criado.')
   })
 
   it('erro do servidor mantém o modal aberto com a mensagem inline', async () => {
@@ -151,7 +148,7 @@ describe('PublicarComunicadoGlobal', () => {
     )
 
     renderizar()
-    await usuario.click(screen.getByRole('button', { name: 'Publicar comunicado' }))
+    await usuario.click(screen.getByRole('button', { name: 'Novo comunicado' }))
     await preencherFormulario(usuario)
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
@@ -180,7 +177,7 @@ describe('PublicarComunicadoGlobal', () => {
     )
 
     renderizar()
-    await usuario.click(screen.getByRole('button', { name: 'Publicar comunicado' }))
+    await usuario.click(screen.getByRole('button', { name: 'Novo comunicado' }))
     await preencherFormulario(usuario)
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
@@ -193,12 +190,71 @@ describe('PublicarComunicadoGlobal', () => {
     server.use(handlerProvedores())
 
     renderizar()
-    await usuario.click(screen.getByRole('button', { name: 'Publicar comunicado' }))
+    await usuario.click(screen.getByRole('button', { name: 'Novo comunicado' }))
     // Sem handler de POST registrado: uma chamada derrubaria o teste
     // (`onUnhandledRequest: 'error'`).
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(await screen.findByText('O título é obrigatório.')).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+})
+
+describe('PublicarComunicadoGlobal — D-1, os três desfechos', () => {
+  it('com comunicados-publicar: o rótulo promete publicação, o payload pede, e o toast repete o que o backend disse', async () => {
+    const usuario = userEvent.setup()
+    const capturado: { corpo: Record<string, unknown> | null } = { corpo: null }
+    autenticarCom(['comunicados-adicionar', 'comunicados-publicar', 'provedores-buscar'])
+    server.use(handlerProvedores(), handlerCriar(capturado))
+
+    renderizar()
+    await usuario.click(screen.getByRole('button', { name: 'Publicar comunicado' }))
+    await preencherFormulario(usuario)
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+    expect(capturado.corpo?.publicar).toBe(true)
+    // O texto vem da `message` de I32. Um literal fixo no cliente cairia aqui ou
+    // no caso do rascunho — as duas mensagens não podem ser a mesma.
+    expect(screen.getByRole('status')).toHaveTextContent('Comunicado publicado.')
+  })
+
+  it('sem a role: o rótulo não promete publicação, e o toast diz que ficou em rascunho', async () => {
+    const usuario = userEvent.setup()
+    const capturado: { corpo: Record<string, unknown> | null } = { corpo: null }
+    server.use(handlerProvedores(), handlerCriar(capturado))
+
+    renderizar()
+    expect(screen.queryByRole('button', { name: 'Publicar comunicado' })).not.toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('button', { name: 'Novo comunicado' }))
+    await preencherFormulario(usuario)
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+    expect(capturado.corpo?.publicar).toBe(false)
+    expect(screen.getByRole('status')).toHaveTextContent('Comunicado criado como rascunho.')
+  })
+
+  it('403 (adulteração): nada é reportado como sucesso e o modal continua aberto', async () => {
+    const usuario = userEvent.setup()
+    autenticarCom(['comunicados-adicionar', 'comunicados-publicar', 'provedores-buscar'])
+    server.use(
+      handlerProvedores(),
+      // `Forbid()` do ASP.NET responde 403 SEM envelope — é a forma real, não um
+      // `{ error: ... }` de conveniência.
+      http.post(`${API_URL}/interno/comunicados`, () => new HttpResponse(null, { status: 403 })),
+    )
+
+    renderizar()
+    await usuario.click(screen.getByRole('button', { name: 'Publicar comunicado' }))
+    await preencherFormulario(usuario)
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })

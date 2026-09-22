@@ -3,6 +3,14 @@ import type { HttpHandler } from 'msw'
 import type { ArtigoDetalhe, ArtigoListaItem } from '../../features/artigos/types/artigo'
 import type { PaginaDeArtigos } from '../../features/artigos/hooks/useArtigos'
 import type { ResultadoBusca } from '../../features/busca/types/resultadoBusca'
+import type { HomeDto } from '../../features/home/types/home'
+import type {
+  CampoLayoutPublico,
+  CampoLayoutVerbete,
+  GrupoCamposLayout,
+  LayoutIndice,
+  LayoutVersaoPagina,
+} from '../../features/layout/types/layoutPublico'
 import type {
   ComunicadoAdminDetalhe,
   ComunicadoAdminListaItem,
@@ -168,6 +176,80 @@ export function handlerArtigoAdminDetalhe(artigo: ArtigoAdminDetalhe): HttpHandl
 }
 
 /**
+ * Bloco FRONT-A — P9/P10/P11/P12 (Home e Layout InvoiCy público). Sucesso
+ * simples, "para não bloquear B/C" (`analise-frontend.md` §2.8): FRONT-B/C
+ * estendem estes mesmos handlers com os casos que as próprias telas
+ * precisam (`server.use(...)`), sem apagar os defaults daqui.
+ */
+export function handlerHomeSucesso(overrides: Partial<HomeDto> = {}): HttpHandler {
+  const home: HomeDto = {
+    comunicados: [],
+    provedoresPorCategoria: [],
+    layout: null,
+    artigosRecentes: [],
+    ...overrides,
+  }
+
+  return http.get(`${API_URL}/home`, () => HttpResponse.json({ data: home, message: null }))
+}
+
+export function handlerLayoutIndiceSucesso(overrides: Partial<LayoutIndice> = {}): HttpHandler {
+  const indice: LayoutIndice = {
+    vigente: null,
+    versoes: [],
+    ...overrides,
+  }
+
+  return http.get(`${API_URL}/layout`, () => HttpResponse.json({ data: indice, message: null }))
+}
+
+export function handlerLayoutVersaoSucesso(
+  versaoSlug: string,
+  overrides: Partial<LayoutVersaoPagina> = {},
+): HttpHandler {
+  const pagina: LayoutVersaoPagina = {
+    versao: {
+      slug: versaoSlug,
+      rotulo: versaoSlug,
+      estado: 'Vigente',
+      ordem: 1,
+      totalCampos: 0,
+    },
+    descricao: null,
+    anterior: null,
+    totalCampos: 0,
+    camposPorGrupo: [],
+    ...overrides,
+  }
+
+  return http.get(`${API_URL}/layout/versoes/${versaoSlug}`, () =>
+    HttpResponse.json({ data: pagina, message: null }),
+  )
+}
+
+export function handlerCampoLayoutVerbeteSucesso(
+  campoSlug: string,
+  overrides: Partial<CampoLayoutVerbete> = {},
+): HttpHandler {
+  const verbete: CampoLayoutVerbete = {
+    slug: campoSlug,
+    nome: campoSlug,
+    caminhoXml: `Rps/${campoSlug}`,
+    significado: `Significado de ${campoSlug}`,
+    estado: 'Ativo',
+    versaoExibicao: { slug: 'v1', rotulo: 'Versão 1' },
+    versaoOrigem: { slug: 'v1', rotulo: 'Versão 1' },
+    versaoDescontinuado: null,
+    ondeEUsado: [],
+    ...overrides,
+  }
+
+  return http.get(`${API_URL}/layout/campos/${campoSlug}`, () =>
+    HttpResponse.json({ data: verbete, message: null }),
+  )
+}
+
+/**
  * I36 — existência por slug. A rota é mais específica que `/interno/artigos/{id}`
  * na intenção, mas `existe` não casa com `{id:int}` no backend; no MSW as duas
  * convivem porque os caminhos são literais distintos.
@@ -179,4 +261,110 @@ export function handlerArtigoExiste(slug: string, artigoId: number | null): Http
       message: null,
     }),
   )
+}
+
+/**
+ * Bloco FRONT-C — desfechos de P11/P12 que a tela 6 precisa tratar e que os
+ * handlers de sucesso de FRONT-A não cobrem. Os erros replicam o envelope real
+ * de erro da API (`{ error: { code, message } }`), e o `code` **importa**: é
+ * ele que distingue as duas causas do `410` de P12 (o campo saiu do ar × o
+ * campo existe mas nenhuma versão publicada o exibe).
+ */
+export function handlerLayoutVersaoDespublicada(versaoSlug: string): HttpHandler {
+  return http.get(`${API_URL}/layout/versoes/${versaoSlug}`, () =>
+    HttpResponse.json(
+      {
+        error: {
+          code: 'VERSAO_LAYOUT_DESPUBLICADA',
+          message: 'Esta versão do Layout InvoiCy saiu do ar.',
+        },
+      },
+      { status: 410 },
+    ),
+  )
+}
+
+/** `422` do cap de campos por versão (PQ-10) — limite estrutural, não falha transitória. */
+export function handlerLayoutVersaoCapExcedido(versaoSlug: string): HttpHandler {
+  return http.get(`${API_URL}/layout/versoes/${versaoSlug}`, () =>
+    HttpResponse.json(
+      {
+        error: {
+          code: 'LIMITE_CAMPOS_EXCEDIDO',
+          message: 'Esta versão tem mais campos do que o agregado suporta.',
+        },
+      },
+      { status: 422 },
+    ),
+  )
+}
+
+export function handlerCampoLayoutDespublicado(
+  campoSlug: string,
+  codigo: 'CAMPO_LAYOUT_DESPUBLICADO' | 'VERSAO_LAYOUT_DESPUBLICADA' = 'VERSAO_LAYOUT_DESPUBLICADA',
+): HttpHandler {
+  return http.get(`${API_URL}/layout/campos/${campoSlug}`, () =>
+    HttpResponse.json(
+      { error: { code: codigo, message: 'Este verbete não está mais publicado.' } },
+      { status: 410 },
+    ),
+  )
+}
+
+/**
+ * Campos de uma versão densa. `urlCanonica` é derivada do slug **pelo
+ * backend** — quem constrói fixture nunca deve assumir que ela é
+ * `/layout/campos/{slug}` montado à mão (A3: a fonte única é o campo).
+ */
+export function construirCamposLayout(
+  quantidade: number,
+  prefixo = 'campo',
+  overrides: Partial<CampoLayoutPublico> = {},
+): CampoLayoutPublico[] {
+  return Array.from({ length: quantidade }, (_, indice) => ({
+    slug: `${prefixo}-${indice + 1}`,
+    nome: `Campo ${indice + 1}`,
+    caminhoXml: `Nfse/Rps/Campo${indice + 1}`,
+    significado: `Significado do campo ${indice + 1}.`,
+    ordem: indice + 1,
+    novoNestaVersao: false,
+    descontinuadoNestaVersao: false,
+    urlCanonica: `/layout/campos/${prefixo}-${indice + 1}`,
+    ...overrides,
+  }))
+}
+
+export function construirGrupoCamposLayout(
+  grupo: string,
+  grupoSlug: string,
+  campos: CampoLayoutPublico[],
+): GrupoCamposLayout {
+  return { grupo, grupoSlug, campos }
+}
+
+/**
+ * Bloco FRONT-B — desfechos de P9 (Home) que o handler de sucesso de FRONT-A
+ * não cobre. Sucesso com conteúdo continua vindo de `handlerHomeSucesso`.
+ */
+export function handlerHomeErro(status = 500): HttpHandler {
+  return http.get(`${API_URL}/home`, () =>
+    HttpResponse.json(
+      { error: { code: 'ERRO_INTERNO', message: 'Não foi possível montar a página inicial.' } },
+      { status },
+    ),
+  )
+}
+
+/**
+ * P9 respondendo com o **envelope do vizinho**: o corpo cru na raiz, como as
+ * listagens públicas (`GET /provedores`, `GET /artigos`) de fato respondem.
+ *
+ * Existe para um teste de falha deliberado: `useHome` lê `ApiResponse<T>`
+ * (enveloped em `data`), então contra este handler a leitura **tem** de vir
+ * vazia. Sem isso, "o hook casa com o contrato" seria só uma coincidência
+ * entre dois arquivos escritos pela mesma pessoa no mesmo dia
+ * (AP-ARQUITETURA-001).
+ */
+export function handlerHomeCruSemEnvelope(home: HomeDto): HttpHandler {
+  return http.get(`${API_URL}/home`, () => HttpResponse.json(home))
 }

@@ -3,6 +3,7 @@ import { BotaoCopiar } from '../../../../components/ui/BotaoCopiar'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import type { ResultadoItem } from '../../../busca/types/resultadoBusca'
 import { caminhoDoItemBuscaInterna, resolverLinkParaCopiar } from '../utils/resolverLinkParaCopiar'
+import { nomeDaListaPorTipo } from '../utils/rotaEdicaoPorTipo'
 
 export interface LinhaResultadoBuscaInternaProps {
   item: ResultadoItem
@@ -23,6 +24,13 @@ export interface LinhaResultadoBuscaInternaProps {
  * conteúdo que ainda não está no ar, e o parceiro recebe 404/410. Por isso o
  * estado é lido por ITEM (`item.publicado`), nunca da página ou do grupo:
  * rascunho ganha a etiqueta e copia o link interno de edição.
+ *
+ * **F-3 — o link interno leva à LISTA, não ao registro.** O contrato não tem
+ * id de registro e quatro dos seis tipos nem rota de detalhe têm (ver
+ * `rotaEdicaoPorTipo.ts`). Em vez de deixar "Copiar link interno" sugerir uma
+ * precisão que não existe, o rótulo diz "(lista)" e o `aria-label` nomeia a
+ * listagem de destino com a ressalva por extenso — quem só ouve a interface
+ * recebe a mesma informação que quem lê o rótulo.
  *
  * Continua `<a href>` cru (não `<Link>`) de propósito: o destino publicado
  * está fora da árvore autenticada. `item.url` vem da API e passa por
@@ -69,11 +77,11 @@ export function LinhaResultadoBuscaInterna({
         <BotaoCopiar
           className="shrink-0"
           valor={linkParaCopiar}
-          rotulo={item.publicado ? 'Copiar link' : 'Copiar link interno'}
+          rotulo={item.publicado ? 'Copiar link' : 'Copiar link interno (lista)'}
           ariaLabel={
             item.publicado
               ? `Copiar link de ${item.titulo}`
-              : `Copiar link interno de ${item.titulo}`
+              : `Copiar link interno de ${item.titulo} — leva à listagem de ${nomeDaListaPorTipo(item.tipo)}, não ao registro`
           }
         />
       ) : (

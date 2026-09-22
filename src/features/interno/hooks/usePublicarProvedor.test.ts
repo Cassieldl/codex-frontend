@@ -12,6 +12,7 @@ const API_URL = import.meta.env.VITE_API_URL
 
 const provedorFake: ProvedorAdminDetalhe = {
   id: 42,
+  slug: 'prefeitura-de-exemplo',
   nome: 'Prefeitura de Exemplo',
   categoria: 'Nacional',
   identificadorInvoicy: 'PREF-EXEMPLO',

@@ -13,6 +13,8 @@ export interface PermissoesInterno {
   provedores: PermissoesEntidade
   versoesProvedor: PermissoesEntidade
   camposVersao: PermissoesEntidade
+  /** `exemplos-*` — sem `publicar` (C1): exemplo herda a visibilidade da versão. */
+  exemplos: PermissoesEntidade
   avisos: PermissoesEntidade
   versoesLayout: PermissoesEntidade
   campoLayout: PermissoesEntidade
@@ -51,6 +53,7 @@ export function usePermissoesInterno(): PermissoesInterno {
     provedores: agrupar(roles, 'provedores'),
     versoesProvedor: agrupar(roles, 'versoesprovedor'),
     camposVersao: agrupar(roles, 'camposversao'),
+    exemplos: agrupar(roles, 'exemplos'),
     avisos: agrupar(roles, 'avisos'),
     versoesLayout: agrupar(roles, 'versoeslayout'),
     campoLayout: agrupar(roles, 'campolayout'),

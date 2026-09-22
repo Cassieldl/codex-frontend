@@ -139,7 +139,9 @@ describe('ResultadoBuscaInternaLista — BAIXO-03/BAIXO-04 após a extração da
     expect(screen.getByRole('heading', { name: /Artigos/ })).toBeInTheDocument()
 
     await usuario.click(
-      screen.getByRole('button', { name: 'Copiar link interno de Artigo em rascunho' }),
+      screen.getByRole('button', {
+        name: 'Copiar link interno de Artigo em rascunho — leva à listagem de artigos, não ao registro',
+      }),
     )
 
     expect(escreverNaAreaDeTransferencia).toHaveBeenCalledWith(

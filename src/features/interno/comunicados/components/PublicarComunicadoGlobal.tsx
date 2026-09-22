@@ -13,7 +13,8 @@ import { ComunicadoForm, type OpcaoProvedorComunicado } from './ComunicadoForm'
 const DURACAO_TOAST_MS = 4000
 
 interface FormularioComunicadoGlobalProps {
-  onSucesso: () => void
+  publicarAoSalvar: boolean
+  onSucesso: (mensagemDoBackend: string | null) => void
   onCancelar: () => void
 }
 
@@ -22,7 +23,11 @@ interface FormularioComunicadoGlobalProps {
  * round-trip por página da área interna se o hook viver no botão, e o botão
  * está em toda tela.
  */
-function FormularioComunicadoGlobal({ onSucesso, onCancelar }: FormularioComunicadoGlobalProps) {
+function FormularioComunicadoGlobal({
+  publicarAoSalvar,
+  onSucesso,
+  onCancelar,
+}: FormularioComunicadoGlobalProps) {
   // Guarda o erro inteiro, não só a mensagem: o 422 traz os campos culpados, e é o terceiro
   // consumidor deste formulário — sem isto, só aqui o editor leria "um ou mais campos são
   // inválidos" sem saber qual.
@@ -40,11 +45,16 @@ function FormularioComunicadoGlobal({ onSucesso, onCancelar }: FormularioComunic
 
   function aoSalvar(dto: ComunicadoFormDto) {
     setErroServidor(null)
-    criarComunicado.mutate(dto, {
-      onSuccess: onSucesso,
-      // Erro nunca fecha o modal: o que foi digitado continua na tela.
-      onError: (erro) => setErroServidor(interpretarErroDeEscritaComunicado(erro)),
-    })
+    // `publicar` é decidido pela role ANTES do submit (G1): o formulário nunca
+    // oferece a escolha, e o payload nunca pede o que o usuário não pode fazer.
+    criarComunicado.mutate(
+      { ...dto, publicar: publicarAoSalvar },
+      {
+        onSuccess: (resultado) => onSucesso(resultado.mensagem),
+        // Erro nunca fecha o modal: o que foi digitado continua na tela.
+        onError: (erro) => setErroServidor(interpretarErroDeEscritaComunicado(erro)),
+      },
+    )
   }
 
   return (
@@ -66,6 +76,13 @@ function FormularioComunicadoGlobal({ onSucesso, onCancelar }: FormularioComunic
  *
  * Nasce escondido sem `comunicados-adicionar`: o botão global não tem página
  * que faça a checagem por ele.
+ *
+ * D-1: com `comunicados-publicar` o rótulo "Publicar comunicado" passa a ser
+ * verdadeiro — o comunicado nasce no ar, em uma só escrita (I32 com
+ * `publicar: true`). Sem a role, o botão se chama "Novo comunicado" e cria
+ * rascunho. O que o toast diz vem da `message` do backend, nunca do que foi
+ * pedido: pedir para publicar e ter publicado são coisas diferentes, e afirmar
+ * a primeira pela segunda é a mentira que D-1 veio corrigir.
  */
 export function PublicarComunicadoGlobal() {
   const permissoes = usePermissoesInterno()
@@ -81,9 +98,15 @@ export function PublicarComunicadoGlobal() {
 
   if (!permissoes.comunicados.adicionar) return null
 
-  function aoCriar() {
+  const podePublicar = permissoes.comunicados.publicar
+  const rotulo = podePublicar ? 'Publicar comunicado' : 'Novo comunicado'
+
+  function aoCriar(mensagemDoBackend: string | null) {
     setAberto(false)
-    setAvisoDeSucesso('Comunicado criado.')
+    // `null` só aconteceria se o backend omitisse `message` numa escrita
+    // bem-sucedida, o que o contrato de I32 não faz. O texto de reserva é
+    // neutro de propósito: nunca afirma publicação que não foi confirmada.
+    setAvisoDeSucesso(mensagemDoBackend ?? 'Comunicado salvo.')
 
     if (timeoutDoAviso.current) clearTimeout(timeoutDoAviso.current)
     timeoutDoAviso.current = setTimeout(() => setAvisoDeSucesso(null), DURACAO_TOAST_MS)
@@ -97,12 +120,16 @@ export function PublicarComunicadoGlobal() {
         className="flex items-center gap-1.5 rounded px-2 py-1.5 text-sm font-medium text-ink hover:shadow-hover"
       >
         <Megaphone className="size-4" aria-hidden="true" />
-        Publicar comunicado
+        {rotulo}
       </button>
 
-      <Modal isOpen={aberto} onClose={() => setAberto(false)} title="Novo comunicado" size="md">
+      <Modal isOpen={aberto} onClose={() => setAberto(false)} title={rotulo} size="md">
         {aberto && (
-          <FormularioComunicadoGlobal onSucesso={aoCriar} onCancelar={() => setAberto(false)} />
+          <FormularioComunicadoGlobal
+            publicarAoSalvar={podePublicar}
+            onSucesso={aoCriar}
+            onCancelar={() => setAberto(false)}
+          />
         )}
       </Modal>
 

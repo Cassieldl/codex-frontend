@@ -1,0 +1,199 @@
+import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '../../../../components/ui/Button'
+import { EmptyState } from '../../../../components/ui/EmptyState'
+import { ErrorState } from '../../../../components/ui/ErrorState'
+import { Modal } from '../../../../components/ui/Modal'
+import { Skeleton } from '../../../../components/ui/Skeleton'
+import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
+import { handleApiError } from '../../../../utils/handleApiError'
+import { useAtualizarExemplo } from '../hooks/useAtualizarExemplo'
+import { useCriarExemplo } from '../hooks/useCriarExemplo'
+import { useExemplosPorVersao } from '../hooks/useExemplosPorVersao'
+import { useRemoverExemplo } from '../hooks/useRemoverExemplo'
+import type { CriarExemploDto, ExemploAdmin } from '../types/exemploAdmin'
+import { ExemploForm } from './ExemploForm'
+
+/**
+ * Cap de exemplos por versão (C3). O `422` do backend é a rede de segurança
+ * real; aqui o botão só desabilita antes para não oferecer um gesto que já se
+ * sabe que será recusado.
+ */
+export const LIMITE_EXEMPLOS_POR_VERSAO = 10
+
+export interface SecaoExemplosVersaoProps {
+  versaoId: number
+  podeAdicionar: boolean
+  podeAtualizar: boolean
+  podeRemover: boolean
+}
+
+/**
+ * Seção "Exemplos" da versão na área interna (tela 13). Mesma forma das seções
+ * "Avisos" e "Campos" de `idVersao.tsx` — tabela + modal —, mas em componente
+ * próprio: a página já é longa, e a seção tem os três estados assíncronos dela.
+ *
+ * As permissões chegam por prop (a página checa uma vez e propaga), nunca por
+ * uma segunda chamada de `usePermissoesInterno` aqui dentro.
+ */
+export function SecaoExemplosVersao({
+  versaoId,
+  podeAdicionar,
+  podeAtualizar,
+  podeRemover,
+}: SecaoExemplosVersaoProps) {
+  const { data: exemplos, isLoading, isError, refetch } = useExemplosPorVersao(versaoId)
+
+  const criarExemplo = useCriarExemplo(versaoId)
+  const atualizarExemplo = useAtualizarExemplo()
+  const removerExemplo = useRemoverExemplo()
+
+  const [modalAberto, setModalAberto] = useState<'novo' | ExemploAdmin | null>(null)
+  const [erroFormulario, setErroFormulario] = useState<string | null>(null)
+
+  const total = exemplos?.length ?? 0
+  const noLimite = total >= LIMITE_EXEMPLOS_POR_VERSAO
+
+  function aoSalvar(dto: CriarExemploDto) {
+    setErroFormulario(null)
+
+    if (modalAberto === 'novo') {
+      criarExemplo.mutate(dto, {
+        onSuccess: () => setModalAberto(null),
+        onError: (erro) => setErroFormulario(handleApiError(erro)),
+      })
+      return
+    }
+
+    if (modalAberto) {
+      atualizarExemplo.mutate(
+        { id: modalAberto.id, versaoId, dto, etag: modalAberto.etag },
+        {
+          onSuccess: () => setModalAberto(null),
+          onError: (erro) => setErroFormulario(handleApiError(erro)),
+        },
+      )
+    }
+  }
+
+  function abrirNovo() {
+    setErroFormulario(null)
+    setModalAberto('novo')
+  }
+
+  function abrirEdicao(exemplo: ExemploAdmin) {
+    setErroFormulario(null)
+    setModalAberto(exemplo)
+  }
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-subtitulo font-medium text-ink">Exemplos desta versão</h2>
+        {podeAdicionar && (
+          <Button
+            size="sm"
+            variant="secondary"
+            leftIcon={<Plus className="size-4" />}
+            disabled={noLimite}
+            title={
+              noLimite
+                ? `Limite de ${LIMITE_EXEMPLOS_POR_VERSAO} exemplos por versão atingido.`
+                : undefined
+            }
+            onClick={abrirNovo}
+          >
+            Novo exemplo
+          </Button>
+        )}
+      </div>
+
+      {isLoading && (
+        <div aria-live="polite" aria-busy="true">
+          <span className="sr-only">Carregando exemplos…</span>
+          <Skeleton className="h-10 w-full" />
+        </div>
+      )}
+
+      {!isLoading && isError && (
+        <ErrorState
+          message="Não foi possível carregar os exemplos desta versão."
+          onRetry={() => refetch()}
+        />
+      )}
+
+      {!isLoading && !isError && total === 0 && (
+        <EmptyState message="Nenhum exemplo cadastrado nesta versão ainda." />
+      )}
+
+      {!isLoading && !isError && total > 0 && (
+        <TableRoot>
+          <TableHeader>
+            <tr>
+              <TableCell header>Cenário</TableCell>
+              <TableCell header>Endereço</TableCell>
+              <TableCell header>Ações</TableCell>
+            </tr>
+          </TableHeader>
+          <tbody>
+            {exemplos?.map((exemplo) => (
+              <TableRow key={exemplo.id}>
+                <TableCell>{exemplo.nome}</TableCell>
+                <TableCell>
+                  <code className="font-mono">#exemplo-{exemplo.slug}</code>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    {podeAtualizar && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        aria-label={`Editar exemplo ${exemplo.nome}`}
+                        onClick={() => abrirEdicao(exemplo)}
+                      >
+                        <Pencil className="size-4" aria-hidden="true" />
+                      </Button>
+                    )}
+                    {podeRemover && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        aria-label={`Remover exemplo ${exemplo.nome}`}
+                        onClick={() =>
+                          removerExemplo.mutate({
+                            id: exemplo.id,
+                            versaoId,
+                            etag: exemplo.etag,
+                          })
+                        }
+                      >
+                        <Trash2 className="size-4" aria-hidden="true" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </tbody>
+        </TableRoot>
+      )}
+
+      <Modal
+        isOpen={modalAberto !== null}
+        onClose={() => setModalAberto(null)}
+        title={modalAberto === 'novo' ? 'Novo exemplo' : 'Editar exemplo'}
+        size="lg"
+      >
+        {modalAberto !== null && (
+          <ExemploForm
+            initialData={modalAberto === 'novo' ? undefined : modalAberto}
+            onSubmit={aoSalvar}
+            onCancel={() => setModalAberto(null)}
+            isSubmitting={criarExemplo.isPending || atualizarExemplo.isPending}
+            erroServidor={erroFormulario}
+          />
+        )}
+      </Modal>
+    </section>
+  )
+}

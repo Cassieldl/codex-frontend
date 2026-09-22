@@ -6,7 +6,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { CabecalhoPublico } from './CabecalhoPublico'
 
@@ -31,6 +31,19 @@ function renderComRouter() {
 }
 
 describe('CabecalhoPublico — navegação (M31/§4.1)', () => {
+  it('mostra "Layout InvoiCy" apontando para /layout, entre Provedores e Artigos (§2.6)', async () => {
+    renderComRouter()
+
+    expect(await screen.findByRole('link', { name: 'Layout InvoiCy' })).toHaveAttribute(
+      'href',
+      '/layout',
+    )
+
+    const nomes = screen.getAllByRole('link').map((link) => link.textContent)
+    expect(nomes.indexOf('Provedores')).toBeLessThan(nomes.indexOf('Layout InvoiCy'))
+    expect(nomes.indexOf('Layout InvoiCy')).toBeLessThan(nomes.indexOf('Artigos'))
+  })
+
   it('mostra "Artigos" apontando para /artigos com pagina=1', async () => {
     renderComRouter()
 
@@ -56,5 +69,89 @@ describe('CabecalhoPublico — navegação (M31/§4.1)', () => {
       'href',
       '/provedores?pagina=1',
     )
+  })
+})
+
+// A tela real que expõe o defeito é `/layout/{versaoSlug}`: o chip da versão
+// aberta marca `aria-current="page"` por prop (`ChipVersaoLayout`), e o item
+// "Layout InvoiCy" do menu marcava o mesmo por casamento parcial de CAMINHO
+// feito pelo próprio `<Link>`. O teste reproduz as duas regiões juntas e
+// CONTA — "o item certo está marcado" passaria com dois marcados.
+function renderComRotasAninhadas(caminhoInicial: string) {
+  const rootRoute = createRootRoute({ component: Outlet })
+  const paginaComChip = (
+    <>
+      <CabecalhoPublico />
+      <main>
+        <a href="/layout/v2-01" aria-current="page">
+          Versão 2.01
+        </a>
+      </main>
+    </>
+  )
+  const layoutIndex = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/layout',
+    component: () => <CabecalhoPublico />,
+  })
+  const layoutVersao = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/layout/$versaoSlug',
+    component: () => paginaComChip,
+  })
+  const routeTree = rootRoute.addChildren([layoutIndex, layoutVersao])
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: [caminhoInicial] }),
+  })
+
+  return render(<RouterProvider router={router} />)
+}
+
+function contarMarcadosEm(regiao: HTMLElement) {
+  return within(regiao)
+    .getAllByRole('link')
+    .filter((link) => link.getAttribute('aria-current') !== null).length
+}
+
+describe('CabecalhoPublico — aria-current (casamento parcial de caminho)', () => {
+  it('em subpágina da seção, a nav não marca nada — o "página atual" é só o da página', async () => {
+    renderComRotasAninhadas('/layout/v2-01')
+    await screen.findByRole('link', { name: 'Layout InvoiCy' })
+
+    const nav = screen.getByRole('navigation', { name: 'Navegação principal' })
+    const conteudo = screen.getByRole('main')
+
+    expect(contarMarcadosEm(nav)).toBe(0)
+    expect(contarMarcadosEm(conteudo)).toBe(1)
+  })
+
+  it('a página inteira nunca tem mais de um aria-current', async () => {
+    const { container } = renderComRotasAninhadas('/layout/v2-01')
+    await screen.findByRole('link', { name: 'Layout InvoiCy' })
+
+    const marcados = container.querySelectorAll('[aria-current]')
+    expect(Array.from(marcados).map((no) => no.textContent)).toEqual(['Versão 2.01'])
+  })
+
+  // Invariante do roteador, não detector de prop: `to="/"` não recebe
+  // `activeOptions` porque o casamento parcial exige `/` no caractere seguinte
+  // ao destino, e para o destino `/` esse caractere é a primeira letra da
+  // rota. Este teste cai se essa regra mudar na biblioteca.
+  it('o logo não vira "página atual" em toda página só por apontar para a raiz', async () => {
+    renderComRotasAninhadas('/layout/v2-01')
+
+    expect(await screen.findByRole('link', { name: 'Codex' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('na própria página da seção o item continua marcado — o exact não apaga o certo', async () => {
+    renderComRotasAninhadas('/layout')
+    const nav = await screen.findByRole('navigation', { name: 'Navegação principal' })
+
+    expect(within(nav).getByRole('link', { name: 'Layout InvoiCy' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(contarMarcadosEm(nav)).toBe(1)
   })
 })

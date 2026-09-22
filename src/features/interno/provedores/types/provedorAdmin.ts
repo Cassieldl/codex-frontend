@@ -29,6 +29,12 @@ export interface ProvedorAdminListaItem {
  */
 export interface ProvedorAdminDetalhe {
   id: number
+  /**
+   * Endereço público do provedor (`/provedores/{slug}`). Presente em
+   * `ProvedorAdminDetalheDto` desde sempre; passa a ser lido na 003 para que a
+   * troca de endereço (I37) mostre o valor atual antes de substituí-lo.
+   */
+  slug: string
   nome: string
   categoria: CategoriaProvedor
   identificadorInvoicy: string
