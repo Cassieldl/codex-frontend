@@ -1,0 +1,57 @@
+# Servidor estático do portal (004). O entrypoint da imagem nginx substitui `${VAR}` por envsubst
+# antes de subir; `$uri` e `$http_*` são do nginx e ficam intactos por não usarem chaves.
+
+server {
+    listen 8080;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Compressão do que é texto. O bundle já vem minificado; sem gzip, o JS principal viaja em
+    # ~280 KB em vez de ~90 KB.
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+    gzip_min_length 1024;
+
+    # ATENÇÃO — `add_header` NÃO é herdado: um único `add_header` dentro de um `location` descarta
+    # TODOS os do nível `server` naquela location. Por isso os cabeçalhos de segurança são
+    # repetidos em cada bloco abaixo em vez de declarados uma vez aqui em cima. Foi assim que eles
+    # sumiram da resposta de `/index.html` na primeira versão deste arquivo — e só apareceu
+    # rodando o container, nunca na leitura.
+    #
+    # `frame-ancestors 'none'` substitui o X-Frame-Options, que é o mecanismo antigo. O portal é
+    # standalone — nunca roda embutido em outra página.
+
+    # Arquivos com hash no nome são imutáveis: trocar o conteúdo troca a URL.
+    location /assets/ {
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
+        add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}" always;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+
+        try_files $uri =404;
+    }
+
+    # O index nunca é cacheado: é ele que aponta para o bundle novo depois de um deploy.
+    location = /index.html {
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
+        add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}" always;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    # SPA: rota de cliente (/provedores/ipm/2-04) não existe como arquivo. Sem este fallback,
+    # recarregar a página em qualquer rota profunda devolve 404 — e o produto foi desenhado para
+    # ser linkado (premissa §3.2 do escopo).
+    location / {
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
+        add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}" always;
+
+        try_files $uri $uri/ /index.html;
+    }
+}

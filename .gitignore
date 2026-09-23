@@ -14,9 +14,11 @@ dist-ssr
 *.local
 
 # Ambiente
+# `.env.local`/`.env.*.local` não pegavam `.env.production`. Ignora tudo e reabre só os exemplos.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!.env.production.example
 
 # TanStack Router (gerado em dev/build)
 src/routeTree.gen.ts

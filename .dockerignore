@@ -1,0 +1,19 @@
+# Fora do contexto de build: o que não entra na imagem e o que nunca deve sair da máquina.
+.env
+.env.*
+!.env.example
+
+node_modules/
+dist/
+.routegen/
+coverage/
+
+.git/
+.gitignore
+.vs/
+.vscode/
+.idea/
+
+README.md
+Dockerfile
+.dockerignore
