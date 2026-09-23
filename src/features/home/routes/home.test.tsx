@@ -162,6 +162,26 @@ describe('HomePage', () => {
     expect(screen.queryByRole('button', { name: 'Tentar novamente' })).not.toBeInTheDocument()
   })
 
+  /**
+   * O link de pulo do cabeçalho aponta para um id; se nenhuma página tiver esse id, ele não leva
+   * a lugar nenhum e ninguém percebe. Este teste fecha as duas pontas numa página real.
+   */
+  it('o alvo do "pular para o conteúdo" existe e é o main, focável por script', async () => {
+    server.use(handlerHomeSucesso(homeCompleta))
+
+    renderHome()
+    await screen.findByRole('heading', { name: 'Provedores', level: 2 })
+
+    const pulo = screen.getByRole('link', { name: 'Pular para o conteúdo' })
+    const alvo = document.querySelector(pulo.getAttribute('href')!)
+
+    expect(alvo).not.toBeNull()
+    expect(alvo!.tagName).toBe('MAIN')
+    // `tabIndex={-1}`: sem ele, parte dos navegadores move a barra de rolagem mas deixa o foco
+    // onde estava, e o próximo Tab volta para a navegação que o usuário acabou de pular.
+    expect(alvo).toHaveAttribute('tabindex', '-1')
+  })
+
   it('mantém a busca disponível mesmo com o agregador fora do ar', async () => {
     server.use(handlerHomeErro(500))
 

@@ -56,7 +56,7 @@ export function Pagination({
 
   return (
     <nav aria-label="Paginação" className="flex flex-wrap items-center justify-between gap-3 py-2">
-      <div className="flex items-center gap-2 text-xs text-ink/60">
+      <div className="flex items-center gap-2 text-xs text-muted">
         <label htmlFor={seletorId}>Itens por página</label>
         <select
           id={seletorId}

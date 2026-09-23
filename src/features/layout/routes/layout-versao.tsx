@@ -1,6 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
@@ -62,7 +65,11 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8"
+      >
         {isLoading && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">Carregando o dicionário de campos…</span>
@@ -90,7 +97,7 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
         {isError && erroTipado?.tipo === 'despublicada' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
             <h1 className="text-subtitulo font-semibold text-ink">Esta versão saiu do ar.</h1>
-            <p className="text-sm text-ink/60">
+            <p className="text-sm text-muted">
               O dicionário desta versão não está mais disponível publicamente.
             </p>
             <Link
@@ -114,7 +121,7 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
             <h1 className="text-subtitulo font-semibold text-ink">
               Esta versão tem mais campos do que esta página consegue exibir de uma vez.
             </h1>
-            <p className="text-sm text-ink/60">Fale com o suporte.</p>
+            <p className="text-sm text-muted">Fale com o suporte.</p>
             <Link
               to="/layout"
               activeOptions={{ exact: true }}
@@ -130,7 +137,7 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
         {!isLoading && !isError && pagina && (
           <>
             <div className="flex flex-col gap-2">
-              <p className="text-xs text-ink/50">
+              <p className="text-xs text-muted">
                 <Link to="/layout" activeOptions={{ exact: true }} className="hover:underline">
                   Layout InvoiCy
                 </Link>{' '}
@@ -159,7 +166,7 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
                     </li>
                   ))}
                 </ul>
-                <p className="text-xs text-ink/60">{LEGENDA_ESTADO_VERSAO}</p>
+                <p className="text-xs text-muted">{LEGENDA_ESTADO_VERSAO}</p>
               </section>
             )}
 

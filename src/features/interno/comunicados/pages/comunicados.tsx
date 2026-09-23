@@ -171,7 +171,7 @@ export function ComunicadosPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-titulo font-bold text-ink">Comunicados</h1>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             Avisos temporários exibidos no portal até a data de expiração.
           </p>
         </div>
@@ -211,7 +211,7 @@ export function ComunicadosPage() {
         >
           <p className="text-sm text-error-texto">{erroDeEscrita.info.mensagem}</p>
           {erroDeEscrita.info.orientacao && (
-            <p className="text-xs text-ink/60">{erroDeEscrita.info.orientacao}</p>
+            <p className="text-xs text-muted">{erroDeEscrita.info.orientacao}</p>
           )}
           {erroDeEscrita.info.rotuloAcao && (
             <Button variant="secondary" size="sm" className="self-start" onClick={aoRecuperar}>
@@ -363,7 +363,7 @@ export function ComunicadosPage() {
             />
 
             {erroNoModal && erroDeEscrita.info.orientacao && (
-              <p className="mt-2 text-xs text-ink/60">{erroDeEscrita.info.orientacao}</p>
+              <p className="mt-2 text-xs text-muted">{erroDeEscrita.info.orientacao}</p>
             )}
 
             {erroNoModal && erroDeEscrita.info.rotuloAcao && (

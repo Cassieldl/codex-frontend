@@ -189,7 +189,7 @@ export function ArtigosPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-titulo font-bold text-ink">Artigos</h1>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             Conteúdo editorial do portal — conceitos, procedimentos e mudanças de layout.
           </p>
         </div>
@@ -239,7 +239,7 @@ export function ArtigosPage() {
         >
           <p className="text-sm text-error-texto">{erroDeEscrita.info.mensagem}</p>
           {erroDeEscrita.info.orientacao && (
-            <p className="text-xs text-ink/60">{erroDeEscrita.info.orientacao}</p>
+            <p className="text-xs text-muted">{erroDeEscrita.info.orientacao}</p>
           )}
           {erroDeEscrita.info.rotuloAcao && (
             <Button variant="secondary" size="sm" className="self-start" onClick={aoRecuperar}>
@@ -415,7 +415,7 @@ export function ArtigosPage() {
             />
 
             {erroNoModal && erroDeEscrita.info.orientacao && (
-              <p className="mt-2 text-xs text-ink/60">{erroDeEscrita.info.orientacao}</p>
+              <p className="mt-2 text-xs text-muted">{erroDeEscrita.info.orientacao}</p>
             )}
 
             {erroNoModal && erroDeEscrita.info.rotuloAcao && (

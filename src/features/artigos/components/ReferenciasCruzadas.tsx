@@ -58,7 +58,7 @@ export function ReferenciasCruzadas({ camposLayout, erros }: ReferenciasCruzadas
                   ) : (
                     <span className="text-sm font-medium text-ink">{campo.nome}</span>
                   )}
-                  <code className="font-mono text-xs text-ink/60">{campo.caminhoXml}</code>
+                  <code className="font-mono text-xs text-muted">{campo.caminhoXml}</code>
                 </li>
               )
             })}

@@ -139,7 +139,7 @@ export function ArtigoForm({
       )}
 
       {initialData?.reservado && (
-        <p role="status" className="text-xs text-ink/60">
+        <p role="status" className="text-xs text-muted">
           Artigo obrigatório: a rota pública <code>/como-funciona</code> aponta para ele. Renomear o
           título não muda o endereço, e o artigo não pode ser removido nem despublicado.
         </p>
@@ -186,7 +186,7 @@ export function ArtigoForm({
               // tabela aparece aqui, não só para o leitor depois de publicado.
               <ConteudoArtigo corpo={corpoAtual} className="flex flex-col gap-3 text-sm text-ink" />
             ) : (
-              <p className="text-xs text-ink/50 italic">
+              <p className="text-xs text-muted italic">
                 Nada escrito ainda — a pré-visualização aparece conforme você escreve.
               </p>
             ),
@@ -200,7 +200,7 @@ export function ArtigoForm({
         </legend>
         <div className="flex flex-col gap-1.5">
           {opcoesCamposLayout.length === 0 && (
-            <p className="text-xs text-ink/50 italic">Nenhum campo de layout cadastrado ainda.</p>
+            <p className="text-xs text-muted italic">Nenhum campo de layout cadastrado ainda.</p>
           )}
           {opcoesCamposLayout.map((opcao) => {
             const id = String(opcao.id)
@@ -229,7 +229,7 @@ export function ArtigoForm({
         <legend className="text-xs font-normal text-ink lg:text-sm">Erros relacionados</legend>
         <div className="flex flex-col gap-1.5">
           {opcoesErros.length === 0 && (
-            <p className="text-xs text-ink/50 italic">Nenhum erro cadastrado ainda.</p>
+            <p className="text-xs text-muted italic">Nenhum erro cadastrado ainda.</p>
           )}
           {opcoesErros.map((opcao) => {
             const id = String(opcao.id)

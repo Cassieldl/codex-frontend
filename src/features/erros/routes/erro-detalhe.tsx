@@ -1,6 +1,9 @@
 import { isAxiosError } from 'axios'
 import { useEffect } from 'react'
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { ErrorState } from '../../../components/ui/ErrorState'
@@ -69,7 +72,11 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8"
+      >
         {(isLoading || correcao) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">
@@ -108,7 +115,7 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
                   rotulo="Copiar link"
                 />
               </div>
-              <p className="text-sm text-ink/60">Origem: {ORIGEM_ROTULO[erro.origem]}</p>
+              <p className="text-sm text-muted">Origem: {ORIGEM_ROTULO[erro.origem]}</p>
               <p className="text-card-titulo font-medium text-ink">{erro.titulo}</p>
             </header>
 

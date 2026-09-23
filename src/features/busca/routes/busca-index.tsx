@@ -1,7 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { isAxiosError } from 'axios'
 import { useEffect, useState } from 'react'
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { EmptyState } from '../../../components/ui/EmptyState'
@@ -109,7 +112,11 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
         </div>
       </CabecalhoPublico>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+      >
         {isLoading && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">Carregando resultados da busca…</span>
@@ -165,7 +172,7 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
             {resultado.filtroProvedor &&
               resultado.foraDoFiltro &&
               resultado.foraDoFiltro.total > 0 && (
-                <p className="text-xs text-ink/60">
+                <p className="text-xs text-muted">
                   {resultado.foraDoFiltro.total} resultados fora do filtro por{' '}
                   {resultado.filtroProvedor.nome} —{' '}
                   <Link

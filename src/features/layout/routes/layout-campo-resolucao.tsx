@@ -1,6 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
@@ -55,7 +58,11 @@ export function LayoutCampoResolucaoPage({ campoSlug, navegar }: LayoutCampoReso
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+      >
         {(isLoading || verbete) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">Localizando o campo no Layout InvoiCy…</span>
@@ -82,7 +89,7 @@ export function LayoutCampoResolucaoPage({ campoSlug, navegar }: LayoutCampoReso
         {isError && erroTipado?.tipo === 'campo_despublicado' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
             <h1 className="text-subtitulo font-semibold text-ink">Este campo saiu do ar.</h1>
-            <p className="text-sm text-ink/60">
+            <p className="text-sm text-muted">
               O verbete deste campo não está mais disponível publicamente.
             </p>
             <Link

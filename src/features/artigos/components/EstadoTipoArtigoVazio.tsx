@@ -39,7 +39,7 @@ export function EstadoTipoArtigoVazio({ variante, tipo }: EstadoTipoArtigoVazioP
     <div className="flex flex-col items-center gap-3 py-12 text-center">
       <Icone aria-hidden="true" className="size-10 text-muted" />
       <p className="text-card-titulo font-medium text-ink">{titulo}</p>
-      <p className="max-w-md text-sm text-ink/60">{descricao}</p>
+      <p className="max-w-md text-sm text-muted">{descricao}</p>
     </div>
   )
 }

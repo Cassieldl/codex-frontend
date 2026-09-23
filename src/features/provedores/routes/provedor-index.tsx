@@ -36,7 +36,7 @@ export function ProvedorIndexConteudo({ provedorSlug, versoes }: ProvedorIndexCo
               className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-border px-4 py-3 hover:shadow-hover"
             >
               <span className="font-medium text-ink">{versao.rotulo}</span>
-              <span className="shrink-0 text-xs text-ink/60">
+              <span className="shrink-0 text-xs text-muted">
                 {versao.verificadoEm
                   ? `Verificado em ${format(new Date(versao.verificadoEm), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`
                   : 'Ainda não verificado'}

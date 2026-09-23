@@ -189,7 +189,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
             {contagem}
           </span>
 
-          <p className="text-xs text-ink/50">
+          <p className="text-xs text-muted">
             ↑ ↓ para percorrer · Enter para abrir · Ctrl+Enter para copiar o link · Esc para fechar
           </p>
 
@@ -202,7 +202,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
           )}
 
           {!buscando && (
-            <p className="text-xs text-ink/50 italic">
+            <p className="text-xs text-muted italic">
               Digite ao menos {TERMO_MINIMO} caracteres para buscar.
             </p>
           )}
@@ -226,7 +226,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
           )}
 
           {!isLoading && !isError && buscando && itens.length === 0 && (
-            <p className="text-sm text-ink/60">O Codex ainda não documenta esta rejeição.</p>
+            <p className="text-sm text-muted">O Codex ainda não documenta esta rejeição.</p>
           )}
 
           {itens.length > 0 && (

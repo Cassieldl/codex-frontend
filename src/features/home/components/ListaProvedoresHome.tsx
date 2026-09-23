@@ -45,7 +45,7 @@ function LinhaProvedorHome({ provedor }: { provedor: ProvedorHomeDto }) {
             {ultimaVersao.rotulo}
           </Link>
         ) : (
-          <span className="text-xs text-ink/50">Nenhuma publicada</span>
+          <span className="text-xs text-muted">Nenhuma publicada</span>
         )}
       </span>
 

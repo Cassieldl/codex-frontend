@@ -117,7 +117,7 @@ export function AvisoForm({
         </p>
       )}
 
-      <p className="text-xs text-ink/50">
+      <p className="text-xs text-muted">
         {escopo === 'provedor'
           ? 'Este aviso vale para o provedor inteiro, em qualquer versão.'
           : 'Este aviso vale só para esta versão.'}
@@ -178,7 +178,7 @@ export function AvisoForm({
               )
             })}
             {opcoesCamposAfetados.length === 0 && (
-              <p className="text-xs text-ink/50 italic">
+              <p className="text-xs text-muted italic">
                 Nenhum campo cadastrado nesta versão ainda.
               </p>
             )}

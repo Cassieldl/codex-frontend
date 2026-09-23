@@ -47,16 +47,16 @@ export function Textarea({
         aria-invalid={Boolean(error)}
         aria-describedby={describedBy || undefined}
         className={clsx(
-          'rounded-[var(--radius-input)] border px-3 py-2 text-sm text-ink placeholder:text-ink/40',
+          'rounded-[var(--radius-input)] border px-3 py-2 text-sm text-ink placeholder:text-muted',
           'focus:outline-none focus:border-[1.5px] focus:border-primary-medium',
-          error ? 'border-error' : 'border-border',
+          error ? 'border-error' : 'border-border-control',
           className,
         )}
         {...props}
       />
 
       {hint && !error && (
-        <p id={hintId} className="text-xs text-ink/50">
+        <p id={hintId} className="text-xs text-muted">
           {hint}
         </p>
       )}

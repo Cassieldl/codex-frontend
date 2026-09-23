@@ -1,7 +1,10 @@
 import { isAxiosError } from 'axios'
 import { parseISO } from 'date-fns'
 import { useEffect } from 'react'
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { ConteudoArtigo } from '../../../components/ui/ConteudoArtigo'
@@ -74,7 +77,11 @@ export function ArtigoDetalhePage({
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8"
+      >
         {(isLoading || precisaRedirecionar) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">

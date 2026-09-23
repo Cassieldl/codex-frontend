@@ -60,7 +60,7 @@ function LinhaProvedor({ provedor }: { provedor: ProvedorListaItem }) {
         )}
       </div>
 
-      <span className="shrink-0 text-right text-xs text-ink/60">
+      <span className="shrink-0 text-right text-xs text-muted">
         Verificado em {formatarData(provedor.verificadoEm)}
       </span>
     </li>

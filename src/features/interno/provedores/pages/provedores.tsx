@@ -50,7 +50,7 @@ export function ProvedoresPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-titulo font-bold text-ink">Provedores</h1>
-          <p className="text-sm text-ink/60">Cadastro de provedores, versões e avisos.</p>
+          <p className="text-sm text-muted">Cadastro de provedores, versões e avisos.</p>
         </div>
         {permissoes.provedores.adicionar && (
           <Button leftIcon={<Plus className="size-4" />} onClick={() => setModalCriarAberto(true)}>

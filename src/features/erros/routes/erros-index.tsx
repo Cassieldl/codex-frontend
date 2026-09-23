@@ -1,7 +1,10 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
 import { isAxiosError } from 'axios'
 import { useEffect } from 'react'
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
@@ -56,7 +59,11 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+      >
         {(isLoading || resolveDireto) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">
@@ -92,7 +99,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
             <h1 className="text-subtitulo font-semibold text-ink">
               O código {codigo} existe em mais de um provedor
             </h1>
-            <p className="text-sm text-ink/60">Escolha qual delas corresponde ao seu caso.</p>
+            <p className="text-sm text-muted">Escolha qual delas corresponde ao seu caso.</p>
 
             <ul className="flex flex-col gap-2">
               {data.items.map((item) => {

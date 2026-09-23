@@ -238,7 +238,7 @@ export function ErroForm({
           )}
           Provedores e versões aplicáveis
         </legend>
-        <p className="text-xs text-ink/50">
+        <p className="text-xs text-muted">
           {origemAtual === 'Prefeitura'
             ? 'Obrigatório para erros de origem Prefeitura.'
             : 'Opcional — deixe vazio se o erro é geral (vale para qualquer integração).'}

@@ -105,7 +105,7 @@ export function ExemploForm({
       )}
 
       {initialData && (
-        <p className="text-xs text-ink/50">
+        <p className="text-xs text-muted">
           Endereço do exemplo: <code className="font-mono">#exemplo-{initialData.slug}</code> — não
           muda ao renomear, para não quebrar links já compartilhados.
         </p>

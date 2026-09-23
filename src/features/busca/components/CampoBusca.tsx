@@ -59,7 +59,7 @@ export function CampoBusca({
           autoFocus={autoFocus}
           onChange={(evento) => onValorChange(evento.target.value)}
           placeholder={placeholder}
-          className="h-full w-full border-none bg-transparent text-sm text-ink outline-none placeholder:text-ink/40"
+          className="h-full w-full border-none bg-transparent text-sm text-ink outline-none placeholder:text-muted"
         />
       </div>
     </form>

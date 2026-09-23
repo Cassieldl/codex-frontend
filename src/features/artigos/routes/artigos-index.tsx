@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { AbasNavegaveis, type AbaNavegavel } from '../../../components/ui/AbasNavegaveis'
 import { EmptyState } from '../../../components/ui/EmptyState'
@@ -71,10 +74,14 @@ export function ArtigosIndexPage({ q, tipo, pagina, navegar }: ArtigosIndexPageP
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+      >
         <div className="flex flex-col gap-2">
           <h1 className="text-titulo font-bold text-ink">Índice de artigos</h1>
-          <p className="max-w-2xl text-sm text-ink/60">
+          <p className="max-w-2xl text-sm text-muted">
             O que o suporte explica repetidamente, escrito uma vez. Artigo não tem prazo: a única
             data é a verificação.
           </p>
@@ -90,7 +97,7 @@ export function ArtigosIndexPage({ q, tipo, pagina, navegar }: ArtigosIndexPageP
 
         <AbasNavegaveis abas={abas} ariaLabel="Tipos de artigo" />
 
-        {tipo && <p className="text-xs text-ink/50">{LEITURA_TIPO_ARTIGO[tipo]}</p>}
+        {tipo && <p className="text-xs text-muted">{LEITURA_TIPO_ARTIGO[tipo]}</p>}
 
         {isLoading && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-3">

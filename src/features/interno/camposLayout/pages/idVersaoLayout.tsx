@@ -104,7 +104,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs text-ink/50">
+          <p className="text-xs text-muted">
             <Link to="/interno/campos-layout" className="hover:underline">
               Campos do layout
             </Link>

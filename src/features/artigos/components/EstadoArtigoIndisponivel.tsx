@@ -63,8 +63,8 @@ export function EstadoArtigoIndisponivel({
     <div role="alert" className="flex flex-col items-center gap-3 py-16 text-center">
       <Icone aria-hidden="true" className="size-10 text-muted" />
       <h1 className="text-titulo font-semibold text-ink">{titulo}</h1>
-      <p className="max-w-md text-sm text-ink/60">{descricao}</p>
-      {motivo && <p className="max-w-md text-xs text-ink/50">{motivo}</p>}
+      <p className="max-w-md text-sm text-muted">{descricao}</p>
+      {motivo && <p className="max-w-md text-xs text-muted">{motivo}</p>}
 
       {reservado ? (
         <Link

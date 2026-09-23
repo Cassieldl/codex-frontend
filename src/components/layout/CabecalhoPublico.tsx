@@ -13,6 +13,14 @@ export interface CabecalhoPublicoProps {
 }
 
 /**
+ * Alvo do "pular para o conteúdo". Exportado para que cada página use ESTE valor no seu `<main>`
+ * em vez de repetir a string: um id digitado à mão em 11 páginas é um link quebrado esperando
+ * acontecer, e link de pulo quebrado falha em silêncio — o foco simplesmente não vai a lugar
+ * nenhum.
+ */
+export const ID_CONTEUDO_PRINCIPAL = 'conteudo-principal'
+
+/**
  * Cabeçalho de toda página pública (M31 — dono: FRONT-A; demais unidades
  * importam, não editam). Nav mostra logo (→ `/`), "Provedores"
  * (→ `/provedores`), "Layout InvoiCy" (→ `/layout`, §2.6 — entre Provedores
@@ -54,6 +62,19 @@ export function CabecalhoPublico({ variante = 'padrao', children }: CabecalhoPub
           : 'border-b border-line bg-white text-ink',
       )}
     >
+      {/*
+        2.4.1 (Bypass Blocks): toda página pública abre com marca, navegação e, em várias telas,
+        o campo de busca. Sem isto, quem navega por teclado atravessa tudo de novo a cada página
+        antes de chegar ao conteúdo. Fica invisível até receber foco, e é o PRIMEIRO elemento
+        focável do documento — por isso mora aqui, antes do logo.
+      */}
+      <a
+        href={`#${ID_CONTEUDO_PRINCIPAL}`}
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-control)] focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-medium focus:shadow-panel"
+      >
+        Pular para o conteúdo
+      </a>
+
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
         <Link to="/" className="text-lg font-extrabold">
           Codex

@@ -1,6 +1,9 @@
 import { Link, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { AbasNavegaveis, type AbaNavegavel } from '../../../components/ui/AbasNavegaveis'
 import { ErrorState } from '../../../components/ui/ErrorState'
@@ -58,7 +61,11 @@ export function ProvedorLayoutPage({
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+      >
         {(isLoading || correcao) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">
@@ -72,7 +79,7 @@ export function ProvedorLayoutPage({
         {isError && erroTipado?.tipo === 'despublicado' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
             <h1 className="text-subtitulo font-semibold text-ink">Este provedor saiu do ar.</h1>
-            <p className="text-sm text-ink/60">
+            <p className="text-sm text-muted">
               O conteúdo deste provedor não está mais disponível publicamente.
             </p>
           </div>
@@ -83,14 +90,14 @@ export function ProvedorLayoutPage({
         {!isLoading && !isError && provedor && !correcao && (
           <>
             <div>
-              <p className="text-xs text-ink/50">
+              <p className="text-xs text-muted">
                 <Link to="/provedores" search={{ pagina: 1 }} className="hover:underline">
                   Provedores
                 </Link>{' '}
                 / {provedor.nome}
               </p>
               <h1 className="text-titulo font-bold text-ink">{provedor.nome}</h1>
-              <p className="text-sm text-ink/60">
+              <p className="text-sm text-muted">
                 {provedor.categoria === 'Nacional' ? 'Nacional' : 'Próprio'}
               </p>
             </div>

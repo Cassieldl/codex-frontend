@@ -180,7 +180,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <p className="text-xs text-ink/50">
+          <p className="text-xs text-muted">
             <Link to="/interno/provedores" className="hover:underline">
               Provedores
             </Link>{' '}
@@ -242,7 +242,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
             Confirmar verificação
           </Button>
           {versao.verificadoEm && (
-            <p className="text-xs text-ink/50">Última verificação: {versao.verificadoEm}</p>
+            <p className="text-xs text-muted">Última verificação: {versao.verificadoEm}</p>
           )}
         </section>
       )}
@@ -263,7 +263,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
         </div>
 
         {versao.avisos.length === 0 && (
-          <p className="text-xs text-ink/30 italic">Nenhum aviso cadastrado para esta versão.</p>
+          <p className="text-xs text-muted italic">Nenhum aviso cadastrado para esta versão.</p>
         )}
 
         <ul className="flex flex-col gap-3">

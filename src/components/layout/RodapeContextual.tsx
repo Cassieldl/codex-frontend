@@ -146,7 +146,7 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
           >
             {atendimento.telefone}
           </a>
-          <p className="text-xs text-ink/60">{atendimento.horario}</p>
+          <p className="text-xs text-muted">{atendimento.horario}</p>
         </div>
 
         <nav aria-label="Links da Migrate">
@@ -167,7 +167,7 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
           </ul>
         </nav>
 
-        <p className="text-xs text-ink/50">{notaDemo}</p>
+        <p className="text-xs text-muted">{notaDemo}</p>
       </div>
     </footer>
   )

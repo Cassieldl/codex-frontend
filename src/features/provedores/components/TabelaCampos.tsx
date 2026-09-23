@@ -99,7 +99,7 @@ export function TabelaCampos({
           value={termoFiltro}
           onChange={(evento) => setTermoFiltro(evento.target.value)}
           placeholder="Filtrar por nome do campo ou caminho no XML"
-          className="h-9 min-w-[240px] flex-1 rounded-[var(--radius-input)] border border-border px-3 text-sm text-ink placeholder:text-ink/40 focus:border-[1.5px] focus:border-primary-medium focus:outline-none"
+          className="h-9 min-w-[240px] flex-1 rounded-[var(--radius-input)] border border-border-control px-3 text-sm text-ink placeholder:text-muted focus:border-[1.5px] focus:border-primary-medium focus:outline-none"
         />
 
         {filtroAtivo && (

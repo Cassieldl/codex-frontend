@@ -140,18 +140,18 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <p className="text-xs text-ink/50">
+          <p className="text-xs text-muted">
             <Link to="/interno/provedores" className="hover:underline">
               Provedores
             </Link>{' '}
             / {provedor.nome}
           </p>
           <h1 className="text-titulo font-bold text-ink">{provedor.nome}</h1>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             {provedor.categoria === 'Nacional' ? 'Nacional' : 'Próprio'} ·{' '}
             {provedor.identificadorInvoicy}
           </p>
-          <p className="font-mono text-xs text-ink/50">/provedores/{provedor.slug}</p>
+          <p className="font-mono text-xs text-muted">/provedores/{provedor.slug}</p>
           <EtiquetaPublicacao
             publicadoProprio={provedor.publicado}
             publicadoEfetivo={provedor.publicado}
@@ -209,7 +209,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
         </div>
 
         {provedor.avisos.length === 0 && (
-          <p className="text-xs text-ink/30 italic">Nenhum aviso cadastrado para este provedor.</p>
+          <p className="text-xs text-muted italic">Nenhum aviso cadastrado para este provedor.</p>
         )}
 
         <ul className="flex flex-col gap-3">

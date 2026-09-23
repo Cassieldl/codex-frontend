@@ -23,7 +23,7 @@ export function ErrorState({
   return (
     <div role="alert" className="flex flex-col items-center gap-3 py-12 text-center">
       <TriangleAlert aria-hidden="true" className="size-10 text-error" />
-      <p className="text-sm text-ink/60">{message}</p>
+      <p className="text-sm text-muted">{message}</p>
       <Button variant="secondary" onClick={onRetry} autoFocus={autoFocusRetry}>
         Tentar novamente
       </Button>

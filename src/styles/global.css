@@ -29,7 +29,14 @@
   --color-error-texto: #8a0000;
   --color-ink: #1b2633;
   --color-muted: #666666;
+  /* Borda DECORATIVA: card, moldura de tabela, separador de bloco. 1,56:1 contra branco — não
+     atinge os 3:1 de 1.4.11 e não precisa: ornamento está fora do alcance do critério. */
   --color-border: #cfcfcf;
+  /* Borda que DELIMITA UM CONTROLE (input, select, textarea): é ela que diz onde o campo começa,
+     então cai em 1.4.11 e precisa de 3:1. 3,23:1 medido — `#cfcfcf` dava 1,56 e reprovava.
+     Token separado de propósito: mudar `--color-border` alteraria todo card e toda tabela do
+     produto para resolver um problema que só existe no campo de formulário. */
+  --color-border-control: #8f8f8f;
   --color-line: #eaeff2;
   --color-surface-disabled: #f8f8f8;
   --color-surface-hover: #f0f4f7;

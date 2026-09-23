@@ -44,11 +44,11 @@ export function HistoricoVersoesLayout({ versoes, versaoAtualSlug }: HistoricoVe
                 {versao.rotulo}
               </span>
               <span className="text-xs font-medium text-ink/70">{versao.estado}</span>
-              <span className="text-xs text-ink/60 tabular-nums">
+              <span className="text-xs text-muted tabular-nums">
                 {versao.totalCampos} {versao.totalCampos === 1 ? 'campo' : 'campos'}
               </span>
               {atual ? (
-                <span className="ml-auto text-xs font-semibold text-ink/60">
+                <span className="ml-auto text-xs font-semibold text-muted">
                   Você está vendo esta versão
                 </span>
               ) : (
@@ -66,7 +66,7 @@ export function HistoricoVersoesLayout({ versoes, versaoAtualSlug }: HistoricoVe
         })}
       </ul>
 
-      <p className="text-xs text-ink/60">{LEGENDA_ESTADO_VERSAO}</p>
+      <p className="text-xs text-muted">{LEGENDA_ESTADO_VERSAO}</p>
     </section>
   )
 }

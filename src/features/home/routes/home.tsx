@@ -1,4 +1,7 @@
-import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import {
+  CabecalhoPublico,
+  ID_CONTEUDO_PRINCIPAL,
+} from '../../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
@@ -58,7 +61,11 @@ export function HomePage({ navegarParaBusca }: HomePageProps) {
         </div>
       </CabecalhoPublico>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-11 px-4 py-10 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-11 px-4 py-10 lg:px-8"
+      >
         {isLoading && <SkeletonHome />}
 
         {/* Com dado em cache, um refetch de fundo que falha não pode trocar a

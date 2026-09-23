@@ -64,7 +64,7 @@ export function InicioPage() {
       <section className="flex flex-col gap-4">
         <div>
           <h1 className="text-titulo font-bold text-ink">Início</h1>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             Ache o conteúdo certo e copie o link em segundos — o índice interno enxerga rascunho.
           </p>
         </div>
@@ -115,9 +115,11 @@ export function InicioPage() {
         {isError && mostrarResultados && (
           // Sem este ramo a falha some: o vazio e a lista são guardados por , então erro de
           // rede deixava a seção em branco, sem dizer nada a quem está atendendo.
-          <ErrorState onRetry={() => {
-            void refetch()
-          }} />
+          <ErrorState
+            onRetry={() => {
+              void refetch()
+            }}
+          />
         )}
 
         {!isLoading && !isError && mostrarResultados && data && data.totalGeral === 0 && (
@@ -138,7 +140,7 @@ export function InicioPage() {
           >
             <Icone className="size-6 text-primary" aria-hidden="true" />
             <h2 className="text-card-titulo font-medium text-ink">{titulo}</h2>
-            <p className="text-sm text-ink/60">{descricao}</p>
+            <p className="text-sm text-muted">{descricao}</p>
           </Link>
         ))}
       </section>

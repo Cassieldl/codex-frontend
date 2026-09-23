@@ -70,7 +70,7 @@ export function IndiceGruposCampos({ grupos }: IndiceGruposCamposProps) {
             )}
           >
             <span>{grupo.nome}</span>
-            <span className="text-aux text-ink/60 tabular-nums">{grupo.total}</span>
+            <span className="text-aux text-muted tabular-nums">{grupo.total}</span>
           </a>
         )
       })}

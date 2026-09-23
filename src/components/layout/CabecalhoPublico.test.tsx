@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-router'
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { CabecalhoPublico } from './CabecalhoPublico'
+import { CabecalhoPublico, ID_CONTEUDO_PRINCIPAL } from './CabecalhoPublico'
 
 // `<Link>` do TanStack Router precisa de um `RouterProvider` real — mesmo
 // padrão de `RodapeContextual.test.tsx`. As rotas de destino (`/artigos`,
@@ -153,5 +153,40 @@ describe('CabecalhoPublico — aria-current (casamento parcial de caminho)', () 
       'page',
     )
     expect(contarMarcadosEm(nav)).toBe(1)
+  })
+})
+
+/**
+ * 2.4.1 Bypass Blocks. O link de pulo falha em silêncio quando o alvo não existe: o foco
+ * simplesmente não vai a lugar nenhum, e nada na tela denuncia. Por isso o teste amarra o `href`
+ * ao id exportado, em vez de repetir a string.
+ */
+describe('CabecalhoPublico — pular para o conteúdo', () => {
+  it('oferece o link de pulo apontando para o id do conteúdo principal', async () => {
+    renderComRouter()
+
+    const pulo = await screen.findByRole('link', { name: 'Pular para o conteúdo' })
+
+    expect(pulo).toHaveAttribute('href', `#${ID_CONTEUDO_PRINCIPAL}`)
+  })
+
+  it('é o PRIMEIRO link do documento — depois do logo, já não serve para pular nada', async () => {
+    const { container } = renderComRouter()
+
+    await screen.findByRole('link', { name: 'Pular para o conteúdo' })
+
+    const links = Array.from(container.querySelectorAll('a'))
+    expect(links[0]).toHaveTextContent('Pular para o conteúdo')
+  })
+
+  it('fica fora da vista até receber foco, e aparece quando focado', async () => {
+    renderComRouter()
+
+    const pulo = await screen.findByRole('link', { name: 'Pular para o conteúdo' })
+
+    // `sr-only` é o que o tira da vista; `focus:not-sr-only` é o que o traz de volta. Sem o
+    // segundo, o link existe, é focável e continua invisível — pior que não ter.
+    expect(pulo.className).toContain('sr-only')
+    expect(pulo.className).toContain('focus:not-sr-only')
   })
 })

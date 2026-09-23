@@ -69,7 +69,7 @@ export function CamposLayoutPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-titulo font-bold text-ink">Campos do layout</h1>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             Versões do Layout InvoiCy e vocabulário canônico de campos.
           </p>
         </div>
@@ -179,7 +179,9 @@ export function CamposLayoutPage() {
         isOpen={modalAberto !== null}
         onClose={() => setModalAberto(null)}
         title={
-          modalAberto === 'novo' ? 'Nova versão do Layout InvoiCy' : 'Editar versão do Layout InvoiCy'
+          modalAberto === 'novo'
+            ? 'Nova versão do Layout InvoiCy'
+            : 'Editar versão do Layout InvoiCy'
         }
       >
         <VersaoLayoutForm

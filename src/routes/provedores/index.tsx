@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
-import { CabecalhoPublico } from '../../components/layout/CabecalhoPublico'
+import { CabecalhoPublico, ID_CONTEUDO_PRINCIPAL } from '../../components/layout/CabecalhoPublico'
 import { RodapeContextual } from '../../components/layout/RodapeContextual'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ErrorState } from '../../components/ui/ErrorState'
@@ -70,10 +70,14 @@ function ProvedoresPage() {
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8">
+      <main
+        id={ID_CONTEUDO_PRINCIPAL}
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+      >
         <div className="flex flex-col gap-2">
           <h1 className="text-titulo font-bold text-ink">Provedores</h1>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             Catálogo de provedores de NFS-e integrados ao InvoiCy — todo provedor listado aqui já
             está ativo, sem indicação de status.
           </p>

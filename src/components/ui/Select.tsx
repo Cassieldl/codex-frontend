@@ -148,10 +148,10 @@ export function Select({
         className={clsx(
           'flex h-9 items-center justify-between rounded-[var(--radius-control)] border px-3 text-sm text-ink',
           'focus:outline-none focus:border-[1.5px] focus:border-primary-medium disabled:bg-surface-disabled disabled:text-muted',
-          error ? 'border-error' : 'border-border',
+          error ? 'border-error' : 'border-border-control',
         )}
       >
-        <span className={opcaoSelecionada ? '' : 'text-ink/40'}>
+        <span className={opcaoSelecionada ? '' : 'text-muted'}>
           {opcaoSelecionada?.label ?? placeholder}
         </span>
         <ChevronDown className="size-4 shrink-0" aria-hidden="true" />
@@ -188,7 +188,7 @@ export function Select({
       )}
 
       {hint && !error && (
-        <p id={hintId} className="text-xs text-ink/50">
+        <p id={hintId} className="text-xs text-muted">
           {hint}
         </p>
       )}

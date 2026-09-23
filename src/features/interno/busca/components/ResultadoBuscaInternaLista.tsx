@@ -17,7 +17,7 @@ export function ResultadoBuscaInternaLista({ grupos }: ResultadoBuscaInternaList
       {grupos.map((grupo) => (
         <section key={grupo.tipo} className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold text-ink">
-            {grupo.rotulo} <span className="font-normal text-ink/50">({grupo.total})</span>
+            {grupo.rotulo} <span className="font-normal text-muted">({grupo.total})</span>
           </h2>
           <ul className="flex flex-col gap-2">
             {grupo.itens.map((item) => (

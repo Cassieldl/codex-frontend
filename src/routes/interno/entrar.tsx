@@ -40,7 +40,7 @@ function EntrarPage() {
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
       {falhaRedirect ? (
         <>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             Não foi possível redirecionar automaticamente para o login.
           </p>
           <Button onClick={() => keycloak.login({ redirectUri })}>
@@ -48,7 +48,7 @@ function EntrarPage() {
           </Button>
         </>
       ) : (
-        <p className="text-sm text-ink/60" role="status">
+        <p className="text-sm text-muted" role="status">
           Redirecionando para o login da Migrate…
         </p>
       )}

@@ -89,7 +89,7 @@ export function LinhaResultadoBuscaInterna({
         // lê precisa saber por que não há link, não só que não há — e os dois
         // motivos são diferentes (rascunho sem tela de edição × endereço que o
         // saneamento recusou).
-        <span className="shrink-0 text-xs text-ink/50 italic">
+        <span className="shrink-0 text-xs text-muted italic">
           {item.publicado ? 'Endereço indisponível' : 'Sem link de edição direta'}
         </span>
       )}

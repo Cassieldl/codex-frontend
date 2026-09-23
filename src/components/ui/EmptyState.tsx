@@ -15,7 +15,7 @@ export function EmptyState({ message = MENSAGEM_PADRAO, icon, action }: EmptySta
       <span aria-hidden="true" className="text-muted">
         {icon ?? <Inbox className="size-10" />}
       </span>
-      <p className="text-sm text-ink/60">{message}</p>
+      <p className="text-sm text-muted">{message}</p>
       {action}
     </div>
   )

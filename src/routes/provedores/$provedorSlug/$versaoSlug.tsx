@@ -54,7 +54,7 @@ function VersaoProvedorRoute() {
       return (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <h2 className="text-subtitulo font-semibold text-ink">Esta versão saiu do ar.</h2>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             O conteúdo desta versão não está mais disponível publicamente.
           </p>
           <Link
@@ -84,7 +84,7 @@ function VersaoProvedorRoute() {
         <p className="text-sm text-ink/80">{versaoPagina.versao.introducao}</p>
       )}
 
-      <p className="text-xs text-ink/50">
+      <p className="text-xs text-muted">
         Escrita contra o Layout InvoiCy {versaoPagina.versao.versaoLayoutRotulo}.
       </p>
 

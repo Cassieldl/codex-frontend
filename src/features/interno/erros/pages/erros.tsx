@@ -86,7 +86,7 @@ export function ErrosPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-titulo font-bold text-ink">Erros conhecidos</h1>
-          <p className="text-sm text-ink/60">Catálogo de rejeições, mensagens e soluções.</p>
+          <p className="text-sm text-muted">Catálogo de rejeições, mensagens e soluções.</p>
         </div>
         {permissoes.erros.adicionar && (
           <Button leftIcon={<Plus className="size-4" />} onClick={() => setModalAberto('novo')}>

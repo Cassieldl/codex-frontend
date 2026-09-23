@@ -106,7 +106,7 @@ export function AbasFormulario({
                 'inline-flex items-center border-b-[3px] px-3 py-2 text-sm transition-shadow duration-150',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light',
                 ativa
-                  ? 'border-accent font-semibold text-ink'
+                  ? 'border-accent-hover font-semibold text-ink'
                   : 'border-transparent font-normal text-muted hover:shadow-hover',
               )}
             >

@@ -47,7 +47,7 @@ export function AbasNavegaveis({ abas, ariaLabel, className }: AbasNavegaveisPro
               className={clsx(
                 'inline-flex items-center whitespace-nowrap border-b-[3px] px-3 py-2 text-sm transition-shadow duration-150',
                 aba.ativa
-                  ? 'border-accent font-semibold text-ink'
+                  ? 'border-accent-hover font-semibold text-ink'
                   : 'border-transparent font-normal text-muted hover:shadow-hover',
               )}
             >

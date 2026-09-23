@@ -29,7 +29,7 @@ export function ErrosConhecidos({ resumo, provedorSlug }: ErrosConhecidosProps) 
           const caminho = caminhoInternoSeguro(erro.url)
           const conteudo = (
             <>
-              <span className="shrink-0 font-mono text-xs text-ink/60">{erro.codigo}</span>
+              <span className="shrink-0 font-mono text-xs text-muted">{erro.codigo}</span>
               <span className="text-sm text-ink">{erro.titulo}</span>
             </>
           )

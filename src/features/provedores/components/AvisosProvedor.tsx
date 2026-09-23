@@ -23,7 +23,7 @@ export function AvisosProvedor({ nomeProvedor, avisos }: AvisosProvedorProps) {
         <h2 id="avisos-provedor-titulo" className="text-subtitulo font-semibold text-ink">
           Avisos do provedor
         </h2>
-        <p className="text-xs text-ink/60">Valem para {nomeProvedor} em qualquer versão.</p>
+        <p className="text-xs text-muted">Valem para {nomeProvedor} em qualquer versão.</p>
       </header>
 
       <ul className="flex flex-col gap-3">

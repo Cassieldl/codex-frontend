@@ -27,7 +27,7 @@ export function GrupoResultadoLista({ grupo }: GrupoResultadoListaProps) {
   return (
     <section aria-labelledby={tituloGrupoId} className="flex flex-col gap-3">
       <h2 id={tituloGrupoId} className="text-subtitulo font-semibold text-ink">
-        {grupo.rotulo} <span className="text-sm font-normal text-ink/50">({grupo.total})</span>
+        {grupo.rotulo} <span className="text-sm font-normal text-muted">({grupo.total})</span>
       </h2>
 
       <ul className="flex flex-col gap-2">
@@ -53,7 +53,7 @@ export function GrupoResultadoLista({ grupo }: GrupoResultadoListaProps) {
                 )}
               </div>
 
-              {legenda && <p className="text-xs text-ink/50">{legenda}</p>}
+              {legenda && <p className="text-xs text-muted">{legenda}</p>}
 
               <p className="text-sm text-ink/80">
                 <TrechosDestacados trechos={item.trechos} />
