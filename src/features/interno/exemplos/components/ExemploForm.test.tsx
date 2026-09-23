@@ -2,7 +2,17 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { ExemploAdmin } from '../types/exemploAdmin'
-import { ExemploForm, TAMANHO_MAXIMO_XML_CARACTERES } from './ExemploForm'
+import { ExemploForm } from './ExemploForm'
+
+/**
+ * Literal de propósito: é contrato com `TetosExemplo.XmlCaracteres` do backend. Importar a
+ * constante da unidade sob teste provaria só que existe um teto — subir o valor nos dois lados
+ * manteria a suíte verde e o cliente reprovaria conteúdo que o servidor aceita.
+ */
+const TETO_XML_CARACTERES = 65536
+
+/** Idem: o cap de descrição casa com `TetosExemplo.DescricaoCaracteres`. */
+const TETO_DESCRICAO_CARACTERES = 500
 
 /** XML com `total` CARACTERES, todos acentuados no miolo — 2 bytes cada em UTF-8. */
 function xmlAcentuadoCom(total: number): string {
@@ -30,14 +40,14 @@ describe('ExemploForm — teto do XML (C3)', () => {
   it('aceita XML acentuado de exatamente 65536 CARACTERES, ainda que passe de 65536 bytes', async () => {
     const usuario = userEvent.setup()
     const onSubmit = vi.fn()
-    const xmlNoLimite = xmlAcentuadoCom(TAMANHO_MAXIMO_XML_CARACTERES)
+    const xmlNoLimite = xmlAcentuadoCom(TETO_XML_CARACTERES)
 
     // A régua é a mesma do backend (`xml.Length` de uma string .NET, UTF-16).
     // Este XML tem o dobro disso em bytes: medir bytes aqui reprovaria no
     // cliente um conteúdo que o servidor aceita.
-    expect(xmlNoLimite).toHaveLength(TAMANHO_MAXIMO_XML_CARACTERES)
+    expect(xmlNoLimite).toHaveLength(TETO_XML_CARACTERES)
     expect(new TextEncoder().encode(xmlNoLimite).length).toBeGreaterThan(
-      TAMANHO_MAXIMO_XML_CARACTERES,
+      TETO_XML_CARACTERES,
     )
 
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
@@ -47,7 +57,7 @@ describe('ExemploForm — teto do XML (C3)', () => {
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(onSubmit).toHaveBeenCalledTimes(1)
-    expect(onSubmit.mock.calls[0][0].xml).toHaveLength(TAMANHO_MAXIMO_XML_CARACTERES)
+    expect(onSubmit.mock.calls[0][0].xml).toHaveLength(TETO_XML_CARACTERES)
   })
 
   it('reprova XML com um caractere a mais que o teto, com mensagem em português', async () => {
@@ -57,13 +67,46 @@ describe('ExemploForm — teto do XML (C3)', () => {
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
 
     preencherCampo(/Nome do cenário/, 'Nota longa demais')
-    preencherCampo(/XML/, xmlAcentuadoCom(TAMANHO_MAXIMO_XML_CARACTERES + 1))
+    preencherCampo(/XML/, xmlAcentuadoCom(TETO_XML_CARACTERES + 1))
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(
       await screen.findByText(
-        `O XML deve ter no máximo ${TAMANHO_MAXIMO_XML_CARACTERES} caracteres.`,
+        `O XML deve ter no máximo ${TETO_XML_CARACTERES} caracteres.`,
       ),
+    ).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+})
+
+describe('ExemploForm — teto do resumo', () => {
+  it('aceita resumo de exatamente 500 caracteres', async () => {
+    const usuario = userEvent.setup()
+    const onSubmit = vi.fn()
+
+    render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
+
+    preencherCampo(/Nome do cenário/, 'Nota com resumo')
+    preencherCampo(/Resumo/, 'r'.repeat(TETO_DESCRICAO_CARACTERES))
+    preencherCampo(/XML/, '<nfse />')
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+  })
+
+  it('reprova resumo com um caractere a mais que o teto', async () => {
+    const usuario = userEvent.setup()
+    const onSubmit = vi.fn()
+
+    render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
+
+    preencherCampo(/Nome do cenário/, 'Nota com resumo longo')
+    preencherCampo(/Resumo/, 'r'.repeat(TETO_DESCRICAO_CARACTERES + 1))
+    preencherCampo(/XML/, '<nfse />')
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(
+      await screen.findByText(`Máximo de ${TETO_DESCRICAO_CARACTERES} caracteres.`),
     ).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
   })

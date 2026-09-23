@@ -119,6 +119,18 @@ describe('ExemplosVersao (tela 5)', () => {
     )
   })
 
+  /** WCAG 2.1.1: o bloco de XML rola, e quem navega por teclado precisa alcançá-lo. */
+  it('o bloco de XML recebe foco de teclado e tem rótulo próprio', async () => {
+    const usuario = userEvent.setup()
+    renderizar([{ slug: 'iss-retido', nome: 'ISS retido', descricao: null, xml: '<Rps />' }])
+
+    await usuario.click(screen.getByRole('button', { name: 'Ver o XML' }))
+
+    const bloco = screen.getByRole('group', { name: 'XML do exemplo ISS retido' })
+    expect(bloco.tagName).toBe('PRE')
+    expect(bloco).toHaveAttribute('tabindex', '0')
+  })
+
   it('o XML é texto, nunca HTML interpretado', async () => {
     const usuario = userEvent.setup()
     const xmlHostil = '<Rps><script>alert(1)</script></Rps>'

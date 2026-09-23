@@ -100,10 +100,17 @@ export function ExemplosVersao({ exemplos, provedorSlug, versaoSlug }: ExemplosV
               </div>
 
               {/* O painel existe sempre no DOM para que `aria-controls` aponte
-                  para um alvo real; só o conteúdo é montado ao abrir. */}
+                  para um alvo real; só o conteúdo é montado ao abrir. A região
+                  rolável recebe foco para ser percorrida por teclado (WCAG
+                  2.1.1) — daí o `tabIndex` e o rótulo no `<pre>`. */}
               <div id={idPainel} hidden={!aberto} className="px-4 pb-4">
                 {aberto && (
-                  <pre className="overflow-auto rounded-[var(--radius-input)] border border-border bg-surface-disabled p-3">
+                  <pre
+                    tabIndex={0}
+                    role="group"
+                    aria-label={`XML do exemplo ${exemplo.nome}`}
+                    className="overflow-auto rounded-[var(--radius-input)] border border-border bg-surface-disabled p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+                  >
                     <code className="font-mono text-xs leading-relaxed text-ink">
                       {exemplo.xml}
                     </code>

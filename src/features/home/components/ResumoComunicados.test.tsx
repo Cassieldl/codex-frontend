@@ -86,40 +86,76 @@ describe('ResumoComunicados', () => {
       comunicado('Prefeitura de Exemplo', 'Informativo'),
     ])
 
-    expect(await screen.findByText('IPM Sistemas')).toBeInTheDocument()
-    expect(screen.queryByText('Nacional/ADN')).not.toBeInTheDocument()
+    expect(await screen.findByText(/IPM Sistemas:/)).toBeInTheDocument()
+    expect(screen.queryByText(/Nacional\/ADN:/)).not.toBeInTheDocument()
 
     const botao = screen.getByRole('button', { name: '+2 outros' })
     expect(botao).toHaveAttribute('aria-expanded', 'false')
 
     await usuario.click(botao)
 
-    expect(screen.getByText('Nacional/ADN')).toBeInTheDocument()
-    expect(screen.getByText('Prefeitura de Exemplo')).toBeInTheDocument()
+    expect(screen.getByText(/Nacional\/ADN:/)).toBeInTheDocument()
+    expect(screen.getByText(/Prefeitura de Exemplo:/)).toBeInTheDocument()
 
     const recolher = screen.getByRole('button', { name: 'Mostrar menos' })
     expect(recolher).toHaveAttribute('aria-expanded', 'true')
 
     await usuario.click(recolher)
 
-    expect(screen.queryByText('Nacional/ADN')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Nacional\/ADN:/)).not.toBeInTheDocument()
   })
 
   it('não oferece botão de expandir quando tudo já cabe na linha', async () => {
     renderResumo([comunicado('IPM Sistemas'), comunicado('Betha', 'Informativo')])
 
-    expect(await screen.findByText('IPM Sistemas')).toBeInTheDocument()
-    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    expect(await screen.findByText(/IPM Sistemas:/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /outro/ })).not.toBeInTheDocument()
   })
 
-  it('chip de provedor é link; chip global é texto, porque não há provedor a abrir', async () => {
+  /**
+   * O título ia só em `title=`, que teclado não alcança, e o chip global era um
+   * `<span>` — o comunicado que o PRD §2.1 nomeia entregava zero informação.
+   */
+  it('mostra o título no texto do chip, inclusive no global, que não tem link', async () => {
     renderResumo([comunicado('IPM Sistemas'), comunicado(null, 'Informativo')])
 
-    expect(await screen.findByRole('link', { name: /IPM Sistemas/ })).toHaveAttribute(
+    expect(
+      await screen.findByRole('button', { name: /IPM Sistemas: Comunicado de IPM Sistemas/ }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Todos os provedores: Comunicado de todos/ }),
+    ).toBeInTheDocument()
+  })
+
+  it('abre o corpo do comunicado ao clicar no chip e o fecha no segundo clique', async () => {
+    const usuario = userEvent.setup()
+    renderResumo([comunicado(null, 'Informativo')])
+
+    const chip = await screen.findByRole('button', { name: /Todos os provedores:/ })
+    expect(chip).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByText('Detalhe do comunicado.')).not.toBeInTheDocument()
+
+    await usuario.click(chip)
+
+    expect(chip).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText('Detalhe do comunicado.')).toBeInTheDocument()
+
+    await usuario.click(chip)
+
+    expect(screen.queryByText('Detalhe do comunicado.')).not.toBeInTheDocument()
+  })
+
+  it('só o comunicado de provedor oferece o link, porque só ele tem para onde ir', async () => {
+    const usuario = userEvent.setup()
+    renderResumo([comunicado('IPM Sistemas'), comunicado(null, 'Informativo')])
+
+    await usuario.click(await screen.findByRole('button', { name: /Todos os provedores:/ }))
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('button', { name: /IPM Sistemas:/ }))
+    expect(screen.getByRole('link', { name: 'Ver provedor' })).toHaveAttribute(
       'href',
       '/provedores/ipm',
     )
-    expect(screen.getByText('Todos os provedores')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /Todos os provedores/ })).not.toBeInTheDocument()
   })
 })

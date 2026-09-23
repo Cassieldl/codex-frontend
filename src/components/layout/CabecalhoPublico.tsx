@@ -4,9 +4,9 @@ import type { ReactNode } from 'react'
 
 export interface CabecalhoPublicoProps {
   /**
-   * `destaque` aplica o fundo escuro (`--grad-escuro`) e é usado só por
-   * `/busca` (§7.1), que embute o campo de busca dentro do próprio
-   * cabeçalho via `children`.
+   * `destaque` aplica o fundo escuro (`--grad-escuro`) e é usado pelas telas
+   * que embutem o campo de busca dentro do próprio cabeçalho via `children`:
+   * `/busca` (§7.1) e a Home.
    */
   variante?: 'padrao' | 'destaque'
   children?: ReactNode

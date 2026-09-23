@@ -7,11 +7,12 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import { handlerHomeErro, handlerHomeSucesso } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
+import { homeKeys } from '../hooks/homeKeys'
 import type { HomeDto } from '../types/home'
 import { HomePage } from './home'
 
@@ -71,8 +72,14 @@ const homeCompleta: Partial<HomeDto> = {
   ],
 }
 
-function renderHome(navegarParaBusca = vi.fn()) {
+function renderHome(navegarParaBusca = vi.fn(), dadoEmCache?: Partial<HomeDto>) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
+  // `updatedAt` antigo é o que importa: com o dado fresco, o `staleTime` de um
+  // minuto do hook impediria o refetch, e o teste passaria sem exercitar nada.
+  if (dadoEmCache) {
+    queryClient.setQueryData(homeKeys.all, dadoEmCache, { updatedAt: Date.now() - 10 * 60 * 1000 })
+  }
 
   const rootRoute = createRootRoute({ component: Outlet })
   const rotaHome = createRoute({
@@ -127,6 +134,32 @@ describe('HomePage', () => {
 
     expect(await screen.findByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Provedores', level: 2 })).not.toBeInTheDocument()
+  })
+
+  /**
+   * Refetch de fundo que falha com dado em cache não pode pôr a tela de erro ao
+   * lado do conteúdo: quem lê veria "não foi possível carregar" logo acima da
+   * página carregada.
+   */
+  it('refetch falho com conteúdo em cache mantém a página, sem estado de erro', async () => {
+    let requisicoes = 0
+    server.use(
+      http.get(`${API_URL}/home`, () => {
+        requisicoes += 1
+        return new HttpResponse(null, { status: 500 })
+      }),
+    )
+
+    renderHome(vi.fn(), homeCompleta)
+
+    // Sem esperar a falha chegar, a asserção de ausência passaria só porque o
+    // refetch ainda estava em voo.
+    await waitFor(() => expect(requisicoes).toBe(1))
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'Provedores', level: 2 })).toBeInTheDocument(),
+    )
+
+    expect(screen.queryByRole('button', { name: 'Tentar novamente' })).not.toBeInTheDocument()
   })
 
   it('mantém a busca disponível mesmo com o agregador fora do ar', async () => {

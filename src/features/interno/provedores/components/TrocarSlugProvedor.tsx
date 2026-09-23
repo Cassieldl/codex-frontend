@@ -28,11 +28,18 @@ const CODIGO_ENDERECO_JA_EXISTE = 'REGISTRO_DUPLICADO'
  */
 const TAMANHO_MAXIMO_SLUG = 160
 
+/** O backend deriva o slug e recusa o que normaliza para vazio (`Slug.PodeDerivarDe`). */
+const SLUG_COM_LETRA_OU_DIGITO = /[a-z0-9]/
+
 const trocarSlugSchema = z.object({
   novoSlug: z
     .string()
     .min(1, 'O novo endereço é obrigatório.')
     .regex(/^[a-z0-9-]+$/, 'Use apenas letras minúsculas, números e hífen.')
+    .refine(
+      (valor) => SLUG_COM_LETRA_OU_DIGITO.test(valor),
+      'O endereço precisa conter ao menos uma letra ou número.',
+    )
     .max(TAMANHO_MAXIMO_SLUG, `Máximo de ${TAMANHO_MAXIMO_SLUG} caracteres.`),
 })
 

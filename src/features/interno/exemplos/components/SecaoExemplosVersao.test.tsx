@@ -6,7 +6,13 @@ import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../../test/mocks/server'
 import type { ExemploAdmin } from '../types/exemploAdmin'
-import { LIMITE_EXEMPLOS_POR_VERSAO, SecaoExemplosVersao } from './SecaoExemplosVersao'
+import { SecaoExemplosVersao } from './SecaoExemplosVersao'
+
+/**
+ * Literal de propósito: é contrato com `CapExemplosPorVersao` do backend. Importar a constante da
+ * unidade sob teste faria fixture e asserção subirem juntas, e mudar o cap não derrubaria nada.
+ */
+const CAP_EXEMPLOS_POR_VERSAO = 10
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -90,7 +96,7 @@ describe('SecaoExemplosVersao — estados de UI', () => {
 
 describe('SecaoExemplosVersao — cap de 10 por versão (C3)', () => {
   it('no limite, o botão de criar fica desabilitado e diz por quê', async () => {
-    server.use(handlerLista(LIMITE_EXEMPLOS_POR_VERSAO))
+    server.use(handlerLista(CAP_EXEMPLOS_POR_VERSAO))
     renderizar()
 
     await screen.findByText('Cenário 1')
@@ -99,12 +105,12 @@ describe('SecaoExemplosVersao — cap de 10 por versão (C3)', () => {
     expect(botao).toBeDisabled()
     expect(botao).toHaveAttribute(
       'title',
-      `Limite de ${LIMITE_EXEMPLOS_POR_VERSAO} exemplos por versão atingido.`,
+      `Limite de ${CAP_EXEMPLOS_POR_VERSAO} exemplos por versão atingido.`,
     )
   })
 
   it('com um exemplo a menos que o limite, criar continua disponível', async () => {
-    server.use(handlerLista(LIMITE_EXEMPLOS_POR_VERSAO - 1))
+    server.use(handlerLista(CAP_EXEMPLOS_POR_VERSAO - 1))
     renderizar()
 
     await screen.findByText('Cenário 1')

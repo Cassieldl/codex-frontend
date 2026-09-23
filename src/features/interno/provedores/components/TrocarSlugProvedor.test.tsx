@@ -73,6 +73,20 @@ describe('TrocarSlugProvedor (I37)', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
+  it('endereço só de hífen reprova aqui — normalizaria para vazio no servidor', async () => {
+    const usuario = userEvent.setup()
+    renderizar()
+    await abrirModal(usuario)
+
+    await usuario.type(screen.getByRole('textbox', { name: /Novo endereço/ }), '---')
+    await usuario.click(screen.getByRole('button', { name: 'Confirmar troca' }))
+
+    expect(
+      await screen.findByText('O endereço precisa conter ao menos uma letra ou número.'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
   it('endereço com 161 caracteres reprova aqui — é o teto real do backend, 160', async () => {
     const usuario = userEvent.setup()
     renderizar()

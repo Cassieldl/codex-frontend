@@ -61,7 +61,9 @@ export function HomePage({ navegarParaBusca }: HomePageProps) {
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-11 px-4 py-10 lg:px-8">
         {isLoading && <SkeletonHome />}
 
-        {isError && <ErrorState onRetry={() => refetch()} />}
+        {/* Com dado em cache, um refetch de fundo que falha não pode trocar a
+            página por uma tela de erro — nem exibir as duas coisas juntas. */}
+        {isError && !home && <ErrorState onRetry={() => refetch()} />}
 
         {home && (
           <>

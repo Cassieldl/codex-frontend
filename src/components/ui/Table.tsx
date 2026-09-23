@@ -6,10 +6,22 @@ export interface TableRootProps {
   className?: string
 }
 
+export interface TableRootComRotuloProps extends TableRootProps {
+  /** Rótulo da região rolável, anunciado quando o foco de teclado entra nela. */
+  rotulo?: string
+}
+
 /** Primitivos de tabela densa — a tabela específica (ex.: campos de layout) monta em cima destes. */
-export function TableRoot({ children, className }: TableRootProps) {
+export function TableRoot({ children, className, rotulo }: TableRootComRotuloProps) {
   return (
-    <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border">
+    // A rolagem horizontal só é alcançável por teclado se o contêiner receber
+    // foco (WCAG 2.1.1) — o `role="group"` é o que dá sentido ao `tabIndex`.
+    <div
+      tabIndex={0}
+      role="group"
+      aria-label={rotulo ?? 'Tabela com rolagem horizontal'}
+      className="overflow-x-auto rounded-[var(--radius-card)] border border-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+    >
       <table className={clsx('w-full border-collapse text-left', className)}>{children}</table>
     </div>
   )
