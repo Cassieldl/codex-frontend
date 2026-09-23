@@ -1,9 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
-import {
-  CabecalhoPublico,
-  ID_CONTEUDO_PRINCIPAL,
-} from '../../../components/layout/CabecalhoPublico'
+import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'

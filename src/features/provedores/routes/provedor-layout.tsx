@@ -1,9 +1,7 @@
 import { Link, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import {
-  CabecalhoPublico,
-  ID_CONTEUDO_PRINCIPAL,
-} from '../../../components/layout/CabecalhoPublico'
+import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { AbasNavegaveis, type AbaNavegavel } from '../../../components/ui/AbasNavegaveis'
 import { ErrorState } from '../../../components/ui/ErrorState'

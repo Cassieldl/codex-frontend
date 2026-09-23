@@ -8,7 +8,8 @@ import {
 } from '@tanstack/react-router'
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { CabecalhoPublico, ID_CONTEUDO_PRINCIPAL } from './CabecalhoPublico'
+import { CabecalhoPublico } from './CabecalhoPublico'
+import { ID_CONTEUDO_PRINCIPAL } from './PularParaConteudo'
 
 // `<Link>` do TanStack Router precisa de um `RouterProvider` real — mesmo
 // padrão de `RodapeContextual.test.tsx`. As rotas de destino (`/artigos`,

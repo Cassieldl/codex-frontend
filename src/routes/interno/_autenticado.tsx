@@ -2,6 +2,7 @@ import { Link, Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { LogOut } from 'lucide-react'
 import { useEffect } from 'react'
 import { garantirAutenticacao, keycloak } from '../../auth/keycloak'
+import { ID_CONTEUDO_PRINCIPAL, PularParaConteudo } from '../../components/layout/PularParaConteudo'
 import { BarraDeComando } from '../../features/interno/busca/components/BarraDeComando'
 import { PublicarComunicadoGlobal } from '../../features/interno/comunicados/components/PublicarComunicadoGlobal'
 
@@ -51,6 +52,9 @@ function LayoutInterno() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Mesmo gesto do portal público: a navegação interna também se repete em toda tela. */}
+      <PularParaConteudo />
+
       <header className="flex items-center justify-between gap-4 border-b border-border bg-white px-4 py-3 lg:px-8">
         <nav aria-label="Navegação da área interna">
           <ul className="flex gap-1">
@@ -86,7 +90,7 @@ function LayoutInterno() {
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-6 lg:px-8">
+      <main id={ID_CONTEUDO_PRINCIPAL} tabIndex={-1} className="flex-1 px-4 py-6 lg:px-8">
         <Outlet />
       </main>
     </div>

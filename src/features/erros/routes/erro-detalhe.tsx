@@ -1,9 +1,7 @@
 import { isAxiosError } from 'axios'
 import { useEffect } from 'react'
-import {
-  CabecalhoPublico,
-  ID_CONTEUDO_PRINCIPAL,
-} from '../../../components/layout/CabecalhoPublico'
+import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { ErrorState } from '../../../components/ui/ErrorState'

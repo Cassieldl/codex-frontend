@@ -1,10 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { isAxiosError } from 'axios'
 import { useEffect, useState } from 'react'
-import {
-  CabecalhoPublico,
-  ID_CONTEUDO_PRINCIPAL,
-} from '../../../components/layout/CabecalhoPublico'
+import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { EmptyState } from '../../../components/ui/EmptyState'

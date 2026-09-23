@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import {
-  CabecalhoPublico,
-  ID_CONTEUDO_PRINCIPAL,
-} from '../../../components/layout/CabecalhoPublico'
+import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
+import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { AbasNavegaveis, type AbaNavegavel } from '../../../components/ui/AbasNavegaveis'
 import { EmptyState } from '../../../components/ui/EmptyState'
