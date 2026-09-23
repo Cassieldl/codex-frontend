@@ -26,6 +26,15 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: true,
+    // A suíte inteira dependia do `.env` do desenvolvedor, que — corretamente — não é versionado:
+    // os handlers do MSW registram em `${VITE_API_URL}/...` e o cliente Axios chama a mesma
+    // variável. Sem `.env`, os dois viram `undefined/...`, nada casa e o MSW recusa cada
+    // requisição — 129 falhas num clone limpo, com a suíte verde na máquina de quem tinha o
+    // arquivo. Fixar aqui torna o valor parte do repositório e igual em toda máquina; qual é o
+    // valor não importa, importa ser o MESMO nos dois lados.
+    env: {
+      VITE_API_URL: 'http://localhost:5000/api/v1',
+    },
     // O default de 5s do Vitest e o de 1s do Testing Library bastam para um teste isolado e
     // não bastam para os ~15 que montam router + MSW + jsdom juntos: sob a concorrência padrão
     // (99 arquivos) eles estouram por carga da máquina, não por defeito. Um gate que fica verde

@@ -1,5 +1,7 @@
 # Codex — Frontend
 
+[![CI](https://github.com/Cassieldl/codex-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/Cassieldl/codex-frontend/actions/workflows/ci.yml)
+
 Portal Técnico de Integração NFS-e (Migrate). Aplicação standalone com identidade visual
 própria (Migrate Design System) — não usa o design system do BMS e não roda dentro do BMS Core.
 

@@ -33,5 +33,8 @@ jobs:
       - name: Typecheck e build
         run: npm run build
 
+      # Depende do step acima, e não por estilo: `src/routeTree.gen.ts` é GERADO (pelo `prebuild`)
+      # e não é versionado, e há teste que o importa. Num clone limpo, rodar os testes primeiro
+      # falha por arquivo ausente — o que parece defeito de código e é ordem de step.
       - name: Testes
         run: npm test
