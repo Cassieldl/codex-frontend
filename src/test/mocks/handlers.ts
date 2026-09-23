@@ -180,9 +180,16 @@ export function handlerArtigoAdminDetalhe(artigo: ArtigoAdminDetalhe): HttpHandl
  * simples, "para não bloquear B/C" (`analise-frontend.md` §2.8): FRONT-B/C
  * estendem estes mesmos handlers com os casos que as próprias telas
  * precisam (`server.use(...)`), sem apagar os defaults daqui.
+ *
+ * Os corpos abaixo são transcritos dos DTOs do servidor e **não** levam
+ * anotação do tipo do cliente: anotar faria o compilador forçar o mock a ter a
+ * forma que o cliente acredita, e o teste passaria a confirmar a crença em vez
+ * do contrato. Foi assim que dois campos divergentes chegaram ao QA com a
+ * suíte verde. `overrides` continua tipado — ali o tipo é conveniência de
+ * fixture, não fonte da forma.
  */
 export function handlerHomeSucesso(overrides: Partial<HomeDto> = {}): HttpHandler {
-  const home: HomeDto = {
+  const home = {
     comunicados: [],
     provedoresPorCategoria: [],
     layout: null,
@@ -194,7 +201,7 @@ export function handlerHomeSucesso(overrides: Partial<HomeDto> = {}): HttpHandle
 }
 
 export function handlerLayoutIndiceSucesso(overrides: Partial<LayoutIndice> = {}): HttpHandler {
-  const indice: LayoutIndice = {
+  const indice = {
     vigente: null,
     versoes: [],
     ...overrides,
@@ -207,7 +214,7 @@ export function handlerLayoutVersaoSucesso(
   versaoSlug: string,
   overrides: Partial<LayoutVersaoPagina> = {},
 ): HttpHandler {
-  const pagina: LayoutVersaoPagina = {
+  const pagina = {
     versao: {
       slug: versaoSlug,
       rotulo: versaoSlug,
@@ -231,7 +238,7 @@ export function handlerCampoLayoutVerbeteSucesso(
   campoSlug: string,
   overrides: Partial<CampoLayoutVerbete> = {},
 ): HttpHandler {
-  const verbete: CampoLayoutVerbete = {
+  const verbete = {
     slug: campoSlug,
     nome: campoSlug,
     caminhoXml: `Rps/${campoSlug}`,
