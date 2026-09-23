@@ -28,9 +28,9 @@ describe('extrairSlugDoExemploNoHash', () => {
 
 describe('construirLinkExemplo', () => {
   it('monta o endereço da versão com a âncora do exemplo', () => {
-    expect(
-      construirLinkExemplo('https://codex.migrate.info', 'ipm', '2-04', 'sem-tomador'),
-    ).toBe('https://codex.migrate.info/provedores/ipm/2-04#exemplo-sem-tomador')
+    expect(construirLinkExemplo('https://codex.migrate.info', 'ipm', '2-04', 'sem-tomador')).toBe(
+      'https://codex.migrate.info/provedores/ipm/2-04#exemplo-sem-tomador',
+    )
   })
 })
 

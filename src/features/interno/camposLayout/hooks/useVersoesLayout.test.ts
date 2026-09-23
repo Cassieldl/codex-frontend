@@ -57,9 +57,7 @@ function novoQueryClient() {
 describe('useVersoesLayout (I15a)', () => {
   it('deriva o etag de cada item do versaoConcorrencia do corpo', async () => {
     server.use(
-      http.get(`${API_URL}/interno/layout/versoes`, () =>
-        HttpResponse.json(respostaVersoesLayout),
-      ),
+      http.get(`${API_URL}/interno/layout/versoes`, () => HttpResponse.json(respostaVersoesLayout)),
     )
 
     const { result } = renderHook(() => useVersoesLayout({ pagina: 1 }), {
@@ -79,9 +77,7 @@ describe('useVersoesLayout (I15a)', () => {
 
   it('preserva o estado da versão de layout devolvido pelo backend (P-15)', async () => {
     server.use(
-      http.get(`${API_URL}/interno/layout/versoes`, () =>
-        HttpResponse.json(respostaVersoesLayout),
-      ),
+      http.get(`${API_URL}/interno/layout/versoes`, () => HttpResponse.json(respostaVersoesLayout)),
     )
 
     const { result } = renderHook(() => useVersoesLayout({ pagina: 1 }), {

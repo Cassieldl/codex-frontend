@@ -46,9 +46,7 @@ describe('ExemploForm — teto do XML (C3)', () => {
     // Este XML tem o dobro disso em bytes: medir bytes aqui reprovaria no
     // cliente um conteúdo que o servidor aceita.
     expect(xmlNoLimite).toHaveLength(TETO_XML_CARACTERES)
-    expect(new TextEncoder().encode(xmlNoLimite).length).toBeGreaterThan(
-      TETO_XML_CARACTERES,
-    )
+    expect(new TextEncoder().encode(xmlNoLimite).length).toBeGreaterThan(TETO_XML_CARACTERES)
 
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
 
@@ -71,9 +69,7 @@ describe('ExemploForm — teto do XML (C3)', () => {
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(
-      await screen.findByText(
-        `O XML deve ter no máximo ${TETO_XML_CARACTERES} caracteres.`,
-      ),
+      await screen.findByText(`O XML deve ter no máximo ${TETO_XML_CARACTERES} caracteres.`),
     ).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
   })
