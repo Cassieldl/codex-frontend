@@ -4,6 +4,7 @@ import { Button } from '../../../../components/ui/Button'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { Modal } from '../../../../components/ui/Modal'
+import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { handleApiError } from '../../../../utils/handleApiError'
@@ -23,6 +24,8 @@ export const LIMITE_EXEMPLOS_POR_VERSAO = 10
 
 export interface SecaoExemplosVersaoProps {
   versaoId: number
+  /** `exemplos-buscar`. É a única seção da tela com `GET` próprio protegido por role. */
+  podeBuscar: boolean
   podeAdicionar: boolean
   podeAtualizar: boolean
   podeRemover: boolean
@@ -38,11 +41,12 @@ export interface SecaoExemplosVersaoProps {
  */
 export function SecaoExemplosVersao({
   versaoId,
+  podeBuscar,
   podeAdicionar,
   podeAtualizar,
   podeRemover,
 }: SecaoExemplosVersaoProps) {
-  const { data: exemplos, isLoading, isError, refetch } = useExemplosPorVersao(versaoId)
+  const { data: exemplos, isLoading, isError, refetch } = useExemplosPorVersao(versaoId, podeBuscar)
 
   const criarExemplo = useCriarExemplo(versaoId)
   const atualizarExemplo = useAtualizarExemplo()
@@ -50,6 +54,8 @@ export function SecaoExemplosVersao({
 
   const [modalAberto, setModalAberto] = useState<'novo' | ExemploAdmin | null>(null)
   const [erroFormulario, setErroFormulario] = useState<string | null>(null)
+  const [exemploParaRemover, setExemploParaRemover] = useState<ExemploAdmin | null>(null)
+  const [erroRemocao, setErroRemocao] = useState<string | null>(null)
 
   const total = exemplos?.length ?? 0
   const noLimite = total >= LIMITE_EXEMPLOS_POR_VERSAO
@@ -86,6 +92,24 @@ export function SecaoExemplosVersao({
     setModalAberto(exemplo)
   }
 
+  function abrirRemocao(exemplo: ExemploAdmin) {
+    setErroRemocao(null)
+    setExemploParaRemover(exemplo)
+  }
+
+  function confirmarRemocao() {
+    if (!exemploParaRemover) return
+
+    setErroRemocao(null)
+    removerExemplo.mutate(
+      { id: exemploParaRemover.id, versaoId, etag: exemploParaRemover.etag },
+      {
+        onSuccess: () => setExemploParaRemover(null),
+        onError: (erro) => setErroRemocao(handleApiError(erro)),
+      },
+    )
+  }
+
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -108,25 +132,29 @@ export function SecaoExemplosVersao({
         )}
       </div>
 
-      {isLoading && (
+      {!podeBuscar && (
+        <EmptyState message="Você não tem permissão para ver os exemplos desta versão." />
+      )}
+
+      {podeBuscar && isLoading && (
         <div aria-live="polite" aria-busy="true">
           <span className="sr-only">Carregando exemplos…</span>
           <Skeleton className="h-10 w-full" />
         </div>
       )}
 
-      {!isLoading && isError && (
+      {podeBuscar && !isLoading && isError && (
         <ErrorState
           message="Não foi possível carregar os exemplos desta versão."
           onRetry={() => refetch()}
         />
       )}
 
-      {!isLoading && !isError && total === 0 && (
+      {podeBuscar && !isLoading && !isError && total === 0 && (
         <EmptyState message="Nenhum exemplo cadastrado nesta versão ainda." />
       )}
 
-      {!isLoading && !isError && total > 0 && (
+      {podeBuscar && !isLoading && !isError && total > 0 && (
         <TableRoot>
           <TableHeader>
             <tr>
@@ -159,13 +187,7 @@ export function SecaoExemplosVersao({
                         variant="secondary"
                         size="sm"
                         aria-label={`Remover exemplo ${exemplo.nome}`}
-                        onClick={() =>
-                          removerExemplo.mutate({
-                            id: exemplo.id,
-                            versaoId,
-                            etag: exemplo.etag,
-                          })
-                        }
+                        onClick={() => abrirRemocao(exemplo)}
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </Button>
@@ -194,6 +216,16 @@ export function SecaoExemplosVersao({
           />
         )}
       </Modal>
+
+      <ModalConfirmacao
+        isOpen={exemploParaRemover !== null}
+        title="Remover exemplo"
+        message={`O exemplo "${exemploParaRemover?.nome}" sai da página pública da versão, e o link #exemplo-${exemploParaRemover?.slug} deixa de funcionar.`}
+        isConfirming={removerExemplo.isPending}
+        erro={erroRemocao}
+        onConfirm={confirmarRemocao}
+        onCancel={() => setExemploParaRemover(null)}
+      />
     </section>
   )
 }

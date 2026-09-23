@@ -9,6 +9,7 @@ import { EtiquetaSeveridade, type Severidade } from '../../../../components/ui/E
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { Input } from '../../../../components/ui/Input'
 import { Modal } from '../../../../components/ui/Modal'
+import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { handleApiError } from '../../../../utils/handleApiError'
@@ -74,6 +75,10 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
   const [modalAvisoAberto, setModalAvisoAberto] = useState<'novo' | AvisoAdmin | null>(null)
   const [erroAviso, setErroAviso] = useState<string | null>(null)
 
+  const [avisoParaRemover, setAvisoParaRemover] = useState<AvisoAdmin | null>(null)
+  const [campoParaRemover, setCampoParaRemover] = useState<CampoVersaoAdmin | null>(null)
+  const [erroRemocao, setErroRemocao] = useState<string | null>(null)
+
   const [dataVerificacao, setDataVerificacao] = useState('')
 
   if (isLoading) {
@@ -112,6 +117,32 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
         },
       )
     }
+  }
+
+  function confirmarRemocaoDeAviso() {
+    if (!avisoParaRemover) return
+
+    setErroRemocao(null)
+    removerAviso.mutate(
+      { id: avisoParaRemover.id, etag: avisoParaRemover.etag },
+      {
+        onSuccess: () => setAvisoParaRemover(null),
+        onError: (erro) => setErroRemocao(handleApiError(erro)),
+      },
+    )
+  }
+
+  function confirmarRemocaoDeCampo() {
+    if (!campoParaRemover) return
+
+    setErroRemocao(null)
+    removerCampo.mutate(
+      { id: campoParaRemover.id, etag: campoParaRemover.etag },
+      {
+        onSuccess: () => setCampoParaRemover(null),
+        onError: (erro) => setErroRemocao(handleApiError(erro)),
+      },
+    )
   }
 
   function aoSalvarAviso(dto: AvisoFormDto) {
@@ -278,7 +309,10 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
                     variant="secondary"
                     size="sm"
                     aria-label={`Remover aviso ${aviso.titulo}`}
-                    onClick={() => removerAviso.mutate({ id: aviso.id, etag: aviso.etag })}
+                    onClick={() => {
+                      setErroRemocao(null)
+                      setAvisoParaRemover(aviso)
+                    }}
                   >
                     <Trash2 className="size-4" aria-hidden="true" />
                   </Button>
@@ -345,7 +379,10 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
                           variant="secondary"
                           size="sm"
                           aria-label={`Remover campo ${campo.campoLayoutNome}`}
-                          onClick={() => removerCampo.mutate({ id: campo.id, etag: campo.etag })}
+                          onClick={() => {
+                            setErroRemocao(null)
+                            setCampoParaRemover(campo)
+                          }}
                         >
                           <Trash2 className="size-4" aria-hidden="true" />
                         </Button>
@@ -374,6 +411,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
 
       <SecaoExemplosVersao
         versaoId={versaoId}
+        podeBuscar={permissoes.exemplos.buscar}
         podeAdicionar={permissoes.exemplos.adicionar}
         podeAtualizar={permissoes.exemplos.atualizar}
         podeRemover={permissoes.exemplos.remover}
@@ -413,6 +451,26 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
           erroServidor={erroAviso}
         />
       </Modal>
+
+      <ModalConfirmacao
+        isOpen={avisoParaRemover !== null}
+        title="Remover aviso"
+        message={`O aviso "${avisoParaRemover?.titulo}" sai desta versão e da página pública dela.`}
+        isConfirming={removerAviso.isPending}
+        erro={erroRemocao}
+        onConfirm={confirmarRemocaoDeAviso}
+        onCancel={() => setAvisoParaRemover(null)}
+      />
+
+      <ModalConfirmacao
+        isOpen={campoParaRemover !== null}
+        title="Remover campo"
+        message={`O campo "${campoParaRemover?.campoLayoutNome}" deixa de ser documentado nesta versão.`}
+        isConfirming={removerCampo.isPending}
+        erro={erroRemocao}
+        onConfirm={confirmarRemocaoDeCampo}
+        onCancel={() => setCampoParaRemover(null)}
+      />
     </div>
   )
 }

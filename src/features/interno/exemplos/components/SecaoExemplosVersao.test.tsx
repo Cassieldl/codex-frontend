@@ -47,7 +47,14 @@ function renderizar(props?: Partial<Parameters<typeof SecaoExemplosVersao>[0]>) 
   }
 
   return render(
-    <SecaoExemplosVersao versaoId={VERSAO_ID} podeAdicionar podeAtualizar podeRemover {...props} />,
+    <SecaoExemplosVersao
+      versaoId={VERSAO_ID}
+      podeBuscar
+      podeAdicionar
+      podeAtualizar
+      podeRemover
+      {...props}
+    />,
     { wrapper: Wrapper },
   )
 }
@@ -144,6 +151,22 @@ describe('SecaoExemplosVersao — permissões', () => {
       screen.queryByRole('button', { name: 'Remover exemplo Cenário 1' }),
     ).not.toBeInTheDocument()
   })
+
+  /**
+   * Sem a role de leitura o `GET` volta `403` em toda tentativa — um `ErrorState`
+   * com "Tentar novamente" prometeria uma recuperação que não existe. E a query
+   * nem sai: o handler de lista não é registrado, então uma chamada derrubaria o
+   * teste (`onUnhandledRequest: 'error'`).
+   */
+  it('sem exemplos-buscar, explica a ausência em vez de falhar o carregamento', async () => {
+    renderizar({ podeBuscar: false })
+
+    expect(
+      await screen.findByText('Você não tem permissão para ver os exemplos desta versão.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tentar novamente' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Carregando exemplos…')).not.toBeInTheDocument()
+  })
 })
 
 describe('SecaoExemplosVersao — escrita', () => {
@@ -210,5 +233,63 @@ describe('SecaoExemplosVersao — escrita', () => {
     )
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: /Nome do cenário/ })).toHaveValue('Nota simples')
+  })
+})
+
+describe('SecaoExemplosVersao — remoção', () => {
+  it('pede confirmação antes de remover — o clique na lixeira não apaga nada', async () => {
+    const usuario = userEvent.setup()
+    let exclusoes = 0
+
+    server.use(
+      handlerLista(1),
+      http.delete(`${API_URL}/interno/exemplos/1`, () => {
+        exclusoes += 1
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    renderizar()
+    await screen.findByText('Cenário 1')
+
+    await usuario.click(screen.getByRole('button', { name: 'Remover exemplo Cenário 1' }))
+
+    expect(screen.getByRole('dialog')).toHaveTextContent('Cenário 1')
+    expect(exclusoes).toBe(0)
+
+    await usuario.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(exclusoes).toBe(0)
+  })
+
+  it('falha na remoção aparece no diálogo, em vez de sumir em silêncio', async () => {
+    const usuario = userEvent.setup()
+
+    server.use(
+      handlerLista(1),
+      http.delete(`${API_URL}/interno/exemplos/1`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: 'CONFLITO_CONCORRENCIA',
+              message: 'O exemplo foi alterado por outra pessoa. Recarregue e tente de novo.',
+            },
+          },
+          { status: 409 },
+        ),
+      ),
+    )
+
+    renderizar()
+    await screen.findByText('Cenário 1')
+
+    await usuario.click(screen.getByRole('button', { name: 'Remover exemplo Cenário 1' }))
+    await usuario.click(screen.getByRole('button', { name: 'Remover' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'O exemplo foi alterado por outra pessoa. Recarregue e tente de novo.',
+    )
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })
