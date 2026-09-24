@@ -1,5 +1,5 @@
 # Servidor estático do portal (004). O entrypoint da imagem nginx substitui `${VAR}` por envsubst
-# antes de subir; `$uri` e `$http_*` são do nginx e ficam intactos por não usarem chaves.
+# antes de subir; `$uri` e `$csp` são do nginx e ficam intactos por não usarem chaves.
 
 server {
     listen 8080;
@@ -14,21 +14,34 @@ server {
     gzip_types text/css application/javascript application/json image/svg+xml;
     gzip_min_length 1024;
 
-    # ATENÇÃO — `add_header` NÃO é herdado: um único `add_header` dentro de um `location` descarta
-    # TODOS os do nível `server` naquela location. Por isso os cabeçalhos de segurança são
-    # repetidos em cada bloco abaixo em vez de declarados uma vez aqui em cima. Foi assim que eles
-    # sumiram da resposta de `/index.html` na primeira versão deste arquivo — e só apareceu
-    # rodando o container, nunca na leitura.
+    # A política mora numa variável e é aplicada em cada bloco abaixo. Repetir a string por
+    # location já produziu `font-src` duplicado — e em CSP a PRIMEIRA diretiva vence, então a
+    # segunda era ignorada em silêncio e as fontes seguiam bloqueadas.
     #
-    # `frame-ancestors 'none'` substitui o X-Frame-Options, que é o mecanismo antigo. O portal é
-    # standalone — nunca roda embutido em outra página.
+    # `style-src`/`font-src` liberam o Google Fonts porque `global.css` importa a Montserrat de
+    # lá — sem isso o produto perde a tipografia do design system inteiro, e o navegador só diz
+    # no console. Auto-hospedar a fonte removeria a origem externa e é a melhoria natural.
+    #
+    # `frame-src` cobre o iframe oculto do keycloak-js, que é como ele verifica se a sessão
+    # continua viva. Bloqueado, a área interna não percebe logout feito em outra aba.
+    #
+    # `frame-ancestors` é `'self'`, NÃO `'none'`: o keycloak-js carrega `/silent-check-sso.html` —
+    # uma página do PRÓPRIO portal — dentro de um iframe, para verificar a sessão sem recarregar.
+    # Com `'none'` o navegador bloqueia e a verificação silenciosa nunca funciona. `'self'` libera
+    # só a mesma origem e continua barrando clickjacking de terceiros.
+    set $csp "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}; frame-src 'self' ${CSP_FRAME_SRC}";
+
+    # ATENÇÃO — `add_header` NÃO é herdado: um único `add_header` dentro de um `location` descarta
+    # TODOS os do nível `server` naquela location. Por isso os cabeçalhos são repetidos em cada
+    # bloco em vez de declarados uma vez acima. Foi assim que eles sumiram da resposta de
+    # `/index.html` na primeira versão deste arquivo — e só apareceu rodando o container.
 
     # Arquivos com hash no nome são imutáveis: trocar o conteúdo troca a URL.
     location /assets/ {
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
-        add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}" always;
+        add_header Content-Security-Policy $csp always;
         add_header Cache-Control "public, max-age=31536000, immutable" always;
 
         try_files $uri =404;
@@ -39,7 +52,7 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
-        add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}" always;
+        add_header Content-Security-Policy $csp always;
         add_header Cache-Control "no-cache" always;
     }
 
@@ -50,7 +63,7 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
-        add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}" always;
+        add_header Content-Security-Policy $csp always;
 
         try_files $uri $uri/ /index.html;
     }

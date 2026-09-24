@@ -6,14 +6,15 @@
   </head>
   <body>
     <!--
-      Callback do check-sso silencioso do keycloak-js (`onLoad: 'check-sso'`
-      em `src/auth/keycloak.ts`). Carregado num iframe oculto: só repassa a
-      URL de retorno (com o resultado do handshake) para a janela pai, sem
-      montar nenhuma rota da aplicação. Conteúdo mínimo por design — é o
-      padrão documentado do próprio `keycloak-js`.
+      Callback do check-sso silencioso do keycloak-js (`onLoad: 'check-sso'` em
+      `src/auth/keycloak.ts`). Carregado num iframe oculto: só repassa a URL de retorno para a
+      janela pai, sem montar nenhuma rota da aplicação.
+
+      O script fica FORA do HTML de propósito. O exemplo oficial do keycloak-js traz o snippet
+      inline, e a CSP de produção (`script-src 'self'`) o bloqueia: a verificação silenciosa nunca
+      conclui, sem nada visível na tela. Enfraquecer a política com `'unsafe-inline'` para acomodar
+      uma linha seria o caminho errado.
     -->
-    <script>
-      parent.postMessage(location.href, location.origin)
-    </script>
+    <script src="/silent-check-sso.js"></script>
   </body>
 </html>
