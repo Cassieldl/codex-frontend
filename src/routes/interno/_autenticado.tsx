@@ -19,6 +19,16 @@ export const Route = createFileRoute('/interno/_autenticado')({
   component: LayoutInterno,
 })
 
+/**
+ * Teto de largura da área interna, aplicado ao cabeçalho e ao conteúdo.
+ *
+ * Sem ele as tabelas de edição esticavam até a borda do monitor: num monitor
+ * largo, o nome do campo ficava numa ponta e os botões de ação na outra, com
+ * meio metro de vazio no meio. É mais folgado que o `max-w-6xl` do portal
+ * público porque aqui as tabelas têm colunas de ação que lá não existem.
+ */
+const LARGURA_DO_CONTEUDO = 'mx-auto w-full max-w-7xl'
+
 const ITENS_NAV = [
   { to: '/interno' as const, rotulo: 'Início' },
   { to: '/interno/provedores' as const, rotulo: 'Provedores' },
@@ -55,43 +65,55 @@ function LayoutInterno() {
       {/* Mesmo gesto do portal público: a navegação interna também se repete em toda tela. */}
       <PularParaConteudo />
 
-      <header className="flex items-center justify-between gap-4 border-b border-border bg-white px-4 py-3 lg:px-8">
-        <nav aria-label="Navegação da área interna">
-          <ul className="flex gap-1">
-            {ITENS_NAV.map((item) => (
-              <li key={item.to}>
-                <Link
-                  to={item.to}
-                  activeOptions={{ exact: item.to === '/interno' }}
-                  className="flex h-10 items-center rounded px-2 text-sm font-medium text-muted hover:shadow-hover"
-                  activeProps={{ className: 'text-ink', 'aria-current': 'page' }}
-                >
-                  {item.rotulo}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+      <header className="border-b border-border bg-white px-4 py-3 lg:px-8">
+        <div className={`${LARGURA_DO_CONTEUDO} flex flex-wrap items-center justify-between gap-4`}>
+          <div className="flex flex-wrap items-center gap-6">
+            {/* A marca some da área interna sem isto: a tela abria direto no
+                menu, sem dizer em que produto o editor está. */}
+            <Link to="/" className="text-base font-bold text-ink hover:shadow-hover">
+              Codex
+            </Link>
 
-        {/* Ações globais da área interna: a barra de comando (o atalho vale em
+            <nav aria-label="Navegação da área interna">
+              <ul className="flex flex-wrap gap-1">
+                {ITENS_NAV.map((item) => (
+                  <li key={item.to}>
+                    <Link
+                      to={item.to}
+                      activeOptions={{ exact: item.to === '/interno' }}
+                      className="flex h-10 items-center rounded px-2 text-sm font-medium text-muted hover:shadow-hover"
+                      activeProps={{ className: 'text-ink', 'aria-current': 'page' }}
+                    >
+                      {item.rotulo}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+
+          {/* Ações globais da área interna: a barra de comando (o atalho vale em
             toda rota autenticada) e a publicação de comunicado, que nasce
             escondida sem a role. */}
-        <div className="flex items-center gap-1">
-          <BarraDeComando />
-          <PublicarComunicadoGlobal />
-          <button
-            type="button"
-            onClick={() => keycloak.logout({ redirectUri: window.location.origin })}
-            className="flex items-center gap-1.5 rounded px-2 py-1.5 text-sm font-medium text-ink hover:shadow-hover"
-          >
-            <LogOut className="size-4" aria-hidden="true" />
-            Sair
-          </button>
+          <div className="flex items-center gap-1">
+            <BarraDeComando />
+            <PublicarComunicadoGlobal />
+            <button
+              type="button"
+              onClick={() => keycloak.logout({ redirectUri: window.location.origin })}
+              className="flex items-center gap-1.5 rounded px-2 py-1.5 text-sm font-medium text-ink hover:shadow-hover"
+            >
+              <LogOut className="size-4" aria-hidden="true" />
+              Sair
+            </button>
+          </div>
         </div>
       </header>
 
       <main id={ID_CONTEUDO_PRINCIPAL} tabIndex={-1} className="flex-1 px-4 py-6 lg:px-8">
-        <Outlet />
+        <div className={LARGURA_DO_CONTEUDO}>
+          <Outlet />
+        </div>
       </main>
     </div>
   )

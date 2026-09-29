@@ -191,3 +191,22 @@ describe('CabecalhoPublico — pular para o conteúdo', () => {
     expect(pulo.className).toContain('focus:not-sr-only')
   })
 })
+
+/**
+ * Sem quebra de linha, a marca e os quatro itens disputam uma única linha: em 390px o menu
+ * invadia o logo ("CodexProvedores" colados) e "Como funciona" era cortado pela borda.
+ *
+ * O jsdom não faz layout, então a asserção é sobre as classes que autorizam a quebra — a medida
+ * real (nenhum item além da viewport em 390px) só existe no navegador. É uma asserção fraca de
+ * propósito: trava a regressão exata, sem fingir que mede geometria.
+ */
+describe('CabecalhoPublico — cabimento em telas estreitas', () => {
+  it('autoriza a quebra de linha na faixa e na navegação', async () => {
+    renderComRouter()
+
+    const nav = await screen.findByRole('navigation', { name: 'Navegação principal' })
+
+    expect(nav.className).toContain('flex-wrap')
+    expect(nav.parentElement?.className).toContain('flex-wrap')
+  })
+})

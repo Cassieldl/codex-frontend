@@ -7,6 +7,16 @@ export const keycloak = new Keycloak({
   clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
 })
 
+/**
+ * Idioma da tela de login, que é hospedada pelo Keycloak (D1/M18) e não por
+ * nós. Sem isto ela abre no idioma padrão do realm — em inglês, no meio de um
+ * portal inteiramente em português, logo na porta da área interna.
+ *
+ * O realm também declara `pt-BR` como padrão; pedir aqui mantém a garantia do
+ * lado do produto, que é quem sabe em que idioma ele fala.
+ */
+export const IDIOMA_LOGIN = 'pt-BR'
+
 let promessaInicializacao: Promise<boolean> | null = null
 
 /**

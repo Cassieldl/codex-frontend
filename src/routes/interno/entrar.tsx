@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
-import { keycloak } from '../../auth/keycloak'
+import { IDIOMA_LOGIN, keycloak } from '../../auth/keycloak'
 import { Button } from '../../components/ui/Button'
 import { caminhoInternoSeguro } from '../../utils/caminhoInternoSeguro'
 
@@ -33,7 +33,7 @@ function EntrarPage() {
   const redirectUri = `${window.location.origin}${caminhoDestino ?? ''}`
 
   useEffect(() => {
-    keycloak.login({ redirectUri }).catch(() => setFalhaRedirect(true))
+    keycloak.login({ redirectUri, locale: IDIOMA_LOGIN }).catch(() => setFalhaRedirect(true))
   }, [redirectUri])
 
   return (
@@ -43,7 +43,7 @@ function EntrarPage() {
           <p className="text-sm text-muted">
             Não foi possível redirecionar automaticamente para o login.
           </p>
-          <Button onClick={() => keycloak.login({ redirectUri })}>
+          <Button onClick={() => keycloak.login({ redirectUri, locale: IDIOMA_LOGIN })}>
             Entrar com a conta Migrate
           </Button>
         </>

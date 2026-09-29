@@ -77,6 +77,7 @@ const mockLogin = vi.fn<(opcoes?: KeycloakLoginOptions) => Promise<void>>(() =>
 
 vi.mock('../../auth/keycloak', () => ({
   keycloak: { login: mockLogin },
+  IDIOMA_LOGIN: 'pt-BR',
 }))
 
 // Import dinâmico (padrão de `_autenticado.test.tsx`): a fábrica do `vi.mock`
@@ -155,6 +156,20 @@ describe('entrar — redirectUri REAL entregue a keycloak.login (BAIXO-01 / P-07
     await vi.waitFor(() => expect(mockLogin).toHaveBeenCalled())
 
     expect(redirectUriDaChamada(0)).toBe(window.location.origin)
+  })
+
+  /**
+   * A tela de login é hospedada pelo Keycloak, então o idioma dela é o que
+   * pedirmos aqui. Sem este pedido ela abre no padrão do realm — abriu em
+   * inglês no meio de um portal em português, logo na porta da área interna.
+   */
+  it('pede a tela de login em português', async () => {
+    renderizarEntrar()
+
+    expect(await screen.findByRole('status')).toBeInTheDocument()
+    await vi.waitFor(() => expect(mockLogin).toHaveBeenCalled())
+
+    expect(mockLogin.mock.calls[0]?.[0]?.locale).toBe('pt-BR')
   })
 
   // Este é o caso que morre se alguém apagar `${window.location.origin}` e

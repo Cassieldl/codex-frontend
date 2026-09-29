@@ -58,12 +58,20 @@ export function CabecalhoPublico({ variante = 'padrao', children }: CabecalhoPub
       {/* Primeiro elemento focável do documento — depois do logo já não serve para pular nada. */}
       <PularParaConteudo />
 
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
+      {/*
+        `flex-wrap` nos dois níveis: sem ele, a marca e os quatro itens disputam uma linha só e,
+        abaixo de ~640px, a nav invade o logo e o último item some na borda. Quebrar em duas
+        linhas mantém o menu inteiro legível sem introduzir um padrão de navegação novo.
+      */}
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-4 lg:px-8">
         <Link to="/" className="text-lg font-extrabold">
           Codex
         </Link>
 
-        <nav aria-label="Navegação principal" className="flex items-center gap-6">
+        <nav
+          aria-label="Navegação principal"
+          className="flex flex-wrap items-center gap-x-6 gap-y-1"
+        >
           <Link
             to="/provedores"
             search={{ pagina: 1 }}
