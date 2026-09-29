@@ -13,8 +13,11 @@ const MAX_CHIPS_VISIVEIS = 3
 
 const ID_PAINEL = 'comunicado-ativo-detalhe'
 
+// `max-w-xs` cortava antes do assunto: descontada a etiqueta de severidade, o prefixo do alvo
+// ("Todos os provedores: ") consumia quase toda a faixa e o chip virava "Todos os provedores:
+// Tra...". A linha tem `flex-wrap`, então chip mais largo quebra linha em vez de transbordar.
 const CLASSE_CHIP =
-  'inline-flex max-w-xs items-center gap-2 rounded-[var(--radius-pill)] border border-border bg-white py-0.5 pl-0.5 pr-3 text-xs font-semibold text-ink hover:shadow-hover'
+  'inline-flex max-w-md items-center gap-2 rounded-[var(--radius-pill)] border border-border bg-white py-0.5 pl-0.5 pr-3 text-xs font-semibold text-ink hover:shadow-hover'
 
 /**
  * Linha de chips dos comunicados vigentes **não críticos** (`Alerta` e

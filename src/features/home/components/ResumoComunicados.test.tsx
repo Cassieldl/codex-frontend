@@ -159,3 +159,22 @@ describe('ResumoComunicados', () => {
     )
   })
 })
+
+/**
+ * O chip trunca o texto por necessidade, mas em `max-w-xs` cortava antes do assunto: descontada a
+ * etiqueta de severidade, o prefixo do alvo consumia a faixa toda e sobrava "Todos os provedores:
+ * Tra...".
+ *
+ * O jsdom não faz layout, então a asserção é sobre a faixa declarada — a medida real só existe no
+ * navegador. Asserção fraca de propósito: trava a regressão exata sem fingir que mede largura.
+ */
+describe('ResumoComunicados — faixa do chip', () => {
+  it('reserva largura suficiente para o assunto, não só para o prefixo', async () => {
+    renderResumo([comunicado(null)])
+
+    const chip = await screen.findByRole('button', { name: /Comunicado de todos/ })
+
+    expect(chip.className).toContain('max-w-md')
+    expect(chip.className).not.toContain('max-w-xs')
+  })
+})

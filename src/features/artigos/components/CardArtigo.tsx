@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { parseISO } from 'date-fns'
 import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
 import type { ArtigoListaItem } from '../types/artigo'
 import { EtiquetaTipoArtigo } from './EtiquetaTipoArtigo'
@@ -39,7 +38,7 @@ export function CardArtigo({ artigo, mostrarTipo = true }: CardArtigoProps) {
 
       {artigo.verificadoEm && (
         <SeloVerificacao
-          data={parseISO(artigo.verificadoEm)}
+          data={artigo.verificadoEm}
           className="shrink-0 sm:w-44 sm:justify-end"
         />
       )}

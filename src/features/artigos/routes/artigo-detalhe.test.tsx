@@ -7,7 +7,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
@@ -88,7 +88,14 @@ function renderPagina({ artigoSlug, caminhoAtual, reservado }: OpcoesRender) {
     path: '/erros/$erroSlug',
     component: () => null,
   })
-  const routeTree = rootRoute.addChildren([rotaArtigo, rotaBusca, rotaErro])
+  // Destino da trilha de volta ao índice — o `<Link>` precisa da rota registrada na árvore.
+  const rotaIndiceArtigos = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/artigos',
+    validateSearch: (search: Record<string, unknown>) => search,
+    component: () => null,
+  })
+  const routeTree = rootRoute.addChildren([rotaArtigo, rotaBusca, rotaErro, rotaIndiceArtigos])
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [caminhoAtual] }),
@@ -264,5 +271,35 @@ describe('ArtigoDetalhePage — tela 9 (/como-funciona)', () => {
       await screen.findByRole('heading', { level: 1, name: 'Como funciona o Codex' }),
     ).toBeInTheDocument()
     expect(navegar).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * A página do provedor e a da versão do layout sempre tiveram trilha de volta; o artigo era a
+ * única página de detalhe pública sem nenhuma — a volta ao índice dependia do menu principal.
+ */
+describe('ArtigoDetalhePage — trilha de volta ao índice', () => {
+  it('liga "Artigos" ao índice e nomeia o artigo atual', async () => {
+    server.use(handlerArtigoDetalhe(artigo))
+
+    renderPagina({ artigoSlug: artigo.slug, caminhoAtual: artigo.urlCanonica })
+
+    // Dentro do <article>: "Artigos" também é item do menu principal, e o teste tem de falhar
+    // quando a trilha some — não passar por causa do cabeçalho.
+    const corpo = await screen.findByRole('article')
+    const linkIndice = within(corpo).getByRole('link', { name: 'Artigos' })
+
+    expect(linkIndice).toHaveAttribute('href', expect.stringContaining('/artigos'))
+    expect(linkIndice.parentElement).toHaveTextContent(`Artigos / ${artigo.titulo}`)
+
+    // `/artigos` é ancestral de `/artigos/{slug}`: sem `activeOptions={{ exact: true }}` o Link
+    // se marca sozinho como página atual por casamento de prefixo — o defeito reincidente desta
+    // base. A asserção CONTA, porque "o item certo está marcado" passa com dois marcados.
+    //
+    // Hoje o search divergente (`{ pagina: 1 }` contra o search vazio do detalhe) já impediria a
+    // marcação sozinho, então remover só o `exact` não derruba este caso — a mutação que o
+    // derruba é alinhar o search E tirar o `exact`. O `exact` fica como a defesa explícita, que
+    // continua valendo se o search da trilha mudar.
+    expect(document.querySelectorAll('[aria-current]')).toHaveLength(0)
   })
 })

@@ -35,7 +35,9 @@ export function SeletorProvedorVersao({ provedores }: SeletorProvedorVersaoProps
     // A versão mais recente já vem primeiro (§5.D.3) — deixá-la pré-escolhida
     // torna o caminho de um clique possível sem esconder as demais.
     const proximo = provedores.find((provedor) => provedor.slug === slug)
-    setVersaoSlug(proximo?.versoes[0]?.slug ?? null)
+    // O `?.` precisa cobrir `versoes` também: protegendo só `proximo`, um item sem o campo
+    // lança ao indexar — e aqui o `?? []` da linha de cima não alcança.
+    setVersaoSlug(proximo?.versoes?.[0]?.slug ?? null)
   }
 
   const podeAbrir = provedorSlug !== null && versaoSlug !== null

@@ -131,3 +131,58 @@ describe('ListaProvedoresHome', () => {
     expect(screen.queryByRole('link', { name: '2.04' })).not.toBeInTheDocument()
   })
 })
+
+/**
+ * O total da categoria ficava como número solto encostado na borda direita da linha divisória —
+ * lia-se como artefato de layout, e um leitor de tela anunciava apenas "2".
+ */
+describe('ListaProvedoresHome — total da categoria', () => {
+  it('acompanha a unidade, no plural', async () => {
+    renderLista([{ categoria: 'Proprio', total: 2, provedores: [ipm] }])
+
+    expect(await screen.findByText('2 provedores')).toBeInTheDocument()
+  })
+
+  it('concorda no singular', async () => {
+    renderLista([{ categoria: 'Nacional', total: 1, provedores: [nacional] }])
+
+    expect(await screen.findByText('1 provedor')).toBeInTheDocument()
+  })
+})
+
+/**
+ * "Outras" é coluna derivada da contagem de versões. Com todo provedor em uma versão só, ela
+ * ficava com cabeçalho e nenhuma célula preenchida — um título anunciando dado inexistente.
+ */
+describe('ListaProvedoresHome — coluna "Outras"', () => {
+  it('some quando nenhum provedor tem versão além da última', async () => {
+    renderLista([{ categoria: 'Nacional', total: 1, provedores: [nacional] }])
+
+    // Âncora de montagem antes de afirmar ausência: sob `RouterProvider` o container começa
+    // vazio e a asserção passaria sozinha.
+    expect(await screen.findByText('Última versão')).toBeInTheDocument()
+    expect(screen.queryByText('Outras')).not.toBeInTheDocument()
+  })
+
+  it('aparece assim que algum provedor tem mais de uma versão', async () => {
+    renderLista([{ categoria: 'Proprio', total: 1, provedores: [ipm] }])
+
+    expect(await screen.findByText('Outras')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /\+1 outra/ })).toBeInTheDocument()
+  })
+})
+
+/**
+ * A data aqui é dado de coluna, comparado linha a linha, e os artboards a escrevem numérica —
+ * por extenso é o formato do selo de verificação em destaque, não o da tabela.
+ *
+ * O `12/08` importa tanto quanto o formato: `new Date('2026-08-12')` é lido como meia-noite UTC e
+ * renderizava **11/08** em qualquer fuso a oeste de Greenwich, que é o de todo usuário do Codex.
+ */
+describe('ListaProvedoresHome — data de verificação', () => {
+  it('escreve a data numérica, sem deslocar o dia', async () => {
+    renderLista([{ categoria: 'Proprio', total: 1, provedores: [ipm] }])
+
+    expect(await screen.findByText('Verificado em 12/08/2026')).toBeInTheDocument()
+  })
+})

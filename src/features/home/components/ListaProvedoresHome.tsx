@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { TriangleAlert } from 'lucide-react'
+import { rotuloVerificacao } from '../../../utils/formatarDataVerificacao'
 import type { CategoriaProvedorHome, CategoriaProvedoresHome, ProvedorHomeDto } from '../types/home'
-import { formatarDataCurta } from '../utils/formatarDatas'
 
 export interface ListaProvedoresHomeProps {
   categorias: CategoriaProvedoresHome[]
@@ -12,7 +12,13 @@ const ROTULO_CATEGORIA: Record<CategoriaProvedorHome, string> = {
   Proprio: 'Próprio',
 }
 
-function LinhaProvedorHome({ provedor }: { provedor: ProvedorHomeDto }) {
+function LinhaProvedorHome({
+  provedor,
+  mostrarOutras,
+}: {
+  provedor: ProvedorHomeDto
+  mostrarOutras: boolean
+}) {
   const [ultimaVersao] = provedor.versoes
   const outras = Math.max(0, provedor.versoes.length - 1)
 
@@ -49,22 +55,22 @@ function LinhaProvedorHome({ provedor }: { provedor: ProvedorHomeDto }) {
         )}
       </span>
 
-      <span className="w-[86px] shrink-0 text-xs">
-        {outras > 0 && (
-          <Link
-            to="/provedores/$provedorSlug"
-            params={{ provedorSlug: provedor.slug }}
-            className="font-medium text-primary-medium hover:underline"
-          >
-            +{outras} {outras > 1 ? 'outras' : 'outra'}
-          </Link>
-        )}
-      </span>
+      {mostrarOutras && (
+        <span className="w-[86px] shrink-0 text-xs">
+          {outras > 0 && (
+            <Link
+              to="/provedores/$provedorSlug"
+              params={{ provedorSlug: provedor.slug }}
+              className="font-medium text-primary-medium hover:underline"
+            >
+              +{outras} {outras > 1 ? 'outras' : 'outra'}
+            </Link>
+          )}
+        </span>
+      )}
 
       <span className="shrink-0 text-xs text-muted sm:w-[168px] sm:text-right">
-        {provedor.verificadoEm
-          ? `Verificado em ${formatarDataCurta(provedor.verificadoEm)}`
-          : 'Ainda não verificado'}
+        {rotuloVerificacao(provedor.verificadoEm)}
       </span>
     </li>
   )
@@ -83,12 +89,19 @@ function LinhaProvedorHome({ provedor }: { provedor: ProvedorHomeDto }) {
  * que o domínio recusou de propósito.
  */
 export function ListaProvedoresHome({ categorias }: ListaProvedoresHomeProps) {
+  // "Outras" é coluna derivada: quando nenhum provedor tem mais de uma versão publicada, ela fica
+  // com cabeçalho e nenhuma célula preenchida — um título anunciando dado que não existe. Some
+  // inteira, cabeçalho e células juntos, para as colunas não desalinharem.
+  const mostrarOutras = categorias.some((categoria) =>
+    categoria.provedores.some((provedor) => provedor.versoes.length > 1),
+  )
+
   return (
     <div className="flex flex-col gap-5">
       <div className="hidden items-center gap-3.5 px-4 text-aux font-semibold uppercase tracking-wider text-muted sm:flex">
         <span className="min-w-0 flex-1" />
         <span className="w-[70px] shrink-0">Última versão</span>
-        <span className="w-[86px] shrink-0">Outras</span>
+        {mostrarOutras && <span className="w-[86px] shrink-0">Outras</span>}
         <span className="w-[168px] shrink-0 text-right">Verificado em</span>
       </div>
 
@@ -105,12 +118,20 @@ export function ListaProvedoresHome({ categorias }: ListaProvedoresHomeProps) {
               {ROTULO_CATEGORIA[categoria.categoria]}
             </h3>
             <span className="h-px flex-1 bg-line" />
-            <span className="text-xs text-muted">{categoria.total}</span>
+            {/* O número sozinho, encostado na borda, lia-se como artefato — e um leitor de tela
+                anunciava só "2". A unidade é barata e resolve os dois. */}
+            <span className="text-xs text-muted">
+              {categoria.total} {categoria.total === 1 ? 'provedor' : 'provedores'}
+            </span>
           </div>
 
           <ul className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-white">
             {categoria.provedores.map((provedor) => (
-              <LinhaProvedorHome key={provedor.slug} provedor={provedor} />
+              <LinhaProvedorHome
+                key={provedor.slug}
+                provedor={provedor}
+                mostrarOutras={mostrarOutras}
+              />
             ))}
           </ul>
         </section>

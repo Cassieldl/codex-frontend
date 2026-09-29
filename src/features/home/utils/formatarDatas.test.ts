@@ -1,17 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatarDataCurta, formatarDataHora } from './formatarDatas'
-
-describe('formatarDataCurta', () => {
-  it('mantém o dia do contrato — nunca desloca por fuso', () => {
-    // `new Date('2026-08-14')` lê como UTC e devolve 13/08 em qualquer fuso a
-    // oeste de Greenwich. Este caso é o que trava o uso de `parseISO`.
-    expect(formatarDataCurta('2026-08-14')).toBe('14/08/2026')
-  })
-
-  it('formata o primeiro dia do ano sem virar o ano anterior', () => {
-    expect(formatarDataCurta('2026-01-01')).toBe('01/01/2026')
-  })
-})
+import { formatarDataHora } from './formatarDatas'
 
 describe('formatarDataHora', () => {
   it('formata data e hora local no padrão brasileiro', () => {

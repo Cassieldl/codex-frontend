@@ -1,5 +1,5 @@
+import { Link } from '@tanstack/react-router'
 import { isAxiosError } from 'axios'
-import { parseISO } from 'date-fns'
 import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
@@ -113,6 +113,20 @@ export function ArtigoDetalhePage({
           <div className="grid gap-8 lg:grid-cols-[1fr_240px] lg:items-start">
             <article className="flex min-w-0 flex-col gap-6">
               <header className="flex flex-col gap-3 border-b border-line pb-6">
+                {/* Mesma trilha textual da página do provedor e da versão do layout. Sem ela, a
+                    volta ao índice dependia do menu principal — o artigo era a única página de
+                    detalhe pública sem caminho de retorno. */}
+                <p className="text-xs text-muted">
+                  <Link
+                    to="/artigos"
+                    search={{ pagina: 1 }}
+                    activeOptions={{ exact: true }}
+                    className="hover:underline"
+                  >
+                    Artigos
+                  </Link>{' '}
+                  / {artigo.titulo}
+                </p>
                 <EtiquetaTipoArtigo tipo={artigo.tipo} />
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <h1 className="max-w-2xl text-titulo font-bold text-ink">{artigo.titulo}</h1>
@@ -122,7 +136,7 @@ export function ArtigoDetalhePage({
                     rotulo="Copiar link"
                   />
                 </div>
-                {artigo.verificadoEm && <SeloVerificacao data={parseISO(artigo.verificadoEm)} />}
+                {artigo.verificadoEm && <SeloVerificacao data={artigo.verificadoEm} />}
               </header>
 
               {/* Sumário colapsado no topo em telas estreitas — `<details>`

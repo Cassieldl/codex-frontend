@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
+import { rotuloVerificacao } from '../../../utils/formatarDataVerificacao'
 import type { ProvedorListaItem } from '../types/provedor'
 
 export interface ListaProvedoresProps {
@@ -12,15 +13,15 @@ const ROTULO_CATEGORIA: Record<ProvedorListaItem['categoria'], string> = {
   Proprio: 'Próprio',
 }
 
-function formatarData(data: string | null): string {
-  if (!data) return 'Ainda não verificado'
-  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(new Date(data))
-}
-
 function LinhaProvedor({ provedor }: { provedor: ProvedorListaItem }) {
   const [expandido, setExpandido] = useState(false)
-  const chipsVisiveis = expandido ? provedor.versoes : provedor.versoes.slice(0, MAX_CHIPS_VISIVEIS)
-  const restantes = provedor.versoes.length - chipsVisiveis.length
+
+  // O campo é parte do contrato, mas a lista de provedores é a porta de entrada do portal
+  // público: um campo ausente na resposta pode custar os chips de versão, nunca a página. Ler
+  // direto já derrubou a rota inteira com `Cannot read properties of undefined`.
+  const versoes = provedor.versoes ?? []
+  const chipsVisiveis = expandido ? versoes : versoes.slice(0, MAX_CHIPS_VISIVEIS)
+  const restantes = versoes.length - chipsVisiveis.length
 
   return (
     <li className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border p-4 hover:shadow-hover sm:flex-row sm:items-center sm:justify-between">
@@ -33,7 +34,7 @@ function LinhaProvedor({ provedor }: { provedor: ProvedorListaItem }) {
           {provedor.nome}
         </Link>
 
-        {provedor.versoes.length > 0 && (
+        {versoes.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
             {chipsVisiveis.map((versao) => (
               <Link
@@ -61,7 +62,7 @@ function LinhaProvedor({ provedor }: { provedor: ProvedorListaItem }) {
       </div>
 
       <span className="shrink-0 text-right text-xs text-muted">
-        Verificado em {formatarData(provedor.verificadoEm)}
+        {rotuloVerificacao(provedor.verificadoEm)}
       </span>
     </li>
   )
