@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import type { ErroDeCampoApi } from '../../../../utils/handleApiError'
 import { useErrosDeCampoDoServidor } from '../../utils/useErrosDeCampoDoServidor'
 import { useForm } from 'react-hook-form'
+import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
@@ -140,6 +141,9 @@ export function ComunicadoForm({
     setError,
     formState: { errors },
   } = useForm<ComunicadoFormValores>({
+    // O foco de erro é nosso (`focarPrimeiroCampoInvalido`): o do RHF só alcança campo com
+    // `ref` e correria com o nosso, vencendo ora um ora outro conforme o agendamento.
+    shouldFocusError: false,
     resolver: zodResolver(comunicadoSchema),
     defaultValues: valoresIniciais(initialData),
   })
@@ -201,7 +205,11 @@ export function ComunicadoForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col gap-5" noValidate>
+    <form
+      onSubmit={handleSubmit(aoSubmeter, focarPrimeiroCampoInvalido)}
+      className="flex flex-col gap-5"
+      noValidate
+    >
       {erroServidor && (
         <p role="alert" className="text-sm text-error-texto">
           {erroServidor}
@@ -242,12 +250,14 @@ export function ComunicadoForm({
       </div>
 
       <fieldset className="flex flex-col gap-5">
-        <legend className="text-xs font-normal text-ink lg:text-sm">
-          <span aria-hidden="true" className="text-error-texto">
-            *{' '}
-          </span>
+        {/*
+          Sem asterisco: todo campo deste grupo tem label e marca própria de obrigatoriedade, então
+          a marca na legend era a segunda para o mesmo campo — a tela mostrava "* Onde o comunicado
+          aparece" e "* Abrangência" empilhados, lidos como dois rótulos do mesmo select. Difere de
+          `ErroForm`, onde a legend marca um grupo que é exigido como um todo e não tem label filho.
+        */}
+        <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
           Onde o comunicado aparece
-          <span className="sr-only"> (obrigatório)</span>
         </legend>
 
         <Select

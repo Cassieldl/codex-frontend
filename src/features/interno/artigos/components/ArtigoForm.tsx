@@ -3,6 +3,7 @@ import { useId, useState } from 'react'
 import type { ErroDeCampoApi } from '../../../../utils/handleApiError'
 import { useErrosDeCampoDoServidor } from '../../utils/useErrosDeCampoDoServidor'
 import { useForm } from 'react-hook-form'
+import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
 import { Button } from '../../../../components/ui/Button'
 import { ConteudoArtigo } from '../../../../components/ui/ConteudoArtigo'
@@ -103,6 +104,9 @@ export function ArtigoForm({
     setError,
     formState: { errors },
   } = useForm<ArtigoFormValores>({
+    // O foco de erro é nosso (`focarPrimeiroCampoInvalido`): o do RHF só alcança campo com
+    // `ref` e correria com o nosso, vencendo ora um ora outro conforme o agendamento.
+    shouldFocusError: false,
     resolver: zodResolver(artigoSchema),
     defaultValues: valoresIniciais(initialData, sugestao),
   })
@@ -131,7 +135,11 @@ export function ArtigoForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col gap-5" noValidate>
+    <form
+      onSubmit={handleSubmit(aoSubmeter, focarPrimeiroCampoInvalido)}
+      className="flex flex-col gap-5"
+      noValidate
+    >
       {erroServidor && (
         <p role="alert" className="text-sm text-error-texto">
           {erroServidor}
@@ -195,7 +203,7 @@ export function ArtigoForm({
       />
 
       <fieldset className="flex flex-col gap-1.5">
-        <legend className="text-xs font-normal text-ink lg:text-sm">
+        <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
           Campos do layout relacionados
         </legend>
         <div className="flex flex-col gap-1.5">
@@ -226,7 +234,9 @@ export function ArtigoForm({
       </fieldset>
 
       <fieldset className="flex flex-col gap-1.5">
-        <legend className="text-xs font-normal text-ink lg:text-sm">Erros relacionados</legend>
+        <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
+          Erros relacionados
+        </legend>
         <div className="flex flex-col gap-1.5">
           {opcoesErros.length === 0 && (
             <p className="text-xs text-muted italic">Nenhum erro cadastrado ainda.</p>

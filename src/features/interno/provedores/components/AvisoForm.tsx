@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useId } from 'react'
 import { useForm } from 'react-hook-form'
+import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
@@ -82,6 +83,9 @@ export function AvisoForm({
     setValue,
     formState: { errors },
   } = useForm<AvisoFormValores>({
+    // O foco de erro é nosso (`focarPrimeiroCampoInvalido`): o do RHF só alcança campo com
+    // `ref` e correria com o nosso, vencendo ora um ora outro conforme o agendamento.
+    shouldFocusError: false,
     resolver: zodResolver(avisoSchema),
     defaultValues: valoresIniciais(initialData),
   })
@@ -110,7 +114,11 @@ export function AvisoForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col gap-5" noValidate>
+    <form
+      onSubmit={handleSubmit(aoSubmeter, focarPrimeiroCampoInvalido)}
+      className="flex flex-col gap-5"
+      noValidate
+    >
       {erroServidor && (
         <p role="alert" className="text-sm text-error-texto">
           {erroServidor}
@@ -155,7 +163,9 @@ export function AvisoForm({
           aviso de provedor nem chega a renderizar este bloco. */}
       {escopo === 'versao' && (
         <fieldset className="flex flex-col gap-1.5">
-          <legend className="text-xs font-normal text-ink lg:text-sm">Campos afetados</legend>
+          <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
+            Campos afetados
+          </legend>
           <div className="flex flex-col gap-1.5">
             {opcoesCamposAfetados.map((opcao) => {
               const idCampo = String(opcao.id)

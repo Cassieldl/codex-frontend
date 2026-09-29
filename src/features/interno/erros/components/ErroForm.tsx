@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus, Trash2 } from 'lucide-react'
 import { useId } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
+import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
@@ -117,6 +118,9 @@ export function ErroForm({
     setValue,
     formState: { errors },
   } = useForm<ErroFormValores>({
+    // O foco de erro é nosso (`focarPrimeiroCampoInvalido`): o do RHF só alcança campo com
+    // `ref` e correria com o nosso, vencendo ora um ora outro conforme o agendamento.
+    shouldFocusError: false,
     resolver: zodResolver(erroSchema),
     defaultValues: valoresIniciais(initialData),
   })
@@ -147,7 +151,11 @@ export function ErroForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col gap-5" noValidate>
+    <form
+      onSubmit={handleSubmit(aoSubmeter, focarPrimeiroCampoInvalido)}
+      className="flex flex-col gap-5"
+      noValidate
+    >
       {erroServidor && (
         <p role="alert" className="text-sm text-error-texto">
           {erroServidor}
@@ -184,7 +192,7 @@ export function ErroForm({
       />
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="text-xs font-normal text-ink lg:text-sm">
+        <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
           <span aria-hidden="true" className="text-error-texto">
             *{' '}
           </span>
@@ -230,7 +238,7 @@ export function ErroForm({
       </fieldset>
 
       <fieldset className="flex flex-col gap-1.5">
-        <legend className="text-xs font-normal text-ink lg:text-sm">
+        <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
           {origemAtual === 'Prefeitura' && (
             <span aria-hidden="true" className="text-error-texto">
               *{' '}
@@ -273,7 +281,9 @@ export function ErroForm({
       </fieldset>
 
       <fieldset className="flex flex-col gap-1.5">
-        <legend className="text-xs font-normal text-ink lg:text-sm">Campos relacionados</legend>
+        <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
+          Campos relacionados
+        </legend>
         <div className="flex flex-col gap-1.5">
           {opcoesCamposLayout.map((opcao) => {
             const id = String(opcao.id)

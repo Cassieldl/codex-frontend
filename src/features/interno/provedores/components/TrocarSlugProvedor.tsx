@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
@@ -75,6 +76,9 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
     setError,
     formState: { errors },
   } = useForm<TrocarSlugValores>({
+    // O foco de erro é nosso (`focarPrimeiroCampoInvalido`): o do RHF só alcança campo com
+    // `ref` e correria com o nosso, vencendo ora um ora outro conforme o agendamento.
+    shouldFocusError: false,
     resolver: zodResolver(trocarSlugSchema),
     defaultValues: { novoSlug: '' },
   })
@@ -128,7 +132,11 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
         title="Trocar endereço do provedor"
         size="md"
       >
-        <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col gap-5" noValidate>
+        <form
+          onSubmit={handleSubmit(aoSubmeter, focarPrimeiroCampoInvalido)}
+          className="flex flex-col gap-5"
+          noValidate
+        >
           {erroServidor && (
             <p role="alert" className="text-sm text-error-texto">
               {erroServidor}
