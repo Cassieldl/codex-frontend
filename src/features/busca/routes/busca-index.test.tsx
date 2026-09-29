@@ -249,3 +249,24 @@ describe('BuscaPage — BotaoCopiar no estado vazio (P-02)', () => {
     expect(screen.queryByRole('button', { name: /registrar/i })).not.toBeInTheDocument()
   })
 })
+
+/**
+ * O filtro fica dentro do cabeçalho em gradiente escuro, ao lado do campo de busca. Com o rótulo
+ * na cor padrão de superfície clara ele media 1,1:1 contra a ponta escura do gradiente — texto
+ * presente no DOM e invisível na tela.
+ */
+describe('BuscaPage — filtro legível sobre o cabeçalho escuro', () => {
+  it('declara o Select do cabeçalho na superfície escura', async () => {
+    server.use(
+      http.get(`${API_URL}/provedores`, () => respostaProvedores([IPM, BETHA])),
+      http.get(`${API_URL}/busca`, () => respostaBusca(resultadoBase())),
+    )
+
+    renderPagina('e0117')
+
+    const rotulo = await screen.findByText('Provedor')
+
+    expect(rotulo).toHaveClass('text-white')
+    expect(rotulo).not.toHaveClass('text-ink')
+  })
+})

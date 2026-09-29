@@ -7,6 +7,12 @@ export interface SelectOption {
   label: string
 }
 
+/**
+ * Superfície onde o campo é desenhado. Só o rótulo e os textos auxiliares mudam de cor — o
+ * controle em si mantém fundo claro nas duas, porque é um campo de formulário.
+ */
+export type SelectSuperficie = 'clara' | 'escura'
+
 export interface SelectProps {
   label: string
   options: SelectOption[]
@@ -19,6 +25,7 @@ export interface SelectProps {
   id?: string
   disabled?: boolean
   className?: string
+  superficie?: SelectSuperficie
 }
 
 /** Combobox custom (`role="listbox"`) — seguindo `analise-frontend.md` §4. */
@@ -34,6 +41,7 @@ export function Select({
   id,
   disabled = false,
   className,
+  superficie = 'clara',
 }: SelectProps) {
   const idGerado = useId()
   const selectId = id ?? idGerado
@@ -119,7 +127,13 @@ export function Select({
 
   return (
     <div className={clsx('relative flex flex-col gap-0.5', className)}>
-      <label htmlFor={selectId} className="text-xs font-normal text-ink lg:text-sm">
+      <label
+        htmlFor={selectId}
+        className={clsx(
+          'text-xs font-normal lg:text-sm',
+          superficie === 'escura' ? 'text-white' : 'text-ink',
+        )}
+      >
         {required && (
           <span aria-hidden="true" className="text-error-texto">
             *{' '}
@@ -146,7 +160,9 @@ export function Select({
         onKeyDown={aoTeclarBotao}
         onBlur={fechar}
         className={clsx(
-          'flex h-9 items-center justify-between rounded-[var(--radius-control)] border px-3 text-sm text-ink',
+          // O fundo é explícito para o controle continuar legível sobre qualquer superfície —
+          // sem ele, o texto escuro fica invisível dentro do cabeçalho em gradiente.
+          'flex h-9 items-center justify-between rounded-[var(--radius-control)] border bg-white px-3 text-sm text-ink',
           'focus:outline-none focus:border-[1.5px] focus:border-primary-medium disabled:bg-surface-disabled disabled:text-muted',
           error ? 'border-error' : 'border-border-control',
         )}
@@ -188,7 +204,10 @@ export function Select({
       )}
 
       {hint && !error && (
-        <p id={hintId} className="text-xs text-muted">
+        <p
+          id={hintId}
+          className={clsx('text-xs', superficie === 'escura' ? 'text-white' : 'text-muted')}
+        >
           {hint}
         </p>
       )}

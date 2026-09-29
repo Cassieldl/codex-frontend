@@ -102,6 +102,7 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
           </div>
           <Select
             label="Provedor"
+            superficie="escura"
             options={opcoesProvedor}
             value={provedor ?? TODOS_OS_PROVEDORES}
             onValueChange={aoMudarProvedor}

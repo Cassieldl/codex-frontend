@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+import { CONTRASTE_MINIMO, calcularContraste } from '../../utils/contraste'
 import { Select, type SelectOption } from './Select'
 
 const OPCOES: SelectOption[] = [
@@ -446,5 +447,62 @@ describe('Select — aria-controls acompanha a existência da lista (P-14)', () 
 
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
     expect(combobox).not.toHaveAttribute('aria-controls')
+  })
+})
+
+/**
+ * O rótulo do campo é desenhado sobre a superfície onde o `Select` está, não sobre o controle.
+ * Fixá-lo em `text-ink` fez o filtro de provedor da busca ficar em 1,1:1 contra o gradiente do
+ * cabeçalho — invisível na tela mais usada do produto, e fora do alcance da auditoria de tokens,
+ * que mede cores isoladas e não a composição.
+ *
+ * O caso afirma LEGIBILIDADE, não nome de classe: resolve a classe aplicada para a cor real do
+ * token e mede o contraste contra as duas pontas do gradiente.
+ */
+describe('legibilidade do rótulo por superfície', () => {
+  const COR_DA_CLASSE: Record<string, string> = {
+    'text-ink': '#1b2633',
+    'text-white': '#ffffff',
+  }
+
+  /** As duas pontas de `--grad-escuro`; a mais escura é a que reprova primeiro. */
+  const PONTAS_DO_GRADIENTE_ESCURO = ['#074b7f', '#002f4f']
+  const SUPERFICIE_CLARA = '#ffffff'
+
+  function corDoRotulo(rotulo: HTMLElement): string {
+    const classe = [...rotulo.classList].find((nome) => nome in COR_DA_CLASSE)
+
+    expect(classe, 'o rótulo precisa declarar uma cor de texto conhecida').toBeDefined()
+    return COR_DA_CLASSE[classe as string]
+  }
+
+  it('mantém o rótulo acima de AA sobre o gradiente escuro do cabeçalho', () => {
+    renderizarSelect({ superficie: 'escura' })
+
+    const cor = corDoRotulo(screen.getByText('Categoria'))
+
+    for (const fundo of PONTAS_DO_GRADIENTE_ESCURO) {
+      expect(calcularContraste(cor, fundo)).toBeGreaterThanOrEqual(CONTRASTE_MINIMO.textoNormal)
+    }
+  })
+
+  it('mantém o rótulo acima de AA sobre superfície clara', () => {
+    renderizarSelect()
+
+    const cor = corDoRotulo(screen.getByText('Categoria'))
+
+    expect(calcularContraste(cor, SUPERFICIE_CLARA)).toBeGreaterThanOrEqual(
+      CONTRASTE_MINIMO.textoNormal,
+    )
+  })
+
+  /**
+   * O controle é um campo de formulário: ele carrega o próprio fundo, senão o texto escuro fica
+   * sobre a superfície de trás, qualquer que seja ela.
+   */
+  it('desenha o controle com fundo próprio para não depender da superfície', () => {
+    renderizarSelect({ superficie: 'escura' })
+
+    expect(screen.getByRole('combobox')).toHaveClass('bg-white')
   })
 })
