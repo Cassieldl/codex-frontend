@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { VersaoLayoutAdmin } from '../types/versaoLayoutAdmin'
 import { versoesLayoutKeys, type ListarVersoesLayoutParams } from './versoesLayoutKeys'
 
@@ -26,7 +26,7 @@ export function useVersoesLayout(params: ListarVersoesLayoutParams) {
         '/layout/versoes',
         { params },
       )
-      return { ...data, items: data.items.map(comEtagDeConcorrencia) }
+      return { ...data, items: comEtagDeConcorrenciaNaColecao(data.items, 'items') }
     },
     placeholderData: keepPreviousData,
   })

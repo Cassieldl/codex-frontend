@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { ComunicadoAdminListaItem } from '../types/comunicadoAdmin'
 import { comunicadosAdminKeys, type ListarComunicadosAdminParams } from './comunicadosAdminKeys'
 
@@ -33,7 +33,7 @@ export function useComunicadosAdmin(params: ListarComunicadosAdminParams) {
         '/comunicados',
         { params },
       )
-      return { ...data, items: data.items.map(comEtagDeConcorrencia) }
+      return { ...data, items: comEtagDeConcorrenciaNaColecao(data.items, 'items') }
     },
     placeholderData: keepPreviousData,
   })

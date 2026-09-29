@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { CampoLayoutAdmin } from '../types/campoLayoutAdmin'
 import { camposLayoutKeys } from './camposLayoutKeys'
 
@@ -25,7 +25,7 @@ export function useCamposLayoutPorVersao(versaoLayoutId: number) {
       const { data } = await apiInterno.get<EnvelopeCamposLayoutAdmin>(
         `/layout/versoes/${versaoLayoutId}/campos`,
       )
-      return data.data.map(comEtagDeConcorrencia)
+      return comEtagDeConcorrenciaNaColecao(data.data, 'data')
     },
     enabled: versaoLayoutId > 0,
   })

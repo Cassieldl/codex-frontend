@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { ProvedorAdminListaItem } from '../types/provedorAdmin'
 import { provedoresAdminKeys, type ListarProvedoresAdminParams } from './provedoresAdminKeys'
 
@@ -26,7 +26,7 @@ export function useProvedoresAdmin(params: ListarProvedoresAdminParams) {
         '/provedores',
         { params },
       )
-      return { ...data, items: data.items.map(comEtagDeConcorrencia) }
+      return { ...data, items: comEtagDeConcorrenciaNaColecao(data.items, 'items') }
     },
     placeholderData: keepPreviousData,
   })

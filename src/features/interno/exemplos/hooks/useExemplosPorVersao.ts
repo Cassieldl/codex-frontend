@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { ExemploAdmin } from '../types/exemploAdmin'
 import { exemplosAdminKeys } from './exemplosAdminKeys'
 
@@ -21,7 +21,7 @@ export function useExemplosPorVersao(versaoId: number, podeBuscar = true) {
     queryKey: exemplosAdminKeys.porVersao(versaoId),
     queryFn: async () => {
       const { data } = await apiInterno.get<EnvelopeExemplosAdmin>(`/versoes/${versaoId}/exemplos`)
-      return data.data.map(comEtagDeConcorrencia)
+      return comEtagDeConcorrenciaNaColecao(data.data, 'data')
     },
     enabled: versaoId > 0 && podeBuscar,
   })

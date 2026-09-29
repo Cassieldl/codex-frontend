@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { VersaoAdminListaItem } from '../types/versaoAdmin'
 import { versoesAdminKeys } from './versoesAdminKeys'
 
@@ -21,7 +21,7 @@ export function useVersoesProvedorAdmin(provedorId: number) {
       const { data } = await apiInterno.get<EnvelopeVersoesAdmin>(
         `/provedores/${provedorId}/versoes`,
       )
-      return data.data.map(comEtagDeConcorrencia)
+      return comEtagDeConcorrenciaNaColecao(data.data, 'data')
     },
     enabled: provedorId > 0,
   })

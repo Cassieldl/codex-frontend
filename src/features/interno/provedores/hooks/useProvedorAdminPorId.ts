@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia, formatarEtagConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao, formatarEtagConcorrencia } from '../../utils/etagDeConcorrencia'
 import type { ProvedorAdminDetalhe } from '../types/provedorAdmin'
 import { provedoresAdminKeys } from './provedoresAdminKeys'
 
@@ -35,7 +35,7 @@ export function useProvedorAdminPorId(id: number) {
       return {
         ...provedor,
         etag: etagDoHeader ?? formatarEtagConcorrencia(provedor.versaoConcorrencia),
-        avisos: provedor.avisos.map(comEtagDeConcorrencia),
+        avisos: comEtagDeConcorrenciaNaColecao(provedor.avisos, 'avisos'),
       }
     },
     enabled: id > 0,

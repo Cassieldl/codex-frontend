@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { RespostaCamposVersao } from '../types/campoVersaoAdmin'
 import { camposVersaoKeys } from './camposVersaoKeys'
 
@@ -27,7 +27,7 @@ export function useCamposVersao(versaoId: number, incluirAusentes = true) {
       const { data } = await apiInterno.get<EnvelopeCamposVersao>(`/versoes/${versaoId}/campos`, {
         params: { incluirAusentes },
       })
-      return { ...data.data, campos: data.data.campos.map(comEtagDeConcorrencia) }
+      return { ...data.data, campos: comEtagDeConcorrenciaNaColecao(data.data.campos, 'campos') }
     },
     enabled: versaoId > 0,
   })

@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { ErroAdminListaItem } from '../types/erroAdmin'
 import { errosAdminKeys, type ListarErrosAdminParams } from './errosAdminKeys'
 
@@ -24,7 +24,7 @@ export function useErrosAdmin(params: ListarErrosAdminParams) {
       const { data } = await apiInterno.get<PaginatedResponseCru<ErroAdminListaItem>>('/erros', {
         params,
       })
-      return { ...data, items: data.items.map(comEtagDeConcorrencia) }
+      return { ...data, items: comEtagDeConcorrenciaNaColecao(data.items, 'items') }
     },
     placeholderData: keepPreviousData,
   })

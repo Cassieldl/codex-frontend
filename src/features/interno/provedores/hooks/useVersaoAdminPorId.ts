@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import { comEtagDeConcorrencia, formatarEtagConcorrencia } from '../../utils/etagDeConcorrencia'
+import { comEtagDeConcorrenciaNaColecao, formatarEtagConcorrencia } from '../../utils/etagDeConcorrencia'
 import type { VersaoAdminDetalhe } from '../types/versaoAdmin'
 import { versoesAdminKeys } from './versoesAdminKeys'
 
@@ -28,7 +28,7 @@ export function useVersaoAdminPorId(versaoId: number) {
       return {
         ...versao,
         etag: etagDoHeader ?? formatarEtagConcorrencia(versao.versaoConcorrencia),
-        avisos: versao.avisos.map(comEtagDeConcorrencia),
+        avisos: comEtagDeConcorrenciaNaColecao(versao.avisos, 'avisos'),
       }
     },
     enabled: versaoId > 0,
