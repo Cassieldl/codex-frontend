@@ -7,6 +7,7 @@ import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao
 import { EtiquetaSeveridade, type Severidade } from '../../../../components/ui/EtiquetaSeveridade'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { Modal } from '../../../../components/ui/Modal'
+import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { handleApiError } from '../../../../utils/handleApiError'
 import { useVersoesLayout } from '../../camposLayout/hooks/useVersoesLayout'
@@ -61,6 +62,8 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
 
   const [modalAvisoAberto, setModalAvisoAberto] = useState<'novo' | AvisoAdmin | null>(null)
   const [erroAviso, setErroAviso] = useState<string | null>(null)
+  const [avisoParaRemover, setAvisoParaRemover] = useState<AvisoAdmin | null>(null)
+  const [erroDeRemocao, setErroDeRemocao] = useState<string | null>(null)
 
   const [modalVersaoAberto, setModalVersaoAberto] = useState(false)
   const [erroVersao, setErroVersao] = useState<string | null>(null)
@@ -132,6 +135,20 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
       {
         onSuccess: () => setModalVersaoAberto(false),
         onError: (erro) => setErroVersao(handleApiError(erro)),
+      },
+    )
+  }
+
+  /** A mutation só dispara depois da confirmação — nunca do clique na lista. */
+  function confirmarRemocao() {
+    if (!avisoParaRemover) return
+
+    setErroDeRemocao(null)
+    removerAviso.mutate(
+      { id: avisoParaRemover.id, etag: avisoParaRemover.etag },
+      {
+        onSuccess: () => setAvisoParaRemover(null),
+        onError: (falha) => setErroDeRemocao(handleApiError(falha)),
       },
     )
   }
@@ -255,7 +272,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
                     variant="secondary"
                     size="sm"
                     aria-label={`Remover aviso ${aviso.titulo}`}
-                    onClick={() => removerAviso.mutate({ id: aviso.id, etag: aviso.etag })}
+                    onClick={() => setAvisoParaRemover(aviso)}
                   >
                     <Trash2 className="size-4" aria-hidden="true" />
                   </Button>
@@ -353,6 +370,23 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
           erroServidor={erroVersao}
         />
       </Modal>
+
+      <ModalConfirmacao
+        isOpen={avisoParaRemover !== null}
+        title="Remover aviso"
+        message={
+          avisoParaRemover?.publicado
+            ? `O aviso "${avisoParaRemover.titulo}" está publicado e sai da página do provedor agora.`
+            : `O aviso "${avisoParaRemover?.titulo}" é removido definitivamente.`
+        }
+        isConfirming={removerAviso.isPending}
+        erro={erroDeRemocao}
+        onConfirm={confirmarRemocao}
+        onCancel={() => {
+          setAvisoParaRemover(null)
+          setErroDeRemocao(null)
+        }}
+      />
     </div>
   )
 }

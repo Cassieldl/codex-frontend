@@ -481,3 +481,87 @@ describe('ComunicadosPage — criação', () => {
     expect(await screen.findByText('Publicado e vigente')).toBeInTheDocument()
   })
 })
+
+/**
+ * A lixeira disparava o DELETE direto do clique: um toque acidental tirava do ar um comunicado
+ * publicado, sem pergunta e sem desfazer. O contrato está escrito no próprio `ModalConfirmacao`
+ * ("nunca dispara direto do clique na lista") e cinco telas internas o violavam.
+ */
+describe('ComunicadosPage — confirmação antes de remover', () => {
+  it('o clique na lixeira não remove nada — só abre a confirmação', async () => {
+    const usuario = userEvent.setup()
+    const exclusoes: string[] = []
+
+    server.use(
+      handlerProvedores(),
+      handlerComunicadosLista([PUBLICADO_VIGENTE]),
+      http.delete(`${API_URL}/interno/comunicados/:id`, ({ params }) => {
+        exclusoes.push(String(params.id))
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    renderizarPagina()
+
+    await screen.findByText(PUBLICADO_VIGENTE.titulo)
+    const linha = linhaDoComunicado(PUBLICADO_VIGENTE.titulo)
+    await usuario.click(within(linha).getByRole('button', { name: /remover comunicado/i }))
+
+    // Sincroniza no diálogo — sem âncora observável, a asserção de ausência passaria só porque a
+    // requisição ainda não tinha saído.
+    expect(await screen.findByRole('heading', { name: 'Remover comunicado' })).toBeInTheDocument()
+    expect(exclusoes).toHaveLength(0)
+  })
+
+  it('avisa que o comunicado está no ar, e só exclui depois de confirmar', async () => {
+    const usuario = userEvent.setup()
+    const exclusoes: string[] = []
+
+    server.use(
+      handlerProvedores(),
+      handlerComunicadosLista([PUBLICADO_VIGENTE]),
+      http.delete(`${API_URL}/interno/comunicados/:id`, ({ params }) => {
+        exclusoes.push(String(params.id))
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    renderizarPagina()
+
+    await screen.findByText(PUBLICADO_VIGENTE.titulo)
+    const linha = linhaDoComunicado(PUBLICADO_VIGENTE.titulo)
+    await usuario.click(within(linha).getByRole('button', { name: /remover comunicado/i }))
+
+    expect(await screen.findByText(/está publicado e sai do portal agora/i)).toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('button', { name: 'Remover' }))
+
+    await waitFor(() => expect(exclusoes).toEqual([String(PUBLICADO_VIGENTE.id)]))
+  })
+
+  it('cancelar fecha o diálogo sem excluir', async () => {
+    const usuario = userEvent.setup()
+    const exclusoes: string[] = []
+
+    server.use(
+      handlerProvedores(),
+      handlerComunicadosLista([PUBLICADO_VIGENTE]),
+      http.delete(`${API_URL}/interno/comunicados/:id`, ({ params }) => {
+        exclusoes.push(String(params.id))
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    renderizarPagina()
+
+    await screen.findByText(PUBLICADO_VIGENTE.titulo)
+    const linha = linhaDoComunicado(PUBLICADO_VIGENTE.titulo)
+    await usuario.click(within(linha).getByRole('button', { name: /remover comunicado/i }))
+    await usuario.click(await screen.findByRole('button', { name: 'Cancelar' }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'Remover comunicado' })).not.toBeInTheDocument(),
+    )
+    expect(exclusoes).toHaveLength(0)
+  })
+})

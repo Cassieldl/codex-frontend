@@ -6,6 +6,7 @@ import { EmptyState } from '../../../../components/ui/EmptyState'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { Modal } from '../../../../components/ui/Modal'
+import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { handleApiError } from '../../../../utils/handleApiError'
@@ -39,10 +40,17 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
 
   const [modalAberto, setModalAberto] = useState<'novo' | CampoLayoutAdmin | null>(null)
   const [erroServidor, setErroServidor] = useState<string | null>(null)
+  const [campoParaRemover, setCampoParaRemover] = useState<CampoLayoutAdmin | null>(null)
+  const [erroDeRemocao, setErroDeRemocao] = useState<string | null>(null)
 
   const opcoesVersaoDescontinuar = (versoesLayout?.items ?? [])
     .filter((versao) => versao.id !== versaoLayoutId)
     .map((versao) => ({ value: String(versao.id), label: versao.rotulo }))
+
+  // A tela edita o vocabulário de UMA versão, e nada nela dizia qual: com mais de uma versão
+  // publicada, o editor não tinha como saber onde estava salvando. O rótulo sai da lista que já é
+  // carregada para o select de descontinuação — nenhuma requisição a mais.
+  const rotuloDaVersao = versoesLayout?.items.find((versao) => versao.id === versaoLayoutId)?.rotulo
 
   function aoSalvar(dto: CampoLayoutFormDto) {
     setErroServidor(null)
@@ -100,6 +108,20 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
     return <ErrorState onRetry={() => refetch()} />
   }
 
+  /** A mutation só dispara depois da confirmação — nunca do clique na lista. */
+  function confirmarRemocao() {
+    if (!campoParaRemover) return
+
+    setErroDeRemocao(null)
+    removerCampo.mutate(
+      { id: campoParaRemover.id, versaoLayoutId, etag: campoParaRemover.etag },
+      {
+        onSuccess: () => setCampoParaRemover(null),
+        onError: (falha) => setErroDeRemocao(handleApiError(falha)),
+      },
+    )
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
@@ -108,8 +130,11 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
             <Link to="/interno/campos-layout" className="hover:underline">
               Campos do layout
             </Link>
+            {rotuloDaVersao ? ` / ${rotuloDaVersao}` : null}
           </p>
-          <h1 className="text-titulo font-bold text-ink">Campos canônicos</h1>
+          <h1 className="text-titulo font-bold text-ink">
+            Campos canônicos{rotuloDaVersao ? ` do Layout InvoiCy ${rotuloDaVersao}` : ''}
+          </h1>
         </div>
         {permissoes.campoLayout.adicionar && (
           <Button leftIcon={<Plus className="size-4" />} onClick={() => setModalAberto('novo')}>
@@ -180,9 +205,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
                         variant="secondary"
                         size="sm"
                         aria-label={`Remover campo canônico ${campo.nome}`}
-                        onClick={() =>
-                          removerCampo.mutate({ id: campo.id, versaoLayoutId, etag: campo.etag })
-                        }
+                        onClick={() => setCampoParaRemover(campo)}
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </Button>
@@ -210,6 +233,19 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
           erroServidor={erroServidor}
         />
       </Modal>
+
+      <ModalConfirmacao
+        isOpen={campoParaRemover !== null}
+        title="Remover campo canônico"
+        message={`O campo "${campoParaRemover?.nome}" sai do vocabulário desta versão do layout.`}
+        isConfirming={removerCampo.isPending}
+        erro={erroDeRemocao}
+        onConfirm={confirmarRemocao}
+        onCancel={() => {
+          setCampoParaRemover(null)
+          setErroDeRemocao(null)
+        }}
+      />
     </div>
   )
 }

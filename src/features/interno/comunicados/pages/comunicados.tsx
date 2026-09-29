@@ -6,6 +6,7 @@ import { EmptyState } from '../../../../components/ui/EmptyState'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { EtiquetaSeveridade, type Severidade } from '../../../../components/ui/EtiquetaSeveridade'
 import { Modal } from '../../../../components/ui/Modal'
+import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
@@ -72,6 +73,8 @@ export function ComunicadosPage() {
   const [incluirEncerrados, setIncluirEncerrados] = useState(false)
 
   const [modalAberto, setModalAberto] = useState<ModalComunicado | null>(null)
+  const [comunicadoParaRemover, setComunicadoParaRemover] =
+    useState<ComunicadoAdminListaItem | null>(null)
   const [erroDeEscrita, setErroDeEscrita] = useState<ErroDeEscritaNaTela | null>(null)
 
   const { data, isLoading, isError, refetch } = useComunicadosAdmin({
@@ -131,11 +134,24 @@ export function ComunicadosPage() {
     )
   }
 
-  function aoRemover(comunicado: ComunicadoAdminListaItem) {
+  /**
+   * Remoção é irreversível pela interface e um comunicado publicado está no ar: a mutation só
+   * dispara depois da confirmação, nunca do clique na lista (contrato de `ModalConfirmacao`).
+   */
+  function confirmarRemocao() {
+    if (!comunicadoParaRemover) return
+
+    const { id, etag } = comunicadoParaRemover
     setErroDeEscrita(null)
     removerComunicado.mutate(
-      { id: comunicado.id, etag: comunicado.etag },
-      { onError: (erro) => registrarErro(erro, comunicado.id) },
+      { id, etag },
+      {
+        // O erro fecha o diálogo de propósito: a faixa da tela é que sabe se o caso é
+        // `CONFLITO_CONCORRENCIA`, `IF_MATCH_OBRIGATORIO` ou `COMUNICADO_EXPIRADO`, e cada um
+        // tem sua ação de recuperação.
+        onSettled: () => setComunicadoParaRemover(null),
+        onError: (erro) => registrarErro(erro, id),
+      },
     )
   }
 
@@ -302,7 +318,7 @@ export function ComunicadosPage() {
                           variant="secondary"
                           size="sm"
                           aria-label={`Remover comunicado ${comunicado.titulo}`}
-                          onClick={() => aoRemover(comunicado)}
+                          onClick={() => setComunicadoParaRemover(comunicado)}
                         >
                           <Trash2 className="size-4" aria-hidden="true" />
                         </Button>
@@ -374,6 +390,19 @@ export function ComunicadosPage() {
           </>
         )}
       </Modal>
+
+      <ModalConfirmacao
+        isOpen={comunicadoParaRemover !== null}
+        title="Remover comunicado"
+        message={
+          comunicadoParaRemover?.publicado
+            ? `O comunicado "${comunicadoParaRemover.titulo}" está publicado e sai do portal agora.`
+            : `O comunicado "${comunicadoParaRemover?.titulo}" é removido definitivamente.`
+        }
+        isConfirming={removerComunicado.isPending}
+        onConfirm={confirmarRemocao}
+        onCancel={() => setComunicadoParaRemover(null)}
+      />
     </div>
   )
 }

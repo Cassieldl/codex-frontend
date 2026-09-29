@@ -326,6 +326,11 @@ describe('ArtigosPage — artigo reservado bloqueia remover e despublicar', () =
     await screen.findByText('Como funciona')
     await usuario.click(screen.getByRole('button', { name: 'Remover artigo Como funciona' }))
 
+    // Remoção passou a exigir confirmação: o clique na lixeira abre o diálogo, e o DELETE — com
+    // ele o 422 que este caso exercita — só sai depois do "Remover" de dentro dele.
+    const dialogo = await screen.findByRole('dialog')
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Remover' }))
+
     const alerta = await screen.findByRole('alert')
     expect(alerta).toHaveTextContent(mensagemDoBackend)
     expect(alerta).toHaveTextContent(/rota pública \/como-funciona/i)

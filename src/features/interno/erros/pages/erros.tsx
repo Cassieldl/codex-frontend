@@ -5,6 +5,7 @@ import { EmptyState } from '../../../../components/ui/EmptyState'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { Modal } from '../../../../components/ui/Modal'
+import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
@@ -18,7 +19,7 @@ import { useAtualizarErro } from '../hooks/useAtualizarErro'
 import { useCriarErro } from '../hooks/useCriarErro'
 import { useErrosAdmin } from '../hooks/useErrosAdmin'
 import { useRemoverErro } from '../hooks/useRemoverErro'
-import type { ErroAdminDetalhe, ErroFormDto } from '../types/erroAdmin'
+import type { ErroAdminDetalhe, ErroAdminListaItem, ErroFormDto } from '../types/erroAdmin'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
@@ -58,6 +59,8 @@ export function ErrosPage() {
 
   const [modalAberto, setModalAberto] = useState<'novo' | ErroAdminDetalhe | null>(null)
   const [erroServidor, setErroServidor] = useState<string | null>(null)
+  const [erroParaRemover, setErroParaRemover] = useState<ErroAdminListaItem | null>(null)
+  const [erroDeRemocao, setErroDeRemocao] = useState<string | null>(null)
 
   function aoSalvar(dto: ErroFormDto) {
     setErroServidor(null)
@@ -79,6 +82,20 @@ export function ErrosPage() {
         },
       )
     }
+  }
+
+  /** A mutation só dispara depois da confirmação — nunca do clique na lista. */
+  function confirmarRemocao() {
+    if (!erroParaRemover) return
+
+    setErroDeRemocao(null)
+    removerErro.mutate(
+      { id: erroParaRemover.id, etag: erroParaRemover.etag },
+      {
+        onSuccess: () => setErroParaRemover(null),
+        onError: (falha) => setErroDeRemocao(handleApiError(falha)),
+      },
+    )
   }
 
   return (
@@ -168,7 +185,7 @@ export function ErrosPage() {
                           variant="secondary"
                           size="sm"
                           aria-label={`Remover erro ${erro.codigo}`}
-                          onClick={() => removerErro.mutate({ id: erro.id, etag: erro.etag })}
+                          onClick={() => setErroParaRemover(erro)}
                         >
                           <Trash2 className="size-4" aria-hidden="true" />
                         </Button>
@@ -210,6 +227,28 @@ export function ErrosPage() {
           erroServidor={erroServidor}
         />
       </Modal>
+
+      {/*
+        A mutation ia direto do clique na lista, sem confirmação e sem tratamento de erro: um
+        toque na lixeira apagava um erro publicado, e um 409 de etag velho não dizia nada. Aqui a
+        falha fica no próprio diálogo, que é onde quem confirmou está olhando.
+      */}
+      <ModalConfirmacao
+        isOpen={erroParaRemover !== null}
+        title="Remover erro"
+        message={
+          erroParaRemover?.publicado
+            ? `O erro ${erroParaRemover.codigo} está publicado e sai do portal agora.`
+            : `O erro ${erroParaRemover?.codigo} é removido definitivamente.`
+        }
+        isConfirming={removerErro.isPending}
+        erro={erroDeRemocao}
+        onConfirm={confirmarRemocao}
+        onCancel={() => {
+          setErroParaRemover(null)
+          setErroDeRemocao(null)
+        }}
+      />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { EmptyState } from '../../../../components/ui/EmptyState'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import { Modal } from '../../../../components/ui/Modal'
+import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
@@ -89,6 +90,7 @@ export function ArtigosPage() {
   const [pagina, setPagina] = useState(1)
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
   const [modalAberto, setModalAberto] = useState<ModalArtigo | null>(null)
+  const [artigoParaRemover, setArtigoParaRemover] = useState<ArtigoAdminListaItem | null>(null)
   const [erroDeEscrita, setErroDeEscrita] = useState<ErroDeEscritaNaTela | null>(null)
 
   const { data, isLoading, isError, refetch } = useArtigosAdmin({ pagina, tamanhoPagina })
@@ -144,11 +146,22 @@ export function ArtigosPage() {
     )
   }
 
-  function aoRemover(artigo: ArtigoAdminListaItem) {
+  /**
+   * Remoção é irreversível pela interface: a mutation só dispara depois da confirmação, nunca do
+   * clique na lista (contrato de `ModalConfirmacao`). O erro continua na faixa da tela, que tem a
+   * ação de recuperação por código.
+   */
+  function confirmarRemocao() {
+    if (!artigoParaRemover) return
+
+    const { id, etag } = artigoParaRemover
     setErroDeEscrita(null)
     removerArtigo.mutate(
-      { id: artigo.id, etag: artigo.etag },
-      { onError: (erro) => registrarErro(erro, artigo.id) },
+      { id, etag },
+      {
+        onSettled: () => setArtigoParaRemover(null),
+        onError: (erro) => registrarErro(erro, id),
+      },
     )
   }
 
@@ -348,7 +361,7 @@ export function ArtigosPage() {
                           aria-label={`Remover artigo ${artigo.titulo}`}
                           disabled={artigo.reservado}
                           title={artigo.reservado ? MOTIVO_ARTIGO_RESERVADO : undefined}
-                          onClick={() => aoRemover(artigo)}
+                          onClick={() => setArtigoParaRemover(artigo)}
                         >
                           <Trash2 className="size-4" aria-hidden="true" />
                         </Button>
@@ -426,6 +439,19 @@ export function ArtigosPage() {
           </>
         )}
       </Modal>
+
+      <ModalConfirmacao
+        isOpen={artigoParaRemover !== null}
+        title="Remover artigo"
+        message={
+          artigoParaRemover?.publicado
+            ? `O artigo "${artigoParaRemover.titulo}" está publicado e sai do portal agora.`
+            : `O artigo "${artigoParaRemover?.titulo}" é removido definitivamente.`
+        }
+        isConfirming={removerArtigo.isPending}
+        onConfirm={confirmarRemocao}
+        onCancel={() => setArtigoParaRemover(null)}
+      />
     </div>
   )
 }
