@@ -33,6 +33,12 @@ export interface ErroResumoPublico {
   codigo: string
   titulo: string
   url: string
+  /**
+   * Mensagens observadas, como o provedor as devolve. É por elas que o leitor reconhece o próprio
+   * caso — ele chega com o texto da prefeitura em mãos, não com o código nem com o nosso título.
+   * Sempre presente; `[]` quando o erro ainda não tem variante registrada.
+   */
+  variantes: string[]
 }
 
 /**

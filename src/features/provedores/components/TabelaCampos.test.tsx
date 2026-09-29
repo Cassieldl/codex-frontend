@@ -145,3 +145,207 @@ describe('TabelaCampos', () => {
     expect(screen.getByText('Inscrição Municipal')).toBeInTheDocument()
   })
 })
+
+/**
+ * `caminhoXml` é o caminho no Layout InvoiCy — o que a coluna mostra. `destinoXml` é outra coisa:
+ * para onde aquele campo vai no XML **daquele provedor**, e é nulo na maioria dos campos.
+ *
+ * O botão copiava o segundo. Quem clicava em "copiar caminho" levava string vazia e só descobria
+ * ao colar. A fixture do arquivo não podia pegar isso porque dá o mesmo valor aos dois campos —
+ * por isso este bloco tem fixture própria, com valores que se distinguem.
+ */
+describe('TabelaCampos — o botão copia o caminho que está na tela', () => {
+  const CAMINHO_EXIBIDO = '//Prestador/RazaoSocial'
+  const DESTINO_DO_PROVEDOR = '//OutroLugar/NoXmlDoProvedor'
+
+  const grupoComCaminhosDistintos: GrupoCampoVersao[] = [
+    {
+      grupo: 'Identificação',
+      grupoSlug: 'identificacao',
+      campos: [
+        {
+          ...camposPorGrupo[0]!.campos[0]!,
+          caminhoXml: CAMINHO_EXIBIDO,
+          destinoXml: DESTINO_DO_PROVEDOR,
+        },
+      ],
+    },
+  ]
+
+  function renderizarComCaminhosDistintos() {
+    return render(
+      <TabelaCampos
+        provedorNome="Prefeitura de Exemplo"
+        versaoRotulo="Versão 1"
+        verificadoEm="2026-07-01T00:00:00Z"
+        totalCampos={1}
+        camposPorGrupo={grupoComCaminhosDistintos}
+        urlVersaoAbsoluta="https://codex.migrate.info/provedores/prefeitura-exemplo/v1"
+      />,
+    )
+  }
+
+  it('copia o caminho do Layout InvoiCy, nunca o destino no XML do provedor', async () => {
+    const escrito: string[] = []
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: (texto: string) => {
+          escrito.push(texto)
+          return Promise.resolve()
+        },
+      },
+    })
+
+    renderizarComCaminhosDistintos()
+
+    const botao = screen.getAllByRole('button', { name: /^Copiar caminho no XML do campo/ })[0]!
+    fireEvent.click(botao)
+
+    await vi.waitFor(() => expect(escrito).toHaveLength(1))
+    expect(escrito[0]).toBe(CAMINHO_EXIBIDO)
+  })
+
+  it('nunca copia vazio quando o campo não tem destino no XML do provedor', async () => {
+    const escrito: string[] = []
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: (texto: string) => {
+          escrito.push(texto)
+          return Promise.resolve()
+        },
+      },
+    })
+
+    render(
+      <TabelaCampos
+        provedorNome="Prefeitura de Exemplo"
+        versaoRotulo="Versão 1"
+        verificadoEm="2026-07-01T00:00:00Z"
+        totalCampos={1}
+        camposPorGrupo={[
+          {
+            grupo: 'Identificação',
+            grupoSlug: 'identificacao',
+            campos: [
+              { ...camposPorGrupo[0]!.campos[0]!, caminhoXml: CAMINHO_EXIBIDO, destinoXml: null },
+            ],
+          },
+        ]}
+        urlVersaoAbsoluta="https://codex.migrate.info/provedores/prefeitura-exemplo/v1"
+      />,
+    )
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Copiar caminho no XML do campo/ })[0]!)
+
+    await vi.waitFor(() => expect(escrito).toHaveLength(1))
+    expect(escrito[0]).toBe(CAMINHO_EXIBIDO)
+  })
+})
+
+/**
+ * Oito atributos do campo eram preenchidos na área interna e nunca chegavam ao leitor — entre eles
+ * o **destino no XML do provedor**, que o artboard da tela pede, e a **condição**, que a etiqueta
+ * "Condicional" promete na própria tabela sem nunca dizer qual é. Quem precisava deles abria um
+ * chamado.
+ *
+ * A tabela não tem largura para oito colunas a mais, então o detalhe abre por linha.
+ */
+describe('TabelaCampos — detalhe do campo', () => {
+  function abrir(nomeDoCampo: string) {
+    // Nome exato: o aria-label dos botões de copiar também cita o campo ('Copiar caminho no XML
+    // do campo X'), então uma regex casaria três botões na mesma linha.
+    fireEvent.click(screen.getByRole('button', { name: nomeDoCampo }))
+  }
+
+  it('não mostra os atributos antes de abrir', () => {
+    renderizar()
+
+    expect(screen.queryByText('Obrigatório quando o município exige')).not.toBeInTheDocument()
+  })
+
+  it('mostra a condição que a etiqueta "Condicional" só anuncia', () => {
+    renderizar()
+
+    abrir('Inscrição Municipal')
+
+    expect(screen.getByText('Condição')).toBeInTheDocument()
+    expect(screen.getByText('Obrigatório quando o município exige')).toBeInTheDocument()
+  })
+
+  it('mostra o destino no XML do provedor', () => {
+    renderizar()
+
+    abrir('Razão Social')
+
+    expect(screen.getByText('Destino no XML do provedor')).toBeInTheDocument()
+  })
+
+  it('anuncia o estado de abertura para o leitor de tela', () => {
+    renderizar()
+
+    const gatilho = screen.getByRole('button', { name: 'Inscrição Municipal' })
+    expect(gatilho).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.click(gatilho)
+    expect(gatilho).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('fecha ao clicar de novo', () => {
+    renderizar()
+
+    abrir('Inscrição Municipal')
+    expect(screen.getByText('Obrigatório quando o município exige')).toBeInTheDocument()
+
+    abrir('Inscrição Municipal')
+    expect(screen.queryByText('Obrigatório quando o município exige')).not.toBeInTheDocument()
+  })
+
+  /**
+   * Comparar dois campos é o uso natural da tabela. Um acordeão que fecha o anterior obrigaria a
+   * abrir e reabrir para isso.
+   */
+  it('mantém vários campos abertos ao mesmo tempo', () => {
+    renderizar()
+
+    abrir('Razão Social')
+    abrir('Inscrição Municipal')
+
+    expect(screen.getByText('Nome da empresa prestadora')).toBeInTheDocument()
+    expect(screen.getByText('Inscrição no cadastro municipal')).toBeInTheDocument()
+  })
+
+  /** Linha sem nada a mostrar não pode oferecer um painel vazio. */
+  it('não oferece abrir quando o campo não tem atributo nenhum preenchido', () => {
+    render(
+      <TabelaCampos
+        provedorNome="Prefeitura de Exemplo"
+        versaoRotulo="Versão 1"
+        verificadoEm="2026-07-01T00:00:00Z"
+        totalCampos={1}
+        camposPorGrupo={[
+          {
+            grupo: 'Identificação',
+            grupoSlug: 'identificacao',
+            campos: [
+              {
+                ...camposPorGrupo[0]!.campos[0]!,
+                significado: '',
+                exemplo: null,
+                destinoXml: null,
+                condicao: null,
+                mascara: null,
+                dominio: null,
+                notaPreenchimento: null,
+                notaTransformacao: null,
+              },
+            ],
+          },
+        ]}
+        urlVersaoAbsoluta="https://codex.migrate.info/provedores/prefeitura-exemplo/v1"
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: 'Razão Social' })).not.toBeInTheDocument()
+    expect(screen.getByText('Razão Social')).toBeInTheDocument()
+  })
+})

@@ -1,10 +1,13 @@
 import clsx from 'clsx'
-import { useId, useMemo, useState } from 'react'
+import { ChevronRight } from 'lucide-react'
+import { Fragment, useCallback, useId, useMemo, useState } from 'react'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
+import { CaminhoXml } from '../../../components/ui/CaminhoXml'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { EtiquetaEstado, type EstadoPreenchimento } from '../../../components/ui/EtiquetaEstado'
 import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../components/ui/Table'
+import { campoTemDetalhe, DetalheDoCampo } from './DetalheDoCampo'
 import { construirIdLinhaCampo } from '../utils/destaqueAncora'
 import type { EstadoPreenchimentoCampo, GrupoCampoVersao } from '../types/versaoProvedorPagina'
 
@@ -18,6 +21,13 @@ export interface TabelaCamposProps {
   /** Slug do campo destacado por âncora (`#campo-{slug}`), se houver — ver `utils/destaqueAncora.ts`. */
   campoDestacado?: string | null
 }
+
+/**
+ * Colunas do cabeçalho — o `colSpan` da linha de detalhe. Duas delas somem abaixo de 860px, mas
+ * `colSpan` maior que o número de colunas visíveis é tratado como "todas", então o valor fixo
+ * vale nas duas larguras.
+ */
+const TOTAL_DE_COLUNAS = 6
 
 const ESTADO_MAP: Record<EstadoPreenchimentoCampo, EstadoPreenchimento> = {
   Obrigatorio: 'obrigatorio',
@@ -45,6 +55,18 @@ export function TabelaCampos({
 }: TabelaCamposProps) {
   const filtroId = useId()
   const [termoFiltro, setTermoFiltro] = useState('')
+
+  // Vários campos abertos ao mesmo tempo: comparar duas linhas é o uso natural aqui, e um
+  // acordeão que fecha o anterior obrigaria a abrir e reabrir para isso.
+  const [camposAbertos, setCamposAbertos] = useState<ReadonlySet<string>>(new Set())
+
+  const alternarCampo = useCallback((campoLayoutSlug: string) => {
+    setCamposAbertos((abertos) => {
+      const proximos = new Set(abertos)
+      if (!proximos.delete(campoLayoutSlug)) proximos.add(campoLayoutSlug)
+      return proximos
+    })
+  }, [])
 
   const termoNormalizado = termoFiltro.trim().toLowerCase()
   const filtroAtivo = termoNormalizado.length > 0
@@ -85,7 +107,7 @@ export function TabelaCampos({
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-ink/70">{fraseExaustividade}</p>
-          {verificadoEm && <SeloVerificacao data={new Date(verificadoEm)} />}
+          {verificadoEm && <SeloVerificacao data={verificadoEm} />}
         </div>
       </header>
 
@@ -140,7 +162,15 @@ export function TabelaCampos({
               className="scroll-mt-24"
             >
               {grupo.grupo && (
-                <h3 className="mb-2 text-card-titulo font-medium text-ink">{grupo.grupo}</h3>
+                /* Filete no acento institucional (o mesmo da borda e do indicador de ativo):
+                   ancora a leitura de uma tabela longa e separa os blocos. A paleta de
+                   severidade continua reservada aos avisos — colorir também a obrigatoriedade,
+                   que é o papel mais repetido da tela, pintaria metade da tabela e tiraria a
+                   força justamente do que sinaliza risco (§3.3a). */
+                <h3 className="mb-2 flex items-center gap-2 text-card-titulo font-medium text-ink">
+                  <span aria-hidden="true" className="h-4 w-1 shrink-0 rounded-full bg-accent" />
+                  {grupo.grupo}
+                </h3>
               )}
 
               <TableRoot>
@@ -162,44 +192,86 @@ export function TabelaCampos({
                   {grupo.campos.map((campo) => {
                     const idAncora = construirIdLinhaCampo(campo.campoLayoutSlug)
                     const destacado = campoDestacado === campo.campoLayoutSlug
+                    const temDetalhe = campoTemDetalhe(campo)
+                    const aberto = camposAbertos.has(campo.campoLayoutSlug)
+                    const idDetalhe = `detalhe-${campo.campoLayoutSlug}`
 
                     return (
-                      <TableRow
-                        key={campo.campoLayoutSlug}
-                        id={idAncora}
-                        className={clsx(
-                          'scroll-mt-24',
-                          destacado && 'border-l-[3px] border-l-accent bg-highlight-anchor',
+                      <Fragment key={campo.campoLayoutSlug}>
+                        <TableRow
+                          id={idAncora}
+                          className={clsx(
+                            'scroll-mt-24',
+                            destacado && 'border-l-[3px] border-l-accent bg-highlight-anchor',
+                          )}
+                        >
+                          <TableCell className="text-left font-medium">
+                            {temDetalhe ? (
+                              <button
+                                type="button"
+                                onClick={() => alternarCampo(campo.campoLayoutSlug)}
+                                aria-expanded={aberto}
+                                aria-controls={idDetalhe}
+                                className="flex items-center gap-1.5 rounded text-left font-medium text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+                              >
+                                <ChevronRight
+                                  aria-hidden="true"
+                                  className={clsx(
+                                    'size-3.5 shrink-0 text-muted transition-transform',
+                                    aberto && 'rotate-90',
+                                  )}
+                                />
+                                {campo.nome}
+                              </button>
+                            ) : (
+                              // Recuo igual ao do chevron, para os nomes ficarem alinhados entre si.
+                              <span className="ml-[1.25rem] block">{campo.nome}</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-left text-[11px]">
+                            <CaminhoXml caminho={campo.caminhoXml} />
+                          </TableCell>
+                          <TableCell className="hidden min-[860px]:table-cell">
+                            {campo.tipo}
+                          </TableCell>
+                          <TableCell className="hidden min-[860px]:table-cell">
+                            {campo.tamanho ?? '—'}
+                          </TableCell>
+                          <TableCell>
+                            <EtiquetaEstado estado={ESTADO_MAP[campo.estadoPreenchimento]} />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              {/* Copia o caminho que está NA TELA (`caminhoXml`). Antes copiava
+                                `destinoXml`, que é outra informação — para onde o campo vai no XML
+                                daquele provedor — e é nula na maioria dos campos: o botão devolvia
+                                string vazia, e quem colava não percebia. */}
+                              <BotaoCopiar
+                                compacto
+                                icone="copiar"
+                                valor={campo.caminhoXml}
+                                rotulo="Copiar caminho"
+                                ariaLabel={`Copiar caminho no XML do campo ${campo.nome}`}
+                              />
+                              <BotaoCopiar
+                                compacto
+                                icone="link"
+                                valor={() => `${urlVersaoAbsoluta}#${idAncora}`}
+                                rotulo="Copiar link"
+                                ariaLabel={`Copiar link do campo ${campo.nome}`}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        {temDetalhe && aberto && (
+                          <tr className="border-b border-line bg-surface-hover">
+                            <td colSpan={TOTAL_DE_COLUNAS}>
+                              <DetalheDoCampo campo={campo} id={idDetalhe} />
+                            </td>
+                          </tr>
                         )}
-                      >
-                        <TableCell className="text-left font-medium">{campo.nome}</TableCell>
-                        <TableCell className="text-left font-mono text-[11px]">
-                          {campo.caminhoXml}
-                        </TableCell>
-                        <TableCell className="hidden min-[860px]:table-cell">
-                          {campo.tipo}
-                        </TableCell>
-                        <TableCell className="hidden min-[860px]:table-cell">
-                          {campo.tamanho ?? '—'}
-                        </TableCell>
-                        <TableCell>
-                          <EtiquetaEstado estado={ESTADO_MAP[campo.estadoPreenchimento]} />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            <BotaoCopiar
-                              valor={campo.destinoXml ?? ''}
-                              rotulo="Caminho"
-                              ariaLabel={`Copiar caminho no XML do campo ${campo.nome}`}
-                            />
-                            <BotaoCopiar
-                              valor={() => `${urlVersaoAbsoluta}#${idAncora}`}
-                              rotulo="Link"
-                              ariaLabel={`Copiar link do campo ${campo.nome}`}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      </Fragment>
                     )
                   })}
                 </tbody>

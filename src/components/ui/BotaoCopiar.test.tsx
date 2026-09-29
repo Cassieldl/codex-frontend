@@ -64,3 +64,88 @@ describe('BotaoCopiar', () => {
     )
   }, 6000)
 })
+
+/**
+ * O modo compacto existe para tabela densa: dois botões rotulados por linha competem com o
+ * conteúdo. O rótulo não some — muda de lugar.
+ */
+describe('BotaoCopiar — modo compacto', () => {
+  it('mantém o rótulo no documento, como dica', () => {
+    render(
+      <BotaoCopiar
+        compacto
+        valor="x"
+        ariaLabel="Copiar caminho no XML do campo Razão social"
+        rotulo="Copiar caminho"
+      />,
+    )
+
+    expect(screen.getByText('Copiar caminho')).toBeInTheDocument()
+  })
+
+  it('continua anunciando a ação específica ao leitor de tela', () => {
+    render(
+      <BotaoCopiar
+        compacto
+        valor="x"
+        ariaLabel="Copiar caminho no XML do campo Razão social"
+        rotulo="Copiar caminho"
+      />,
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Copiar caminho no XML do campo Razão social' }),
+    ).toBeInTheDocument()
+  })
+
+  /**
+   * Duas ações de cópia lado a lado precisam de ícones distintos: sem isso, "copiar caminho" e
+   * "copiar link" ficam idênticos quando o rótulo sai da tela.
+   */
+  it('usa ícones distintos para caminho e para link', () => {
+    const { container: comCopia } = render(
+      <BotaoCopiar compacto icone="copiar" valor="x" ariaLabel="Copiar caminho" rotulo="Caminho" />,
+    )
+    const { container: comLink } = render(
+      <BotaoCopiar compacto icone="link" valor="x" ariaLabel="Copiar link" rotulo="Link" />,
+    )
+
+    const classeDoIcone = (raiz: HTMLElement) => raiz.querySelector('svg')?.getAttribute('class')
+
+    expect(classeDoIcone(comCopia)).not.toBe(classeDoIcone(comLink))
+  })
+})
+
+/**
+ * Guarda estrutural: dica que aparece só no hover deixa teclado e toque sem saber o que o botão
+ * faz. Foi a razão de o modo compacto não virar o padrão — e é o tipo de detalhe que some numa
+ * "simplificação" de classes, sem nada acusar, porque jsdom não computa pseudo-classe.
+ */
+describe('nenhuma dica aparece só no hover', () => {
+  const FONTES = import.meta.glob('../**/*.tsx', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>
+
+  function arquivosDeProducao(): string[] {
+    return Object.keys(FONTES).filter((caminho) => !caminho.endsWith('.test.tsx'))
+  }
+
+  it('a varredura enxerga os componentes', () => {
+    // Sem contar o universo, um glob que parasse de casar deixaria o caso abaixo passar por vazio.
+    expect(arquivosDeProducao().length).toBeGreaterThanOrEqual(20)
+  })
+
+  it('toda revelação por group-hover tem a contraparte de foco', () => {
+    const semFoco = arquivosDeProducao().filter((caminho) => {
+      const fonte = FONTES[caminho]
+      return (
+        fonte.includes('group-hover:opacity-100') &&
+        !fonte.includes('group-focus-visible:opacity-100')
+      )
+    })
+
+    expect(semFoco).toEqual([])
+  })
+})
