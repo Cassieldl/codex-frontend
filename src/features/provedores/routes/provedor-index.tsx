@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { ListChecks } from 'lucide-react'
+import { rotuloVerificacao } from '../../../utils/formatarDataVerificacao'
 import type { VersaoProvedorResumo } from '../types/provedor'
 
 export interface ProvedorIndexConteudoProps {
@@ -37,9 +36,7 @@ export function ProvedorIndexConteudo({ provedorSlug, versoes }: ProvedorIndexCo
             >
               <span className="font-medium text-ink">{versao.rotulo}</span>
               <span className="shrink-0 text-xs text-muted">
-                {versao.verificadoEm
-                  ? `Verificado em ${format(new Date(versao.verificadoEm), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`
-                  : 'Ainda não verificado'}
+                {rotuloVerificacao(versao.verificadoEm)}
               </span>
             </Link>
           </li>

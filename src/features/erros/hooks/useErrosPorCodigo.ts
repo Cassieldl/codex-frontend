@@ -16,6 +16,15 @@ interface RespostaPaginadaErros {
 const TAMANHO_PAGINA_ATALHO = 50
 
 /**
+ * O atalho só consulta a API com um código de fato preenchido. A condição mora aqui, e não
+ * repetida na página, porque os dois lados precisam concordar: onde a query não roda, a página
+ * tem de mostrar o estado de "sem código" — senão não sobra nada na tela.
+ */
+export function temCodigoParaBuscar(codigo: string) {
+  return codigo.trim().length > 0
+}
+
+/**
  * `GET /erros?codigo=` (P5, `analise-backend.md` §4.1) — mesmo endpoint de
  * listagem de erros (`GET /erros`), filtrado por igualdade exata de `codigo`
  * (M2, atalho de desambiguação). `PaginatedResponse<T>` **cru**, sem envelope
@@ -30,7 +39,7 @@ export function useErrosPorCodigo(codigo: string) {
       })
       return data
     },
-    enabled: codigo.trim().length > 0,
+    enabled: temCodigoParaBuscar(codigo),
     retry: false,
   })
 }

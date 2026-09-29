@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
 import type { ErroListaItem } from '../types/erro'
 import { ErrosIndexPage } from './erros-index'
@@ -134,5 +134,40 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(navigate).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * Com o parâmetro vazio a query fica desabilitada e nunca há `data`, então nenhum dos estados de
+ * resultado casa. Sem um caso próprio, a rota renderizava um `<main>` sem um único nó — a tela
+ * morta que a regra de estados de UI existe para impedir.
+ */
+describe('ErrosIndexPage — sem código na URL', () => {
+  it('explica o que a página faz e oferece a busca, em vez de tela vazia', async () => {
+    renderPagina('')
+
+    expect(
+      await screen.findByText(/nenhum código foi informado/i),
+    ).toBeInTheDocument()
+
+    // O `search` explícito é exigido pelo tipo da rota, que valida `q` — daí o href sair com o
+    // parâmetro vazio, que é o estado inicial da busca.
+    expect(screen.getByRole('link', { name: 'Buscar no Codex' })).toHaveAttribute(
+      'href',
+      '/busca?q=',
+    )
+  })
+
+  it('não consulta a API quando não há código para consultar', async () => {
+    const chamadas: string[] = []
+    const registrar = ({ request }: { request: Request }) => chamadas.push(request.url)
+    server.events.on('request:start', registrar)
+    onTestFinished(() => server.events.removeListener('request:start', registrar))
+
+    renderPagina('   ')
+
+    await screen.findByText(/nenhum código foi informado/i)
+
+    expect(chamadas.filter((url) => url.includes('/erros'))).toHaveLength(0)
   })
 })

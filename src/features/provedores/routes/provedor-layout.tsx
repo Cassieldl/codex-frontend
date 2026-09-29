@@ -8,6 +8,7 @@ import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
 import { AvisosProvedor } from '../components/AvisosProvedor'
+import { EstadoProvedorIndisponivel } from '../components/EstadoProvedorIndisponivel'
 import { ErroProvedorHttp, useProvedorPorSlug } from '../hooks/useProvedorPorSlug'
 
 export interface ProvedorLayoutPageProps {
@@ -75,15 +76,15 @@ export function ProvedorLayoutPage({
         )}
 
         {isError && erroTipado?.tipo === 'despublicado' && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-            <h1 className="text-subtitulo font-semibold text-ink">Este provedor saiu do ar.</h1>
-            <p className="text-sm text-muted">
-              O conteúdo deste provedor não está mais disponível publicamente.
-            </p>
-          </div>
+          <EstadoProvedorIndisponivel variante="provedor-despublicado" />
         )}
 
-        {isError && erroTipado?.tipo !== 'despublicado' && <ErrorState onRetry={() => refetch()} />}
+        {isError && erroTipado?.tipo === 'nao_encontrado' && (
+          <EstadoProvedorIndisponivel variante="provedor-nao-encontrado" />
+        )}
+
+        {/* Sobra só o que insistir pode resolver: rede, 5xx, erro não classificado. */}
+        {isError && !erroTipado && <ErrorState onRetry={() => refetch()} />}
 
         {!isLoading && !isError && provedor && !correcao && (
           <>

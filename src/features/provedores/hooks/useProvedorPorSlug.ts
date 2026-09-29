@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { apiPublico } from '../../../services/api'
+import { devoRetentar } from '../../../utils/retentativaDeQuery'
 import type { ProvedorDetalhe } from '../types/provedor'
 import { provedoresKeys } from './provedoresKeys'
 
@@ -70,5 +71,7 @@ export function useProvedorPorSlug(provedorSlug: string) {
     },
     enabled: provedorSlug.length > 0,
     staleTime: DEZ_MINUTOS_MS,
+    retry: (contagem, erro) =>
+      devoRetentar(contagem, erro instanceof ErroProvedorHttp ? erro : null),
   })
 }

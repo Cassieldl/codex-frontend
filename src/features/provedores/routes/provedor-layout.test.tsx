@@ -36,10 +36,26 @@ interface OpcoesRenderPagina {
   provedorSlug: string
   versaoSlugAtual?: string
   caminhoAtual: string
+  /**
+   * Deixa a política de retentativa do próprio hook valer. O padrão do harness
+   * é `retry: false`, que é o que os testes de conteúdo querem — mas ele
+   * **mascara** o que o hook decide, então quem testa retentativa precisa
+   * desligá-lo.
+   */
+  usarRetentativaDoHook?: boolean
 }
 
-function renderPagina({ provedorSlug, versaoSlugAtual, caminhoAtual }: OpcoesRenderPagina) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+function renderPagina({
+  provedorSlug,
+  versaoSlugAtual,
+  caminhoAtual,
+  usarRetentativaDoHook = false,
+}: OpcoesRenderPagina) {
+  const queryClient = new QueryClient({
+    defaultOptions: usarRetentativaDoHook
+      ? { queries: { retryDelay: 0 } }
+      : { queries: { retry: false } },
+  })
   const navegar = vi.fn()
 
   // `<Link>`/`<Outlet>` exigem `RouterProvider` real — a árvore de teste só
@@ -141,5 +157,97 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
 
     await waitFor(() => expect(navegar).toHaveBeenCalled())
     expect(navegar.mock.calls[0]![0]).toEqual({ href: '/provedores/slug-novo', replace: true })
+  })
+})
+
+/**
+ * `404` e `410` são respostas definitivas: o endereço não existe, ou existiu e
+ * saiu do ar. Antes, só o `410` tinha ramo — o `404` caía no `ErrorState`
+ * genérico, que diz "Não foi possível carregar esta informação agora. / Tentar
+ * novamente" e convida o leitor a insistir num provedor que não existe. O tipo
+ * `'nao_encontrado'` era classificado pelo hook e consumido por ninguém.
+ *
+ * A asserção de ausência do botão importa tanto quanto a presença do título: é
+ * ela que prova que o caso não caiu no balde genérico.
+ */
+describe('ProvedorLayoutPage — endereços que não levam a lugar nenhum', () => {
+  function handlerStatus(slug: string, status: number) {
+    return http.get(`${API_URL}/provedores/${slug}`, () => new HttpResponse(null, { status }))
+  }
+
+  it('404 explica que o provedor não existe, sem oferecer nova tentativa', async () => {
+    server.use(handlerStatus('nao-existe', 404))
+
+    renderPagina({ provedorSlug: 'nao-existe', caminhoAtual: '/provedores/nao-existe' })
+
+    await screen.findByRole('heading', { level: 1, name: 'Este provedor não existe.' })
+    expect(screen.queryByRole('button', { name: /tentar novamente/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver todos os provedores' })).toBeInTheDocument()
+  })
+
+  it('410 explica que o provedor saiu do ar, sem oferecer nova tentativa', async () => {
+    server.use(handlerStatus('saiu-do-ar', 410))
+
+    renderPagina({ provedorSlug: 'saiu-do-ar', caminhoAtual: '/provedores/saiu-do-ar' })
+
+    await screen.findByRole('heading', { level: 1, name: 'Este provedor saiu do ar.' })
+    expect(screen.queryByRole('button', { name: /tentar novamente/i })).not.toBeInTheDocument()
+  })
+
+  // O contraponto: 5xx PODE melhorar sozinho, então continua oferecendo a
+  // tentativa. Sem este caso, trocar o `ErrorState` por uma tela de "não
+  // existe" em tudo passaria despercebido.
+  it('500 continua oferecendo nova tentativa', async () => {
+    server.use(handlerStatus('instavel', 500))
+
+    renderPagina({ provedorSlug: 'instavel', caminhoAtual: '/provedores/instavel' })
+
+    expect(await screen.findByRole('button', { name: /tentar novamente/i })).toBeInTheDocument()
+    expect(screen.queryByText('Este provedor não existe.')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * Retentar um `404` não muda a resposta — só segura a tela em "Carregando
+ * provedor…" durante o backoff. Medido no navegador antes da correção: quatro
+ * requisições ao mesmo endereço inexistente.
+ */
+describe('ProvedorLayoutPage — retentativa só no que pode melhorar', () => {
+  function handlerContado(slug: string, status: number) {
+    let chamadas = 0
+    const handler = http.get(`${API_URL}/provedores/${slug}`, () => {
+      chamadas += 1
+      return new HttpResponse(null, { status })
+    })
+
+    return { handler, contar: () => chamadas }
+  }
+
+  it('não repete a requisição quando o provedor não existe', async () => {
+    const { handler, contar } = handlerContado('nao-existe', 404)
+    server.use(handler)
+
+    renderPagina({
+      provedorSlug: 'nao-existe',
+      caminhoAtual: '/provedores/nao-existe',
+      usarRetentativaDoHook: true,
+    })
+
+    await screen.findByRole('heading', { level: 1, name: 'Este provedor não existe.' })
+    expect(contar()).toBe(1)
+  })
+
+  it('repete a requisição quando o erro pode ser passageiro', async () => {
+    const { handler, contar } = handlerContado('instavel', 500)
+    server.use(handler)
+
+    renderPagina({
+      provedorSlug: 'instavel',
+      caminhoAtual: '/provedores/instavel',
+      usarRetentativaDoHook: true,
+    })
+
+    await screen.findByRole('button', { name: /tentar novamente/i })
+    expect(contar()).toBeGreaterThan(1)
   })
 })

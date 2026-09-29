@@ -10,7 +10,7 @@ import { Skeleton } from '../../../components/ui/Skeleton'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import { CONTEUDO_RODAPE_CONSTANTE } from '../../../utils/rodapeConteudoConstante'
 import { handleApiError } from '../../../utils/handleApiError'
-import { useErrosPorCodigo } from '../hooks/useErrosPorCodigo'
+import { temCodigoParaBuscar, useErrosPorCodigo } from '../hooks/useErrosPorCodigo'
 
 export interface NavegarOpcoes {
   href: string
@@ -39,6 +39,11 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
   const { data, isLoading, isError, error, refetch } = useErrosPorCodigo(codigo)
 
   const resolveDireto = data?.totalCount === 1
+
+  // Sem código a query nem roda, então não há `data` para cair em nenhum dos estados abaixo —
+  // sem este caso a rota renderiza um `<main>` vazio, que é o pior retorno possível para quem
+  // chegou por um link do suporte com o parâmetro perdido.
+  const semCodigo = !temCodigoParaBuscar(codigo)
 
   useEffect(() => {
     if (!data || data.totalCount !== 1) return
@@ -72,6 +77,21 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-16 w-full" />
           </div>
+        )}
+
+        {semCodigo && (
+          <EmptyState
+            message="Esta página abre um erro pelo código, e nenhum código foi informado."
+            action={
+              <Link
+                to="/busca"
+                search={{ q: '' }}
+                className="text-sm font-semibold text-primary-medium hover:underline"
+              >
+                Buscar no Codex
+              </Link>
+            }
+          />
         )}
 
         {isError && <ErrorState message={mensagemErro} onRetry={() => refetch()} />}
