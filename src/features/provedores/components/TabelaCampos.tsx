@@ -8,6 +8,7 @@ import { EtiquetaEstado, type EstadoPreenchimento } from '../../../components/ui
 import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../components/ui/Table'
 import { campoTemDetalhe, DetalheDoCampo } from './DetalheDoCampo'
+import { IndicadorErrosDoCampo } from './IndicadorErrosDoCampo'
 import { construirIdLinhaCampo } from '../utils/destaqueAncora'
 import type { EstadoPreenchimentoCampo, GrupoCampoVersao } from '../types/versaoProvedorPagina'
 
@@ -227,6 +228,15 @@ export function TabelaCampos({
                               // Recuo igual ao do chevron, para os nomes ficarem alinhados entre si.
                               <span className="ml-[1.25rem] block">{campo.nome}</span>
                             )}
+                            {/*
+                              Fora do <button> de propósito: o indicador é um LINK para o erro, e
+                              link dentro de botão é aninhamento inválido — o navegador desfaz a
+                              árvore e o clique passa a cair no elemento errado.
+                            */}
+                            <IndicadorErrosDoCampo
+                              erros={campo.errosConhecidos}
+                              nomeDoCampo={campo.nome}
+                            />
                           </TableCell>
                           <TableCell className="text-left text-[11px]">
                             <CaminhoXml caminho={campo.caminhoXml} />

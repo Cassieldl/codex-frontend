@@ -20,6 +20,17 @@ export interface CampoVersaoPublico {
   destinoXml: string | null
   notaTransformacao: string | null
   ordem: number
+  /**
+   * Rejeições já registradas sobre este campo nesta versão. Sempre presente — `[]` quando não há
+   * nenhuma, nunca ausente.
+   */
+  errosConhecidos: ErroDoCampo[]
+}
+
+/** Referência mínima do erro para o indicador da linha: o bastante para rotular e linkar. */
+export interface ErroDoCampo {
+  slug: string
+  codigo: string
 }
 
 export interface GrupoCampoVersao {

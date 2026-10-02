@@ -5,6 +5,26 @@ import { TabelaCampos } from './TabelaCampos'
 
 const mockSeloVerificacaoSpy = vi.fn()
 
+const mockIndicadorErrosSpy = vi.fn()
+
+/**
+ * O indicador usa `<Link>` do TanStack Router e exigiria um `RouterProvider`, que monta de forma
+ * assíncrona e derrubaria as asserções síncronas de todo este arquivo. Aqui interessa só o que a
+ * tabela PASSA para ele — o comportamento do link tem teste próprio, em
+ * `IndicadorErrosDoCampo.test.tsx`, esse sim com router de verdade.
+ */
+vi.mock('./IndicadorErrosDoCampo', () => ({
+  IndicadorErrosDoCampo: (props: {
+    erros: { slug: string; codigo: string }[]
+    nomeDoCampo: string
+  }) => {
+    mockIndicadorErrosSpy(props)
+    return props.erros.length > 0 ? (
+      <span data-testid={`indicador-erros-${props.nomeDoCampo}`}>{props.erros.length}</span>
+    ) : null
+  },
+}))
+
 // Mock isolado — a asserção central de M27 é que este componente NUNCA recebe
 // props diferentes por causa do filtro. Capturar as props em cada render é a
 // forma mais direta de provar isso (em vez de inferir pela ausência de
@@ -37,6 +57,7 @@ const camposPorGrupo: GrupoCampoVersao[] = [
         destinoXml: 'Prestador/RazaoSocial',
         notaTransformacao: null,
         ordem: 1,
+        errosConhecidos: [],
       },
       {
         campoLayoutSlug: 'inscricao-municipal',
@@ -54,6 +75,10 @@ const camposPorGrupo: GrupoCampoVersao[] = [
         destinoXml: 'Prestador/InscricaoMunicipal',
         notaTransformacao: null,
         ordem: 2,
+        // Este campo tem rejeição registrada; o de cima não. A fixture precisa dos DOIS casos —
+        // com os dois iguais, nenhuma asserção distinguiria "marca o campo certo" de "marca
+        // todo campo".
+        errosConhecidos: [{ slug: 'e-1023-inscricao-municipal', codigo: 'E-1023' }],
       },
     ],
   },
@@ -347,5 +372,31 @@ describe('TabelaCampos — detalhe do campo', () => {
 
     expect(screen.queryByRole('button', { name: 'Razão Social' })).not.toBeInTheDocument()
     expect(screen.getByText('Razão Social')).toBeInTheDocument()
+  })
+
+  describe('indicador de rejeição registrada no campo', () => {
+    it('entrega ao indicador os erros do campo que tem rejeição', () => {
+      renderizar()
+
+      const props = mockIndicadorErrosSpy.mock.calls.map((chamada) => chamada[0])
+      const doCampoComErro = props.find((p) => p.nomeDoCampo === 'Inscrição Municipal')
+
+      expect(doCampoComErro.erros).toEqual([
+        { slug: 'e-1023-inscricao-municipal', codigo: 'E-1023' },
+      ])
+    })
+
+    /**
+     * O par com o caso acima é o que prova que o dado segue o campo, em vez de ser repetido em
+     * toda linha. Sozinho, qualquer um dos dois passaria com a ligação errada.
+     */
+    it('entrega lista vazia ao indicador do campo sem rejeição', () => {
+      renderizar()
+
+      const props = mockIndicadorErrosSpy.mock.calls.map((chamada) => chamada[0])
+      const doCampoSemErro = props.find((p) => p.nomeDoCampo === 'Razão Social')
+
+      expect(doCampoSemErro.erros).toEqual([])
+    })
   })
 })
