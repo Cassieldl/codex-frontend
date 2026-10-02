@@ -132,10 +132,17 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
           <>
             <BlocoAutocorrecao correcao={resultado.correcao} />
 
+            {/*
+              O texto descreve o RESULTADO, nunca a falha do motor. "Nenhum item bateu o termo
+              inteiro" dizia à pessoa que não encontramos o que ela pediu — inclusive quando o
+              item exibido era exatamente o caso dela —, e num público que já desconfia de
+              documentação isso convida a abrir o chamado assim mesmo, que é o desfecho que o
+              portal existe para evitar. A segunda frase troca a narração por uma ação.
+            */}
             {resultado.qualidade === 'parcial' && (
               <p className="rounded-[var(--radius-control)] bg-alert-info px-4 py-2 text-sm text-primary-medium">
-                Casamento parcial — nenhum item bateu o termo inteiro, mas estes têm relação com
-                ele.
+                Resultados aproximados — nenhum item reúne todos os termos que você digitou. Se
+                nenhum servir, tente o código do erro ou um trecho menor da mensagem.
               </p>
             )}
 
