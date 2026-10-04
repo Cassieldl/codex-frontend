@@ -111,7 +111,7 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
  */
 export function RodapeContextual({ contexto }: RodapeContextualProps) {
   const proximoPasso = obterProximoPasso(contexto)
-  const { atendimento, linksMigrate, notaDemo } = CONTEUDO_RODAPE_CONSTANTE
+  const { atendimento, linksMigrate } = CONTEUDO_RODAPE_CONSTANTE
 
   return (
     <footer className="border-t border-line bg-surface-hover">
@@ -137,7 +137,7 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
         </div>
       )}
 
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:grid-cols-3 lg:px-8">
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:grid-cols-2 lg:px-8">
         <div>
           <h2 className="text-xs font-semibold uppercase text-muted">Atendimento</h2>
           <a
@@ -166,8 +166,6 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
             ))}
           </ul>
         </nav>
-
-        <p className="text-xs text-muted">{notaDemo}</p>
       </div>
     </footer>
   )

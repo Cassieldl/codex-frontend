@@ -20,6 +20,4 @@ export const CONTEUDO_RODAPE_CONSTANTE = {
     { rotulo: 'Central de ajuda', href: 'https://ajuda.migrate.info' },
     { rotulo: 'Status dos serviços', href: 'https://status.migrate.info' },
   ],
-  notaDemo:
-    'Migrate · Codex — demonstração. Provedores são reais; códigos de erro, mensagens, mapeamentos e artigos são fictícios.',
 } as const

@@ -99,6 +99,13 @@ describe('RodapeContextual', () => {
     expect(linksProvedores).toEqual(linksHome)
   })
 
+  it('não declara o conteúdo como fictício — o acervo é real desde o Emissor Nacional', () => {
+    render(<RodapeContextual contexto={{ tipo: 'home' }} />)
+    const rodape = screen.getByRole('contentinfo')
+
+    expect(rodape.textContent).not.toMatch(/fictíci|demonstração/i)
+  })
+
   it('no contexto "layout", o próximo passo leva para os provedores (§2.7)', async () => {
     renderComRouter({ tipo: 'layout' })
 
