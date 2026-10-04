@@ -123,7 +123,8 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
               <h2 id="causa-provavel-titulo" className="text-subtitulo font-semibold text-ink">
                 Causa provável
               </h2>
-              <p className="text-sm text-ink/80">
+              {/* A causa chega em linhas — a regra da Sefin e, em seguida, onde ela se aplica. */}
+              <p className="whitespace-pre-line text-sm text-ink/80">
                 {erro.causaProvavel ?? 'Causa provável ainda não documentada.'}
               </p>
             </section>

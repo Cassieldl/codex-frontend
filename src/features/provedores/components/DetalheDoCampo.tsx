@@ -1,3 +1,5 @@
+import clsx from 'clsx'
+
 import { CaminhoXml } from '../../../components/ui/CaminhoXml'
 import type { CampoVersaoPublico } from '../types/versaoProvedorPagina'
 
@@ -5,6 +7,13 @@ export interface DetalheDoCampoProps {
   campo: CampoVersaoPublico
   id: string
 }
+
+/**
+ * Separador entre destinos quando um campo alimenta mais de uma tag do provedor — o país da
+ * prestação que também vira o país do resultado, o CEP que serve ao endereço nacional e ao do
+ * exterior. É a forma como a carga de conteúdo grava `destinoXml`.
+ */
+export const SEPARADOR_DE_DESTINOS = ' | '
 
 /** Um atributo do campo, na ordem em que a leitura precisa dele. */
 interface AtributoExibido {
@@ -48,12 +57,38 @@ export function DetalheDoCampo({ campo, id }: DetalheDoCampoProps) {
       {preenchidos.map((atributo) => (
         <div key={atributo.rotulo} className={atributo.largo ? 'sm:col-span-2' : undefined}>
           <dt className="text-xs font-medium text-muted">{atributo.rotulo}</dt>
-          <dd className="mt-0.5 text-sm text-ink">
-            {atributo.ehCaminho ? <CaminhoXml caminho={atributo.valor!} /> : atributo.valor}
+          {/* Texto corrido mantém as quebras de linha: as notas chegam em parágrafos. */}
+          <dd
+            className={clsx(
+              'mt-0.5 text-sm text-ink',
+              !atributo.ehCaminho && 'whitespace-pre-line',
+            )}
+          >
+            {atributo.ehCaminho ? <Destinos valor={atributo.valor!} /> : atributo.valor}
           </dd>
         </div>
       ))}
     </dl>
+  )
+}
+
+/**
+ * Um caminho por destino. Passar os destinos juntos ao `CaminhoXml` misturaria o separador com o
+ * nome de uma tag e destacaria só a última como "o nó" — a leitura sairia errada justamente no campo
+ * que vai para dois lugares.
+ */
+function Destinos({ valor }: { valor: string }) {
+  const destinos = valor.split(SEPARADOR_DE_DESTINOS)
+  if (destinos.length === 1) return <CaminhoXml caminho={valor} />
+
+  return (
+    <ul className="flex flex-col gap-1">
+      {destinos.map((destino) => (
+        <li key={destino}>
+          <CaminhoXml caminho={destino} />
+        </li>
+      ))}
+    </ul>
   )
 }
 

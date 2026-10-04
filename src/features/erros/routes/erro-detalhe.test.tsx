@@ -118,6 +118,25 @@ describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
   })
 })
 
+describe('ErroDetalhePage — causa provável', () => {
+  it('preserva a quebra entre a regra da Sefin e o lugar onde ela se aplica', async () => {
+    // Formato da carga do Emissor Nacional: regra numa linha, caminho na seguinte.
+    const causa = 'Regra da Sefin: O CNPJ do tomador deve ser válido.\nOnde: DPS/infDPS/toma/CNPJ'
+    const erro: ErroDetalhe = { ...erroBase, causaProvavel: causa }
+    server.use(
+      http.get(`${API_URL}/erros/${erro.slug}`, () =>
+        HttpResponse.json({ data: erro, message: null }),
+      ),
+    )
+
+    renderPagina({ erroSlug: erro.slug })
+
+    await screen.findByRole('heading', { name: 'Causa provável' })
+    const paragrafo = screen.getByText((_, elemento) => elemento?.textContent === causa)
+    expect(paragrafo).toHaveClass('whitespace-pre-line')
+  })
+})
+
 // F-4 (`arquitetura.md` §5.F) — `erro` nunca teve mecanismo de correção de
 // slug. Estes testes travam que ele passou a ter, no mesmo padrão de
 // `artigo-detalhe.test.tsx`.
