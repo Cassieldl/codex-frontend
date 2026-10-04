@@ -13,14 +13,51 @@ const CATEGORIA_OPTIONS: SelectOption[] = [
   { value: 'Proprio', label: 'Próprio' },
 ]
 
+/** Tetos do validator do backend, que são os das colunas (`ProvedorValidators`). */
+const TAMANHO_MAXIMO_ALIAS = 160
+
+/**
+ * Um alias por linha, sem espaço nas pontas e sem linha vazia. É o mesmo recorte usado no envio:
+ * validar outra coisa deixaria passar o que o servidor recusa.
+ */
+export function separarAliases(texto: string | undefined): string[] {
+  return (texto ?? '')
+    .split('\n')
+    .map((alias) => alias.trim())
+    .filter(Boolean)
+}
+
 const provedorSchema = z.object({
-  nome: z.string().min(1, 'O nome é obrigatório.').max(200, 'Máximo de 200 caracteres.'),
+  nome: z.string().min(1, 'O nome é obrigatório.').max(160, 'Máximo de 160 caracteres.'),
   identificadorInvoicy: z
     .string()
     .min(1, 'O identificador InvoiCy é obrigatório.')
-    .max(100, 'Máximo de 100 caracteres.'),
+    .max(80, 'Máximo de 80 caracteres.'),
   categoria: z.enum(['Nacional', 'Proprio'] as const, { error: 'Selecione a categoria.' }),
-  aliasesTexto: z.string().max(2000, 'Máximo de 2000 caracteres.').optional().or(z.literal('')),
+  aliasesTexto: z
+    .string()
+    .max(2000, 'Máximo de 2000 caracteres.')
+    .optional()
+    .or(z.literal(''))
+    .superRefine((texto, contexto) => {
+      const aliases = separarAliases(texto)
+      const longo = aliases.find((alias) => alias.length > TAMANHO_MAXIMO_ALIAS)
+      if (longo) {
+        contexto.addIssue({
+          code: 'custom',
+          message: `Cada alias tem no máximo ${TAMANHO_MAXIMO_ALIAS} caracteres.`,
+        })
+        return
+      }
+      // Comparação exata, como a do índice único: "ADN" e "adn" são aliases diferentes.
+      const repetido = aliases.find((alias, indice) => aliases.indexOf(alias) !== indice)
+      if (repetido) {
+        contexto.addIssue({
+          code: 'custom',
+          message: `O alias "${repetido}" aparece mais de uma vez.`,
+        })
+      }
+    }),
 })
 
 type ProvedorFormValores = z.infer<typeof provedorSchema>
@@ -80,10 +117,7 @@ export function ProvedorForm({
       nome: valores.nome,
       identificadorInvoicy: permiteEditarIdentificador ? valores.identificadorInvoicy : undefined,
       categoria: valores.categoria,
-      aliases: (valores.aliasesTexto ?? '')
-        .split('\n')
-        .map((alias) => alias.trim())
-        .filter(Boolean),
+      aliases: separarAliases(valores.aliasesTexto),
     })
   }
 

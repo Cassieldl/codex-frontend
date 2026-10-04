@@ -10,7 +10,8 @@ import type { VersaoAdminDetalhe } from '../types/versaoAdmin'
 
 const versaoSchema = z.object({
   versaoLayoutId: z.string().min(1, 'Selecione a versão do Layout InvoiCy.'),
-  rotulo: z.string().min(1, 'O rótulo é obrigatório.').max(100, 'Máximo de 100 caracteres.'),
+  // 80 é o tamanho da coluna e o teto do validator do backend.
+  rotulo: z.string().min(1, 'O rótulo é obrigatório.').max(80, 'Máximo de 80 caracteres.'),
   introducao: z.string().max(4000, 'Máximo de 4000 caracteres.').optional().or(z.literal('')),
 })
 
@@ -25,7 +26,10 @@ export interface VersaoProvedorFormDto {
 export interface VersaoProvedorFormProps {
   initialData?: VersaoAdminDetalhe
   opcoesVersaoLayout: SelectOption[]
-  /** Só aparece na criação — `AtualizarVersaoDto` (I8b) não tem `versaoLayoutId`. */
+  /**
+   * Só aparece na criação. O PUT aceita trocar o layout, mas recusa com 422 se a versão já tiver
+   * campos — e na edição ela quase sempre tem —, então a edição nunca envia `versaoLayoutId`.
+   */
   permiteEscolherVersaoLayout?: boolean
   onSubmit: (dto: VersaoProvedorFormDto) => void
   onCancel: () => void
