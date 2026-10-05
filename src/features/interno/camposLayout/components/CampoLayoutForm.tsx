@@ -16,13 +16,14 @@ const ESTADO_OPTIONS: SelectOption[] = [
 // R3 (`analise-backend.md` §5.1a) — campo canônico é identidade, nunca
 // comportamento. Este formulário nunca oferece tipo/tamanho/máscara/domínio/
 // obrigatoriedade — isso vive só em `CampoVersaoForm`.
+// Os tetos são os do backend (`LimitesCampoLayout`), que são os das colunas.
 function criarSchema(modo: 'criar' | 'editar') {
   return z
     .object({
-      nome: z.string().min(1, 'O nome é obrigatório.').max(150, 'Máximo de 150 caracteres.'),
+      nome: z.string().min(1, 'O nome é obrigatório.').max(120, 'Máximo de 120 caracteres.'),
       caminhoXml: z
         .string()
-        .max(300, 'Máximo de 300 caracteres.')
+        .max(160, 'Máximo de 160 caracteres.')
         .optional()
         .or(z.literal(''))
         .refine((valor) => modo !== 'criar' || Boolean(valor?.trim()), {
@@ -32,7 +33,7 @@ function criarSchema(modo: 'criar' | 'editar') {
         .string()
         .min(1, 'O significado é obrigatório.')
         .max(1000, 'Máximo de 1000 caracteres.'),
-      grupo: z.string().max(100, 'Máximo de 100 caracteres.').optional().or(z.literal('')),
+      grupo: z.string().max(120, 'Máximo de 120 caracteres.').optional().or(z.literal('')),
       ordem: z
         .number('A ordem precisa ser um número.')
         .int('A ordem precisa ser um número inteiro.')
