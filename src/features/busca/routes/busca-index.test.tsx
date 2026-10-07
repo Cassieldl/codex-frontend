@@ -270,3 +270,18 @@ describe('BuscaPage — filtro legível sobre o cabeçalho escuro', () => {
     expect(rotulo).not.toHaveClass('text-ink')
   })
 })
+
+describe('BuscaPage — título da página', () => {
+  it('tem um único h1, para quem navega por títulos com leitor de tela', async () => {
+    server.use(
+      http.get(`${API_URL}/provedores`, () => respostaProvedores([IPM])),
+      http.get(`${API_URL}/busca`, () => respostaBusca(resultadoBase())),
+    )
+
+    renderPagina('e0117')
+
+    await screen.findByRole('combobox', { name: 'Provedor' })
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Busca no Codex')
+  })
+})

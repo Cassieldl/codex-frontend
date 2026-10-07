@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import { useEffect, useState } from 'react'
+import { RotuloDeCaminho } from '../../../components/ui/RotuloDeCaminho'
 
 export interface GrupoIndiceCampos {
   slug: string
@@ -69,7 +70,9 @@ export function IndiceGruposCampos({ grupos }: IndiceGruposCamposProps) {
               ativo && 'bg-surface-hover font-semibold',
             )}
           >
-            <span>{grupo.nome}</span>
+            <span className="min-w-0 [overflow-wrap:anywhere]">
+              <RotuloDeCaminho texto={grupo.nome} />
+            </span>
             <span className="text-aux text-muted tabular-nums">{grupo.total}</span>
           </a>
         )

@@ -116,6 +116,10 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
         tabIndex={-1}
         className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
       >
+        {/* O campo no cabeçalho já diz visualmente o que é a página; o título existe para quem
+            navega por títulos com leitor de tela, que sem ele chega a uma página sem nome. */}
+        <h1 className="sr-only">Busca no Codex</h1>
+
         {isLoading && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">Carregando resultados da busca…</span>

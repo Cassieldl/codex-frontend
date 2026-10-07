@@ -3,6 +3,7 @@ import { useId, useMemo, useState } from 'react'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { CaminhoXml } from '../../../components/ui/CaminhoXml'
 import { EmptyState } from '../../../components/ui/EmptyState'
+import { RotuloDeCaminho } from '../../../components/ui/RotuloDeCaminho'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../components/ui/Table'
 import { construirIdLinhaCampo } from '../../provedores/utils/destaqueAncora'
 import type { GrupoCamposLayout } from '../types/layoutPublico'
@@ -146,7 +147,9 @@ export function DicionarioCampos({
                    grupos do mesmo vocabulário e não podem marcá-los de formas diferentes. */
                 <h3 className="sticky top-0 z-10 mb-2 flex items-center gap-2 bg-white py-1 text-card-titulo font-medium text-ink">
                   <span aria-hidden="true" className="h-4 w-1 shrink-0 rounded-full bg-accent" />
-                  {grupo.grupo}
+                  <span className="min-w-0 [overflow-wrap:anywhere]">
+                    <RotuloDeCaminho texto={grupo.grupo} />
+                  </span>
                 </h3>
               )}
 
@@ -195,14 +198,14 @@ export function DicionarioCampos({
                           )}
                           {/* Abaixo de 900px a coluna de significado sai da
                               tabela — o texto continua na linha, nunca some. */}
-                          <span className="mt-1 block text-xs text-ink/70 min-[900px]:hidden">
+                          <span className="mt-1 block text-xs text-ink/70 [overflow-wrap:anywhere] min-[900px]:hidden">
                             {campo.significado}
                           </span>
                         </TableCell>
                         <TableCell className="py-3 text-left text-[11px]">
                           <CaminhoXml caminho={campo.caminhoXml} />
                         </TableCell>
-                        <TableCell className="hidden py-3 text-left text-xs leading-relaxed min-[900px]:table-cell">
+                        <TableCell className="hidden py-3 text-left text-xs leading-relaxed [overflow-wrap:anywhere] min-[900px]:table-cell">
                           {campo.significado}
                         </TableCell>
                         <TableCell className="py-3">

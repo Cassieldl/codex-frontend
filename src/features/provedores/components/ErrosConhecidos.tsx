@@ -37,7 +37,9 @@ export function ErrosConhecidos({ resumo, provedorSlug }: ErrosConhecidosProps) 
             <>
               <div className="flex items-baseline justify-between gap-3">
                 <span className="shrink-0 font-mono text-xs text-muted">{erro.codigo}</span>
-                <span className="text-right text-sm text-ink">{erro.titulo}</span>
+                <span className="min-w-0 text-right text-sm text-ink [overflow-wrap:anywhere]">
+                  {erro.titulo}
+                </span>
               </div>
 
               {erro.variantes.length > 0 && (

@@ -1,10 +1,11 @@
 import clsx from 'clsx'
 import { ChevronRight } from 'lucide-react'
-import { Fragment, useCallback, useId, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { CaminhoXml } from '../../../components/ui/CaminhoXml'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { EtiquetaEstado, type EstadoPreenchimento } from '../../../components/ui/EtiquetaEstado'
+import { RotuloDeCaminho } from '../../../components/ui/RotuloDeCaminho'
 import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../components/ui/Table'
 import { campoTemDetalhe, DetalheDoCampo } from './DetalheDoCampo'
@@ -89,6 +90,31 @@ export function TabelaCampos({
 
   const totalVisivel = gruposFiltrados.reduce((soma, grupo) => soma + grupo.campos.length, 0)
 
+  // Chegar por `#campo-…` (link de um aviso, ou link copiado) rola até a linha. Se o filtro a
+  // esconde, ele é limpo antes: o link prometeu levar ao campo, e uma âncora sem alvo não leva a
+  // lugar nenhum. A rolagem acontece uma vez por campo apontado — nunca ao digitar um filtro depois.
+  const campoRoladoRef = useRef<string | null>(null)
+  const filtroEscondeODestacado =
+    campoDestacado !== null &&
+    filtroAtivo &&
+    !gruposFiltrados.some((grupo) =>
+      grupo.campos.some((campo) => campo.campoLayoutSlug === campoDestacado),
+    )
+
+  useEffect(() => {
+    if (!campoDestacado || campoRoladoRef.current === campoDestacado) return
+
+    if (filtroEscondeODestacado) {
+      setTermoFiltro('')
+      return
+    }
+
+    campoRoladoRef.current = campoDestacado
+    document
+      .getElementById(construirIdLinhaCampo(campoDestacado))
+      ?.scrollIntoView({ block: 'center' })
+  }, [campoDestacado, filtroEscondeODestacado])
+
   // D8/M27 — muda só o TEXTO, nunca a posição, e nunca o SeloVerificacao
   // (renderizado abaixo com props que não dependem do filtro).
   const fraseExaustividade = filtroAtivo
@@ -170,7 +196,9 @@ export function TabelaCampos({
                    força justamente do que sinaliza risco (§3.3a). */
                 <h3 className="mb-2 flex items-center gap-2 text-card-titulo font-medium text-ink">
                   <span aria-hidden="true" className="h-4 w-1 shrink-0 rounded-full bg-accent" />
-                  {grupo.grupo}
+                  <span className="min-w-0 [overflow-wrap:anywhere]">
+                    <RotuloDeCaminho texto={grupo.grupo} />
+                  </span>
                 </h3>
               )}
 
