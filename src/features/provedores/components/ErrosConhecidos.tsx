@@ -45,7 +45,10 @@ export function ErrosConhecidos({ resumo, provedorSlug }: ErrosConhecidosProps) 
               {erro.variantes.length > 0 && (
                 <ul className="mt-2 flex flex-col gap-1 border-l-2 border-accent pl-3">
                   {erro.variantes.map((mensagem) => (
-                    <li key={mensagem} className="font-mono text-xs leading-5 text-muted">
+                    <li
+                      key={mensagem}
+                      className="font-mono text-xs leading-5 text-muted [overflow-wrap:anywhere]"
+                    >
                       {mensagem}
                     </li>
                   ))}
