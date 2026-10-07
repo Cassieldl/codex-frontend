@@ -21,6 +21,8 @@ export interface PermissoesInterno {
   erros: PermissoesEntidade
   artigos: PermissoesEntidade
   comunicados: PermissoesEntidade
+  /** `lacunasbusca-*` — fila editorial (buscas internas sem resultado); sem `publicar`. */
+  lacunasBusca: PermissoesEntidade
   buscaInterna: { buscar: boolean }
 }
 
@@ -60,6 +62,7 @@ export function usePermissoesInterno(): PermissoesInterno {
     erros: agrupar(roles, 'erros'),
     artigos: agrupar(roles, 'artigos'),
     comunicados: agrupar(roles, 'comunicados'),
+    lacunasBusca: agrupar(roles, 'lacunasbusca'),
     buscaInterna: { buscar: roles.includes(ROLE_BUSCA_INTERNA) },
   }
 }

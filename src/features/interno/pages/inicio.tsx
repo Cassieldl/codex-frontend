@@ -1,6 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { ClipboardList, FileWarning, Layers } from 'lucide-react'
 import { useState, type KeyboardEvent } from 'react'
 import { ErrorState } from '../../../components/ui/ErrorState'
@@ -8,9 +6,13 @@ import { EmptyState } from '../../../components/ui/EmptyState'
 import { Input } from '../../../components/ui/Input'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { useDebounce } from '../../busca/hooks/useDebounce'
+import { usePermissoesInterno } from '../hooks/usePermissoesInterno'
 import { ResultadoBuscaInternaLista } from '../busca/components/ResultadoBuscaInternaLista'
 import { useResultadoBuscaInterna } from '../busca/hooks/useResultadoBuscaInterna'
-import { montarNotaBacklog } from '../busca/utils/montarNotaBacklog'
+import { FilaLacunasBusca } from '../lacunasBusca/components/FilaLacunasBusca'
+import { RegistrarLacunaBusca } from '../lacunasBusca/components/RegistrarLacunaBusca'
+import { LIMITES_LACUNA_BUSCA } from '../lacunasBusca/types/lacunaBusca'
+import { VerificacoesVencidas } from '../verificacoesVencidas/components/VerificacoesVencidas'
 
 const DEBOUNCE_MS = 300
 
@@ -36,6 +38,7 @@ const ATALHOS = [
 ]
 
 export function InicioPage() {
+  const permissoes = usePermissoesInterno()
   const [termo, setTermo] = useState('')
   const [parceiro, setParceiro] = useState('')
   const [chamado, setChamado] = useState('')
@@ -45,16 +48,6 @@ export function InicioPage() {
 
   function aoTeclarNoCampo(evento: KeyboardEvent<HTMLInputElement>) {
     if (evento.key === 'Escape') setTermo('')
-  }
-
-  async function copiarNotaBacklog() {
-    const nota = montarNotaBacklog({
-      termo,
-      parceiro,
-      chamado,
-      dataFormatada: format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }),
-    })
-    await navigator.clipboard.writeText(nota)
   }
 
   const mostrarResultados = termoComAtraso.trim().length >= 2
@@ -74,34 +67,29 @@ export function InicioPage() {
           id="busca-interna"
           autoFocus
           placeholder="Código do erro, nome do provedor, campo…"
+          maxLength={LIMITES_LACUNA_BUSCA.termo}
           value={termo}
           onChange={(evento) => setTermo(evento.target.value)}
           onKeyDown={aoTeclarNoCampo}
           role="searchbox"
         />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Input
-            label="Parceiro"
-            hint="Usado só para montar a nota do backlog — nunca enviado ao servidor."
-            value={parceiro}
-            onChange={(evento) => setParceiro(evento.target.value)}
-          />
-          <Input
-            label="Número do chamado"
-            value={chamado}
-            onChange={(evento) => setChamado(evento.target.value)}
-          />
-        </div>
-
-        {termo.trim().length > 0 && (
-          <button
-            type="button"
-            onClick={copiarNotaBacklog}
-            className="self-start text-xs font-medium text-primary-medium hover:underline"
-          >
-            Copiar nota para o backlog
-          </button>
+        {permissoes.lacunasBusca.adicionar && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Parceiro"
+              hint="Vai junto com a lacuna quando uma busca não encontrar nada."
+              maxLength={LIMITES_LACUNA_BUSCA.parceiro}
+              value={parceiro}
+              onChange={(evento) => setParceiro(evento.target.value)}
+            />
+            <Input
+              label="Número do chamado"
+              maxLength={LIMITES_LACUNA_BUSCA.numeroChamado}
+              value={chamado}
+              onChange={(evento) => setChamado(evento.target.value)}
+            />
+          </div>
         )}
 
         {isLoading && mostrarResultados && (
@@ -123,13 +111,30 @@ export function InicioPage() {
         )}
 
         {!isLoading && !isError && mostrarResultados && data && data.totalGeral === 0 && (
-          <EmptyState message="O Codex ainda não documenta esta rejeição." />
+          <EmptyState
+            message="O Codex ainda não documenta esta rejeição."
+            action={
+              permissoes.lacunasBusca.adicionar && (
+                <RegistrarLacunaBusca
+                  termo={termoComAtraso}
+                  parceiro={parceiro}
+                  numeroChamado={chamado}
+                />
+              )
+            }
+          />
         )}
 
         {!isLoading && mostrarResultados && data && data.totalGeral > 0 && (
           <ResultadoBuscaInternaLista grupos={data.grupos} />
         )}
       </section>
+
+      {permissoes.lacunasBusca.buscar && (
+        <FilaLacunasBusca podeAtualizar={permissoes.lacunasBusca.atualizar} />
+      )}
+
+      {permissoes.versoesProvedor.buscar && <VerificacoesVencidas />}
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {ATALHOS.map(({ to, titulo, descricao, Icone }) => (

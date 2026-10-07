@@ -139,3 +139,33 @@ describe('usePermissoesInterno — comunicados (tela 12)', () => {
     })
   })
 })
+
+describe('usePermissoesInterno — fila editorial (lacunasbusca)', () => {
+  it('agrupa as roles lacunasbusca-* pelo nome exato da role do backend', () => {
+    keycloak.tokenParsed = {
+      resource_access: {
+        'codex-backend': { roles: ['lacunasbusca-buscar', 'lacunasbusca-atualizar'] },
+      },
+    }
+
+    const { result } = renderHook(() => usePermissoesInterno())
+
+    expect(result.current.lacunasBusca).toEqual({
+      buscar: true,
+      adicionar: false,
+      atualizar: true,
+      remover: false,
+      publicar: false,
+    })
+  })
+
+  it('não confunde lacunasbusca-* com indicebusca-buscar', () => {
+    keycloak.tokenParsed = {
+      resource_access: { 'codex-backend': { roles: ['indicebusca-buscar'] } },
+    }
+
+    const { result } = renderHook(() => usePermissoesInterno())
+
+    expect(result.current.lacunasBusca.buscar).toBe(false)
+  })
+})
