@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
 import type { VersaoAdminDetalhe } from '../types/versaoAdmin'
+import { verificacoesVencidasKeys } from '../../verificacoesVencidas/hooks/verificacoesVencidasKeys'
 import { versoesAdminKeys } from './versoesAdminKeys'
 
 interface EnvelopeVersaoAdminDetalhe {
@@ -33,6 +34,8 @@ export function useVerificarVersao() {
     },
     onSuccess: (_dados, variaveis) => {
       queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.id) })
+      // A versão sai da lista de verificações vencidas do Início assim que é verificada.
+      queryClient.invalidateQueries({ queryKey: verificacoesVencidasKeys.all })
     },
   })
 }
