@@ -31,6 +31,13 @@ function renderizarEndereco(endereco: string) {
   )
 }
 
+/**
+ * `router.load()` sobre a árvore real importa as rotas carregadas sob demanda, e o primeiro caso
+ * paga a transformação de todos esses módulos. Sozinho leva ~3 s; com a suíte inteira disputando
+ * CPU, passou dos 15 s do padrão e derrubou o CI de forma intermitente.
+ */
+const TIMEOUT_CARGA_DA_ARVORE_REAL_MS = 60_000
+
 describe('endereço que não corresponde a rota nenhuma', () => {
   it('explica em português, dentro do layout do portal', async () => {
     renderizarEndereco('/endereco-que-nunca-existiu')
@@ -76,15 +83,20 @@ describe('endereço que não corresponde a rota nenhuma', () => {
       const rotasCasadas = router.state.matches.map((casada) => casada.routeId)
       expect(rotasCasadas.filter((id) => id !== '__root__')).not.toEqual([])
     },
+    TIMEOUT_CARGA_DA_ARVORE_REAL_MS,
   )
 
-  it('endereço inválido não casa nenhuma rota além da raiz', async () => {
-    const router = createRouter({
-      routeTree,
-      history: createMemoryHistory({ initialEntries: ['/endereco-que-nunca-existiu'] }),
-    })
-    await router.load()
+  it(
+    'endereço inválido não casa nenhuma rota além da raiz',
+    async () => {
+      const router = createRouter({
+        routeTree,
+        history: createMemoryHistory({ initialEntries: ['/endereco-que-nunca-existiu'] }),
+      })
+      await router.load()
 
-    expect(router.state.matches.map((casada) => casada.routeId)).toEqual(['__root__'])
-  })
+      expect(router.state.matches.map((casada) => casada.routeId)).toEqual(['__root__'])
+    },
+    TIMEOUT_CARGA_DA_ARVORE_REAL_MS,
+  )
 })

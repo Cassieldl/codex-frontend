@@ -38,3 +38,43 @@ jobs:
       # falha por arquivo ausente — o que parece defeito de código e é ordem de step.
       - name: Testes
         run: npm test
+
+      # Só dependências de produção: as de desenvolvimento (ambiente de teste) não vão para o
+      # bundle. `high` para cima reprova.
+      - name: Dependências de produção sem vulnerabilidade alta
+        run: npm audit --omit=dev --audit-level=high
+
+  imagem:
+    # Constrói a imagem e sobe o container de verdade: a configuração do nginx só é validada na
+    # partida, e uma variável de template ausente já derrubaria o portal em produção.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construir a imagem do portal
+        run: |
+          docker build -t codex-portal:ci \
+            --build-arg VITE_API_URL=https://api.exemplo.com.br/api/v1 \
+            --build-arg VITE_KEYCLOAK_URL=https://auth.exemplo.com.br \
+            --build-arg VITE_KEYCLOAK_REALM=codex \
+            --build-arg VITE_KEYCLOAK_CLIENT_ID=codex-front .
+
+      - name: Subir o container e responder
+        run: |
+          docker run -d --name portal -p 8080:8080 \
+            -e CSP_CONNECT_SRC="https://api.exemplo.com.br https://auth.exemplo.com.br" \
+            -e CSP_FRAME_SRC="https://auth.exemplo.com.br" codex-portal:ci
+          for tentativa in $(seq 1 20); do
+            curl -sf -o /dev/null http://localhost:8080/ && break
+            sleep 1
+          done
+          curl -sf -o /dev/null http://localhost:8080/provedores
+          curl -sfI http://localhost:8080/ | grep -qi '^strict-transport-security:'
+          curl -sf http://localhost:8080/robots.txt | grep -q 'Disallow: /interno'
+
+      - name: Recusar subir sem as variáveis da CSP
+        run: |
+          docker run -d --name portal-incompleto -e CSP_CONNECT_SRC="https://api.exemplo.com.br" codex-portal:ci
+          sleep 3
+          test "$(docker inspect -f '{{.State.Running}}' portal-incompleto)" = "false"
+          docker logs portal-incompleto 2>&1 | grep -q 'CSP_FRAME_SRC'
