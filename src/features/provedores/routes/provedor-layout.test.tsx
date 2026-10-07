@@ -10,6 +10,12 @@ import {
 import { render, screen, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
+import {
+  COMUNICADO_CRITICO_DO_PROVEDOR,
+  COMUNICADO_DE_VERSAO,
+  COMUNICADO_GLOBAL,
+  handlerComunicadosRegistrandoChamadas,
+} from '../../../test/mocks/comunicadosContexto'
 import { server } from '../../../test/mocks/server'
 import type { ProvedorDetalhe } from '../types/provedor'
 import { ProvedorLayoutPage } from './provedor-layout'
@@ -249,5 +255,134 @@ describe('ProvedorLayoutPage — retentativa só no que pode melhorar', () => {
 
     await screen.findByRole('button', { name: /tentar novamente/i })
     expect(contar()).toBeGreaterThan(1)
+  })
+})
+
+/**
+ * Comunicado do provedor e das versões dele no topo da página — a instabilidade de quem está
+ * emitindo não pode existir só na Home. O mesmo layout serve a página do provedor e a da versão:
+ * o que muda é o `versao` que vai na consulta.
+ */
+describe('ProvedorLayoutPage — comunicados do contexto', () => {
+  it('na página do provedor, consulta só o provedor e mostra a qual versão cada comunicado se refere', async () => {
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([
+      COMUNICADO_CRITICO_DO_PROVEDOR,
+      COMUNICADO_DE_VERSAO,
+    ])
+    server.use(handlerProvedor('prefeitura-exemplo', provedorFake), handler)
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    expect(
+      await screen.findByRole('heading', { level: 3, name: 'Instabilidade na emissão' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Prefeitura de Exemplo · 2.04')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver versão 2.04' })).toHaveAttribute(
+      'href',
+      '/provedores/prefeitura-exemplo/2-04',
+    )
+    expect(chamadas).toHaveLength(1)
+    expect(chamadas[0]!.search).toBe('?provedor=prefeitura-exemplo')
+  })
+
+  it('na página da versão, a consulta leva o provedor e a versão', async () => {
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([COMUNICADO_DE_VERSAO])
+    server.use(handlerProvedor('prefeitura-exemplo', provedorFake), handler)
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      versaoSlugAtual: '2-04',
+      caminhoAtual: '/provedores/prefeitura-exemplo/2-04',
+    })
+
+    await screen.findByRole('heading', { level: 3, name: 'Layout 2.04 em homologação' })
+    expect(chamadas).toHaveLength(1)
+    expect(chamadas[0]!.searchParams.get('provedor')).toBe('prefeitura-exemplo')
+    expect(chamadas[0]!.searchParams.get('versao')).toBe('2-04')
+  })
+
+  it('o comunicado vem antes dos avisos do provedor e da barra de versões', async () => {
+    const provedorComAviso: ProvedorDetalhe = {
+      ...provedorFake,
+      avisos: [
+        {
+          id: 9,
+          escopo: 'provedor',
+          severidade: 'Alerta',
+          titulo: 'Aviso permanente',
+          corpo: 'Texto do aviso.',
+          vigenciaInicio: '2026-09-01',
+          camposAfetados: [],
+        },
+      ],
+    }
+    const { handler } = handlerComunicadosRegistrandoChamadas([COMUNICADO_CRITICO_DO_PROVEDOR])
+    server.use(handlerProvedor('prefeitura-exemplo', provedorComAviso), handler)
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    const comunicados = await screen.findByRole('region', { name: 'Comunicados ativos' })
+    const avisos = await screen.findByRole('region', { name: 'Avisos do provedor' })
+    const versoes = screen.getByRole('navigation', { name: 'Versões do provedor' })
+
+    expect(
+      comunicados.compareDocumentPosition(avisos) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(avisos.compareDocumentPosition(versoes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('sem comunicado, não sobra bloco vazio', async () => {
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([])
+    server.use(handlerProvedor('prefeitura-exemplo', provedorFake), handler)
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    await screen.findByRole('heading', { level: 1, name: 'Prefeitura de Exemplo' })
+    await waitFor(() => expect(chamadas).toHaveLength(1))
+    expect(screen.queryByRole('region', { name: 'Comunicados ativos' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('a falha do endpoint de comunicados não derruba a página do provedor', async () => {
+    server.use(
+      handlerProvedor('prefeitura-exemplo', provedorFake),
+      http.get(`${API_URL}/comunicados`, () => new HttpResponse(null, { status: 500 })),
+    )
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Prefeitura de Exemplo' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Não foi possível verificar os comunicados agora.',
+    )
+    expect(screen.getByRole('navigation', { name: 'Versões do provedor' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /tentar novamente/i })).toBeInTheDocument()
+  })
+
+  it('provedor inexistente não consulta comunicado nenhum', async () => {
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([COMUNICADO_GLOBAL])
+    server.use(
+      http.get(`${API_URL}/provedores/nao-existe`, () => new HttpResponse(null, { status: 404 })),
+      handler,
+    )
+
+    renderPagina({ provedorSlug: 'nao-existe', caminhoAtual: '/provedores/nao-existe' })
+
+    await screen.findByRole('heading', { level: 1, name: 'Este provedor não existe.' })
+    expect(chamadas).toHaveLength(0)
   })
 })

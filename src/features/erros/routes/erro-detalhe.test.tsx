@@ -7,15 +7,25 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
+import { ID_SECAO_VERSOES_APLICAVEIS } from '../../../components/layout/RodapeContextual'
+import { montarLinkSuporte } from '../../../utils/linkSuporte'
+import { CONTEUDO_RODAPE_CONSTANTE } from '../../../utils/rodapeConteudoConstante'
+import {
+  COMUNICADO_CRITICO_DO_PROVEDOR,
+  COMUNICADO_DE_VERSAO,
+  COMUNICADO_GLOBAL,
+  handlerComunicadosRegistrandoChamadas,
+} from '../../../test/mocks/comunicadosContexto'
 import { handlerErroDetalhePadrao } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
 import type { ErroDetalhe } from '../types/erro'
 import { ErroDetalhePage } from './erro-detalhe'
 
 const API_URL = import.meta.env.VITE_API_URL
+const TEXTO_FALHA_COMUNICADOS = 'Não foi possível verificar os comunicados agora.'
 
 const erroBase: ErroDetalhe = {
   slug: 'e0117-cnpj-tomador-invalido',
@@ -58,7 +68,12 @@ function renderPagina({ erroSlug, caminhoAtual = `/erros/${erroSlug}` }: OpcoesR
     validateSearch: (search: Record<string, unknown>) => search,
     component: () => null,
   })
-  const routeTree = rootRoute.addChildren([rotaErro, rotaArtigo, rotaBusca])
+  const rotaVersao = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/provedores/$provedorSlug/$versaoSlug',
+    component: () => null,
+  })
+  const routeTree = rootRoute.addChildren([rotaErro, rotaArtigo, rotaBusca, rotaVersao])
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [caminhoAtual] }),
@@ -168,5 +183,239 @@ describe('ErroDetalhePage — correção de URL canônica (F-4)', () => {
     )
     // Enquanto redireciona, o conteúdo não aparece no endereço não-canônico.
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
+  })
+})
+
+describe('ErroDetalhePage — rodapé: próximo passo e caminho ao suporte (§7.1/§7.2)', () => {
+  const versaoIpm = {
+    provedorSlug: 'ipm',
+    provedorNome: 'IPM',
+    versaoSlug: '2.04',
+    versaoRotulo: '2.04',
+  }
+  const versaoBetha = {
+    provedorSlug: 'betha',
+    provedorNome: 'Betha',
+    versaoSlug: '1.1',
+    versaoRotulo: '1.1',
+  }
+
+  async function renderComErro(erro: ErroDetalhe) {
+    server.use(
+      http.get(`${API_URL}/erros/${erro.slug}`, () =>
+        HttpResponse.json({ data: erro, message: null }),
+      ),
+    )
+    renderPagina({ erroSlug: erro.slug })
+
+    // Âncora de montagem: o rodapé só reflete o erro depois que ele carrega.
+    await screen.findByRole('heading', { level: 1, name: erro.codigo })
+
+    return within(screen.getByRole('contentinfo'))
+  }
+
+  const hrefSuporteEsperado = `mailto:suporte@migrate.info?subject=${encodeURIComponent(
+    'Codex · erro E0117',
+  )}&body=${encodeURIComponent('Código do erro: E0117')}`
+
+  it('erro geral: oferece buscar e o caminho ao suporte com o código do erro', async () => {
+    const rodape = await renderComErro({ ...erroBase, versoesAplicaveis: [] })
+
+    expect(rodape.getByText(/Não é esse o erro que você recebeu/)).toBeInTheDocument()
+    expect(rodape.getByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/busca')
+    expect(rodape.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
+      'href',
+      hrefSuporteEsperado,
+    )
+  })
+
+  it('erro em várias versões: leva à lista de versões da própria página e oferece o suporte', async () => {
+    const rodape = await renderComErro({
+      ...erroBase,
+      versoesAplicaveis: [versaoIpm, versaoBetha],
+    })
+
+    expect(rodape.getByText(/aparece em mais de uma versão/)).toBeInTheDocument()
+    const proximoPasso = rodape.getByRole('link', { name: 'Ver as versões aplicáveis' })
+    expect(proximoPasso).toHaveAttribute('href', `#${ID_SECAO_VERSOES_APLICAVEIS}`)
+    expect(rodape.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
+      'href',
+      hrefSuporteEsperado,
+    )
+
+    // O destino do próximo passo existe na página: a seção rotulada pelo título com esse id.
+    const secao = screen.getByRole('region', { name: 'Provedores e versões aplicáveis' })
+    expect(secao).toHaveAttribute('aria-labelledby', ID_SECAO_VERSOES_APLICAVEIS)
+    expect(document.getElementById(ID_SECAO_VERSOES_APLICAVEIS)).toBeInTheDocument()
+  })
+
+  it('erro em uma única versão: mantém "Ver versão completa" e ganha o caminho ao suporte', async () => {
+    const rodape = await renderComErro({ ...erroBase, versoesAplicaveis: [versaoIpm] })
+
+    expect(rodape.getByRole('link', { name: 'Ver versão completa' })).toHaveAttribute(
+      'href',
+      '/provedores/ipm/2.04',
+    )
+    expect(rodape.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
+      'href',
+      hrefSuporteEsperado,
+    )
+    expect(
+      rodape.queryByRole('link', { name: 'Ver as versões aplicáveis' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('o caminho ao suporte usa o e-mail e o montador do rodapé, com assunto e corpo do erro', async () => {
+    const rodape = await renderComErro({ ...erroBase, versoesAplicaveis: [] })
+
+    const href = rodape.getByRole('link', { name: 'Falar com o suporte' }).getAttribute('href')
+    expect(href).toBe(montarLinkSuporte('Codex · erro E0117', 'Código do erro: E0117'))
+    expect(href?.startsWith(`mailto:${CONTEUDO_RODAPE_CONSTANTE.atendimento.emailSuporte}?`)).toBe(
+      true,
+    )
+  })
+})
+
+/**
+ * A instabilidade do provedor aparece onde o leitor chega com o código do erro na mão. Uma
+ * consulta só, com todos os provedores aplicáveis ao erro; o erro geral (sem versões) consulta
+ * sem provedor e recebe só os comunicados globais.
+ */
+describe('ErroDetalhePage — comunicados do contexto', () => {
+  function versaoAplicavel(provedorSlug: string, versaoSlug: string) {
+    return {
+      provedorSlug,
+      provedorNome: `Provedor ${provedorSlug}`,
+      versaoSlug,
+      versaoRotulo: `Versão ${versaoSlug}`,
+    }
+  }
+
+  function servirErro(erro: ErroDetalhe) {
+    return http.get(`${API_URL}/erros/${erro.slug}`, () =>
+      HttpResponse.json({ data: erro, message: null }),
+    )
+  }
+
+  it('erro em várias versões de provedores diferentes: uma consulta com `provedor` repetido', async () => {
+    const erro: ErroDetalhe = {
+      ...erroBase,
+      versoesAplicaveis: [
+        versaoAplicavel('prefeitura-a', 'v1'),
+        versaoAplicavel('prefeitura-a', 'v2'),
+        versaoAplicavel('prefeitura-b', 'v1'),
+      ],
+    }
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([
+      COMUNICADO_CRITICO_DO_PROVEDOR,
+    ])
+    server.use(servirErro(erro), handler)
+
+    renderPagina({ erroSlug: erro.slug })
+
+    expect(
+      await screen.findByRole('heading', { level: 3, name: 'Instabilidade na emissão' }),
+    ).toBeInTheDocument()
+    expect(chamadas).toHaveLength(1)
+    expect(chamadas[0]!.search).toBe('?provedor=prefeitura-a&provedor=prefeitura-b')
+  })
+
+  it('erro em uma única versão: a consulta leva o provedor e a versão', async () => {
+    const erro: ErroDetalhe = {
+      ...erroBase,
+      versoesAplicaveis: [versaoAplicavel('prefeitura-a', 'v1')],
+    }
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([COMUNICADO_DE_VERSAO])
+    server.use(servirErro(erro), handler)
+
+    renderPagina({ erroSlug: erro.slug })
+
+    await screen.findByRole('heading', { level: 3, name: 'Layout 2.04 em homologação' })
+    expect(chamadas[0]!.searchParams.getAll('provedor')).toEqual(['prefeitura-a'])
+    expect(chamadas[0]!.searchParams.get('versao')).toBe('v1')
+  })
+
+  it('erro geral: consulta sem parâmetro e mostra só o que o servidor devolve (os globais)', async () => {
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([COMUNICADO_GLOBAL])
+    server.use(servirErro(erroBase), handler)
+
+    renderPagina({ erroSlug: erroBase.slug })
+
+    expect(
+      await screen.findByRole('heading', { level: 3, name: 'Manutenção programada da plataforma' }),
+    ).toBeInTheDocument()
+    expect(chamadas[0]!.search).toBe('')
+  })
+
+  it('com mais de 10 provedores aplicáveis, consulta os 10 primeiros', async () => {
+    const erro: ErroDetalhe = {
+      ...erroBase,
+      versoesAplicaveis: Array.from({ length: 12 }, (_, indice) =>
+        versaoAplicavel(`prefeitura-${indice + 1}`, 'v1'),
+      ),
+    }
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([])
+    server.use(servirErro(erro), handler)
+
+    renderPagina({ erroSlug: erro.slug })
+
+    await screen.findByRole('heading', { level: 1, name: 'E0117' })
+    await waitFor(() => expect(chamadas).toHaveLength(1))
+    expect(chamadas[0]!.searchParams.getAll('provedor')).toEqual(
+      Array.from({ length: 10 }, (_, indice) => `prefeitura-${indice + 1}`),
+    )
+  })
+
+  it('o comunicado vem antes da causa provável', async () => {
+    const erro: ErroDetalhe = { ...erroBase, causaProvavel: 'Causa.' }
+    const { handler } = handlerComunicadosRegistrandoChamadas([COMUNICADO_GLOBAL])
+    server.use(servirErro(erro), handler)
+
+    renderPagina({ erroSlug: erro.slug })
+
+    const comunicados = await screen.findByRole('region', { name: 'Comunicados ativos' })
+    const causa = screen.getByRole('region', { name: 'Causa provável' })
+
+    expect(
+      comunicados.compareDocumentPosition(causa) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('sem comunicado, não sobra bloco vazio', async () => {
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([])
+    server.use(servirErro(erroBase), handler)
+
+    renderPagina({ erroSlug: erroBase.slug })
+
+    await screen.findByRole('heading', { level: 1, name: 'E0117' })
+    await waitFor(() => expect(chamadas).toHaveLength(1))
+    expect(screen.queryByRole('region', { name: 'Comunicados ativos' })).not.toBeInTheDocument()
+    expect(screen.queryByText(TEXTO_FALHA_COMUNICADOS)).not.toBeInTheDocument()
+  })
+
+  it('a falha do endpoint de comunicados não derruba a página do erro', async () => {
+    server.use(
+      servirErro(erroBase),
+      http.get(`${API_URL}/comunicados`, () => new HttpResponse(null, { status: 500 })),
+    )
+
+    renderPagina({ erroSlug: erroBase.slug })
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'E0117' })).toBeInTheDocument()
+    expect(await screen.findByText(TEXTO_FALHA_COMUNICADOS)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Causa provável' })).toBeInTheDocument()
+  })
+
+  it('erro inexistente não consulta comunicado nenhum', async () => {
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([COMUNICADO_GLOBAL])
+    server.use(
+      http.get(`${API_URL}/erros/nao-existe`, () => new HttpResponse(null, { status: 404 })),
+      handler,
+    )
+
+    renderPagina({ erroSlug: 'nao-existe' })
+
+    await screen.findByRole('heading', { level: 1 })
+    expect(chamadas).toHaveLength(0)
   })
 })

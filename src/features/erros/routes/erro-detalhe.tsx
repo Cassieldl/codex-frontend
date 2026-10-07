@@ -3,18 +3,20 @@ import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
+import type { ContextoRodape } from '../../../components/layout/RodapeContextual'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
 import { handleApiError } from '../../../utils/handleApiError'
+import { ComunicadosDoContexto } from '../../comunicados/components/ComunicadosDoContexto'
 import { ArtigosRelacionados } from '../components/ArtigosRelacionados'
 import { BlocoMensagensObservadas } from '../components/BlocoMensagensObservadas'
 import { CamposRelacionados } from '../components/CamposRelacionados'
 import { ErroSemVersaoAplicavel } from '../components/ErroSemVersaoAplicavel'
 import { EstadoErroIndisponivel } from '../components/EstadoErroIndisponivel'
 import { useErroPorSlug } from '../hooks/useErroPorSlug'
-import type { OrigemErro } from '../types/erro'
+import type { ErroDetalhe, OrigemErro } from '../types/erro'
 
 export interface ErroDetalhePageProps {
   erroSlug: string
@@ -31,6 +33,21 @@ const ORIGEM_ROTULO: Record<OrigemErro, string> = {
   Prefeitura: 'Prefeitura',
   InvoiCy: 'InvoiCy',
   Schema: 'Schema/XML',
+}
+
+/**
+ * Rodapé por natureza do erro (§7.1): uma versão, nenhuma (geral) ou várias. Sem erro
+ * carregado (carregando, falha, 404/410) não há próximo passo a oferecer.
+ */
+function montarContextoRodape(
+  erro: ErroDetalhe | undefined,
+  contextoUnico: { provedorSlug: string; versaoSlug: string } | null,
+): ContextoRodape {
+  if (!erro) return { tipo: 'erro-sem-contexto' }
+  if (contextoUnico) return { tipo: 'erro-com-contexto', ...contextoUnico, codigoErro: erro.codigo }
+  if (erro.versoesAplicaveis.length === 0) return { tipo: 'erro-geral', codigoErro: erro.codigo }
+
+  return { tipo: 'erro-varias-versoes', codigoErro: erro.codigo }
 }
 
 /**
@@ -117,6 +134,11 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
               <p className="text-card-titulo font-medium text-ink">{erro.titulo}</p>
             </header>
 
+            <ComunicadosDoContexto
+              provedorSlugs={erro.versoesAplicaveis.map((versao) => versao.provedorSlug)}
+              versaoSlug={contextoUnico?.versaoSlug}
+            />
+
             <BlocoMensagensObservadas variantes={erro.variantes} codigoErro={erro.codigo} />
 
             <section aria-labelledby="causa-provavel-titulo" className="flex flex-col gap-2">
@@ -157,17 +179,7 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
         )}
       </main>
 
-      <RodapeContextual
-        contexto={
-          contextoUnico
-            ? {
-                tipo: 'erro-com-contexto',
-                provedorSlug: contextoUnico.provedorSlug,
-                versaoSlug: contextoUnico.versaoSlug,
-              }
-            : { tipo: 'erro-sem-contexto' }
-        }
-      />
+      <RodapeContextual contexto={montarContextoRodape(erro, contextoUnico)} />
     </div>
   )
 }

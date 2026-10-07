@@ -7,6 +7,7 @@ import { AbasNavegaveis, type AbaNavegavel } from '../../../components/ui/AbasNa
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
+import { ComunicadosDoContexto } from '../../comunicados/components/ComunicadosDoContexto'
 import { AvisosProvedor } from '../components/AvisosProvedor'
 import { EstadoProvedorIndisponivel } from '../components/EstadoProvedorIndisponivel'
 import { ErroProvedorHttp, useProvedorPorSlug } from '../hooks/useProvedorPorSlug'
@@ -100,6 +101,12 @@ export function ProvedorLayoutPage({
                 {provedor.categoria === 'Nacional' ? 'Nacional' : 'Próprio'}
               </p>
             </div>
+
+            <ComunicadosDoContexto
+              provedorSlugs={[provedorSlug]}
+              versaoSlug={versaoSlugAtual}
+              caminhoAtual={caminhoAtual}
+            />
 
             <AvisosProvedor nomeProvedor={provedor.nome} avisos={provedor.avisos} />
 

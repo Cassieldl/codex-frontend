@@ -26,10 +26,16 @@ import type {
  * (AP-ARQUITETURA-001 — `ApiResponse<T>` vs `PaginatedResponse<T>` cru,
  * conforme `analise-frontend.md` §5.4), seja aqui ou via `server.use(...)`
  * dentro do próprio arquivo de teste.
+ *
+ * O único handler de base é o dos comunicados do contexto: a página do provedor, a da versão e a do
+ * erro sempre o consultam, e quem testa outra coisa nelas não deve declará-lo. Os testes que tratam
+ * de comunicado o sobrescrevem com `server.use(...)`.
  */
-export const handlers: HttpHandler[] = []
-
 const API_URL = import.meta.env.VITE_API_URL
+
+export const handlers: HttpHandler[] = [
+  http.get(`${API_URL}/comunicados`, () => HttpResponse.json({ data: [] })),
+]
 
 /**
  * Resposta padrão de `GET /busca` (P1), já no shape pós-P1/I21 —
