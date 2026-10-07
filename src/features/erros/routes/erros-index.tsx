@@ -8,7 +8,7 @@ import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
-import { CONTEUDO_RODAPE_CONSTANTE } from '../../../utils/rodapeConteudoConstante'
+import { montarLinkSuporte, ROTULO_FALAR_COM_SUPORTE } from '../../../utils/linkSuporte'
 import { handleApiError } from '../../../utils/handleApiError'
 import { temCodigoParaBuscar, useErrosPorCodigo } from '../hooks/useErrosPorCodigo'
 
@@ -26,8 +26,6 @@ export interface ErrosIndexPageProps {
    */
   navigate: (opcoes: NavegarOpcoes) => void
 }
-
-const EMAIL_SUPORTE = CONTEUDO_RODAPE_CONSTANTE.atendimento.emailSuporte
 
 /**
  * `/erros?codigo=` — atalho de desambiguação (M2, §7.3). O suporte cola um
@@ -101,12 +99,13 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
             message={`O Codex ainda não documenta o código "${codigo}".`}
             action={
               <a
-                href={`mailto:${EMAIL_SUPORTE}?subject=${encodeURIComponent(
+                href={montarLinkSuporte(
                   'Codex · código de erro não documentado',
-                )}&body=${encodeURIComponent(`Código buscado: ${codigo}`)}`}
+                  `Código buscado: ${codigo}`,
+                )}
                 className="text-sm font-semibold text-primary-medium hover:underline"
               >
-                Falar com o suporte
+                {ROTULO_FALAR_COM_SUPORTE}
               </a>
             }
           />

@@ -9,6 +9,7 @@ import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Select } from '../../../components/ui/Select'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { montarLinkSuporte, ROTULO_FALAR_COM_SUPORTE } from '../../../utils/linkSuporte'
 import { useProvedores } from '../../provedores/hooks/useProvedores'
 import { BlocoAutocorrecao } from '../components/BlocoAutocorrecao'
 import { CampoBusca } from '../components/CampoBusca'
@@ -17,7 +18,6 @@ import { useDebounce } from '../hooks/useDebounce'
 import { useResultadoBusca } from '../hooks/useResultadoBusca'
 
 const DEBOUNCE_MS = 300
-const EMAIL_SUPORTE = 'suporte@migrate.info'
 const TODOS_OS_PROVEDORES = ''
 // Lista de provedores só serve pra popular o seletor — nenhuma paginação de
 // verdade é necessária aqui, então busca um lote grande de uma vez.
@@ -161,12 +161,13 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
                       rotulo="Copiar termo buscado"
                     />
                     <a
-                      href={`mailto:${EMAIL_SUPORTE}?subject=${encodeURIComponent(
+                      href={montarLinkSuporte(
                         'Codex · busca sem resultado',
-                      )}&body=${encodeURIComponent(`Termo buscado: ${resultado.termoUsado}`)}`}
+                        `Termo buscado: ${resultado.termoUsado}`,
+                      )}
                       className="text-sm font-semibold text-primary-medium hover:underline"
                     >
-                      Falar com o suporte
+                      {ROTULO_FALAR_COM_SUPORTE}
                     </a>
                   </div>
                 }

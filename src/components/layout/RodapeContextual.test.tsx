@@ -56,7 +56,7 @@ describe('RodapeContextual', () => {
 
     expect(screen.getByText(/Buscou e não achou/)).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Falar com o suporte' })
-    expect(link.getAttribute('href')).toContain('mailto:suporte@migrate.info')
+    expect(link.getAttribute('href')).toContain('mailto:supportbr@migrate.info')
   })
 
   it('omite o bloco de próximo passo quando o erro é geral, sem contexto de provedor/versão (U9)', () => {
@@ -77,7 +77,7 @@ describe('RodapeContextual', () => {
 
     expect(await screen.findByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/busca')
     const suporte = screen.getByRole('link', { name: 'Falar com o suporte' })
-    expect(suporte.getAttribute('href')).toContain('mailto:suporte@migrate.info')
+    expect(suporte.getAttribute('href')).toContain('mailto:supportbr@migrate.info')
     expect(decodeURIComponent(suporte.getAttribute('href') ?? '')).toContain('erro E0042')
     expect(decodeURIComponent(suporte.getAttribute('href') ?? '')).toContain(
       'Código do erro: E0042',
@@ -124,16 +124,16 @@ describe('RodapeContextual', () => {
 
   it('bloco de atendimento e coluna de links da Migrate são idênticos entre contextos diferentes', () => {
     const { unmount } = render(<RodapeContextual contexto={{ tipo: 'home' }} />)
-    const telefoneHome = screen.getByText('+55 48 3123-4567').textContent
+    const telefoneHome = screen.getByText('+55 11 4240-6556').textContent
     const linksHome = screen
-      .getAllByRole('link', { name: /InvoiCy|Central de ajuda|Status dos serviços/ })
+      .getAllByRole('link', { name: /^(InvoiCy|Base de conhecimento|GitHub)$/ })
       .map((link) => link.textContent)
     unmount()
 
     render(<RodapeContextual contexto={{ tipo: 'provedores' }} />)
-    const telefoneProvedores = screen.getByText('+55 48 3123-4567').textContent
+    const telefoneProvedores = screen.getByText('+55 11 4240-6556').textContent
     const linksProvedores = screen
-      .getAllByRole('link', { name: /InvoiCy|Central de ajuda|Status dos serviços/ })
+      .getAllByRole('link', { name: /^(InvoiCy|Base de conhecimento|GitHub)$/ })
       .map((link) => link.textContent)
 
     expect(telefoneProvedores).toBe(telefoneHome)
@@ -168,7 +168,7 @@ describe('RodapeContextual', () => {
       ),
     ).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Falar com o suporte' })
-    expect(link.getAttribute('href')).toContain('mailto:suporte@migrate.info')
+    expect(link.getAttribute('href')).toContain('mailto:supportbr@migrate.info')
     expect(link.getAttribute('href')).toContain('Codex')
   })
 
@@ -183,16 +183,47 @@ describe('RodapeContextual', () => {
     expect(screen.getByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/busca')
   })
 
-  it('todo link externo da coluna Migrate abre em nova aba com rel="noopener noreferrer"', () => {
+  it('todo link externo do rodapé abre em nova aba com rel="noopener noreferrer"', () => {
     render(<RodapeContextual contexto={{ tipo: 'home' }} />)
 
     const linksExternos = screen.getAllByRole('link', {
-      name: /InvoiCy|Central de ajuda|Status dos serviços/,
+      name: /^(InvoiCy|Base de conhecimento|GitHub|Abrir chamado)$/,
     })
+
+    expect(linksExternos).toHaveLength(4)
 
     for (const link of linksExternos) {
       expect(link).toHaveAttribute('target', '_blank')
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     }
+  })
+})
+
+describe('RodapeContextual — bloco de atendimento', () => {
+  // Literais, não a constante: são os dados reais de contato que o leitor vai usar.
+  it('mostra telefone discável, e-mail com link e horário de atendimento', () => {
+    render(<RodapeContextual contexto={{ tipo: 'home' }} />)
+
+    expect(screen.getByRole('link', { name: '+55 11 4240-6556' })).toHaveAttribute(
+      'href',
+      'tel:+551142406556',
+    )
+    expect(screen.getByRole('link', { name: 'supportbr@migrate.info' })).toHaveAttribute(
+      'href',
+      'mailto:supportbr@migrate.info',
+    )
+    expect(screen.getByText('Segunda a sexta-feira, das 08:00 às 18:00')).toBeInTheDocument()
+  })
+
+  // Literais: são os destinos reais que o leitor vai seguir.
+  it.each([
+    ['Abrir chamado', 'https://support.migrate.info/tickets'],
+    ['InvoiCy', 'https://invoicy.com.br'],
+    ['Base de conhecimento', 'https://desenvolvedores.migrate.info/?utm_source=site'],
+    ['GitHub', 'https://github.com/migrate-company/integracao-InvoiCy-BR'],
+  ])('o link "%s" leva a %s', (rotulo, destino) => {
+    render(<RodapeContextual contexto={{ tipo: 'home' }} />)
+
+    expect(screen.getByRole('link', { name: rotulo })).toHaveAttribute('href', destino)
   })
 })

@@ -214,7 +214,7 @@ describe('ErroDetalhePage — rodapé: próximo passo e caminho ao suporte (§7.
     return within(screen.getByRole('contentinfo'))
   }
 
-  const hrefSuporteEsperado = `mailto:suporte@migrate.info?subject=${encodeURIComponent(
+  const hrefSuporteEsperado = `mailto:supportbr@migrate.info?subject=${encodeURIComponent(
     'Codex · erro E0117',
   )}&body=${encodeURIComponent('Código do erro: E0117')}`
 

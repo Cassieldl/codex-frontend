@@ -184,7 +184,21 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
           >
             {atendimento.telefone}
           </a>
-          <p className="text-xs text-muted">{atendimento.horario}</p>
+          <a
+            href={`mailto:${atendimento.emailSuporte}`}
+            className="mt-1 block text-sm text-primary-medium hover:underline"
+          >
+            {atendimento.emailSuporte}
+          </a>
+          <a
+            href={atendimento.chamado.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 block text-sm text-primary-medium hover:underline"
+          >
+            {atendimento.chamado.rotulo}
+          </a>
+          <p className="mt-1 text-xs text-muted">{atendimento.horario}</p>
         </div>
 
         <nav aria-label="Links da Migrate">
