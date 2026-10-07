@@ -8,6 +8,9 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # Não anuncia a versão do nginx no cabeçalho `Server` nem nas páginas de erro.
+    server_tokens off;
+
     # Compressão do que é texto. O bundle já vem minificado; sem gzip, o JS principal viaja em
     # ~280 KB em vez de ~90 KB.
     gzip on;
@@ -35,11 +38,16 @@ server {
     # TODOS os do nível `server` naquela location. Por isso os cabeçalhos são repetidos em cada
     # bloco em vez de declarados uma vez acima. Foi assim que eles sumiram da resposta de
     # `/index.html` na primeira versão deste arquivo — e só apareceu rodando o container.
+    #
+    # HSTS sai daqui mesmo com o TLS terminando no balanceador: o navegador só o aceita em resposta
+    # HTTPS, então em HTTP local ele é ignorado. Sem `includeSubDomains` — o portal não decide pelos
+    # outros hosts do domínio.
 
     # Arquivos com hash no nome são imutáveis: trocar o conteúdo troca a URL.
     location /assets/ {
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
         add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
         add_header Content-Security-Policy $csp always;
         add_header Cache-Control "public, max-age=31536000, immutable" always;
@@ -51,6 +59,7 @@ server {
     location = /index.html {
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
         add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
         add_header Content-Security-Policy $csp always;
         add_header Cache-Control "no-cache" always;
@@ -62,6 +71,7 @@ server {
     location / {
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
         add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
         add_header Content-Security-Policy $csp always;
 

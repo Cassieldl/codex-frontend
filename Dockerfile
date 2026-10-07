@@ -38,6 +38,7 @@ FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 # O entrypoint da imagem aplica envsubst nos templates: a CSP e o proxy de API são definidos por
 # variável de ambiente, sem reconstruir a imagem. `$uri` do nginx não é tocado — só `${VAR}`.
 COPY --chown=nginx:nginx docker/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY --chown=nginx:nginx --chmod=755 docker/10-exigir-variaveis.sh /docker-entrypoint.d/10-exigir-variaveis.sh
 COPY --from=build --chown=nginx:nginx /origem/dist /usr/share/nginx/html
 
 EXPOSE 8080

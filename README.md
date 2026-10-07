@@ -49,6 +49,26 @@ npm run dev
 Nunca commitar `.env` — apenas `.env.example` com valores fictícios. Todo `VITE_*` é público no
 bundle final; nenhum secret deve viver aqui.
 
+## Produção (imagem Docker)
+
+A imagem (`Dockerfile`) é por ambiente: os `VITE_*` entram como `--build-arg` e ficam gravados no
+bundle — trocar depois não muda o que já foi construído. O build falha se faltar algum.
+
+```bash
+docker build -t codex-portal \n  --build-arg VITE_API_URL=https://codex-api.exemplo.com.br/api/v1 \n  --build-arg VITE_KEYCLOAK_URL=https://auth.exemplo.com.br \n  --build-arg VITE_KEYCLOAK_REALM=<realm> \n  --build-arg VITE_KEYCLOAK_CLIENT_ID=codex-front .
+```
+
+O container (nginx sem privilégio, porta 8080) lê em runtime as origens da política de segurança.
+Sem qualquer uma delas ele recusa subir e diz qual faltou:
+
+| Variável          | Uso                                                                               |
+| ----------------- | --------------------------------------------------------------------------------- |
+| `CSP_CONNECT_SRC` | Origens que o navegador pode chamar: API e Keycloak. Sem elas o login é bloqueado |
+| `CSP_FRAME_SRC`   | Origem do Keycloak, cujo iframe oculto verifica a sessão                          |
+
+Valores de exemplo em `.env.production.example`; guia completo de produção no `docs/producao.md` do
+`codex-backend`.
+
 ## Estrutura
 
 ```text
