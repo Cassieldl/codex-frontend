@@ -67,6 +67,64 @@ describe('useVersaoProvedor', () => {
     expect(result.current.data).toEqual(versaoPaginaFake)
   })
 
+  // JSON literal transcrito de `AvisoPublicoDto` / `CampoAfetadoPublicoDto` (P4).
+  const avisoDeVersaoLiteral = {
+    id: 12,
+    escopo: 'versao',
+    severidade: 'Alerta',
+    titulo: 'ISSRetido passou a ser obrigatório',
+    corpo: 'Primeiro parágrafo.\n\nSegundo parágrafo.',
+    vigenciaInicio: '2026-10-05',
+    camposAfetados: [
+      {
+        campoLayoutSlug: 'servico-valores-issretido',
+        nome: 'ISSRetido',
+        caminhoXml: '//Servico/Valores/ISSRetido',
+      },
+    ],
+  }
+
+  it('entrega o aviso de versão com os campos afetados como objetos', async () => {
+    server.use(
+      http.get(`${API_URL}/provedores/prefeitura-exemplo/versoes/v1`, () =>
+        HttpResponse.json({
+          data: { ...versaoPaginaFake, avisos: [avisoDeVersaoLiteral] },
+          message: null,
+        }),
+      ),
+    )
+
+    const { result } = renderHook(() => useVersaoProvedor('prefeitura-exemplo', 'v1'), {
+      wrapper: envolverComQueryClient(),
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.avisos[0].camposAfetados).toEqual(
+      avisoDeVersaoLiteral.camposAfetados,
+    )
+  })
+
+  it('falha nomeando "camposAfetados" quando o aviso traz a forma antiga (string[])', async () => {
+    server.use(
+      http.get(`${API_URL}/provedores/prefeitura-exemplo/versoes/v1`, () =>
+        HttpResponse.json({
+          data: {
+            ...versaoPaginaFake,
+            avisos: [{ ...avisoDeVersaoLiteral, camposAfetados: ['ISSRetido'] }],
+          },
+          message: null,
+        }),
+      ),
+    )
+
+    const { result } = renderHook(() => useVersaoProvedor('prefeitura-exemplo', 'v1'), {
+      wrapper: envolverComQueryClient(),
+    })
+
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(result.current.error?.message).toContain('"camposAfetados"')
+  })
+
   it('propaga 410 como "versao_despublicada" quando o código não aponta o provedor', async () => {
     server.use(
       http.get(`${API_URL}/provedores/prefeitura-exemplo/versoes/v1`, () =>

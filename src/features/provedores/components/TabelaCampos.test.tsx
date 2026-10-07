@@ -400,3 +400,91 @@ describe('TabelaCampos — detalhe do campo', () => {
     })
   })
 })
+
+/**
+ * O link do aviso aponta para `#campo-{slug}`. A tabela é a dona da linha: rola até ela uma vez por
+ * campo apontado e, se o filtro a escondeu, limpa o filtro antes — âncora sem alvo não leva a
+ * lugar nenhum.
+ */
+describe('TabelaCampos — campo apontado por âncora', () => {
+  const rolarParaOElemento = vi.fn()
+
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = rolarParaOElemento
+    rolarParaOElemento.mockClear()
+  })
+
+  function tabelaComDestaque(campoDestacado: string | null) {
+    return (
+      <TabelaCampos
+        provedorNome="Prefeitura de Exemplo"
+        versaoRotulo="Versão 1"
+        verificadoEm="2026-07-01T00:00:00Z"
+        totalCampos={2}
+        camposPorGrupo={camposPorGrupo}
+        urlVersaoAbsoluta="https://codex.migrate.info/provedores/prefeitura-exemplo/v1"
+        campoDestacado={campoDestacado}
+      />
+    )
+  }
+
+  function digitarFiltro(texto: string) {
+    fireEvent.change(screen.getByPlaceholderText('Filtrar por nome do campo ou caminho no XML'), {
+      target: { value: texto },
+    })
+  }
+
+  it('rola até a linha do campo apontado', () => {
+    const { container } = render(tabelaComDestaque('inscricao-municipal'))
+
+    expect(rolarParaOElemento).toHaveBeenCalledTimes(1)
+    expect(rolarParaOElemento.mock.contexts[0]).toBe(
+      container.querySelector('#campo-inscricao-municipal'),
+    )
+  })
+
+  it('sem campo apontado, não rola', () => {
+    render(tabelaComDestaque(null))
+
+    expect(rolarParaOElemento).not.toHaveBeenCalled()
+  })
+
+  it('limpa o filtro que esconde o campo apontado e então rola até ele', () => {
+    const { container, rerender } = render(tabelaComDestaque(null))
+    digitarFiltro('inscri')
+    expect(container.querySelector('#campo-razao-social')).toBeNull()
+
+    rerender(tabelaComDestaque('razao-social'))
+
+    expect(screen.getByPlaceholderText('Filtrar por nome do campo ou caminho no XML')).toHaveValue(
+      '',
+    )
+    expect(container.querySelector('#campo-razao-social')).not.toBeNull()
+    expect(rolarParaOElemento).toHaveBeenCalledTimes(1)
+    expect(rolarParaOElemento.mock.contexts[0]).toBe(container.querySelector('#campo-razao-social'))
+  })
+
+  it('mantém o filtro que não esconde o campo apontado', () => {
+    const { rerender } = render(tabelaComDestaque(null))
+    digitarFiltro('inscri')
+
+    rerender(tabelaComDestaque('inscricao-municipal'))
+
+    expect(screen.getByPlaceholderText('Filtrar por nome do campo ou caminho no XML')).toHaveValue(
+      'inscri',
+    )
+    expect(rolarParaOElemento).toHaveBeenCalledTimes(1)
+  })
+
+  it('digitar um filtro depois de chegar não rola de novo nem desfaz o filtro', () => {
+    render(tabelaComDestaque('razao-social'))
+    expect(rolarParaOElemento).toHaveBeenCalledTimes(1)
+
+    digitarFiltro('inscri')
+
+    expect(screen.getByPlaceholderText('Filtrar por nome do campo ou caminho no XML')).toHaveValue(
+      'inscri',
+    )
+    expect(rolarParaOElemento).toHaveBeenCalledTimes(1)
+  })
+})

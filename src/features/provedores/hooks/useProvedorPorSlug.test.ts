@@ -4,23 +4,25 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { ProvedorDetalhe } from '../types/provedor'
 import { ErroProvedorHttp, useProvedorPorSlug } from './useProvedorPorSlug'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const provedorFake: ProvedorDetalhe = {
+// JSON literal transcrito de `ProvedorDetalheDto` / `AvisoPublicoDto`, sem anotação do tipo do
+// cliente: anotar faria o compilador moldar o mock à crença do cliente em vez do servidor.
+const provedorFake = {
   slug: 'prefeitura-exemplo',
   nome: 'Prefeitura de Exemplo',
   categoria: 'Nacional',
   identificadorInvoicy: 'EXEMPLO',
   avisos: [
     {
+      id: 7,
+      escopo: 'provedor',
       severidade: 'Critico',
       titulo: 'Instabilidade no ambiente da prefeitura',
       corpo: 'A prefeitura está reprocessando notas manualmente.',
-      vigenciaInicio: '2026-08-01T00:00:00Z',
-      escopo: 'provedor',
+      vigenciaInicio: '2026-08-01',
       camposAfetados: [],
     },
   ],
@@ -62,6 +64,42 @@ describe('useProvedorPorSlug', () => {
     expect(result.current.data).toEqual(provedorFake)
     expect(result.current.data?.avisos).toHaveLength(1)
     expect(result.current.data?.avisos[0].escopo).toBe('provedor')
+  })
+
+  // Forma antiga do contrato: `camposAfetados` como `string[]`. Ler isso em silêncio mostraria
+  // nomes `undefined`; a resposta tem de falhar e dizer qual coleção do contrato não veio.
+  it('falha nomeando "camposAfetados" quando o aviso traz a forma antiga (string[])', async () => {
+    const avisoComFormaAntiga = { ...provedorFake.avisos[0], camposAfetados: ['ISSRetido'] }
+    server.use(
+      http.get(`${API_URL}/provedores/prefeitura-exemplo`, () =>
+        HttpResponse.json({
+          data: { ...provedorFake, avisos: [avisoComFormaAntiga] },
+          message: null,
+        }),
+      ),
+    )
+
+    const { result } = renderHook(() => useProvedorPorSlug('prefeitura-exemplo'), {
+      wrapper: envolverComQueryClient(),
+    })
+
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(result.current.error?.message).toContain('"camposAfetados"')
+  })
+
+  it('falha nomeando "avisos" quando a coleção não chega', async () => {
+    server.use(
+      http.get(`${API_URL}/provedores/prefeitura-exemplo`, () =>
+        HttpResponse.json({ data: { ...provedorFake, avisos: undefined }, message: null }),
+      ),
+    )
+
+    const { result } = renderHook(() => useProvedorPorSlug('prefeitura-exemplo'), {
+      wrapper: envolverComQueryClient(),
+    })
+
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(result.current.error?.message).toContain('"avisos"')
   })
 
   it('nunca marca nenhuma versão como "vigente" — só slug/rótulo/verificação/url', async () => {

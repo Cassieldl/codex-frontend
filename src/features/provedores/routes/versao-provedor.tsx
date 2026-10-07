@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { AvisosVersao } from '../components/AvisosVersao'
@@ -47,13 +46,6 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
     refetch,
   } = useVersaoProvedor(provedorSlug, versaoSlug)
   const campoDestacado = useCampoDestacadoPorAncora()
-
-  // Chegar por `#campo-…` seleciona a aba certa (já é a própria rota) e
-  // rola até a linha — só depois que a tabela terminou de montar.
-  useEffect(() => {
-    if (!campoDestacado || !versaoPagina) return
-    document.getElementById(`campo-${campoDestacado}`)?.scrollIntoView({ block: 'center' })
-  }, [campoDestacado, versaoPagina])
 
   if (isLoading) {
     return (

@@ -1,6 +1,6 @@
-import { EtiquetaSeveridade } from '../../../components/ui/EtiquetaSeveridade'
 import type { AvisoPublico } from '../types/provedor'
-import { mapearSeveridade } from '../utils/mapearSeveridade'
+import { useAvisoDestacadoPorAncora } from '../utils/avisoAncora'
+import { AvisoPublicoItem } from './AvisoPublicoItem'
 
 export interface AvisosVersaoProps {
   avisos: AvisoPublico[]
@@ -13,6 +13,8 @@ export interface AvisosVersaoProps {
  * §7.6.3). A API já ordena por severidade (Crítico no topo).
  */
 export function AvisosVersao({ avisos }: AvisosVersaoProps) {
+  const avisoDestacado = useAvisoDestacadoPorAncora(avisos)
+
   if (avisos.length === 0) return null
 
   return (
@@ -22,17 +24,8 @@ export function AvisosVersao({ avisos }: AvisosVersaoProps) {
       </h2>
 
       <ul className="flex flex-col gap-3">
-        {avisos.map((aviso, indice) => (
-          <li
-            key={`${aviso.titulo}-${indice}`}
-            className="rounded-[var(--radius-card)] border border-border p-4"
-          >
-            <div className="flex items-center gap-2">
-              <EtiquetaSeveridade severidade={mapearSeveridade(aviso.severidade)} />
-              <h3 className="text-card-titulo font-medium text-ink">{aviso.titulo}</h3>
-            </div>
-            <p className="mt-2 text-sm text-ink/80">{aviso.corpo}</p>
-          </li>
+        {avisos.map((aviso) => (
+          <AvisoPublicoItem key={aviso.id} aviso={aviso} destacado={aviso.id === avisoDestacado} />
         ))}
       </ul>
     </section>

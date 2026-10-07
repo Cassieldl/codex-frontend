@@ -3,6 +3,7 @@ import { isAxiosError } from 'axios'
 import { apiPublico } from '../../../services/api'
 import { devoRetentar } from '../../../utils/retentativaDeQuery'
 import type { ProvedorDetalhe } from '../types/provedor'
+import { exigirAvisosPublicos } from '../utils/exigirAvisosPublicos'
 import { provedoresKeys } from './provedoresKeys'
 
 interface EnvelopeProvedorDetalhe {
@@ -64,6 +65,7 @@ export function useProvedorPorSlug(provedorSlug: string) {
         const { data } = await apiPublico.get<EnvelopeProvedorDetalhe>(
           `/provedores/${provedorSlug}`,
         )
+        exigirAvisosPublicos(data.data.avisos)
         return data.data
       } catch (error) {
         throw classificarErro(error) ?? error

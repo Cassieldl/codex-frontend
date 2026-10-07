@@ -244,7 +244,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
                 />
               </div>
               <h3 className="text-card-titulo font-medium text-ink">{aviso.titulo}</h3>
-              <p className="text-sm text-ink/80">{aviso.corpo}</p>
+              <p className="text-sm whitespace-pre-line text-ink/80">{aviso.corpo}</p>
               <div className="flex gap-2">
                 {permissoes.avisos.atualizar && (
                   <Button variant="secondary" size="sm" onClick={() => setModalAvisoAberto(aviso)}>
@@ -348,7 +348,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
         title={modalAvisoAberto === 'novo' ? 'Novo aviso do provedor' : 'Editar aviso'}
       >
         <AvisoForm
-          escopo="provedor"
+          escopo="Provedor"
           initialData={modalAvisoAberto === 'novo' ? undefined : (modalAvisoAberto ?? undefined)}
           onSubmit={aoSalvarAviso}
           onCancel={() => setModalAvisoAberto(null)}

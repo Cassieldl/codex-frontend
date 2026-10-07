@@ -1,6 +1,6 @@
-import { EtiquetaSeveridade } from '../../../components/ui/EtiquetaSeveridade'
 import type { AvisoPublico } from '../types/provedor'
-import { mapearSeveridade } from '../utils/mapearSeveridade'
+import { useAvisoDestacadoPorAncora } from '../utils/avisoAncora'
+import { AvisoPublicoItem } from './AvisoPublicoItem'
 
 export interface AvisosProvedorProps {
   nomeProvedor: string
@@ -15,6 +15,8 @@ export interface AvisosProvedorProps {
  * escopos, de propósito (§3.3b/§7.6.1): quem distingue não é a cor.
  */
 export function AvisosProvedor({ nomeProvedor, avisos }: AvisosProvedorProps) {
+  const avisoDestacado = useAvisoDestacadoPorAncora(avisos)
+
   if (avisos.length === 0) return null
 
   return (
@@ -27,17 +29,8 @@ export function AvisosProvedor({ nomeProvedor, avisos }: AvisosProvedorProps) {
       </header>
 
       <ul className="flex flex-col gap-3">
-        {avisos.map((aviso, indice) => (
-          <li
-            key={`${aviso.titulo}-${indice}`}
-            className="rounded-[var(--radius-card)] border border-border p-4"
-          >
-            <div className="flex items-center gap-2">
-              <EtiquetaSeveridade severidade={mapearSeveridade(aviso.severidade)} />
-              <h3 className="text-card-titulo font-medium text-ink">{aviso.titulo}</h3>
-            </div>
-            <p className="mt-2 text-sm text-ink/80">{aviso.corpo}</p>
-          </li>
+        {avisos.map((aviso) => (
+          <AvisoPublicoItem key={aviso.id} aviso={aviso} destacado={aviso.id === avisoDestacado} />
         ))}
       </ul>
     </section>

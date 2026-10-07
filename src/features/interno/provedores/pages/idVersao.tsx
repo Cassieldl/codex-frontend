@@ -281,7 +281,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
                 />
               </div>
               <h3 className="text-card-titulo font-medium text-ink">{aviso.titulo}</h3>
-              <p className="text-sm text-ink/80">{aviso.corpo}</p>
+              <p className="text-sm whitespace-pre-line text-ink/80">{aviso.corpo}</p>
               <div className="flex gap-2">
                 {permissoes.avisos.atualizar && (
                   <Button variant="secondary" size="sm" onClick={() => setModalAvisoAberto(aviso)}>
@@ -439,7 +439,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
         title={modalAvisoAberto === 'novo' ? 'Novo aviso da versão' : 'Editar aviso'}
       >
         <AvisoForm
-          escopo="versao"
+          escopo="Versao"
           initialData={modalAvisoAberto === 'novo' ? undefined : (modalAvisoAberto ?? undefined)}
           opcoesCamposAfetados={(respostaCampos?.campos ?? []).map((campo) => ({
             id: campo.id,

@@ -3,17 +3,29 @@ export type SeveridadeAviso = 'Critico' | 'Alerta' | 'Informativo'
 export type EscopoAviso = 'provedor' | 'versao'
 
 /**
- * `analise-frontend.md` §5.7 — aviso de provedor e de versão compartilham o
- * mesmo tipo. `escopo` é quem distingue (nunca a cor — §3.3b/U8).
- * `camposAfetados` é sempre `[]` quando `escopo === 'provedor'`.
+ * Campo de layout apontado por um aviso de versão — o bastante para rotular e linkar à linha da
+ * tabela (`#campo-{campoLayoutSlug}`).
+ */
+export interface CampoAfetadoPublico {
+  campoLayoutSlug: string
+  nome: string
+  caminhoXml: string
+}
+
+/**
+ * Aviso de provedor (P3) ou de versão (P4) — mesmo tipo; `escopo` é quem distingue (nunca a cor,
+ * U8). `id` dá a âncora própria (`#aviso-{id}`). `vigenciaInicio` é data sem horário
+ * (`yyyy-MM-dd`). `camposAfetados` é sempre presente: `[]` para aviso de provedor e para aviso de
+ * versão sem campos apontados.
  */
 export interface AvisoPublico {
+  id: number
+  escopo: EscopoAviso
   severidade: SeveridadeAviso
   titulo: string
   corpo: string
   vigenciaInicio: string
-  escopo: EscopoAviso
-  camposAfetados: string[]
+  camposAfetados: CampoAfetadoPublico[]
 }
 
 /** Item de `ProvedorDetalhe.versoes` (P3, `analise-backend.md` §4.1) — nunca marca "vigente" (U7). */
