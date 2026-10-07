@@ -8,7 +8,11 @@ import {
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { RodapeContextual, type ContextoRodape } from './RodapeContextual'
+import {
+  ID_SECAO_VERSOES_APLICAVEIS,
+  RodapeContextual,
+  type ContextoRodape,
+} from './RodapeContextual'
 
 // Contextos com ação para rota interna (`erro-com-contexto`/`provedor-versao`)
 // usam `<Link>` do TanStack Router — precisam de um `RouterProvider` de
@@ -59,6 +63,43 @@ describe('RodapeContextual', () => {
     render(<RodapeContextual contexto={{ tipo: 'erro-sem-contexto' }} />)
 
     expect(screen.queryByText(/Corrigiu este campo/)).not.toBeInTheDocument()
+  })
+
+  it('erro-sem-contexto segue sem próximo passo nem suporte (404, índice, carregando)', () => {
+    render(<RodapeContextual contexto={{ tipo: 'erro-sem-contexto' }} />)
+
+    expect(screen.queryByRole('link', { name: 'Falar com o suporte' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
+  })
+
+  it('erro-geral: próximo passo é buscar e o suporte leva o código no assunto e no corpo', async () => {
+    renderComRouter({ tipo: 'erro-geral', codigoErro: 'E0042' })
+
+    expect(await screen.findByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/busca')
+    const suporte = screen.getByRole('link', { name: 'Falar com o suporte' })
+    expect(suporte.getAttribute('href')).toContain('mailto:suporte@migrate.info')
+    expect(decodeURIComponent(suporte.getAttribute('href') ?? '')).toContain('erro E0042')
+    expect(decodeURIComponent(suporte.getAttribute('href') ?? '')).toContain(
+      'Código do erro: E0042',
+    )
+  })
+
+  it('erro-varias-versoes: âncora para a seção de versões e suporte, sem "Ver versão completa"', async () => {
+    renderComRouter({ tipo: 'erro-varias-versoes' })
+
+    expect(await screen.findByRole('link', { name: 'Ver as versões aplicáveis' })).toHaveAttribute(
+      'href',
+      `#${ID_SECAO_VERSOES_APLICAVEIS}`,
+    )
+    expect(screen.getByRole('link', { name: 'Falar com o suporte' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Ver versão completa' })).not.toBeInTheDocument()
+  })
+
+  it('erro-com-contexto: mantém "Ver versão completa" e acrescenta o suporte', async () => {
+    renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm', versaoSlug: '2.04' })
+
+    expect(await screen.findByRole('link', { name: 'Ver versão completa' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'Falar com o suporte' })).toHaveLength(1)
   })
 
   it('monta o link de "ver versão completa" com o provedor e a versão do contexto', async () => {

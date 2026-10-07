@@ -1,5 +1,9 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
+import { montarLinkSuporte, ROTULO_FALAR_COM_SUPORTE } from '../../utils/linkSuporte'
 import { CONTEUDO_RODAPE_CONSTANTE } from '../../utils/rodapeConteudoConstante'
+
+/** Âncora da seção "Provedores e versões aplicáveis" da página do erro. */
+export const ID_SECAO_VERSOES_APLICAVEIS = 'provedores-versoes-titulo'
 
 /**
  * Todo contexto público que precisa de um "próximo passo" no rodapé (§8).
@@ -15,8 +19,12 @@ export type ContextoRodape =
   | { tipo: 'artigos' }
   | { tipo: 'provedor-sem-versao' }
   | { tipo: 'provedor-versao'; provedorSlug: string }
-  | { tipo: 'erro-com-contexto'; provedorSlug: string; versaoSlug: string }
-  /** Erro geral (U9) — próximo passo omitido, não faz sentido apontar para uma versão que não existe. */
+  | { tipo: 'erro-com-contexto'; provedorSlug: string; versaoSlug: string; codigoErro?: string }
+  /** Erro geral (U9): vale para qualquer integração, não há versão para apontar. */
+  | { tipo: 'erro-geral'; codigoErro?: string }
+  /** Erro que se aplica a mais de uma versão — o caso mais consultado (§7.1). */
+  | { tipo: 'erro-varias-versoes'; codigoErro?: string }
+  /** Páginas de erro sem erro carregado (carregando, falha, índice, 404): sem próximo passo. */
   | { tipo: 'erro-sem-contexto' }
   /** Índice de versões do Layout InvoiCy (tela 6, `/layout`) — FRONT-C. */
   | { tipo: 'layout' }
@@ -32,9 +40,27 @@ export interface RodapeContextualProps {
   contexto: ContextoRodape
 }
 
+interface AcaoRodape {
+  rotulo: string
+  href: string
+}
+
 interface ProximoPasso {
   mensagem: string
-  acao?: { rotulo: string; href: string }
+  acao?: AcaoRodape
+  /** Caminho ao suporte que acompanha o próximo passo (§7.2). */
+  acaoSecundaria?: AcaoRodape
+}
+
+function montarAcaoSuporte(assunto: string, corpo?: string): AcaoRodape {
+  return { rotulo: ROTULO_FALAR_COM_SUPORTE, href: montarLinkSuporte(assunto, corpo) }
+}
+
+function montarAcaoSuporteDeErro(codigoErro?: string): AcaoRodape {
+  return montarAcaoSuporte(
+    codigoErro ? `Codex · erro ${codigoErro}` : 'Codex · erro',
+    codigoErro ? `Código do erro: ${codigoErro}` : undefined,
+  )
 }
 
 function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
@@ -50,12 +76,7 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
     case 'busca-sem-resultado':
       return {
         mensagem: 'Buscou e não achou? Fale com o suporte levando o termo.',
-        acao: {
-          rotulo: 'Falar com o suporte',
-          href: `mailto:${CONTEUDO_RODAPE_CONSTANTE.atendimento.emailSuporte}?subject=${encodeURIComponent(
-            'Codex · busca sem resultado',
-          )}`,
-        },
+        acao: montarAcaoSuporte('Codex · busca sem resultado'),
       }
     case 'provedores':
       return { mensagem: 'Já sabe o nome e a versão? Abra direto o provedor.' }
@@ -81,6 +102,19 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
           rotulo: 'Ver versão completa',
           href: `/provedores/${contexto.provedorSlug}/${contexto.versaoSlug}`,
         },
+        acaoSecundaria: montarAcaoSuporteDeErro(contexto.codigoErro),
+      }
+    case 'erro-geral':
+      return {
+        mensagem: 'Não é esse o erro que você recebeu? Busque pelo código ou pela mensagem.',
+        acao: { rotulo: 'Buscar', href: '/busca' },
+        acaoSecundaria: montarAcaoSuporteDeErro(contexto.codigoErro),
+      }
+    case 'erro-varias-versoes':
+      return {
+        mensagem: 'Este erro aparece em mais de uma versão. Abra a sua para ver o campo exato.',
+        acao: { rotulo: 'Ver as versões aplicáveis', href: `#${ID_SECAO_VERSOES_APLICAVEIS}` },
+        acaoSecundaria: montarAcaoSuporteDeErro(contexto.codigoErro),
       }
     case 'erro-sem-contexto':
       return null
@@ -93,14 +127,28 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
       return {
         mensagem:
           'Um campo do layout está descrito de forma ambígua? Fale com o suporte com o nome do campo.',
-        acao: {
-          rotulo: 'Falar com o suporte',
-          href: `mailto:${CONTEUDO_RODAPE_CONSTANTE.atendimento.emailSuporte}?subject=${encodeURIComponent(
-            'Codex · Layout InvoiCy',
-          )}`,
-        },
+        acao: montarAcaoSuporte('Codex · Layout InvoiCy'),
       }
   }
+}
+
+const CLASSE_ACAO = 'text-sm font-semibold text-primary-medium hover:underline'
+
+/** `mailto:` e âncora da própria página são `<a>`; o resto navega pelo roteador. */
+function AcaoDoRodape({ acao }: { acao: AcaoRodape }) {
+  if (acao.href.startsWith('mailto:') || acao.href.startsWith('#')) {
+    return (
+      <a href={acao.href} className={CLASSE_ACAO}>
+        {acao.rotulo}
+      </a>
+    )
+  }
+
+  return (
+    <Link to={acao.href as unknown as LinkProps['to']} className={CLASSE_ACAO}>
+      {acao.rotulo}
+    </Link>
+  )
 }
 
 /**
@@ -118,22 +166,12 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
       {proximoPasso && (
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 border-b border-line px-4 py-4 text-center sm:flex-row sm:text-left lg:px-8">
           <p className="text-sm text-ink">{proximoPasso.mensagem}</p>
-          {proximoPasso.acao &&
-            (proximoPasso.acao.href.startsWith('mailto:') ? (
-              <a
-                href={proximoPasso.acao.href}
-                className="text-sm font-semibold text-primary-medium hover:underline"
-              >
-                {proximoPasso.acao.rotulo}
-              </a>
-            ) : (
-              <Link
-                to={proximoPasso.acao.href as unknown as LinkProps['to']}
-                className="text-sm font-semibold text-primary-medium hover:underline"
-              >
-                {proximoPasso.acao.rotulo}
-              </Link>
-            ))}
+          {(proximoPasso.acao || proximoPasso.acaoSecundaria) && (
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              {proximoPasso.acao && <AcaoDoRodape acao={proximoPasso.acao} />}
+              {proximoPasso.acaoSecundaria && <AcaoDoRodape acao={proximoPasso.acaoSecundaria} />}
+            </div>
+          )}
         </div>
       )}
 

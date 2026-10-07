@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Globe } from 'lucide-react'
+import { ID_SECAO_VERSOES_APLICAVEIS } from '../../../components/layout/RodapeContextual'
 import type { VersaoAplicavel } from '../types/erro'
 
 export interface ErroSemVersaoAplicavelProps {
@@ -30,8 +31,8 @@ export function ErroSemVersaoAplicavel({ versoesAplicaveis }: ErroSemVersaoAplic
   }
 
   return (
-    <section aria-labelledby="provedores-versoes-titulo" className="flex flex-col gap-2">
-      <h2 id="provedores-versoes-titulo" className="text-subtitulo font-semibold text-ink">
+    <section aria-labelledby={ID_SECAO_VERSOES_APLICAVEIS} className="flex flex-col gap-2">
+      <h2 id={ID_SECAO_VERSOES_APLICAVEIS} className="text-subtitulo font-semibold text-ink">
         Provedores e versões aplicáveis
       </h2>
 
