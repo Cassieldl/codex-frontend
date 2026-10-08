@@ -101,7 +101,14 @@ describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
   it('com artigos ligados, a seção lista os links depois dos campos relacionados', async () => {
     const erro: ErroDetalhe = {
       ...erroBase,
-      camposRelacionados: [{ campoLayoutSlug: 'cnpj-tomador', nome: 'CNPJ do tomador' }],
+      camposRelacionados: [
+        {
+          slug: 'cnpj-tomador',
+          nome: 'CNPJ do tomador',
+          caminhoXml: '//Tomador/TomaCNPJ',
+          ancoras: [{ provedorSlug: 'ipm-sistemas', versaoSlug: '2-04' }],
+        },
+      ],
       artigosRelacionados: [
         {
           rotulo: 'ARTIGO',

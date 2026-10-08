@@ -14,9 +14,17 @@ export interface VersaoAplicavel {
   versaoRotulo: string
 }
 
+/** Versão de provedor em que o campo aparece — é para a âncora dele que o link aponta. */
+export interface AncoraCampoVersao {
+  provedorSlug: string
+  versaoSlug: string
+}
+
 export interface CampoRelacionado {
-  campoLayoutSlug: string
+  slug: string
   nome: string
+  caminhoXml: string
+  ancoras: AncoraCampoVersao[]
 }
 
 /** Artigo ligado a um erro (P6, §1.5). `url` já vem pronta do backend (`/artigos/{slug}`). */

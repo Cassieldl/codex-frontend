@@ -11,8 +11,18 @@ import { describe, expect, it } from 'vitest'
 import { CamposRelacionados, type CamposRelacionadosProps } from './CamposRelacionados'
 
 const campos = [
-  { campoLayoutSlug: 'cnpj-tomador', nome: 'CNPJ do tomador' },
-  { campoLayoutSlug: 'cep-tomador', nome: 'CEP do tomador' },
+  {
+    slug: 'cnpj-tomador',
+    nome: 'CNPJ do tomador',
+    caminhoXml: '//Tomador/TomaCNPJ',
+    ancoras: [{ provedorSlug: 'ipm-sistemas', versaoSlug: '2-04' }],
+  },
+  {
+    slug: 'cep-tomador',
+    nome: 'CEP do tomador',
+    caminhoXml: '//Tomador/TomaCEP',
+    ancoras: [{ provedorSlug: 'ipm-sistemas', versaoSlug: '2-04' }],
+  },
 ]
 
 // Com contexto, cada campo vira `<Link>` do TanStack Router — precisa de um

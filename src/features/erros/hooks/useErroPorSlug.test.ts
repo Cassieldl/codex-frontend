@@ -27,7 +27,14 @@ const erroFake: ErroDetalhe = {
       versaoRotulo: '2.04',
     },
   ],
-  camposRelacionados: [{ campoLayoutSlug: 'cnpj-tomador', nome: 'CNPJ do tomador' }],
+  camposRelacionados: [
+    {
+      slug: 'cnpj-tomador',
+      nome: 'CNPJ do tomador',
+      caminhoXml: '//Tomador/TomaCNPJ',
+      ancoras: [{ provedorSlug: 'ipm-sistemas', versaoSlug: '2-04' }],
+    },
+  ],
   // Sempre presente no contrato (PQ-08) — `[]` quando o erro não tem artigo.
   artigosRelacionados: [],
 }

@@ -29,12 +29,12 @@ export function CamposRelacionados({ campos, contexto }: CamposRelacionadosProps
 
       <ul className="flex flex-wrap gap-2">
         {campos.map((campo) => (
-          <li key={campo.campoLayoutSlug}>
+          <li key={campo.slug}>
             {contexto ? (
               <Link
                 to="/provedores/$provedorSlug/$versaoSlug"
                 params={{ provedorSlug: contexto.provedorSlug, versaoSlug: contexto.versaoSlug }}
-                hash={`campo-${campo.campoLayoutSlug}`}
+                hash={`campo-${campo.slug}`}
                 className="inline-flex items-center rounded-[var(--radius-pill)] border border-border px-2.5 py-1 text-sm text-primary-medium hover:underline"
               >
                 {campo.nome}
