@@ -58,7 +58,6 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
       titulo: 'CNPJ do tomador inválido',
       origem: 'Prefeitura',
       provedorNome: 'IPM Sistemas',
-      url: '/erros/e0117-ipm-sistemas',
     }
     server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([item])))
 
@@ -76,7 +75,6 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
       titulo: 'CNPJ do tomador inválido',
       origem: 'Prefeitura',
       provedorNome: 'IPM Sistemas',
-      url: '/erros/e0117-ipm-sistemas',
     }
     const itemB: ErroListaItem = {
       slug: 'e0117-betha-sistemas',
@@ -84,7 +82,6 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
       titulo: 'Código de verificação inválido',
       origem: 'Prefeitura',
       provedorNome: 'Betha Sistemas',
-      url: '/erros/e0117-betha-sistemas',
     }
     server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([itemA, itemB])))
 
@@ -106,7 +103,6 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
       titulo: 'Erro genérico de schema',
       origem: 'Schema',
       provedorNome: null,
-      url: '/erros/e0117-geral',
     }
     const itemProvedor: ErroListaItem = {
       slug: 'e0117-ipm-sistemas',
@@ -114,7 +110,6 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
       titulo: 'CNPJ do tomador inválido',
       origem: 'Prefeitura',
       provedorNome: 'IPM Sistemas',
-      url: '/erros/e0117-ipm-sistemas',
     }
     server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([itemGeral, itemProvedor])))
 
@@ -146,9 +141,7 @@ describe('ErrosIndexPage — sem código na URL', () => {
   it('explica o que a página faz e oferece a busca, em vez de tela vazia', async () => {
     renderPagina('')
 
-    expect(
-      await screen.findByText(/nenhum código foi informado/i),
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/nenhum código foi informado/i)).toBeInTheDocument()
 
     // O `search` explícito é exigido pelo tipo da rota, que valida `q` — daí o href sair com o
     // parâmetro vazio, que é o estado inicial da busca.

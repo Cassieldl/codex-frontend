@@ -16,7 +16,6 @@ const itemFake: ErroListaItem = {
   titulo: 'CNPJ do tomador inválido',
   origem: 'Prefeitura',
   provedorNome: 'IPM Sistemas',
-  url: '/erros/e0117-cnpj-tomador-invalido',
 }
 
 function envolverComQueryClient() {

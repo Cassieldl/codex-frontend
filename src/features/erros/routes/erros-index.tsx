@@ -46,11 +46,10 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
   useEffect(() => {
     if (!data || data.totalCount !== 1) return
     const [unico] = data.items
-    // `unico.url` vem da API — só navega se passar por `caminhoInternoSeguro`
-    // (BAIXO-02, defesa em profundidade). Não deveria falhar na prática (o
-    // backend garante `Slug`); se falhar, a página fica no skeleton em vez
-    // de redirecionar para um destino não validado.
-    const caminho = unico ? caminhoInternoSeguro(unico.url) : undefined
+    // O slug vem da API — o caminho montado com ele só navega se passar por
+    // `caminhoInternoSeguro` (defesa em profundidade); se falhar, a página fica
+    // no skeleton em vez de redirecionar para um destino não validado.
+    const caminho = unico ? caminhoInternoSeguro(`/erros/${unico.slug}`) : undefined
     if (caminho) navigate({ href: caminho, replace: true })
   }, [data, navigate])
 
@@ -120,7 +119,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
 
             <ul className="flex flex-col gap-2">
               {data.items.map((item) => {
-                const caminho = caminhoInternoSeguro(item.url)
+                const caminho = caminhoInternoSeguro(`/erros/${item.slug}`)
                 const conteudo = (
                   <>
                     <div className="flex items-center justify-between gap-2">

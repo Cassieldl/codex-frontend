@@ -39,11 +39,11 @@ export interface GrupoCampoVersao {
   campos: CampoVersaoPublico[]
 }
 
-/** Item de `errosResumo.itens` — shape mínimo para link + título (top 20 por relevância). */
+/** Item de `errosResumo.itens` — o link é montado com o `slug`, pela rota do erro. */
 export interface ErroResumoPublico {
+  slug: string
   codigo: string
   titulo: string
-  url: string
   /**
    * Mensagens observadas, como o provedor as devolve. É por elas que o leitor reconhece o próprio
    * caso — ele chega com o texto da prefeitura em mãos, não com o código nem com o nosso título.

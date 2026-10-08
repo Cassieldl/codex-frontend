@@ -22,7 +22,7 @@ const RESUMO_DO_SERVIDOR = {
     {
       codigo: 'E-1023',
       titulo: 'Inscrição municipal do prestador não encontrada',
-      url: '/erros/e-1023-inscricao-municipal-do-prestador-nao-encontrada',
+      slug: 'e-1023-inscricao-municipal-do-prestador-nao-encontrada',
       variantes: [
         'Inscrição municipal inválida ou não cadastrada',
         'Prestador não localizado no cadastro mobiliário',
@@ -31,7 +31,7 @@ const RESUMO_DO_SERVIDOR = {
     {
       codigo: 'E-2145',
       titulo: 'ISS retido informado sem o CNPJ do tomador',
-      url: '/erros/e-2145-iss-retido-informado-sem-o-cnpj-do-tomador',
+      slug: 'e-2145-iss-retido-informado-sem-o-cnpj-do-tomador',
       variantes: [],
     },
   ],
@@ -55,6 +55,18 @@ function renderizar(resumo: typeof RESUMO_DO_SERVIDOR) {
 }
 
 describe('ErrosConhecidos', () => {
+  it('cada erro leva à página dele, montada com o slug que o servidor envia', async () => {
+    renderizar(RESUMO_DO_SERVIDOR)
+
+    // O servidor nunca enviou `url` neste item; quando o cliente lia esse campo, nenhum erro da
+    // lista era clicável e nenhum teste percebia.
+    const links = await screen.findAllByRole('link')
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/erros/e-1023-inscricao-municipal-do-prestador-nao-encontrada',
+      '/erros/e-2145-iss-retido-informado-sem-o-cnpj-do-tomador',
+    ])
+  })
+
   /**
    * O caso que motivou a mudança: quem abre esta página tem em mãos o texto que a prefeitura
    * devolveu, não o código nem o título que damos a ele. Enquanto a lista mostrava só `E-1023` e

@@ -58,5 +58,4 @@ export interface ErroListaItem {
   origem: OrigemErro
   /** `null` quando o erro é geral (U9) — nunca "—". */
   provedorNome: string | null
-  url: string
 }

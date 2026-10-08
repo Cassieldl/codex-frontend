@@ -17,7 +17,7 @@ export interface ErrosConhecidosProps {
  * apenas a quem já sabia o código — e quem chega aqui chega com a mensagem na
  * mão, não com ele.
  *
- * `erro.url` vem da API — `caminhoInternoSeguro` valida antes de virar sink
+ * O caminho montado com `erro.slug` (que vem da API) passa por `caminhoInternoSeguro` antes de virar sink
  * de navegação (BAIXO-02, defesa em profundidade); se não passar, o item
  * renderiza só o texto, sem link.
  */
@@ -32,7 +32,7 @@ export function ErrosConhecidos({ resumo, provedorSlug }: ErrosConhecidosProps) 
 
       <ul className="flex flex-col gap-2">
         {resumo.itens.map((erro) => {
-          const caminho = caminhoInternoSeguro(erro.url)
+          const caminho = caminhoInternoSeguro(`/erros/${erro.slug}`)
           const conteudo = (
             <>
               <div className="flex items-baseline justify-between gap-3">
