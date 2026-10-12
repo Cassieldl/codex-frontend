@@ -164,3 +164,40 @@ describe('nenhuma dica aparece só no hover', () => {
     expect(semFoco).toEqual([])
   })
 })
+
+/**
+ * Guarda estrutural: no portal público, copiar link é sempre só o ícone de elo, com o rótulo
+ * virando dica. Padrão decidido para todo o portal; um botão novo com texto passaria despercebido
+ * página a página. A área interna fica de fora: na busca dela o rótulo distingue link público de
+ * link interno, e isso é informação.
+ */
+describe('copiar link no portal público é só o ícone', () => {
+  const FONTES = import.meta.glob('../../**/*.tsx', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>
+
+  function botoesDeCopiarLink(): { arquivo: string; bloco: string }[] {
+    return Object.entries(FONTES)
+      .filter(([arquivo]) => !arquivo.endsWith('.test.tsx') && !arquivo.includes('/interno/'))
+      .flatMap(([arquivo, fonte]) =>
+        (fonte.match(/<BotaoCopiar[\s\S]*?\/>/g) ?? [])
+          .filter((bloco) => /ariaLabel=\{?[`"]Copiar link/.test(bloco))
+          .map((bloco) => ({ arquivo, bloco })),
+      )
+  }
+
+  it('a varredura enxerga os botões de copiar link', () => {
+    // Artigo, erro, dicionário do layout, exemplos, avisos e tabela de campos.
+    expect(botoesDeCopiarLink().length).toBeGreaterThanOrEqual(6)
+  })
+
+  it('todo botão de copiar link é compacto, com o ícone de elo', () => {
+    const comTexto = botoesDeCopiarLink()
+      .filter(({ bloco }) => !/\bcompacto\b/.test(bloco) || !bloco.includes('icone="link"'))
+      .map(({ arquivo }) => arquivo)
+
+    expect(comTexto).toEqual([])
+  })
+})

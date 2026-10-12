@@ -75,6 +75,8 @@ export function ExemplosVersao({ exemplos, provedorSlug, versaoSlug }: ExemplosV
                 </div>
 
                 <BotaoCopiar
+                  compacto
+                  icone="link"
                   valor={() =>
                     construirLinkExemplo(
                       window.location.origin,
@@ -83,7 +85,7 @@ export function ExemplosVersao({ exemplos, provedorSlug, versaoSlug }: ExemplosV
                       exemplo.slug,
                     )
                   }
-                  rotulo="Link"
+                  rotulo="Copiar link"
                   ariaLabel={`Copiar link do exemplo ${exemplo.nome}`}
                 />
 

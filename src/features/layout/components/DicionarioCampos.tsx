@@ -210,8 +210,10 @@ export function DicionarioCampos({
                         </TableCell>
                         <TableCell className="py-3">
                           <BotaoCopiar
+                            compacto
+                            icone="link"
                             valor={`${origemUrl}${campo.urlCanonica}`}
-                            rotulo="Link"
+                            rotulo="Copiar link"
                             ariaLabel={`Copiar link do verbete ${campo.nome}`}
                           />
                         </TableCell>

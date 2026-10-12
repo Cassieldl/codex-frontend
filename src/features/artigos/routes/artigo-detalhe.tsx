@@ -131,6 +131,8 @@ export function ArtigoDetalhePage({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <h1 className="max-w-2xl text-titulo font-bold text-ink">{artigo.titulo}</h1>
                   <BotaoCopiar
+                    compacto
+                    icone="link"
                     valor={() => window.location.href}
                     ariaLabel={`Copiar link do artigo ${artigo.titulo}`}
                     rotulo="Copiar link"
@@ -145,7 +147,7 @@ export function ArtigoDetalhePage({
                 <summary className="cursor-pointer text-sm font-semibold text-ink">
                   Nesta página
                 </summary>
-                <SumarioArtigo corpo={artigo.corpo} className="mt-3" />
+                <SumarioArtigo corpo={artigo.corpo} mostrarTitulo={false} className="mt-3" />
               </details>
 
               <ConteudoArtigo

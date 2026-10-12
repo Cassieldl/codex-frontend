@@ -125,6 +125,8 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h1 className="font-mono text-titulo font-bold text-ink">{erro.codigo}</h1>
                 <BotaoCopiar
+                  compacto
+                  icone="link"
                   valor={() => window.location.href}
                   ariaLabel={`Copiar link do erro ${erro.codigo}`}
                   rotulo="Copiar link"
