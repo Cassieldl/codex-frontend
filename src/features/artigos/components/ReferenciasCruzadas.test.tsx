@@ -6,85 +6,166 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import type { ReferenciaCampoLayout, ReferenciaErro } from '../types/artigo'
-import { ReferenciasCruzadas } from './ReferenciasCruzadas'
+import { ReferenciasCruzadas, grupoDoCampo } from './ReferenciasCruzadas'
 
-const campoSemUrl: ReferenciaCampoLayout = {
+// Transcrito da resposta real de GET /api/v1/artigos/{slug} — sem anotação de tipo do cliente,
+// para o compilador não forçar o mock a ter a forma que a tela acredita.
+const campoNaRaiz = {
   rotulo: 'CAMPO DO LAYOUT',
-  slug: 'cnpj-tomador',
-  nome: 'CNPJ do tomador',
-  caminhoXml: 'Rps/Tomador/CpfCnpj/Cnpj',
-  url: null,
-}
+  slug: 'tpsusp',
+  nome: 'tpSusp',
+  caminhoXml: '//tpSusp',
+  significado: 'Opção para Exigibilidade suspensa.',
+  url: '/layout/campos/tpsusp',
+} as const
 
-const erro: ReferenciaErro = {
+const campoEmGrupo = {
+  rotulo: 'CAMPO DO LAYOUT',
+  slug: 'servico-valores-valaliqiss',
+  nome: 'ValAliqISS',
+  caminhoXml: '//Servico/Valores/ValAliqISS',
+  significado: 'Alíquota do ISS.',
+  url: '/layout/campos/servico-valores-valaliqiss',
+} as const
+
+const erro = {
   rotulo: 'REJEIÇÃO',
-  slug: 'e0117-cnpj-tomador-invalido',
-  codigo: 'E0117',
-  titulo: 'CNPJ do tomador inválido',
-  url: '/erros/e0117-cnpj-tomador-invalido',
-}
+  slug: 'e1300-nao-e-permitido-informar-aliquota-aplicada-superior-a-5',
+  codigo: 'E1300',
+  titulo: 'Não é permitido informar alíquota aplicada superior a 5%.',
+  url: '/erros/e1300-nao-e-permitido-informar-aliquota-aplicada-superior-a-5',
+} as const
 
 function renderComRouter(elemento: React.ReactNode) {
   const rootRoute = createRootRoute({ component: Outlet })
-  const rotaArtigo = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/pagina',
-    component: () => <>{elemento}</>,
-  })
-  const rotaErro = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/erros/$erroSlug',
-    component: () => null,
-  })
-  const routeTree = rootRoute.addChildren([rotaArtigo, rotaErro])
+  const rotas = [
+    createRoute({
+      getParentRoute: () => rootRoute,
+      path: '/pagina',
+      component: () => <>{elemento}</>,
+    }),
+    createRoute({
+      getParentRoute: () => rootRoute,
+      path: '/erros/$erroSlug',
+      component: () => null,
+    }),
+    createRoute({
+      getParentRoute: () => rootRoute,
+      path: '/layout/campos/$campoSlug',
+      component: () => null,
+    }),
+  ]
   const router = createRouter({
-    routeTree,
+    routeTree: rootRoute.addChildren(rotas),
     history: createMemoryHistory({ initialEntries: ['/pagina'] }),
   })
 
   return render(<RouterProvider router={router} />)
 }
 
-describe('ReferenciasCruzadas', () => {
-  it('campo de layout com url null vira texto — nunca link morto (PQ-06)', async () => {
-    renderComRouter(<ReferenciasCruzadas camposLayout={[campoSemUrl]} erros={[]} />)
+async function renderCampos() {
+  renderComRouter(<ReferenciasCruzadas camposLayout={[campoNaRaiz, campoEmGrupo]} erros={[]} />)
+  return {
+    tagRaiz: await screen.findByRole('button', { name: /tpSusp/ }),
+    tagGrupo: screen.getByRole('button', { name: /ValAliqISS/ }),
+  }
+}
 
-    expect(await screen.findByText('CNPJ do tomador')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'CNPJ do tomador' })).not.toBeInTheDocument()
-    expect(screen.getByText('Rps/Tomador/CpfCnpj/Cnpj')).toBeInTheDocument()
+describe('grupoDoCampo', () => {
+  it('devolve o grupo do caminho, ou null quando o campo fica na raiz', () => {
+    expect(grupoDoCampo('//Servico/Valores/ValAliqISS')).toBe('Servico/Valores')
+    expect(grupoDoCampo('//tpSusp')).toBeNull()
+  })
+})
+
+describe('ReferenciasCruzadas — campos do Layout InvoiCy', () => {
+  it('campo na raiz mostra só o nome; o campo dentro de um grupo mostra o grupo antes', async () => {
+    const { tagRaiz, tagGrupo } = await renderCampos()
+
+    expect(tagRaiz).toHaveTextContent(/^tpSusp$/)
+    expect(tagGrupo).toHaveTextContent(/^Servico\/Valores\/ValAliqISS$/)
+    expect(screen.queryByText('//tpSusp')).not.toBeInTheDocument()
   })
 
-  it('campo de layout com url preenchida (fatia 003) vira link, sem mudar o componente', async () => {
-    renderComRouter(
-      <ReferenciasCruzadas
-        camposLayout={[{ ...campoSemUrl, url: '/layout-invoicy/cnpj-tomador' }]}
-        erros={[]}
-      />,
+  it('não repete em cada item o rótulo que o título da seção já diz', async () => {
+    await renderCampos()
+
+    expect(screen.queryByText('CAMPO DO LAYOUT')).not.toBeInTheDocument()
+  })
+
+  it('abrir a tag mostra o significado e o link para a página do campo', async () => {
+    const { tagRaiz } = await renderCampos()
+    expect(screen.queryByText(campoNaRaiz.significado)).not.toBeInTheDocument()
+
+    fireEvent.click(tagRaiz)
+
+    expect(tagRaiz).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText(campoNaRaiz.significado)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver no Layout InvoiCy' })).toHaveAttribute(
+      'href',
+      '/layout/campos/tpsusp',
     )
-
-    const link = await screen.findByRole('link', { name: 'CNPJ do tomador' })
-    expect(link).toHaveAttribute('href', '/layout-invoicy/cnpj-tomador')
+    expect(screen.queryByText(/Dentro do grupo/)).not.toBeInTheDocument()
   })
 
-  it('rejeição relacionada vira link para a página do erro', async () => {
+  it('campo dentro de um grupo diz o grupo no detalhe', async () => {
+    const { tagGrupo } = await renderCampos()
+
+    fireEvent.click(tagGrupo)
+
+    expect(screen.getByText(/Dentro do grupo/)).toHaveTextContent('Dentro do grupo Servico/Valores')
+  })
+
+  it('só um detalhe aberto por vez; clicar de novo fecha', async () => {
+    const { tagRaiz, tagGrupo } = await renderCampos()
+
+    fireEvent.click(tagRaiz)
+    fireEvent.click(tagGrupo)
+
+    expect(
+      screen
+        .getAllByRole('button')
+        .filter((botao) => botao.getAttribute('aria-expanded') === 'true'),
+    ).toEqual([tagGrupo])
+    expect(screen.queryByText(campoNaRaiz.significado)).not.toBeInTheDocument()
+
+    fireEvent.click(tagGrupo)
+    expect(tagGrupo).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByText(campoEmGrupo.significado)).not.toBeInTheDocument()
+  })
+
+  it('Esc fecha o detalhe e devolve o foco à tag', async () => {
+    const { tagRaiz } = await renderCampos()
+    fireEvent.click(tagRaiz)
+
+    fireEvent.keyDown(screen.getByRole('link', { name: 'Ver no Layout InvoiCy' }), {
+      key: 'Escape',
+    })
+
+    expect(tagRaiz).toHaveAttribute('aria-expanded', 'false')
+    expect(tagRaiz).toHaveFocus()
+  })
+
+  it('as tags apontam para um painel que existe mesmo fechado', async () => {
+    const { tagRaiz } = await renderCampos()
+
+    expect(document.getElementById(tagRaiz.getAttribute('aria-controls') ?? '')).not.toBeNull()
+  })
+})
+
+describe('ReferenciasCruzadas — rejeições relacionadas', () => {
+  it('cada rejeição é uma linha com código e título, ligando à página do erro', async () => {
     renderComRouter(<ReferenciasCruzadas camposLayout={[]} erros={[erro]} />)
 
-    const link = await screen.findByRole('link', { name: /E0117 — CNPJ do tomador inválido/ })
-    expect(link).toHaveAttribute('href', '/erros/e0117-cnpj-tomador-invalido')
-  })
-
-  it('mostra o rótulo literal do contrato em cada item, com acento preservado', async () => {
-    renderComRouter(<ReferenciasCruzadas camposLayout={[campoSemUrl]} erros={[erro]} />)
-
-    expect(await screen.findByText('CAMPO DO LAYOUT')).toBeInTheDocument()
-    expect(screen.getByText('REJEIÇÃO')).toBeInTheDocument()
+    const link = await screen.findByRole('link', { name: /E1300 — Não é permitido/ })
+    expect(link).toHaveAttribute('href', erro.url)
+    expect(screen.queryByText('REJEIÇÃO')).not.toBeInTheDocument()
   })
 
   it('seção vazia não renderiza <h2> órfão', async () => {
-    renderComRouter(<ReferenciasCruzadas camposLayout={[campoSemUrl]} erros={[]} />)
+    renderComRouter(<ReferenciasCruzadas camposLayout={[campoNaRaiz]} erros={[]} />)
 
     expect(
       await screen.findByRole('heading', { name: 'Campos do Layout InvoiCy' }),
@@ -95,46 +176,8 @@ describe('ReferenciasCruzadas', () => {
   })
 
   it('sem nenhuma referência, não renderiza nada', () => {
-    const { container } = renderComRouter(<ReferenciasCruzadas camposLayout={[]} erros={[]} />)
+    const { container } = render(<ReferenciasCruzadas camposLayout={[]} erros={[]} />)
 
-    expect(container.querySelectorAll('h2')).toHaveLength(0)
-    expect(container.querySelectorAll('section')).toHaveLength(0)
-  })
-})
-
-describe('ReferenciasCruzadas — url do campo de layout é saneada (ACH-01)', () => {
-  const CAMPO_BASE = {
-    rotulo: 'CAMPO DO LAYOUT' as const,
-    slug: 'razao-social',
-    nome: 'cRazaoSocial',
-    caminhoXml: '/nfe/emit/cRazaoSocial',
-  }
-
-  // `url` é sempre nulo nesta fatia (PQ-06), então o branch do link é código agendado para a
-  // 003 — e é exatamente o tipo de branch em que o saneador é esquecido, porque ninguém
-  // consegue reproduzi-lo hoje. A auditoria de segurança e o QA acharam o mesmo ponto.
-  it.each([
-    ['https://evil.com', 'endereço externo'],
-    ['//evil.com', 'protocolo-relativo, que resolve para outro host'],
-    ['javascript:alert(1)', 'esquema executável'],
-  ])('não vira link quando a API manda %s (%s)', (url) => {
-    render(<ReferenciasCruzadas camposLayout={[{ ...CAMPO_BASE, url }]} erros={[]} />)
-
-    expect(screen.queryByRole('link', { name: CAMPO_BASE.nome })).not.toBeInTheDocument()
-    expect(screen.getByText(CAMPO_BASE.nome)).toBeInTheDocument()
-  })
-
-  it('vira link quando a API manda um caminho interno', () => {
-    render(
-      <ReferenciasCruzadas
-        camposLayout={[{ ...CAMPO_BASE, url: '/provedores/sefaz-sp/v4-00' }]}
-        erros={[]}
-      />,
-    )
-
-    expect(screen.getByRole('link', { name: CAMPO_BASE.nome })).toHaveAttribute(
-      'href',
-      '/provedores/sefaz-sp/v4-00',
-    )
+    expect(container).toBeEmptyDOMElement()
   })
 })

@@ -23,8 +23,9 @@ const artigo: ArtigoDetalhe = {
       rotulo: 'CAMPO DO LAYOUT',
       slug: 'cnpj-tomador',
       nome: 'CNPJ do tomador',
-      caminhoXml: 'Rps/Tomador/CpfCnpj/Cnpj',
-      url: null,
+      caminhoXml: '//Tomador/TomaCNPJ',
+      significado: 'CNPJ do tomador do serviço.',
+      url: '/layout/campos/cnpj-tomador',
     },
   ],
   errosRelacionados: [
@@ -60,7 +61,7 @@ describe('useArtigoPorSlug', () => {
     expect(result.current.data).toEqual(artigo)
   })
 
-  it('preserva o acento de "REJEIÇÃO" e o `url: null` do campo de layout', async () => {
+  it('preserva o acento de "REJEIÇÃO" e o link do campo de layout', async () => {
     server.use(
       http.get(`${API_URL}/artigos/${artigo.slug}`, () =>
         HttpResponse.json({ data: artigo, message: null }),
@@ -73,7 +74,9 @@ describe('useArtigoPorSlug', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data?.errosRelacionados[0]?.rotulo).toBe('REJEIÇÃO')
-    expect(result.current.data?.camposLayoutRelacionados[0]?.url).toBeNull()
+    expect(result.current.data?.camposLayoutRelacionados[0]?.url).toBe(
+      '/layout/campos/cnpj-tomador',
+    )
   })
 
   it('propaga 404 e 410 como status distintos, sem retry', async () => {

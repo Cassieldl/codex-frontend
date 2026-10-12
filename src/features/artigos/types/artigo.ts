@@ -24,8 +24,10 @@ export interface ReferenciaCampoLayout {
   slug: string
   nome: string
   caminhoXml: string
-  /** `null` sempre nesta fatia (PQ-06) — a 003 preenche o valor, o componente não muda. */
-  url: string | null
+  /** O que o campo é — aparece quando o leitor abre a tag do campo no artigo. */
+  significado: string
+  /** `/layout/campos/{slug}`. A tela navega pela rota tipada a partir do `slug`. */
+  url: string
 }
 
 export interface ReferenciaErro {
