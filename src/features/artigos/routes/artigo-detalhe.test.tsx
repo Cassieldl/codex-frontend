@@ -39,8 +39,9 @@ const artigo: ArtigoDetalhe = {
       rotulo: 'CAMPO DO LAYOUT',
       slug: 'cnpj-tomador',
       nome: 'CNPJ do tomador',
-      caminhoXml: 'Rps/Tomador/CpfCnpj/Cnpj',
-      url: null,
+      caminhoXml: '//Tomador/TomaCNPJ',
+      significado: 'CNPJ do tomador do serviço.',
+      url: '/layout/campos/cnpj-tomador',
     },
   ],
   errosRelacionados: [
@@ -300,6 +301,7 @@ describe('ArtigoDetalhePage — trilha de volta ao índice', () => {
     // marcação sozinho, então remover só o `exact` não derruba este caso — a mutação que o
     // derruba é alinhar o search E tirar o `exact`. O `exact` fica como a defesa explícita, que
     // continua valendo se o search da trilha mudar.
-    expect(document.querySelectorAll('[aria-current]')).toHaveLength(0)
+    // Conta `page`, não todo `aria-current`: o sumário marca a seção em leitura com `location`.
+    expect(document.querySelectorAll('[aria-current="page"]')).toHaveLength(0)
   })
 })
