@@ -81,10 +81,14 @@ export function BotaoCopiar({
       {compacto ? (
         /* A dica responde a foco além de hover — teclado e leitor de foco alcançam o mesmo que o
            mouse. `aria-hidden` evita que o leitor de tela anuncie o texto duas vezes, já que o
-           `aria-label` do botão cobre. */
+           `aria-label` do botão cobre.
+
+           Ancorada pela direita do botão, ela cresce só para a esquerda. Centralizada, a dica do
+           último botão da linha passava da borda da tabela e, mesmo transparente, contava como
+           área rolável: a tabela ganhava barra de rolagem horizontal. */
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 rounded-[var(--radius-control)] bg-ink px-2 py-1 text-[11px] whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+          className="pointer-events-none absolute right-0 bottom-full z-10 mb-1 rounded-[var(--radius-control)] bg-ink px-2 py-1 text-[11px] whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
         >
           {copiado ? 'Copiado' : rotulo}
         </span>

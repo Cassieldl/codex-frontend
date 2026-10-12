@@ -114,6 +114,21 @@ describe('BotaoCopiar — modo compacto', () => {
 
     expect(classeDoIcone(comCopia)).not.toBe(classeDoIcone(comLink))
   })
+
+  /**
+   * O botão compacto fica na última coluna das tabelas. Dica centralizada passava da borda direita
+   * e, mesmo transparente, dava barra de rolagem horizontal à tabela. jsdom não faz layout, então a
+   * guarda é a ancoragem: pela direita do botão, a dica só cresce para dentro da tabela.
+   */
+  it('ancora a dica pela direita, para ela não passar da borda da tabela', () => {
+    render(
+      <BotaoCopiar compacto icone="link" valor="x" ariaLabel="Copiar link" rotulo="Copiar link" />,
+    )
+
+    const dica = screen.getByText('Copiar link')
+    expect(dica).toHaveClass('right-0')
+    expect(dica.className).not.toMatch(/left-1\/2|translate-x/)
+  })
 })
 
 /**
