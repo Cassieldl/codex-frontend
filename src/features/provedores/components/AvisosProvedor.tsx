@@ -28,7 +28,7 @@ export function AvisosProvedor({ nomeProvedor, avisos }: AvisosProvedorProps) {
         <p className="text-xs text-muted">Valem para {nomeProvedor} em qualquer versão.</p>
       </header>
 
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-2">
         {avisos.map((aviso) => (
           <AvisoPublicoItem key={aviso.id} aviso={aviso} destacado={aviso.id === avisoDestacado} />
         ))}

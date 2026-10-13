@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AvisoPublico } from '../types/provedor'
 import { AvisosProvedor } from './AvisosProvedor'
@@ -197,5 +197,79 @@ describe('AvisosVersao', () => {
 
     expect(rolarParaOElemento).not.toHaveBeenCalled()
     expect(container.querySelector('#aviso-12')).not.toHaveClass('bg-highlight-anchor')
+  })
+})
+
+describe('AvisoPublicoItem — recolhido até ser aberto', () => {
+  function detalhesDo(container: HTMLElement, id: number) {
+    return container.querySelector(`#aviso-${id} details`) as HTMLDetailsElement
+  }
+
+  it('alerta e informativo abrem recolhidos, só com o título à vista', () => {
+    const informativo: AvisoPublico = { ...avisoDeProvedor, id: 8, severidade: 'Informativo' }
+    const { container } = render(
+      <AvisosProvedor
+        nomeProvedor="Prefeitura de Exemplo"
+        avisos={[avisoDeProvedor, informativo]}
+      />,
+    )
+
+    expect(detalhesDo(container, 7).open).toBe(false)
+    expect(detalhesDo(container, 8).open).toBe(false)
+    expect(
+      within(detalhesDo(container, 7).querySelector('summary')!).getByRole('heading', {
+        name: avisoDeProvedor.titulo,
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('o crítico já abre aberto: não pode ficar atrás de um clique', () => {
+    const { container } = render(<AvisosVersao avisos={[avisoDeVersao]} />)
+
+    expect(detalhesDo(container, 12).open).toBe(true)
+  })
+
+  it('o corpo fica fora do título, e clicar no título abre o aviso', () => {
+    const { container } = render(
+      <AvisosProvedor nomeProvedor="Prefeitura de Exemplo" avisos={[avisoDeProvedor]} />,
+    )
+    const resumo = detalhesDo(container, 7).querySelector('summary')!
+
+    expect(resumo).not.toHaveTextContent(avisoDeProvedor.corpo)
+    fireEvent.click(resumo)
+    expect(detalhesDo(container, 7).open).toBe(true)
+  })
+
+  it('o aviso apontado pela âncora abre, mesmo não sendo crítico', () => {
+    window.history.replaceState({}, '', '/#aviso-7')
+
+    const { container } = render(
+      <AvisosProvedor nomeProvedor="Prefeitura de Exemplo" avisos={[avisoDeProvedor]} />,
+    )
+
+    expect(detalhesDo(container, 7).open).toBe(true)
+  })
+
+  it('a âncora que muda depois da montagem abre o aviso novo', () => {
+    const { container } = render(
+      <AvisosProvedor nomeProvedor="Prefeitura de Exemplo" avisos={[avisoDeProvedor]} />,
+    )
+    expect(detalhesDo(container, 7).open).toBe(false)
+
+    act(() => {
+      window.history.replaceState({}, '', '/#aviso-7')
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    })
+
+    expect(detalhesDo(container, 7).open).toBe(true)
+  })
+
+  it('copiar o link não depende de abrir o aviso', () => {
+    render(<AvisosProvedor nomeProvedor="Prefeitura de Exemplo" avisos={[avisoDeProvedor]} />)
+
+    const botao = screen.getByRole('button', {
+      name: `Copiar link do aviso ${avisoDeProvedor.titulo}`,
+    })
+    expect(botao.closest('details')).toBeNull()
   })
 })

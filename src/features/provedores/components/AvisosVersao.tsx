@@ -23,7 +23,7 @@ export function AvisosVersao({ avisos }: AvisosVersaoProps) {
         Avisos desta versão
       </h2>
 
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-2">
         {avisos.map((aviso) => (
           <AvisoPublicoItem key={aviso.id} aviso={aviso} destacado={aviso.id === avisoDestacado} />
         ))}

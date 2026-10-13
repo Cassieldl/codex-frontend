@@ -53,7 +53,7 @@ function CardComunicado({ comunicado, caminhoAtual }: CardComunicadoProps) {
       )}
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <EtiquetaSeveridade severidade={SEVERIDADE_ETIQUETA[comunicado.severidade]} />
+        <EtiquetaSeveridade severidade={SEVERIDADE_ETIQUETA[comunicado.severidade]} somenteIcone />
         <span className="text-xs font-semibold">{rotuloAlvo(comunicado)}</span>
         <span className="text-xs">Vigente até {formatarDataHora(comunicado.expiraEm)}</span>
       </div>

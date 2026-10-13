@@ -42,3 +42,26 @@ describe('EtiquetaSeveridade', () => {
     expect(screen.queryByText(/^\(\d+\)$/)).not.toBeInTheDocument()
   })
 })
+
+describe('EtiquetaSeveridade — só o ícone', () => {
+  it('o nome continua disponível para o leitor de tela e como dica', () => {
+    render(<EtiquetaSeveridade severidade="alerta" somenteIcone />)
+
+    const nome = screen.getByText('Alerta')
+    expect(nome).toHaveClass('sr-only')
+    expect(nome.parentElement).toHaveAttribute('title', 'Alerta')
+  })
+
+  it('cada severidade tem um ícone de forma própria — a cor não é o único sinal', () => {
+    const iconeDe = (severidade: 'critico' | 'alerta' | 'informativo') => {
+      const { container, unmount } = render(
+        <EtiquetaSeveridade severidade={severidade} somenteIcone />,
+      )
+      const classe = container.querySelector('svg')?.getAttribute('class')
+      unmount()
+      return classe
+    }
+
+    expect(new Set([iconeDe('critico'), iconeDe('alerta'), iconeDe('informativo')]).size).toBe(3)
+  })
+})
