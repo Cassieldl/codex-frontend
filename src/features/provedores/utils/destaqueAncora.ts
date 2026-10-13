@@ -38,3 +38,12 @@ export function useCampoDestacadoPorAncora(): string | null {
 
   return extrairSlugDoHash(hash)
 }
+
+/** Tira `#campo-…` da URL e avisa os ouvintes, para que o mesmo link possa ser seguido de novo. */
+export function limparAncoraDeCampo(): void {
+  if (extrairSlugDoHash(window.location.hash) === null) return
+
+  const { pathname, search } = window.location
+  window.history.replaceState(window.history.state, '', pathname + search)
+  window.dispatchEvent(new HashChangeEvent('hashchange'))
+}

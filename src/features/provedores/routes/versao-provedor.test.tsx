@@ -7,9 +7,10 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
 import { VersaoProvedorPage } from './versao-provedor'
 
@@ -160,5 +161,140 @@ describe('VersaoProvedorPage — retentativa só no que pode melhorar', () => {
 
     await screen.findByRole('button', { name: /tentar novamente/i })
     expect(contar()).toBeGreaterThan(1)
+  })
+})
+
+/**
+ * Resposta transcrita do envelope real de `GET /provedores/{slug}/versoes/{versao}` (campos e erros
+ * do Emissor Nacional 0.20), **sem anotação do tipo do cliente**. O campo `PaiPreServico` tem duas
+ * rejeições; `E1235` não está ligado a campo nenhum — é ele que a lista perderia se o contador
+ * voltasse a recortá-la.
+ */
+const RESPOSTA_DA_VERSAO = {
+  data: {
+    provedor: {
+      slug: PROVEDOR_SLUG,
+      nome: 'Prefeitura de Exemplo',
+      categoria: 'Nacional',
+      identificadorInvoicy: 'prefeitura-exemplo',
+    },
+    versao: {
+      slug: VERSAO_SLUG,
+      rotulo: '0.20',
+      verificadoEm: '2026-07-01T00:00:00Z',
+      introducao: null,
+      versaoLayoutRotulo: '1.0',
+    },
+    camposPorGrupo: [
+      {
+        grupo: 'Servico',
+        grupoSlug: 'servico',
+        campos: [
+          {
+            campoLayoutSlug: 'servico-discriminacao',
+            nome: 'Discriminacao',
+            caminhoXml: '//Servico/Discriminacao',
+            significado: 'Descrição do serviço prestado.',
+            tipo: 'Texto',
+            tamanho: '1000',
+            mascara: null,
+            dominio: null,
+            estadoPreenchimento: 'Obrigatorio',
+            condicao: null,
+            exemplo: null,
+            notaPreenchimento: null,
+            destinoXml: 'DPS/infDPS/serv/cServ/xDescServ',
+            notaTransformacao: null,
+            ordem: 148,
+            errosConhecidos: [],
+          },
+          {
+            campoLayoutSlug: 'servico-paipreservico',
+            nome: 'PaiPreServico',
+            caminhoXml: '//Servico/PaiPreServico',
+            significado: 'País de prestação do serviço.',
+            tipo: 'Texto',
+            tamanho: '2',
+            mascara: null,
+            dominio: null,
+            estadoPreenchimento: 'Condicional',
+            condicao: 'Informar apenas um entre: cLocPrestacao, cPaisPrestacao.',
+            exemplo: null,
+            notaPreenchimento: null,
+            destinoXml: 'DPS/infDPS/serv/locPrest/cPaisPrestacao',
+            notaTransformacao: null,
+            ordem: 150,
+            errosConhecidos: [
+              { slug: 'e0304-informe-um-codigo-de-pais-existente', codigo: 'E0304' },
+              { slug: 'e0590-e-obrigatorio-informar-o-codigo-do-pais', codigo: 'E0590' },
+            ],
+          },
+        ],
+      },
+    ],
+    totalCampos: 2,
+    avisos: [],
+    errosResumo: {
+      total: 3,
+      itens: [
+        {
+          slug: 'e0304-informe-um-codigo-de-pais-existente',
+          codigo: 'E0304',
+          titulo: 'Informe um código de país existente.',
+          variantes: ['Informe um código de país existente.'],
+        },
+        {
+          slug: 'e0590-e-obrigatorio-informar-o-codigo-do-pais',
+          codigo: 'E0590',
+          titulo: 'É obrigatório informar o código do país.',
+          variantes: ['É obrigatório informar o código do país.'],
+        },
+        {
+          slug: 'e1235-falha-no-esquema',
+          codigo: 'E1235',
+          titulo: 'Falha no esquema XML da DPS',
+          variantes: [],
+        },
+      ],
+    },
+    exemplos: [],
+    outrasVersoes: [],
+  },
+  message: null,
+}
+
+describe('VersaoProvedorPage — campos da versão', () => {
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn()
+    server.use(handlerStatus(200, RESPOSTA_DA_VERSAO))
+  })
+
+  function linksDaListaDeErros() {
+    const secao = document.getElementById('erros-conhecidos')!
+    return within(secao).getAllByRole('link')
+  }
+
+  it('monta a seção de campos com o primeiro bloco aberto', async () => {
+    renderPagina()
+
+    await screen.findByRole('heading', { level: 2, name: 'Campos e mapeamento' })
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Serviço' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'PaiPreServico' })).toBeInTheDocument()
+  })
+
+  it('o contador de rejeições abre o modal do campo e a lista de erros continua inteira', async () => {
+    const usuario = userEvent.setup()
+    renderPagina()
+    await screen.findByRole('heading', { level: 2, name: 'Campos e mapeamento' })
+    expect(linksDaListaDeErros()).toHaveLength(3)
+
+    await usuario.click(
+      screen.getByRole('button', { name: 'Ver as 2 rejeições registradas no campo PaiPreServico' }),
+    )
+
+    expect(await screen.findByRole('dialog', { name: 'PaiPreServico' })).toBeInTheDocument()
+    expect(linksDaListaDeErros()).toHaveLength(3)
+    expect(screen.queryByRole('button', { name: /Remover o filtro do campo/ })).toBeNull()
   })
 })

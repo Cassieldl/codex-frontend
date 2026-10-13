@@ -163,7 +163,7 @@ export function CampoVersaoForm({
         <Input label="Tipo" required error={errors.tipo?.message} {...register('tipo')} />
         <Input label="Tamanho" error={errors.tamanho?.message} {...register('tamanho')} />
         <Input label="Máscara" error={errors.mascara?.message} {...register('mascara')} />
-        <Input label="Domínio" error={errors.dominio?.message} {...register('dominio')} />
+        <Input label="Valores aceitos" error={errors.dominio?.message} {...register('dominio')} />
       </div>
 
       <Select

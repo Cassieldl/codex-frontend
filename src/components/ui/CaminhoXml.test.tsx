@@ -64,6 +64,35 @@ describe('CaminhoXml', () => {
     expect(destacados).toEqual(['ValorServicos'])
   })
 
+  /**
+   * O tamanho é UMA classe: `clsx` não faz merge, então aplicar as duas deixaria `text-[13px]` e
+   * `text-[15px]` no mesmo elemento, e quem vence é a ordem no CSS gerado.
+   */
+  it('tamanho "destaque" usa só text-[15px]', () => {
+    const { container } = render(<CaminhoXml caminho={CAMINHO} tamanho="destaque" />)
+    const classes = container.firstElementChild?.className ?? ''
+
+    expect(classes).toContain('text-[15px]')
+    expect(classes).not.toContain('text-[13px]')
+  })
+
+  it('tamanho padrão (explícito ou omitido) usa só text-[13px]', () => {
+    const omitido = render(<CaminhoXml caminho={CAMINHO} />).container.firstElementChild
+    const explicito = render(<CaminhoXml caminho={CAMINHO} tamanho="padrao" />).container
+      .firstElementChild
+
+    for (const elemento of [omitido, explicito]) {
+      expect(elemento?.className).toContain('text-[13px]')
+      expect(elemento?.className).not.toContain('text-[15px]')
+    }
+  })
+
+  it('o tamanho não altera o texto copiado', () => {
+    const { container } = render(<CaminhoXml caminho={CAMINHO} tamanho="destaque" />)
+
+    expect(container.textContent).toBe(CAMINHO)
+  })
+
   /** Caminho sem separador nenhum não ganha ponto de quebra — não há onde quebrar bem. */
   it('não insere quebra em caminho de segmento único', () => {
     const { container } = render(<CaminhoXml caminho="Rps" />)
@@ -82,7 +111,7 @@ describe('CaminhoXml', () => {
  * versão deste componente pintou o prefixo e as barras assim, e a suíte inteira ficou verde.
  */
 describe('nenhum componente usa token de borda como cor de texto', () => {
-  const FONTES = import.meta.glob('../**/*.tsx', {
+  const FONTES = import.meta.glob('../../**/*.tsx', {
     query: '?raw',
     import: 'default',
     eager: true,
@@ -92,14 +121,21 @@ describe('nenhum componente usa token de borda como cor de texto', () => {
     return Object.keys(FONTES).filter((caminho) => !caminho.endsWith('.test.tsx'))
   }
 
-  it('a varredura enxerga os componentes', () => {
+  it('a varredura enxerga componentes e features', () => {
+    const caminhos = arquivosDeProducao()
+
     // Sem contar o universo, um glob que parasse de casar deixaria o caso abaixo passar por vazio.
-    expect(arquivosDeProducao().length).toBeGreaterThanOrEqual(20)
+    // São ~138 arquivos de produção em `src/` (componentes e features); o piso tolera remoções.
+    expect(caminhos.length).toBeGreaterThanOrEqual(130)
+    expect(caminhos.some((caminho) => caminho.startsWith('./'))).toBe(true)
+    expect(caminhos.some((caminho) => caminho.includes('/features/'))).toBe(true)
   })
 
+  // Casa a classe em qualquer lugar da fonte, não só em `className=`: classes também moram em
+  // constantes e templates, e a versão restrita ao atributo deixava essas passarem.
   it('não usa text-line em lugar nenhum', () => {
     const comTextoIlegivel = arquivosDeProducao().filter((caminho) =>
-      /className=("[^"]*|\{[^}]*)\btext-line\b/.test(FONTES[caminho]!),
+      /(?<![\w-])text-line(?![\w-])/.test(FONTES[caminho]!),
     )
 
     expect(comTextoIlegivel).toEqual([])

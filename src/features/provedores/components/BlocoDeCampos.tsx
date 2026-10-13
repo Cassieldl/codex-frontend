@@ -1,0 +1,170 @@
+import { ChevronDown, TriangleAlert } from 'lucide-react'
+import type { SecaoInicialDoModal } from '../types/modalDoCampo'
+import type { BlocoDeCampos as BlocoDeCamposDados, SubgrupoDeCampos } from '../utils/blocosDeCampos'
+import { CLASSE_SO_NO_DESKTOP, LinhaDoCampo } from './LinhaDoCampo'
+
+export interface BlocoDeCamposProps {
+  bloco: BlocoDeCamposDados
+  aberto: boolean
+  /** Há filtro ativo: a meta mostra "v de n campos". */
+  filtrando: boolean
+  slugAtivo: string | null
+  /** Sincroniza o estado com o `<details>`: o navegador também abre o bloco (Ctrl+F, fragmento). */
+  onAlternar: (raiz: string, aberto: boolean) => void
+  onAbrirCampo: (campoLayoutSlug: string, secao?: SecaoInicialDoModal) => void
+}
+
+interface ColunaDoBloco {
+  chave: string
+  /** Cabeçalho para leitor de tela; na linha de rótulos visível, a de rejeições vira ícone. */
+  rotulo: string
+  /** Largura fixa; sem ela a coluna divide o resto por igual. */
+  largura: string | null
+  soNoDesktop: boolean
+}
+
+/**
+ * Fonte única das colunas: o `<colgroup>` da tabela e o grid dos rótulos fixos saem da mesma
+ * lista, para os rótulos não se desalinharem das células.
+ */
+const COLUNAS: ColunaDoBloco[] = [
+  { chave: 'campo', rotulo: 'Campo InvoiCy', largura: null, soNoDesktop: false },
+  { chave: 'tag', rotulo: 'Tag do provedor', largura: null, soNoDesktop: false },
+  { chave: 'tipo', rotulo: 'Tipo', largura: '6rem', soNoDesktop: true },
+  { chave: 'tamanho', rotulo: 'Tamanho', largura: '5rem', soNoDesktop: true },
+  { chave: 'exemplo', rotulo: 'Exemplo', largura: null, soNoDesktop: true },
+  { chave: 'rejeicoes', rotulo: 'Rejeições registradas', largura: '4.25rem', soNoDesktop: false },
+]
+
+const COLUNA_SEM_LARGURA_NO_GRID = 'minmax(0, 1fr)'
+
+const GRID_DOS_ROTULOS = COLUNAS.map(({ largura }) => largura ?? COLUNA_SEM_LARGURA_NO_GRID).join(
+  ' ',
+)
+
+const CLASSE_DA_CELULA_DE_ROTULO = 'px-3 text-xs font-medium text-muted'
+
+function descreverQuantidade(quantidade: number, singular: string, plural: string): string {
+  return `${quantidade} ${quantidade === 1 ? singular : plural}`
+}
+
+function descreverMeta(bloco: BlocoDeCamposDados, filtrando: boolean): string {
+  const obrigatorios = descreverQuantidade(bloco.obrigatoriosDoBloco, 'obrigatório', 'obrigatórios')
+  const campos = filtrando
+    ? `${bloco.totalVisivel} de ${descreverQuantidade(bloco.totalDoBloco, 'campo', 'campos')}`
+    : descreverQuantidade(bloco.totalDoBloco, 'campo', 'campos')
+
+  return `${campos} · ${obrigatorios}`
+}
+
+function descreverTrilha(rotulo: string, subgrupo: SubgrupoDeCampos): string {
+  return subgrupo.titulo ? `${rotulo} › ${subgrupo.titulo}` : rotulo
+}
+
+function RotulosDasColunas() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{ gridTemplateColumns: GRID_DOS_ROTULOS }}
+      className="sticky top-12 z-[9] hidden h-8 items-center border-t border-b border-line bg-white min-[860px]:grid"
+    >
+      {COLUNAS.map(({ chave, rotulo }) => (
+        <span key={chave} className={CLASSE_DA_CELULA_DE_ROTULO}>
+          {chave === 'rejeicoes' ? (
+            <TriangleAlert aria-hidden="true" className="ml-auto size-3.5" />
+          ) : (
+            rotulo
+          )}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Um bloco do layout (raiz do XSD) como `<details>` recolhível. Cada subgrupo tem a sua tabela,
+ * com subtítulo fixo: o mesmo nome de tag pode existir em dois subgrupos e só o subtítulo diz de
+ * qual deles é a linha. Não usa `TableRoot`: o `overflow-x-auto` dele anula o `position: sticky`.
+ */
+export function BlocoDeCampos({
+  bloco,
+  aberto,
+  filtrando,
+  slugAtivo,
+  onAlternar,
+  onAbrirCampo,
+}: BlocoDeCamposProps) {
+  return (
+    <details
+      id={`bloco-${bloco.raiz}`}
+      open={aberto}
+      onToggle={(evento) => onAlternar(bloco.raiz, evento.currentTarget.open)}
+      className="group mb-3 scroll-mt-4 rounded-[var(--radius-card)] border border-border bg-white"
+    >
+      <summary className="sticky top-0 z-10 flex h-12 cursor-pointer list-none items-center gap-3 rounded-[var(--radius-card)] bg-surface-hover px-4 hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light group-open:rounded-b-none [&::-webkit-details-marker]:hidden">
+        <h3 className="text-card-titulo font-medium text-ink">{bloco.rotulo}</h3>
+        <span className="min-w-0 truncate text-xs text-muted tabular-nums">
+          {descreverMeta(bloco, filtrando)}
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          className="ml-auto size-4 shrink-0 text-muted transition-transform group-open:rotate-180"
+        />
+      </summary>
+
+      <RotulosDasColunas />
+
+      {bloco.subgrupos.map((subgrupo) => (
+        <div
+          key={subgrupo.chave}
+          id={subgrupo.grupoSlug ? `grupo-${subgrupo.grupoSlug}` : undefined}
+          className="scroll-mt-28"
+        >
+          {subgrupo.titulo && (
+            <h4 className="sticky top-12 z-[8] flex h-8 items-center border-t border-line bg-white px-4 text-xs font-semibold tracking-wide text-muted uppercase min-[860px]:top-20">
+              {subgrupo.titulo}
+            </h4>
+          )}
+
+          <table className="w-full table-fixed border-collapse text-left">
+            <caption className="sr-only">
+              Campos de {descreverTrilha(bloco.rotulo, subgrupo)}
+            </caption>
+            <colgroup>
+              {COLUNAS.map(({ chave, largura, soNoDesktop }) => (
+                <col
+                  key={chave}
+                  style={largura ? { width: largura } : undefined}
+                  className={soNoDesktop ? 'hidden min-[860px]:table-column' : undefined}
+                />
+              ))}
+            </colgroup>
+            <thead className="sr-only">
+              <tr>
+                {COLUNAS.map(({ chave, rotulo, soNoDesktop }) => (
+                  <th
+                    key={chave}
+                    scope="col"
+                    className={soNoDesktop ? CLASSE_SO_NO_DESKTOP : undefined}
+                  >
+                    {rotulo}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {subgrupo.campos.map((campo) => (
+                <LinhaDoCampo
+                  key={campo.campoLayoutSlug}
+                  campo={campo}
+                  ativo={campo.campoLayoutSlug === slugAtivo}
+                  onAbrir={onAbrirCampo}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </details>
+  )
+}

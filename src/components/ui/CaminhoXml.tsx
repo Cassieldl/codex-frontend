@@ -1,9 +1,19 @@
 import clsx from 'clsx'
 import { Fragment } from 'react'
 
+export type TamanhoCaminhoXml = 'padrao' | 'destaque'
+
 export interface CaminhoXmlProps {
   caminho: string
+  /** `destaque` é para o caminho que é a informação principal da tela. */
+  tamanho?: TamanhoCaminhoXml
   className?: string
+}
+
+// Uma classe de tamanho só: `clsx` não faz merge, e duas ficariam ambas no elemento.
+const tamanhoClasses: Record<TamanhoCaminhoXml, string> = {
+  padrao: 'text-[13px]',
+  destaque: 'text-[15px]',
 }
 
 /** `//Prestador/RazaoSocial` → prefixo `//` + `['Prestador', 'RazaoSocial']`. */
@@ -33,12 +43,12 @@ function separar(caminho: string): { prefixo: string; segmentos: string[] } {
  * A quebra continua só nos separadores (`<wbr>`): `break-all` partia `RazaoSoc`/`ial` ao meio, e
  * sem quebra nenhuma um caminho longo transborda a coluna.
  */
-export function CaminhoXml({ caminho, className }: CaminhoXmlProps) {
+export function CaminhoXml({ caminho, tamanho = 'padrao', className }: CaminhoXmlProps) {
   const { prefixo, segmentos } = separar(caminho)
   const indiceDoNo = segmentos.length - 1
 
   return (
-    <span className={clsx('font-mono text-[13px] leading-6', className)}>
+    <span className={clsx('font-mono leading-6', tamanhoClasses[tamanho], className)}>
       {prefixo && <span className="text-muted">{prefixo}</span>}
 
       {segmentos.map((segmento, indice) => (

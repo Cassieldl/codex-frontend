@@ -1,89 +1,196 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
+import { useId, useMemo, useState } from 'react'
+import { EmptyState } from '../../../components/ui/EmptyState'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
-import type { ErroResumoPublico } from '../types/versaoProvedorPagina'
+import type { ErroResumoPublico, GrupoCampoVersao } from '../types/versaoProvedorPagina'
+
+/** Quantos erros aparecem de cada vez — a versão do Emissor Nacional tem mais de 450, e a busca acha o resto. */
+export const ERROS_POR_VEZ = 10
 
 export interface ErrosConhecidosProps {
   resumo: { total: number; itens: ErroResumoPublico[] }
-  provedorSlug: string
+  /** Os campos da versão: é deles que sai o campo de cada erro, pelo vínculo campo → erro. */
+  camposPorGrupo: GrupoCampoVersao[]
+}
+
+interface CampoDoErro {
+  slug: string
+  nome: string
+}
+
+function normalizar(texto: string): string {
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
+
+/** Erro → campos da versão ligados a ele: o vínculo vem dos campos, e aqui é lido ao contrário. */
+export function indexarCamposPorErro(grupos: GrupoCampoVersao[]): Map<string, CampoDoErro[]> {
+  const indice = new Map<string, CampoDoErro[]>()
+  for (const campo of grupos.flatMap((grupo) => grupo.campos)) {
+    for (const erro of campo.errosConhecidos) {
+      const campos = indice.get(erro.slug) ?? []
+      campos.push({ slug: campo.campoLayoutSlug, nome: campo.nome })
+      indice.set(erro.slug, campos)
+    }
+  }
+  return indice
+}
+
+/** A mensagem observada só acrescenta quando difere do título — na maioria dos erros, é a mesma. */
+export function mensagensQueAcrescentam(erro: ErroResumoPublico): string[] {
+  const titulo = normalizar(erro.titulo).replace(/\.$/, '').trim()
+  return erro.variantes.filter(
+    (mensagem) => normalizar(mensagem).replace(/\.$/, '').trim() !== titulo,
+  )
 }
 
 /**
- * "Erros conhecidos" (§7.6.3) — top 20 por relevância (`errosResumo.itens`);
- * o restante via link para `/erros?provedor={slug}`.
+ * "Erros conhecidos" da versão. Uma linha por erro (código e título), com o campo relacionado e a
+ * mensagem observada só quando ela diz algo além do título. A busca filtra por código, texto ou
+ * campo; a lista mostra {@link ERROS_POR_VEZ} de cada vez.
  *
- * Cada item mostra as mensagens observadas abaixo do título, em monoespaçada e
- * com filete de acento: é o texto que a prefeitura devolveu, e é por ele que o
- * leitor reconhece o próprio caso. Com só código e título, a lista respondia
- * apenas a quem já sabia o código — e quem chega aqui chega com a mensagem na
- * mão, não com ele.
- *
- * O caminho montado com `erro.slug` (que vem da API) passa por `caminhoInternoSeguro` antes de virar sink
- * de navegação (BAIXO-02, defesa em profundidade); se não passar, o item
- * renderiza só o texto, sem link.
+ * O caminho montado com `erro.slug` (que vem da API) passa por `caminhoInternoSeguro` antes de virar
+ * sink de navegação; se não passar, o item renderiza só o texto, sem link.
  */
-export function ErrosConhecidos({ resumo, provedorSlug }: ErrosConhecidosProps) {
+export function ErrosConhecidos({ resumo, camposPorGrupo }: ErrosConhecidosProps) {
+  const buscaId = useId()
+  const [termo, setTermo] = useState('')
+  const [quantidade, setQuantidade] = useState(ERROS_POR_VEZ)
+
+  const camposPorErro = useMemo(() => indexarCamposPorErro(camposPorGrupo), [camposPorGrupo])
+
+  const termoNormalizado = normalizar(termo.trim())
+  const filtrados = useMemo(
+    () =>
+      resumo.itens.filter((erro) => {
+        const campos = camposPorErro.get(erro.slug) ?? []
+        if (!termoNormalizado) return true
+        return [
+          erro.codigo,
+          erro.titulo,
+          ...erro.variantes,
+          ...campos.map((campo) => campo.nome),
+        ].some((texto) => normalizar(texto).includes(termoNormalizado))
+      }),
+    [resumo.itens, camposPorErro, termoNormalizado],
+  )
+
   if (resumo.itens.length === 0) return null
 
+  const visiveis = filtrados.slice(0, quantidade)
+  const restantes = filtrados.length - visiveis.length
+
+  function buscar(valor: string) {
+    setTermo(valor)
+    setQuantidade(ERROS_POR_VEZ)
+  }
+
   return (
-    <section aria-labelledby="erros-conhecidos-titulo" className="flex flex-col gap-3">
+    <section
+      id="erros-conhecidos"
+      aria-labelledby="erros-conhecidos-titulo"
+      className="flex scroll-mt-24 flex-col gap-3"
+    >
       <h2 id="erros-conhecidos-titulo" className="text-subtitulo font-semibold text-ink">
-        Erros conhecidos
+        Erros conhecidos <span className="text-base font-normal text-muted">({resumo.total})</span>
       </h2>
 
-      <ul className="flex flex-col gap-2">
-        {resumo.itens.map((erro) => {
-          const caminho = caminhoInternoSeguro(`/erros/${erro.slug}`)
-          const conteudo = (
-            <>
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="shrink-0 font-mono text-xs text-muted">{erro.codigo}</span>
-                <span className="min-w-0 text-right text-sm text-ink [overflow-wrap:anywhere]">
+      <div className="flex flex-wrap items-center gap-3">
+        <label htmlFor={buscaId} className="sr-only">
+          Buscar erro por código, mensagem ou campo
+        </label>
+        <input
+          id={buscaId}
+          type="search"
+          value={termo}
+          onChange={(evento) => buscar(evento.target.value)}
+          placeholder="Buscar por código, mensagem ou campo"
+          className="h-9 min-w-[240px] flex-1 rounded-[var(--radius-input)] border border-border-control px-3 text-sm text-ink placeholder:text-muted focus:border-[1.5px] focus:border-primary-medium focus:outline-none"
+        />
+      </div>
+
+      {filtrados.length === 0 ? (
+        <EmptyState
+          message="Nenhum erro encontrado para esse filtro."
+          action={
+            <button
+              type="button"
+              onClick={() => buscar('')}
+              className="text-sm font-semibold text-primary-medium hover:underline"
+            >
+              Limpar filtros
+            </button>
+          }
+        />
+      ) : (
+        <ul className="flex flex-col divide-y divide-line border-y border-line">
+          {visiveis.map((erro) => {
+            const caminho = caminhoInternoSeguro(`/erros/${erro.slug}`)
+            const campos = camposPorErro.get(erro.slug) ?? []
+            const mensagens = mensagensQueAcrescentam(erro)
+            const conteudo = (
+              <>
+                <p className="text-sm text-ink [overflow-wrap:anywhere]">
+                  <span className="mr-2 font-mono text-xs font-semibold text-muted">
+                    {erro.codigo}
+                  </span>
                   {erro.titulo}
-                </span>
-              </div>
+                </p>
+                {mensagens.length > 0 && (
+                  <ul className="mt-1 flex flex-col gap-0.5 border-l-2 border-accent pl-3">
+                    {mensagens.map((mensagem) => (
+                      <li
+                        key={mensagem}
+                        className="font-mono text-xs leading-5 text-muted [overflow-wrap:anywhere]"
+                      >
+                        {mensagem}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {campos.length > 0 && (
+                  <p className="mt-1 text-xs text-muted">
+                    {campos.length === 1 ? 'Campo' : 'Campos'}:{' '}
+                    <span className="font-mono text-ink/80">
+                      {campos.map((campo) => campo.nome).join(', ')}
+                    </span>
+                  </p>
+                )}
+              </>
+            )
 
-              {erro.variantes.length > 0 && (
-                <ul className="mt-2 flex flex-col gap-1 border-l-2 border-accent pl-3">
-                  {erro.variantes.map((mensagem) => (
-                    <li
-                      key={mensagem}
-                      className="font-mono text-xs leading-5 text-muted [overflow-wrap:anywhere]"
-                    >
-                      {mensagem}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          )
+            return (
+              <li key={erro.slug}>
+                {caminho ? (
+                  <Link
+                    to={caminho as unknown as LinkProps['to']}
+                    className="block px-2 py-2.5 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+                  >
+                    {conteudo}
+                  </Link>
+                ) : (
+                  <div className="px-2 py-2.5">{conteudo}</div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
 
-          return (
-            <li key={erro.codigo}>
-              {caminho ? (
-                <Link
-                  to={caminho as unknown as LinkProps['to']}
-                  className="block rounded-[var(--radius-card)] border border-border px-4 py-3 hover:shadow-hover"
-                >
-                  {conteudo}
-                </Link>
-              ) : (
-                <div className="rounded-[var(--radius-card)] border border-border px-4 py-3">
-                  {conteudo}
-                </div>
-              )}
-            </li>
-          )
-        })}
-      </ul>
-
-      {resumo.total > resumo.itens.length && (
-        <Link
-          to="/erros"
-          search={{ provedor: provedorSlug } as unknown as LinkProps['search']}
-          className="text-sm font-semibold text-primary-medium hover:underline"
-        >
-          Ver todos os {resumo.total} erros
-        </Link>
+      {filtrados.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <span className="text-muted">
+            Mostrando {visiveis.length} de {filtrados.length}
+          </span>
+          {restantes > 0 && (
+            <button
+              type="button"
+              onClick={() => setQuantidade((atual) => atual + ERROS_POR_VEZ)}
+              className="font-semibold text-primary-medium hover:underline"
+            >
+              Mostrar mais {Math.min(ERROS_POR_VEZ, restantes)}
+            </button>
+          )}
+        </div>
       )}
     </section>
   )

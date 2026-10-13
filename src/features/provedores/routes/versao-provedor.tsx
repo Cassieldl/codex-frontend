@@ -1,13 +1,13 @@
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { AvisosVersao } from '../components/AvisosVersao'
+import { CamposDaVersao } from '../components/CamposDaVersao'
 import { ErrosConhecidos } from '../components/ErrosConhecidos'
 import {
   EstadoProvedorIndisponivel,
   type VarianteProvedorIndisponivel,
 } from '../components/EstadoProvedorIndisponivel'
 import { ExemplosVersao } from '../components/ExemplosVersao'
-import { TabelaCampos } from '../components/TabelaCampos'
 import { ErroVersaoProvedorHttp, useVersaoProvedor } from '../hooks/useVersaoProvedor'
 import { useCampoDestacadoPorAncora } from '../utils/destaqueAncora'
 
@@ -87,17 +87,21 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
 
       <AvisosVersao avisos={versaoPagina.avisos} />
 
-      <TabelaCampos
+      <CamposDaVersao
         provedorNome={versaoPagina.provedor.nome}
         versaoRotulo={versaoPagina.versao.rotulo}
         verificadoEm={versaoPagina.versao.verificadoEm}
         totalCampos={versaoPagina.totalCampos}
         camposPorGrupo={versaoPagina.camposPorGrupo}
+        errosResumo={versaoPagina.errosResumo.itens}
         urlVersaoAbsoluta={urlVersaoAbsoluta}
         campoDestacado={campoDestacado}
       />
 
-      <ErrosConhecidos resumo={versaoPagina.errosResumo} provedorSlug={provedorSlug} />
+      <ErrosConhecidos
+        resumo={versaoPagina.errosResumo}
+        camposPorGrupo={versaoPagina.camposPorGrupo}
+      />
 
       <ExemplosVersao
         exemplos={versaoPagina.exemplos}

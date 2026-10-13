@@ -30,7 +30,7 @@ export interface DicionarioCamposProps {
  * fixo, nunca por omissão.
  *
  * O filtro é em memória sobre o dicionário inteiro (nunca servidor, mesma
- * disciplina de `TabelaCampos`) e muda só o TEXTO da contagem, nunca a
+ * disciplina de `CamposDaVersao`) e muda só o TEXTO da contagem, nunca a
  * posição dele.
  */
 export function DicionarioCampos({
