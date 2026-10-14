@@ -1,5 +1,6 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
+import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { LayoutResumoHome } from '../types/home'
 
 export interface BlocoLayoutHomeProps {
@@ -59,7 +60,7 @@ export function BlocoLayoutHome({ layout }: BlocoLayoutHomeProps) {
             // Sem data de publicação: o contrato não a tem (B-6), e o artboard a pedia.
             // Mesma decisão que a tela 6 tomou — a versão vigente se identifica pelo rótulo.
             <span className="text-h1 font-extrabold leading-tight text-ink">
-              {layout.vigente.rotulo}
+              {formatarVersaoLayout(layout.vigente.rotulo, { maiuscula: true })}
             </span>
           ) : (
             <span className="text-card-titulo font-semibold text-ink">Nenhuma versão vigente</span>
@@ -67,7 +68,7 @@ export function BlocoLayoutHome({ layout }: BlocoLayoutHomeProps) {
 
           {layout.prevista && (
             <span className="mt-2.5 self-start rounded-[var(--radius-pill)] border border-dashed border-border px-2.5 py-0.5 text-xs text-muted">
-              {layout.prevista.rotulo} prevista
+              {formatarVersaoLayout(layout.prevista.rotulo, { maiuscula: true })} prevista
             </span>
           )}
         </div>

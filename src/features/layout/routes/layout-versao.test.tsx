@@ -7,12 +7,13 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { delay, http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   construirCamposLayout,
   construirGrupoCamposLayout,
+  handlerCampoLayoutVerbeteSucesso,
   handlerLayoutIndiceSucesso,
   handlerLayoutVersaoCapExcedido,
   handlerLayoutVersaoDespublicada,
@@ -80,6 +81,12 @@ const paginaFake: LayoutVersaoPagina = {
   ],
 }
 
+function trilhaDaPagina(): string {
+  const principal = screen.getByRole('main')
+  const trilha = within(principal).getAllByRole('link', { name: 'Layout InvoiCy' })[0]!.closest('p')
+  return (trilha?.textContent ?? '').replace(/\s+/g, ' ').trim()
+}
+
 function renderPagina(versaoSlug = '4-12') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
@@ -119,11 +126,57 @@ describe('LayoutVersaoPage', () => {
     renderPagina()
 
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
-      'Layout InvoiCy 4.12',
+      'Layout InvoiCy versão 4.12',
     )
     expect(screen.getByText('Número do RPS')).toBeInTheDocument()
     expect(screen.getByText('Valor do serviço')).toBeInTheDocument()
     expect(screen.getByText('Ajustes de retenção e de responsável pelo ISS.')).toBeInTheDocument()
+  })
+
+  it('escreve "versão" uma vez só: trilha, título, nota e link da versão anterior', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      handlerLayoutVersaoSucesso('4-12', paginaFake),
+    )
+    renderPagina()
+
+    await screen.findByRole('heading', { level: 1 })
+
+    const principal = within(screen.getByRole('main'))
+    expect(principal.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Layout InvoiCy versão 4.12',
+    )
+    expect(principal.getByRole('heading', { name: 'Nota da versão 4.12' })).toBeInTheDocument()
+    expect(
+      principal.getByRole('link', { name: 'ver o dicionário da versão 4.10' }),
+    ).toHaveAttribute('href', '/layout/4-10')
+    expect(trilhaDaPagina()).toBe('Layout InvoiCy / Versão 4.12')
+  })
+
+  it('o rótulo que já chega com "Versão" não gera "versão Versão" em lugar nenhum da tela', async () => {
+    const paginaComRotuloCompleto: LayoutVersaoPagina = {
+      ...paginaFake,
+      versao: { ...paginaFake.versao, rotulo: 'Versão 4.12' },
+      anterior: { ...paginaFake.anterior!, rotulo: 'Versão 4.10' },
+    }
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      handlerLayoutVersaoSucesso('4-12', paginaComRotuloCompleto),
+    )
+    renderPagina()
+
+    await screen.findByRole('heading', { level: 1 })
+
+    const principal = within(screen.getByRole('main'))
+    expect(principal.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Layout InvoiCy versão 4.12',
+    )
+    expect(principal.getByRole('heading', { name: 'Nota da versão 4.12' })).toBeInTheDocument()
+    expect(
+      principal.getByRole('link', { name: 'ver o dicionário da versão 4.10' }),
+    ).toBeInTheDocument()
+    expect(trilhaDaPagina()).toBe('Layout InvoiCy / Versão 4.12')
+    expect(screen.getByRole('main').textContent).not.toMatch(/vers[aã]o\s+vers[aã]o/i)
   })
 
   it('marca como atual apenas a versão aberta — nunca duas ao mesmo tempo', async () => {
@@ -156,24 +209,27 @@ describe('LayoutVersaoPage', () => {
     expect(historico.getByText('Você está vendo esta versão')).toBeInTheDocument()
   })
 
-  it('a âncora #campo-{slug} destaca a linha e rola até ela', async () => {
+  it('a âncora #campo-{slug} abre o bloco, rola até a linha, abre o modal e marca só essa linha', async () => {
     window.location.hash = '#campo-valor-do-servico'
     server.use(
       handlerLayoutIndiceSucesso(indiceFake),
       handlerLayoutVersaoSucesso('4-12', paginaFake),
+      handlerCampoLayoutVerbeteSucesso('valor-do-servico'),
     )
     renderPagina()
 
-    await screen.findByText('Valor do serviço')
+    expect(await screen.findByRole('dialog', { name: 'Valor do serviço' })).toBeInTheDocument()
 
-    await waitFor(() => expect(Element.prototype.scrollIntoView).toHaveBeenCalled())
     const linha = document.getElementById('campo-valor-do-servico')
     expect(linha).not.toBeNull()
+    expect(document.getElementById('bloco-Valores')).toHaveProperty('open', true)
     expect(linha?.className).toContain('bg-highlight-anchor')
-    // A linha não destacada nunca recebe o realce.
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ block: 'center' })
+    // A linha não apontada nunca recebe o realce nem a marca de campo atual.
     expect(document.getElementById('campo-numero-do-rps')?.className).not.toContain(
       'bg-highlight-anchor',
     )
+    expect(document.querySelectorAll('[aria-current="true"]')).toHaveLength(1)
   })
 
   it('422 mostra a tela nomeada do limite, nunca o "tentar novamente" genérico', async () => {
@@ -236,7 +292,7 @@ describe('LayoutVersaoPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('versão densa: o índice lateral lista cada grupo com a própria contagem', async () => {
+  it('versão densa: o índice lateral lista cada bloco com a própria contagem', async () => {
     const paginaDensa: LayoutVersaoPagina = {
       ...paginaFake,
       totalCampos: 45,
@@ -258,16 +314,12 @@ describe('LayoutVersaoPage', () => {
 
     await screen.findByRole('heading', { level: 1 })
 
-    const indice = within(screen.getByRole('navigation', { name: 'Grupos de campo' }))
-    // Ordem de chegada dos grupos, com contagens distintas: uma reordenação ou
-    // uma contagem global no lugar da contagem por grupo cai aqui.
-    // `textContent` cola nome e contagem (dois `<span>` adjacentes), daí o
-    // formato sem espaço — o que importa é o par nome+contagem de cada item.
-    expect(indice.getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'Identificação10',
-      'Prestador15',
-      'Valores20',
-    ])
+    const indice = within(screen.getByRole('navigation', { name: 'Blocos do layout' }))
+    // Ordem de chegada dos blocos, com contagens distintas: uma reordenação ou uma contagem global
+    // no lugar da contagem por bloco cai aqui. O texto lido inclui o complemento só para leitor de tela.
+    expect(
+      indice.getAllByRole('link').map((link) => link.textContent?.replace(/\s+/g, ' ').trim()),
+    ).toEqual(['Identificação 10 campos', 'Prestador 15 campos', 'Valores 20 campos'])
   })
 
   it('anuncia o carregamento do dicionário', async () => {

@@ -56,12 +56,26 @@ describe('CamposRelacionados', () => {
     expect(link).toHaveAttribute('href', '/provedores/ipm-sistemas/2-04#campo-cnpj-tomador')
   })
 
-  it('sem contexto, cada campo é texto simples — nunca link (M10)', () => {
-    render(<CamposRelacionados campos={campos} contexto={null} />)
+  it('sem contexto, cada campo vira link para a resolução pública do campo no layout', async () => {
+    renderComRouter({ campos, contexto: null })
 
-    expect(screen.queryByRole('link')).not.toBeInTheDocument()
-    expect(screen.getByText('CNPJ do tomador')).toBeInTheDocument()
-    expect(screen.getByText('CEP do tomador')).toBeInTheDocument()
+    const cnpj = await screen.findByRole('link', { name: 'CNPJ do tomador' })
+    expect(cnpj).toHaveAttribute('href', '/layout/campos/cnpj-tomador')
+    expect(screen.getByRole('link', { name: 'CEP do tomador' })).toHaveAttribute(
+      'href',
+      '/layout/campos/cep-tomador',
+    )
+  })
+
+  // O slug vem da API: o caminho é montado por parâmetro tipado, que codifica o que não é segmento.
+  it('sem contexto, slug com caracteres de caminho não escapa do segmento', async () => {
+    renderComRouter({
+      campos: [{ ...campos[0]!, slug: 'a/../b?x=1#y', nome: 'Slug estranho' }],
+      contexto: null,
+    })
+
+    const href = (await screen.findByRole('link', { name: 'Slug estranho' })).getAttribute('href')
+    expect(href).toMatch(/^\/layout\/campos\/[^/?#]+$/)
   })
 
   it('não renderiza a seção quando não há campos relacionados', () => {

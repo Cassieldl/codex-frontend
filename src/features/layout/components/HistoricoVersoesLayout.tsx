@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import clsx from 'clsx'
+import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { LayoutVersaoResumo } from '../types/layoutPublico'
 import { BORDA_POR_ESTADO_VERSAO, LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
 
@@ -37,11 +38,11 @@ export function HistoricoVersoesLayout({ versoes, versaoAtualSlug }: HistoricoVe
             <li key={versao.slug} className="flex flex-wrap items-center gap-3 px-4 py-3">
               <span
                 className={clsx(
-                  'inline-flex min-w-[62px] items-center justify-center rounded-[var(--radius-pill)] px-2.5 py-0.5 font-mono text-sm font-bold text-ink tabular-nums',
+                  'inline-flex min-w-[96px] items-center justify-center rounded-[var(--radius-pill)] px-2.5 py-0.5 font-mono text-sm font-bold text-ink tabular-nums',
                   BORDA_POR_ESTADO_VERSAO[versao.estado],
                 )}
               >
-                {versao.rotulo}
+                {formatarVersaoLayout(versao.rotulo, { maiuscula: true })}
               </span>
               <span className="text-xs font-medium text-ink/70">{versao.estado}</span>
               <span className="text-xs text-muted tabular-nums">

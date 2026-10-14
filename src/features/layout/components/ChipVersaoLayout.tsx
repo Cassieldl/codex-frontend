@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import clsx from 'clsx'
+import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { LayoutVersaoResumo } from '../types/layoutPublico'
 import { BORDA_POR_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
 
@@ -28,7 +29,7 @@ export function ChipVersaoLayout({ versao, ativa = false, className }: ChipVersa
       params={{ versaoSlug: versao.slug }}
       activeOptions={{ exact: true }}
       aria-current={ativa ? 'page' : undefined}
-      aria-label={`Ver o dicionário da versão ${versao.rotulo}`}
+      aria-label={`Ver o dicionário da ${formatarVersaoLayout(versao.rotulo)}`}
       className={clsx(
         'flex min-w-[132px] flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-ink no-underline hover:shadow-hover',
         BORDA_POR_ESTADO_VERSAO[versao.estado],
@@ -36,7 +37,9 @@ export function ChipVersaoLayout({ versao, ativa = false, className }: ChipVersa
         className,
       )}
     >
-      <span className="text-card-titulo font-bold">{versao.rotulo}</span>
+      <span className="text-card-titulo font-bold">
+        {formatarVersaoLayout(versao.rotulo, { maiuscula: true })}
+      </span>
       <span className="text-aux font-semibold tracking-wide uppercase">{versao.estado}</span>
       <span className="text-aux text-ink/70">
         {versao.totalCampos} {versao.totalCampos === 1 ? 'campo' : 'campos'}

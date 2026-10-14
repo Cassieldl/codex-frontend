@@ -9,6 +9,7 @@ import {
 } from '../components/EstadoProvedorIndisponivel'
 import { ExemplosVersao } from '../components/ExemplosVersao'
 import { ErroVersaoProvedorHttp, useVersaoProvedor } from '../hooks/useVersaoProvedor'
+import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { useCampoDestacadoPorAncora } from '../utils/destaqueAncora'
 
 export interface VersaoProvedorPageProps {
@@ -82,7 +83,8 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
       )}
 
       <p className="text-xs text-muted">
-        Escrita contra o Layout InvoiCy {versaoPagina.versao.versaoLayoutRotulo}.
+        Escrita contra o Layout InvoiCy{' '}
+        {formatarVersaoLayout(versaoPagina.versao.versaoLayoutRotulo)}.
       </p>
 
       <AvisosVersao avisos={versaoPagina.avisos} />

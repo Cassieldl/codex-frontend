@@ -1,16 +1,16 @@
 import { Link } from '@tanstack/react-router'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { useCampoDestacadoPorAncora } from '../../provedores/utils/destaqueAncora'
 import { AvisoVocabulario } from '../components/AvisoVocabulario'
 import { ChipVersaoLayout } from '../components/ChipVersaoLayout'
-import { DicionarioCampos } from '../components/DicionarioCampos'
+import { DicionarioDaVersao } from '../components/DicionarioDaVersao'
 import { HistoricoVersoesLayout } from '../components/HistoricoVersoesLayout'
-import { IndiceGruposCampos, type GrupoIndiceCampos } from '../components/IndiceGruposCampos'
 import { useLayoutIndice } from '../hooks/useLayoutIndice'
 import { ErroLayoutVersaoHttp, useLayoutVersao } from '../hooks/useLayoutVersao'
 import { LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
@@ -29,23 +29,6 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
   const { data: pagina, isLoading, isError, error, refetch } = useLayoutVersao(versaoSlug)
   const { data: indice } = useLayoutIndice()
   const campoDestacado = useCampoDestacadoPorAncora()
-
-  // Chegar por `#campo-…` (inclusive vindo da resolução de `/layout/campos/…`)
-  // rola até a linha — só depois que o dicionário terminou de montar.
-  useEffect(() => {
-    if (!campoDestacado || !pagina) return
-    document.getElementById(`campo-${campoDestacado}`)?.scrollIntoView({ block: 'center' })
-  }, [campoDestacado, pagina])
-
-  const gruposDoIndice = useMemo<GrupoIndiceCampos[]>(
-    () =>
-      (pagina?.camposPorGrupo ?? []).flatMap((grupo) =>
-        grupo.grupo !== null && grupo.grupoSlug !== null
-          ? [{ slug: grupo.grupoSlug, nome: grupo.grupo, total: grupo.campos.length }]
-          : [],
-      ),
-    [pagina],
-  )
 
   const camposNovos = useMemo(
     () =>
@@ -139,10 +122,10 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
                 <Link to="/layout" activeOptions={{ exact: true }} className="hover:underline">
                   Layout InvoiCy
                 </Link>{' '}
-                / {pagina.versao.rotulo}
+                / {formatarVersaoLayout(pagina.versao.rotulo, { maiuscula: true })}
               </p>
               <h1 className="text-titulo font-bold text-ink">
-                Layout InvoiCy {pagina.versao.rotulo}
+                Layout InvoiCy {formatarVersaoLayout(pagina.versao.rotulo)}
               </h1>
               <p className="text-sm text-ink/70">
                 {pagina.versao.estado} · {pagina.totalCampos} campos no vocabulário
@@ -171,7 +154,7 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
             {pagina.descricao && (
               <section aria-labelledby="nota-versao-titulo" className="flex flex-col gap-2">
                 <h2 id="nota-versao-titulo" className="text-subtitulo font-semibold text-ink">
-                  Nota da versão {pagina.versao.rotulo}
+                  Nota da {formatarVersaoLayout(pagina.versao.rotulo)}
                 </h2>
                 <p className="max-w-prose text-sm text-ink/80">{pagina.descricao}</p>
               </section>
@@ -186,27 +169,19 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
                   activeOptions={{ exact: true }}
                   className="font-semibold text-primary-medium hover:underline"
                 >
-                  ver o dicionário da {pagina.anterior.rotulo}
+                  ver o dicionário da {formatarVersaoLayout(pagina.anterior.rotulo)}
                 </Link>{' '}
                 para comparar o vocabulário.
               </p>
             )}
 
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-              <aside className="hidden w-56 shrink-0 lg:sticky lg:top-8 lg:block">
-                <IndiceGruposCampos grupos={gruposDoIndice} />
-              </aside>
-
-              <div className="min-w-0 flex-1">
-                <DicionarioCampos
-                  versaoRotulo={pagina.versao.rotulo}
-                  totalCampos={pagina.totalCampos}
-                  camposPorGrupo={pagina.camposPorGrupo}
-                  origemUrl={origemUrl}
-                  campoDestacado={campoDestacado}
-                />
-              </div>
-            </div>
+            <DicionarioDaVersao
+              versaoRotulo={pagina.versao.rotulo}
+              totalCampos={pagina.totalCampos}
+              camposPorGrupo={pagina.camposPorGrupo}
+              origemUrl={origemUrl}
+              campoDestacado={campoDestacado}
+            />
 
             {indice && (
               <HistoricoVersoesLayout versoes={indice.versoes} versaoAtualSlug={versaoSlug} />

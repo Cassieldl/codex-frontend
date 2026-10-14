@@ -10,13 +10,16 @@ export interface CamposRelacionadosProps {
   campos: CampoRelacionado[]
   /**
    * Provedor/versão únicos aplicáveis a este erro, ou `null` quando não há
-   * esse contexto (inclusive no caso "sem versões" de U9). `M10`: com
-   * contexto, cada campo vira link para a âncora do campo dentro daquela
-   * versão de provedor; sem contexto, é **texto simples** — nunca link para
-   * a página pública do Layout InvoiCy, que não existe nesta fatia.
+   * esse contexto (inclusive no caso "sem versões" de U9). Com contexto, cada
+   * campo vira link para a âncora do campo dentro daquela versão de provedor;
+   * sem contexto, vira link para a resolução pública do campo no Layout
+   * InvoiCy, que leva à versão vigente.
    */
   contexto: ContextoCampoRelacionado | null
 }
+
+const CLASSE_DO_LINK =
+  'inline-flex items-center rounded-[var(--radius-pill)] border border-border px-2.5 py-1 text-sm text-primary-medium hover:underline'
 
 export function CamposRelacionados({ campos, contexto }: CamposRelacionadosProps) {
   if (campos.length === 0) return null
@@ -35,14 +38,18 @@ export function CamposRelacionados({ campos, contexto }: CamposRelacionadosProps
                 to="/provedores/$provedorSlug/$versaoSlug"
                 params={{ provedorSlug: contexto.provedorSlug, versaoSlug: contexto.versaoSlug }}
                 hash={`campo-${campo.slug}`}
-                className="inline-flex items-center rounded-[var(--radius-pill)] border border-border px-2.5 py-1 text-sm text-primary-medium hover:underline"
+                className={CLASSE_DO_LINK}
               >
                 {campo.nome}
               </Link>
             ) : (
-              <span className="inline-flex items-center rounded-[var(--radius-pill)] border border-border px-2.5 py-1 text-sm text-ink">
+              <Link
+                to="/layout/campos/$campoSlug"
+                params={{ campoSlug: campo.slug }}
+                className={CLASSE_DO_LINK}
+              >
                 {campo.nome}
-              </span>
+              </Link>
             )}
           </li>
         ))}

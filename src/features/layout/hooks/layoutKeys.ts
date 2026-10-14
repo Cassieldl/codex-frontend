@@ -13,6 +13,6 @@ export const layoutKeys = {
   indice: () => [...raiz, 'indice'] as const,
   /** P11 — `GET /layout/versoes/{slug}`. Cada versão é uma entrada própria. */
   versao: (versaoSlug: string) => [...raiz, 'versao', versaoSlug] as const,
-  /** P12 — `GET /layout/campos/{slug}`, usado só para resolver o redirect (A3). */
+  /** P12 — `GET /layout/campos/{slug}`: resolução do redirect (A3) e usos no modal do campo. */
   campo: (campoSlug: string) => [...raiz, 'campo', campoSlug] as const,
 }

@@ -10,6 +10,7 @@ import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { handleApiError } from '../../../../utils/handleApiError'
+import { formatarVersaoLayout } from '../../../../utils/versaoDoLayout'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarCampoLayout } from '../../hooks/usePublicarCampoLayout'
 import { CampoLayoutForm, type CampoLayoutFormDto } from '../components/CampoLayoutForm'
@@ -130,10 +131,13 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
             <Link to="/interno/campos-layout" className="hover:underline">
               Campos do layout
             </Link>
-            {rotuloDaVersao ? ` / ${rotuloDaVersao}` : null}
+            {rotuloDaVersao
+              ? ` / ${formatarVersaoLayout(rotuloDaVersao, { maiuscula: true })}`
+              : null}
           </p>
           <h1 className="text-titulo font-bold text-ink">
-            Campos canônicos{rotuloDaVersao ? ` do Layout InvoiCy ${rotuloDaVersao}` : ''}
+            Campos canônicos
+            {rotuloDaVersao ? ` do Layout InvoiCy ${formatarVersaoLayout(rotuloDaVersao)}` : ''}
           </h1>
         </div>
         {permissoes.campoLayout.adicionar && (

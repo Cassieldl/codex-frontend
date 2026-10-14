@@ -189,8 +189,14 @@ describe('copiar link no portal público é só o ícone', () => {
   }
 
   it('a varredura enxerga os botões de copiar link', () => {
-    // Artigo, erro, dicionário do layout, exemplos, avisos e tabela de campos.
-    expect(botoesDeCopiarLink().length).toBeGreaterThanOrEqual(6)
+    // Artigo, erro, exemplos, avisos e modal do campo.
+    expect(botoesDeCopiarLink().length).toBeGreaterThanOrEqual(5)
+  })
+
+  it('o modal do campo — o único copiar-link do dicionário do layout e da tabela do provedor — está na varredura', () => {
+    const arquivos = botoesDeCopiarLink().map(({ arquivo }) => arquivo)
+
+    expect(arquivos.some((arquivo) => arquivo.endsWith('/ModalDeCampoNavegavel.tsx'))).toBe(true)
   })
 
   it('todo botão de copiar link é compacto, com o ícone de elo', () => {

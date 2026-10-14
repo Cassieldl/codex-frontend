@@ -65,8 +65,8 @@ describe('BlocoLayoutHome', () => {
     renderBloco(layout)
 
     expect(await screen.findByRole('heading', { name: 'Layout InvoiCy' })).toBeInTheDocument()
-    expect(screen.getByText('4.12')).toBeInTheDocument()
-    expect(screen.getByText('4.13 prevista')).toBeInTheDocument()
+    expect(screen.getByText('Versão 4.12')).toBeInTheDocument()
+    expect(screen.getByText('Versão 4.13 prevista')).toBeInTheDocument()
     expect(screen.getByText('6 campos novos · 2 descontinuados')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver detalhes' })).toHaveAttribute('href', '/layout')
   })
@@ -96,7 +96,7 @@ describe('BlocoLayoutHome', () => {
       camposDescontinuados: 0,
     })
 
-    expect(await screen.findByText('4.12')).toBeInTheDocument()
+    expect(await screen.findByText('Versão 4.12')).toBeInTheDocument()
     expect(screen.queryByText(/campos? novos?/)).not.toBeInTheDocument()
     expect(screen.queryByText(/descontinuado/)).not.toBeInTheDocument()
   })
@@ -110,7 +110,7 @@ describe('BlocoLayoutHome', () => {
   it('omite a prevista quando não há próxima versão anunciada', async () => {
     renderBloco({ ...layout, prevista: null })
 
-    expect(await screen.findByText('4.12')).toBeInTheDocument()
+    expect(await screen.findByText('Versão 4.12')).toBeInTheDocument()
     expect(screen.queryByText(/prevista/)).not.toBeInTheDocument()
   })
 })

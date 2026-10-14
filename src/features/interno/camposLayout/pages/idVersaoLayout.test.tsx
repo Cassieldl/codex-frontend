@@ -123,11 +123,13 @@ describe('IdVersaoLayoutPage — a versão que está sendo editada', () => {
     renderizarPagina()
 
     expect(
-      await screen.findByRole('heading', { name: /Campos canônicos do Layout InvoiCy 4\.12/ }),
+      await screen.findByRole('heading', {
+        name: 'Campos canônicos do Layout InvoiCy versão 4.12',
+      }),
     ).toBeInTheDocument()
 
     const linkIndice = screen.getByRole('link', { name: 'Campos do layout' })
-    expect(linkIndice.parentElement).toHaveTextContent('Campos do layout / 4.12')
+    expect(linkIndice.parentElement).toHaveTextContent('Campos do layout / Versão 4.12')
   })
 
   it('não inventa rótulo enquanto a lista de versões não chegou', async () => {

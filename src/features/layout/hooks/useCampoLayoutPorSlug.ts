@@ -40,24 +40,25 @@ function classificarErro(error: unknown): ErroCampoLayoutHttp | null {
 
 const DEZ_MINUTOS_MS = 1000 * 60 * 10
 
+/** `GET /layout/campos/{campoSlug}` (P12). Compartilhado pela resolução e pelos usos do campo. */
+export async function buscarCampoLayout(campoSlug: string): Promise<CampoLayoutVerbete> {
+  try {
+    const { data } = await apiPublico.get<EnvelopeCampoLayoutVerbete>(`/layout/campos/${campoSlug}`)
+    return data.data
+  } catch (error) {
+    throw classificarErro(error) ?? error
+  }
+}
+
 /**
- * `GET /layout/campos/{campoSlug}` (P12) — resolve a URL canônica do campo
- * (A3). A resposta existe para decidir **em qual versão** abrir o verbete; a
- * página de resolução redireciona e nunca renderiza o conteúdo do verbete.
+ * Resolve a URL canônica do campo (A3). A página de resolução usa só `versaoExibicao`, para
+ * decidir **em qual versão** abrir o campo; ela redireciona e nunca renderiza o verbete nem lê
+ * `ondeEUsado` — quem o lê é o modal do campo (`useUsosDoCampoLayout`).
  */
 export function useCampoLayoutPorSlug(campoSlug: string) {
   return useQuery({
     queryKey: layoutKeys.campo(campoSlug),
-    queryFn: async () => {
-      try {
-        const { data } = await apiPublico.get<EnvelopeCampoLayoutVerbete>(
-          `/layout/campos/${campoSlug}`,
-        )
-        return data.data
-      } catch (error) {
-        throw classificarErro(error) ?? error
-      }
-    },
+    queryFn: () => buscarCampoLayout(campoSlug),
     enabled: campoSlug.length > 0,
     staleTime: DEZ_MINUTOS_MS,
   })

@@ -298,3 +298,40 @@ describe('VersaoProvedorPage — campos da versão', () => {
     expect(screen.queryByRole('button', { name: /Remover o filtro do campo/ })).toBeNull()
   })
 })
+
+describe('VersaoProvedorPage — versão do Layout InvoiCy', () => {
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  function respostaComVersaoDoLayout(versaoLayoutRotulo: string) {
+    return {
+      ...RESPOSTA_DA_VERSAO,
+      data: {
+        ...RESPOSTA_DA_VERSAO.data,
+        versao: { ...RESPOSTA_DA_VERSAO.data.versao, versaoLayoutRotulo },
+      },
+    }
+  }
+
+  it('diz contra qual versão do layout a versão do provedor foi escrita', async () => {
+    server.use(handlerStatus(200, respostaComVersaoDoLayout('1.0')))
+
+    renderPagina()
+
+    expect(
+      await screen.findByText('Escrita contra o Layout InvoiCy versão 1.0.'),
+    ).toBeInTheDocument()
+  })
+
+  // O rótulo vem do cadastro e pode já trazer a palavra: ela não se repete.
+  it('não repete a palavra quando o rótulo do dado já a traz', async () => {
+    server.use(handlerStatus(200, respostaComVersaoDoLayout('Versão 1.0')))
+
+    renderPagina()
+
+    const frase = await screen.findByText(/Escrita contra o Layout InvoiCy/)
+    expect(frase).toHaveTextContent('Escrita contra o Layout InvoiCy versão 1.0.')
+    expect(frase.textContent).not.toMatch(/vers[aã]o\s+vers[aã]o/i)
+  })
+})
