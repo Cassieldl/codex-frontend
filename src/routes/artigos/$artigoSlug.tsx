@@ -1,33 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useCallback } from 'react'
-import { ArtigoDetalhePage } from '../../features/artigos/routes/artigo-detalhe'
-import type { NavegarParaCanonica } from '../../features/artigos/routes/artigo-detalhe'
+import { ArtigoDetalheRota } from '../../features/artigos/routes/artigo-detalhe-rota'
 
-// Rota fina (§3) — toda a lógica mora em `features/artigos/routes/artigo-detalhe.tsx`,
-// testável isoladamente sem depender da árvore de rotas gerada.
+// Rota fina (§3) — a lógica mora em `features/artigos/routes/` (artigo-detalhe-rota.tsx liga o
+// parâmetro à página; artigo-detalhe.tsx é a página), testável sem depender da árvore gerada.
 export const Route = createFileRoute('/artigos/$artigoSlug')({
-  component: RouteComponent,
+  component: ArtigoDetalheRota,
 })
-
-function RouteComponent() {
-  const { artigoSlug } = Route.useParams()
-  const navigate = Route.useNavigate()
-
-  // `useCallback` mantém a identidade estável entre renders — o efeito de
-  // redirecionamento canônico depende dela e entraria em laço com uma função
-  // nova a cada render.
-  const navegar = useCallback(
-    ({ href, replace }: NavegarParaCanonica) => {
-      void navigate({ to: href, replace } as unknown as Parameters<typeof navigate>[0])
-    },
-    [navigate],
-  )
-
-  return (
-    <ArtigoDetalhePage
-      artigoSlug={artigoSlug}
-      caminhoAtual={`/artigos/${artigoSlug}`}
-      navegar={navegar}
-    />
-  )
-}

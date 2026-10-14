@@ -11,6 +11,7 @@ import { ComunicadosDoContexto } from '../../comunicados/components/ComunicadosD
 import { AvisosProvedor } from '../components/AvisosProvedor'
 import { EstadoProvedorIndisponivel } from '../components/EstadoProvedorIndisponivel'
 import { ErroProvedorHttp, useProvedorPorSlug } from '../hooks/useProvedorPorSlug'
+import { caminhoDoProvedor } from '../utils/caminhoDoProvedor'
 
 export interface ProvedorLayoutPageProps {
   provedorSlug: string
@@ -21,7 +22,8 @@ export interface ProvedorLayoutPageProps {
    */
   versaoSlugAtual: string | undefined
   /**
-   * Caminho em que a página está sendo servida — injetado pela rota fina.
+   * Caminho em que a página está sendo servida — montado pela rota a partir
+   * dos parâmetros, nunca da localização do router (ver `provedor-layout-rota.tsx`).
    * Compara-se com o canônico devolvido por P3 para decidir o redirect
    * (PQ-01/F2, `arquitetura.md` §5.F).
    */
@@ -46,11 +48,7 @@ export function ProvedorLayoutPage({
 
   const erroTipado = error instanceof ErroProvedorHttp ? error : null
 
-  const caminhoCanonico = provedor
-    ? versaoSlugAtual
-      ? `/provedores/${provedor.slug}/${versaoSlugAtual}`
-      : `/provedores/${provedor.slug}`
-    : null
+  const caminhoCanonico = provedor ? caminhoDoProvedor(provedor.slug, versaoSlugAtual) : null
   const correcao = caminhoCanonico ? corrigirUrlCanonica(caminhoAtual, caminhoCanonico) : null
 
   useEffect(() => {

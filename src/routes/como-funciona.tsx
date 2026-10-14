@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useCallback } from 'react'
 import { ArtigoDetalhePage } from '../features/artigos/routes/artigo-detalhe'
-import type { NavegarParaCanonica } from '../features/artigos/routes/artigo-detalhe'
 import { SLUG_COMO_FUNCIONA } from '../features/artigos/utils/slugsReservados'
+import { useNavegarParaCanonica } from '../hooks/useNavegarParaCanonica'
 
 /**
  * Tela 9 — artigo em posição fixa (D2). Não é uma página própria: é a mesma
@@ -14,14 +13,7 @@ export const Route = createFileRoute('/como-funciona')({
 })
 
 function RouteComponent() {
-  const navigate = Route.useNavigate()
-
-  const navegar = useCallback(
-    ({ href, replace }: NavegarParaCanonica) => {
-      void navigate({ to: href, replace } as unknown as Parameters<typeof navigate>[0])
-    },
-    [navigate],
-  )
+  const navegar = useNavegarParaCanonica()
 
   return (
     <ArtigoDetalhePage
