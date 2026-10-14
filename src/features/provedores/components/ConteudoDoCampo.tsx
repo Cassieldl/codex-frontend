@@ -2,7 +2,7 @@ import { ArrowDown, TriangleAlert } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
-import { CaminhoXml } from '../../../components/ui/CaminhoXml'
+import { PainelCaminhoInvoicy } from '../../../components/ui/PainelCaminhoInvoicy'
 import type { CampoVersaoPublico, ErroResumoPublico } from '../types/versaoProvedorPagina'
 import { separarDestinos } from '../utils/destinosXml'
 import { RejeicoesDoCampo } from './RejeicoesDoCampo'
@@ -63,32 +63,6 @@ function ResumoDoCampo({ campo }: { campo: CampoVersaoPublico }) {
         )}
       </CartaoDeResumo>
     </dl>
-  )
-}
-
-function PainelNoInvoicy({ campo }: { campo: CampoVersaoPublico }) {
-  const tituloId = useId()
-
-  return (
-    <section
-      aria-labelledby={tituloId}
-      className="rounded-[var(--radius-card)] border-2 border-primary bg-white p-4 shadow-card"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <h3 id={tituloId} className="text-sm font-bold tracking-wide text-primary uppercase">
-          No InvoiCy
-        </h3>
-        <BotaoCopiar
-          rotulo="Copiar caminho"
-          ariaLabel={`Copiar caminho do campo ${campo.nome} no InvoiCy`}
-          valor={campo.caminhoXml}
-        />
-      </div>
-
-      <p className="mt-2">
-        <CaminhoXml caminho={campo.caminhoXml} tamanho="destaque" />
-      </p>
-    </section>
   )
 }
 
@@ -224,7 +198,11 @@ export function ConteudoDoCampo({ campo, errosResumo }: ConteudoDoCampoProps) {
       </section>
 
       <div className="flex flex-col gap-3">
-        <PainelNoInvoicy campo={campo} />
+        <PainelCaminhoInvoicy
+          titulo="No InvoiCy"
+          nomeDoCampo={campo.nome}
+          caminhoXml={campo.caminhoXml}
+        />
         {temDestino && <ConectorParaOProvedor />}
         <PainelNoXmlDoProvedor campo={campo} />
       </div>

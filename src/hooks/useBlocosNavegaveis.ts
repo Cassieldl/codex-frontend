@@ -1,0 +1,235 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { RefObject } from 'react'
+// O hook é compartilhado, mas o formato do id da linha e o limpador da âncora moram com a 1ª
+// feature que os usou; mover tocaria todos os importadores sem ganho visível.
+import {
+  construirIdLinhaCampo,
+  limparAncoraDeCampo,
+} from '../features/provedores/utils/destaqueAncora'
+import type { VizinhoDeCampo } from '../types/vizinhoDeCampo'
+import { sequenciaDosBlocos } from '../utils/blocosDoLayout'
+import type { BlocoDoLayout, CampoNaSequencia } from '../utils/blocosDoLayout'
+
+export interface CampoAbertoDoBloco<TSecao extends string> {
+  slug: string
+  secao?: TSecao
+}
+
+export interface OpcoesBlocosNavegaveis<TCampo> {
+  blocosCompletos: BlocoDoLayout<TCampo>[]
+  blocosFiltrados: BlocoDoLayout<TCampo>[]
+  /** Função estável (de módulo ou memoizada): o `memo` das linhas depende disso. */
+  slugDoCampo: (campo: TCampo) => string
+  nomeDoCampo: (campo: TCampo) => string
+  /** Slug do campo apontado por `#campo-{slug}`, se houver. */
+  campoDestacado: string | null
+  passaNoFiltroAtual: (campo: TCampo) => boolean
+  limparFiltros: () => void
+  /** Raiz da lista: a linha do campo atual é procurada só aqui dentro. */
+  contenedorRef: RefObject<HTMLElement | null>
+  /** Recebe o foco quando a linha do campo atual não está na lista. */
+  focoDeReservaRef: RefObject<HTMLElement | null>
+}
+
+export interface ResultadoBlocosNavegaveis<TCampo, TSecao extends string> {
+  blocosAbertos: ReadonlySet<string>
+  alternarBloco: (raiz: string, aberto: boolean) => void
+  irParaBloco: (raiz: string) => void
+  /** Abre os blocos que têm campo visível. */
+  expandirTodos: () => void
+  recolherTodos: () => void
+  /** União com os blocos já abertos. */
+  abrirBlocos: (raizes: readonly string[]) => void
+  /** Campo da linha destacada; persiste depois de fechar o modal. */
+  slugAtivo: string | null
+  campoAberto: CampoAbertoDoBloco<TSecao> | null
+  abrirCampo: (slug: string, secao?: TSecao) => void
+  /** Abre o campo e o bloco em que ele está. */
+  navegarParaCampo: (slug: string) => void
+  fecharCampo: () => void
+  devolverFoco: () => void
+  sequencia: CampoNaSequencia<TCampo>[]
+  itemAberto: CampoNaSequencia<TCampo> | undefined
+  /** 1-based; 0 quando nada está aberto. */
+  posicao: number
+  total: number
+  anterior: VizinhoDeCampo | null
+  proximo: VizinhoDeCampo | null
+}
+
+function comRaiz(raizes: ReadonlySet<string>, raiz: string): ReadonlySet<string> {
+  if (raizes.has(raiz)) return raizes
+  return new Set([...raizes, raiz])
+}
+
+function raizesComCampoVisivel<TCampo>(blocos: BlocoDoLayout<TCampo>[]): string[] {
+  return blocos.filter((bloco) => bloco.totalVisivel > 0).map((bloco) => bloco.raiz)
+}
+
+/**
+ * Estado de navegação de uma lista de campos em blocos recolhíveis: blocos abertos, campo aberto no
+ * modal, anterior/próximo, chegada por âncora e devolução do foco ao fechar o modal.
+ */
+export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
+  blocosCompletos,
+  blocosFiltrados,
+  slugDoCampo,
+  nomeDoCampo,
+  campoDestacado,
+  passaNoFiltroAtual,
+  limparFiltros,
+  contenedorRef,
+  focoDeReservaRef,
+}: OpcoesBlocosNavegaveis<TCampo>): ResultadoBlocosNavegaveis<TCampo, TSecao> {
+  const [blocosAbertos, setBlocosAbertos] = useState<ReadonlySet<string>>(
+    () => new Set(blocosCompletos.slice(0, 1).map((bloco) => bloco.raiz)),
+  )
+  const [campoAberto, setCampoAberto] = useState<CampoAbertoDoBloco<TSecao> | null>(null)
+  const [slugAtivo, setSlugAtivo] = useState<string | null>(null)
+  const [alvoDeRolagem, setAlvoDeRolagem] = useState<string | null>(null)
+
+  const sequencia = useMemo(() => sequenciaDosBlocos(blocosFiltrados), [blocosFiltrados])
+  const campoPorSlug = useMemo(
+    () =>
+      new Map(sequenciaDosBlocos(blocosCompletos).map((item) => [slugDoCampo(item.campo), item])),
+    [blocosCompletos, slugDoCampo],
+  )
+
+  // Slug do campo no modal neste instante: o foco volta a ele, não ao campo que abriu o modal.
+  const campoAtualRef = useRef<string | null>(null)
+  const campoRoladoRef = useRef<string | null>(null)
+
+  const abrirCampo = useCallback((slug: string, secao?: TSecao) => {
+    campoAtualRef.current = slug
+    setSlugAtivo(slug)
+    setCampoAberto({ slug, secao })
+  }, [])
+
+  const navegarParaCampo = useCallback(
+    (slug: string) => {
+      const destino = campoPorSlug.get(slug)
+      if (destino) setBlocosAbertos((abertos) => comRaiz(abertos, destino.raiz))
+      abrirCampo(slug)
+    },
+    [abrirCampo, campoPorSlug],
+  )
+
+  const fecharCampo = useCallback(() => {
+    setCampoAberto(null)
+    if (campoDestacado !== null) limparAncoraDeCampo()
+  }, [campoDestacado])
+
+  // O alvo é procurado dentro da lista e só se ela ainda estiver na página: ao seguir um link para
+  // outra tela o modal fecha no desmonte, e um id igual na página de destino não pode ganhar o foco.
+  const devolverFoco = useCallback(() => {
+    const contenedor = contenedorRef.current
+    if (!contenedor || !contenedor.isConnected) return
+
+    const slug = campoAtualRef.current
+    const linha = slug
+      ? contenedor.querySelector<HTMLElement>(`[id="${construirIdLinhaCampo(slug)}"]`)
+      : null
+
+    if (!linha) {
+      focoDeReservaRef.current?.focus()
+      return
+    }
+
+    linha.scrollIntoView({ block: 'nearest' })
+    linha.querySelector<HTMLElement>('[data-botao-do-campo]')?.focus({ preventScroll: true })
+  }, [contenedorRef, focoDeReservaRef])
+
+  const alternarBloco = useCallback((raiz: string, aberto: boolean) => {
+    setBlocosAbertos((atuais) => {
+      if (atuais.has(raiz) === aberto) return atuais
+      const proximos = new Set(atuais)
+      if (aberto) proximos.add(raiz)
+      else proximos.delete(raiz)
+      return proximos
+    })
+  }, [])
+
+  const irParaBloco = useCallback((raiz: string) => {
+    setBlocosAbertos((abertos) => comRaiz(abertos, raiz))
+
+    const bloco = document.getElementById(`bloco-${raiz}`)
+    bloco?.scrollIntoView({ block: 'start' })
+    bloco?.querySelector('summary')?.focus({ preventScroll: true })
+  }, [])
+
+  const abrirBlocos = useCallback((raizes: readonly string[]) => {
+    setBlocosAbertos((abertos) => new Set([...abertos, ...raizes]))
+  }, [])
+
+  const expandirTodos = useCallback(() => {
+    setBlocosAbertos(new Set(raizesComCampoVisivel(blocosFiltrados)))
+  }, [blocosFiltrados])
+
+  const recolherTodos = useCallback(() => {
+    setBlocosAbertos(new Set())
+  }, [])
+
+  // Chegar por `#campo-…` (aviso, campo relacionado, link copiado) abre o bloco, abre o modal do
+  // campo e rola até a linha. Se um filtro esconde o campo, ele é limpo antes: o link prometeu
+  // levar ao campo. A chegada acontece uma vez por slug; digitar um filtro depois não repete.
+  useEffect(() => {
+    if (campoDestacado === null) {
+      campoRoladoRef.current = null
+      return
+    }
+    if (campoRoladoRef.current === campoDestacado) return
+
+    const destino = campoPorSlug.get(campoDestacado)
+    if (!destino) return
+
+    campoRoladoRef.current = campoDestacado
+
+    if (!passaNoFiltroAtual(destino.campo)) limparFiltros()
+    setBlocosAbertos((abertos) => comRaiz(abertos, destino.raiz))
+    abrirCampo(campoDestacado)
+    setAlvoDeRolagem(campoDestacado)
+    // Só o slug dispara a chegada; o filtro lido é o do render em que ele mudou.
+  }, [campoDestacado])
+
+  // A linha só está no DOM com o bloco aberto: a rolagem espera o commit do efeito acima.
+  useEffect(() => {
+    if (alvoDeRolagem === null) return
+
+    document
+      .getElementById(construirIdLinhaCampo(alvoDeRolagem))
+      ?.scrollIntoView({ block: 'center' })
+    setAlvoDeRolagem(null)
+  }, [alvoDeRolagem])
+
+  const indiceDoAberto = campoAberto
+    ? sequencia.findIndex((item) => slugDoCampo(item.campo) === campoAberto.slug)
+    : -1
+  const itemAberto = indiceDoAberto >= 0 ? sequencia[indiceDoAberto] : undefined
+
+  function vizinhoNaSequencia(indice: number): VizinhoDeCampo | null {
+    const item = itemAberto ? sequencia[indice] : undefined
+    if (!item) return null
+    return { slug: slugDoCampo(item.campo), nome: nomeDoCampo(item.campo) }
+  }
+
+  return {
+    blocosAbertos,
+    alternarBloco,
+    irParaBloco,
+    expandirTodos,
+    recolherTodos,
+    abrirBlocos,
+    slugAtivo,
+    campoAberto,
+    abrirCampo,
+    navegarParaCampo,
+    fecharCampo,
+    devolverFoco,
+    sequencia,
+    itemAberto,
+    posicao: indiceDoAberto + 1,
+    total: sequencia.length,
+    anterior: vizinhoNaSequencia(indiceDoAberto - 1),
+    proximo: vizinhoNaSequencia(indiceDoAberto + 1),
+  }
+}

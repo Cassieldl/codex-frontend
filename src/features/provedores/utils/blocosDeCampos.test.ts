@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
+import { ROTULOS_DE_BLOCO, normalizarParaBusca } from '../../../utils/blocosDoLayout'
 import type { EstadoPreenchimentoCampo } from '../types/versaoProvedorPagina'
 import {
   ESTADO_PARA_ETIQUETA,
-  ROTULOS_DE_BLOCO,
   campoPassaNoFiltro,
   contarPorEstado,
   filtrarCampos,
   montarBlocos,
-  normalizarParaBusca,
   sequenciaVisivel,
 } from './blocosDeCampos'
 
