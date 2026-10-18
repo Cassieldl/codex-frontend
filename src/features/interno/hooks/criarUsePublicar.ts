@@ -13,10 +13,9 @@ interface EnvelopePublicacao<T> {
 }
 
 /**
- * Fábrica dos 6 hooks `usePublicar<Entidade>` (M19) — mesmo padrão de
- * endpoint em todas as entidades (`PUT .../publicacao`, `{ publicado }` +
- * `If-Match`, `analise-backend.md` §4.2 I3b/I9/I14d/I15d/I17c/I20c). Extraído
- * para não duplicar a mesma mutation 6 vezes.
+ * Fábrica dos hooks `usePublicar<Entidade>` das entidades com keys factory própria: mesmo
+ * endpoint em todas (`PUT .../publicacao`, `{ publicado }` + `If-Match`). O de aviso fica fora
+ * porque aviso não tem query própria e invalida o detalhe do pai (`usePublicarAviso`).
  *
  * `chaveRaiz` é a `all` da keys factory da entidade (ex.: `provedoresAdminKeys.all`)
  * — invalidar pela raiz também invalida `detail(id)`/`lists()`, que são

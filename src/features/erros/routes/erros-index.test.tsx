@@ -151,6 +151,16 @@ describe('ErrosIndexPage — sem código na URL', () => {
     )
   })
 
+  it('tem exatamente um h1, que diz o que faltou no endereço', async () => {
+    renderPagina('')
+
+    await screen.findByText(/nenhum código foi informado/i)
+
+    const titulos = screen.getAllByRole('heading', { level: 1 })
+    expect(titulos).toHaveLength(1)
+    expect(titulos[0]).toHaveTextContent('Nenhum código de erro foi informado.')
+  })
+
   it('não consulta a API quando não há código para consultar', async () => {
     const chamadas: string[] = []
     const registrar = ({ request }: { request: Request }) => chamadas.push(request.url)
@@ -162,5 +172,45 @@ describe('ErrosIndexPage — sem código na URL', () => {
     await screen.findByText(/nenhum código foi informado/i)
 
     expect(chamadas.filter((url) => url.includes('/erros'))).toHaveLength(0)
+  })
+})
+
+describe('ErrosIndexPage: título da aba', () => {
+  const itemIpm: ErroListaItem = {
+    slug: 'e0117-ipm-sistemas',
+    codigo: 'E0117',
+    titulo: 'CNPJ do tomador inválido',
+    origem: 'Prefeitura',
+    provedorNome: 'IPM Sistemas',
+  }
+  const itemBetha: ErroListaItem = {
+    slug: 'e0117-betha',
+    codigo: 'E0117',
+    titulo: 'Código de verificação inválido',
+    origem: 'Prefeitura',
+    provedorNome: 'Betha Sistemas',
+  }
+
+  it('sem código, nomeia a aba pelo que faltou', async () => {
+    renderPagina('')
+
+    await screen.findByText(/nenhum código foi informado/i)
+    expect(document.title).toBe('Código de erro não informado | Codex')
+  })
+
+  it('código em mais de um provedor nomeia a aba com o código', async () => {
+    server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([itemIpm, itemBetha])))
+    renderPagina('E0117')
+
+    await screen.findByText('Betha Sistemas')
+    expect(document.title).toBe('Código E0117 | Codex')
+  })
+
+  it('código não documentado diz isso na aba', async () => {
+    server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([])))
+    renderPagina('E9999')
+
+    await screen.findByText('O Codex ainda não documenta o código "E9999".')
+    expect(document.title).toBe('Código E9999 não documentado | Codex')
   })
 })

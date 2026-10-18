@@ -426,3 +426,27 @@ describe('ErroDetalhePage — comunicados do contexto', () => {
     expect(chamadas).toHaveLength(0)
   })
 })
+
+describe('ErroDetalhePage: título da aba', () => {
+  it('nomeia a aba com o código e o título do erro', async () => {
+    server.use(
+      http.get(`${API_URL}/erros/${erroBase.slug}`, () =>
+        HttpResponse.json({ data: erroBase, message: null }),
+      ),
+    )
+    renderPagina({ erroSlug: erroBase.slug })
+
+    await screen.findByRole('heading', { level: 1, name: 'E0117' })
+    expect(document.title).toBe('E0117: CNPJ do tomador inválido | Codex')
+  })
+
+  it('erro inexistente nomeia a aba pelo desfecho', async () => {
+    server.use(
+      http.get(`${API_URL}/erros/nao-existe`, () => new HttpResponse(null, { status: 404 })),
+    )
+    renderPagina({ erroSlug: 'nao-existe' })
+
+    await screen.findByRole('heading', { level: 1, name: 'Este erro não existe.' })
+    expect(document.title).toBe('Erro não encontrado | Codex')
+  })
+})

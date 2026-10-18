@@ -3,6 +3,7 @@ import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConte
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { ArtigosRecentesHome } from '../components/ArtigosRecentesHome'
 import { BlocoLayoutHome } from '../components/BlocoLayoutHome'
 import { BuscaHeroComPreview } from '../components/BuscaHeroComPreview'
@@ -34,6 +35,8 @@ export interface HomePageProps {
  */
 export function HomePage({ navegarParaBusca }: HomePageProps) {
   const { data: home, isLoading, isError, refetch } = useHome()
+
+  useTituloDaPagina('Início')
 
   const provedores = (home?.provedoresPorCategoria ?? []).flatMap(
     (categoria) => categoria.provedores,

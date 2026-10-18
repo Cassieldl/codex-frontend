@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { apiPublico } from '../../../services/api'
+import { devoRetentar } from '../../../utils/retentativaDeQuery'
 import type { CampoLayoutVerbete } from '../types/layoutPublico'
 import { layoutKeys } from './layoutKeys'
 
@@ -61,5 +62,6 @@ export function useCampoLayoutPorSlug(campoSlug: string) {
     queryFn: () => buscarCampoLayout(campoSlug),
     enabled: campoSlug.length > 0,
     staleTime: DEZ_MINUTOS_MS,
+    retry: (contagem, erro) => devoRetentar(contagem, erro),
   })
 }

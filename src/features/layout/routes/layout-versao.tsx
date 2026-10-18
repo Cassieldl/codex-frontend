@@ -1,10 +1,14 @@
 import { Link } from '@tanstack/react-router'
+import { ArchiveX, CircleHelp, Layers } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { ErrorState } from '../../../components/ui/ErrorState'
+import { EstadoIndisponivel } from '../../../components/ui/EstadoIndisponivel'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { useCampoDestacadoPorAncora } from '../../provedores/utils/destaqueAncora'
 import { AvisoVocabulario } from '../components/AvisoVocabulario'
@@ -13,10 +17,35 @@ import { DicionarioDaVersao } from '../components/DicionarioDaVersao'
 import { HistoricoVersoesLayout } from '../components/HistoricoVersoesLayout'
 import { useLayoutIndice } from '../hooks/useLayoutIndice'
 import { ErroLayoutVersaoHttp, useLayoutVersao } from '../hooks/useLayoutVersao'
+import type { TipoErroLayoutVersao } from '../hooks/useLayoutVersao'
 import { LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
 
 export interface LayoutVersaoPageProps {
   versaoSlug: string
+}
+
+const ESTADO_POR_TIPO_DE_ERRO: Record<
+  TipoErroLayoutVersao,
+  { icone: LucideIcon; titulo: string; tituloDaAba: string; descricao: string }
+> = {
+  nao_encontrada: {
+    icone: CircleHelp,
+    titulo: 'Esta versão do Layout InvoiCy não existe.',
+    tituloDaAba: 'Versão do Layout InvoiCy não encontrada',
+    descricao: 'Não encontramos nenhuma versão publicada do Layout InvoiCy neste endereço.',
+  },
+  despublicada: {
+    icone: ArchiveX,
+    titulo: 'Esta versão saiu do ar.',
+    tituloDaAba: 'Versão do Layout InvoiCy fora do ar',
+    descricao: 'O dicionário desta versão não está mais disponível publicamente.',
+  },
+  cap_excedido: {
+    icone: Layers,
+    titulo: 'Esta versão tem mais campos do que esta página consegue exibir de uma vez.',
+    tituloDaAba: 'Versão do Layout InvoiCy grande demais para exibir',
+    descricao: 'Fale com o suporte.',
+  },
 }
 
 /**
@@ -42,6 +71,8 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
   const erroTipado = error instanceof ErroLayoutVersaoHttp ? error : null
   const origemUrl = typeof window === 'undefined' ? '' : window.location.origin
 
+  useTituloDaPagina(pagina ? `Layout InvoiCy ${formatarVersaoLayout(pagina.versao.rotulo)}` : null)
+
   return (
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
@@ -60,11 +91,10 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
           </div>
         )}
 
-        {isError && erroTipado?.tipo === 'nao_encontrada' && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-            <h1 className="text-subtitulo font-semibold text-ink">
-              Esta versão do Layout InvoiCy não existe.
-            </h1>
+        {/* Limite estrutural (`cap_excedido`) também cai aqui, e não no ErrorState: oferecer
+            "tentar novamente" seria mandar o leitor repetir algo que nunca vai dar certo. */}
+        {isError && erroTipado && (
+          <EstadoIndisponivel {...ESTADO_POR_TIPO_DE_ERRO[erroTipado.tipo]}>
             <Link
               to="/layout"
               activeOptions={{ exact: true }}
@@ -72,45 +102,7 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
             >
               Ver as versões publicadas
             </Link>
-          </div>
-        )}
-
-        {isError && erroTipado?.tipo === 'despublicada' && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-            <h1 className="text-subtitulo font-semibold text-ink">Esta versão saiu do ar.</h1>
-            <p className="text-sm text-muted">
-              O dicionário desta versão não está mais disponível publicamente.
-            </p>
-            <Link
-              to="/layout"
-              activeOptions={{ exact: true }}
-              className="text-sm font-semibold text-primary-medium hover:underline"
-            >
-              Ver as versões publicadas
-            </Link>
-          </div>
-        )}
-
-        {isError && erroTipado?.tipo === 'cap_excedido' && (
-          // Limite estrutural, não falha transitória: oferecer "tentar
-          // novamente" seria mandar o leitor repetir algo que nunca vai dar
-          // certo.
-          <div
-            role="alert"
-            className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center"
-          >
-            <h1 className="text-subtitulo font-semibold text-ink">
-              Esta versão tem mais campos do que esta página consegue exibir de uma vez.
-            </h1>
-            <p className="text-sm text-muted">Fale com o suporte.</p>
-            <Link
-              to="/layout"
-              activeOptions={{ exact: true }}
-              className="text-sm font-semibold text-primary-medium hover:underline"
-            >
-              Ver as versões publicadas
-            </Link>
-          </div>
+          </EstadoIndisponivel>
         )}
 
         {isError && !erroTipado && <ErrorState onRetry={() => refetch()} />}

@@ -128,7 +128,11 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs text-muted">
-            <Link to="/interno/campos-layout" className="hover:underline">
+            <Link
+              to="/interno/campos-layout"
+              activeOptions={{ exact: true }}
+              className="hover:underline"
+            >
               Campos do layout
             </Link>
             {rotuloDaVersao

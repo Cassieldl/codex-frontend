@@ -16,7 +16,13 @@ function renderComRouter(versoes: VersaoProvedorResumo[]) {
   const rotaIndex = createRoute({
     getParentRoute: () => rootRoute,
     path: '/provedores/$provedorSlug/',
-    component: () => <ProvedorIndexConteudo provedorSlug="prefeitura-exemplo" versoes={versoes} />,
+    component: () => (
+      <ProvedorIndexConteudo
+        provedorSlug="prefeitura-exemplo"
+        provedorNome="Prefeitura Exemplo"
+        versoes={versoes}
+      />
+    ),
   })
   // Rota alvo dos links de versão — só precisa existir para o `<Link>` resolver o `href`.
   const rotaVersao = createRoute({
@@ -81,5 +87,16 @@ describe('ProvedorIndexConteudo (rota /provedores/{slug}, sem aba escolhida)', (
       expect(texto).not.toContain('recomendad')
       expect(texto).not.toContain('vigente')
     }
+  })
+})
+
+describe('ProvedorIndexConteudo: título da aba', () => {
+  it('nomeia a aba com o provedor', async () => {
+    renderComRouter(umaVersao)
+
+    await screen.findByRole('heading', {
+      name: 'Escolha uma versão para ver os campos, avisos e erros conhecidos',
+    })
+    expect(document.title).toBe('Prefeitura Exemplo | Codex')
   })
 })

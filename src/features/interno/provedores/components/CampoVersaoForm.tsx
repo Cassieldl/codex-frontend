@@ -24,9 +24,9 @@ const ESTADOS_OPTIONS: SelectOption[] = [
 const campoVersaoSchema = z
   .object({
     campoLayoutId: z.string().min(1, 'Selecione o campo canônico.'),
-    tipo: z.string().min(1, 'O tipo é obrigatório.').max(50, 'Máximo de 50 caracteres.'),
-    tamanho: z.string().max(50, 'Máximo de 50 caracteres.').optional().or(z.literal('')),
-    mascara: z.string().max(100, 'Máximo de 100 caracteres.').optional().or(z.literal('')),
+    tipo: z.string().min(1, 'O tipo é obrigatório.').max(60, 'Máximo de 60 caracteres.'),
+    tamanho: z.string().max(40, 'Máximo de 40 caracteres.').optional().or(z.literal('')),
+    mascara: z.string().max(120, 'Máximo de 120 caracteres.').optional().or(z.literal('')),
     dominio: z.string().max(200, 'Máximo de 200 caracteres.').optional().or(z.literal('')),
     estadoPreenchimento: z.enum(['Obrigatorio', 'Opcional', 'Condicional'] as const, {
       error: 'Selecione o estado de preenchimento.',
@@ -38,7 +38,7 @@ const campoVersaoSchema = z
       .max(1000, 'Máximo de 1000 caracteres.')
       .optional()
       .or(z.literal('')),
-    destinoXml: z.string().max(300, 'Máximo de 300 caracteres.').optional().or(z.literal('')),
+    destinoXml: z.string().max(400, 'Máximo de 400 caracteres.').optional().or(z.literal('')),
     notaTransformacao: z
       .string()
       .max(1000, 'Máximo de 1000 caracteres.')

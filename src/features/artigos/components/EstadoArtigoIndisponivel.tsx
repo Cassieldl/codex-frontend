@@ -1,51 +1,55 @@
 import { Link } from '@tanstack/react-router'
 import { ArchiveX, CircleHelp, PencilRuler } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { EstadoIndisponivel } from '../../../components/ui/EstadoIndisponivel'
 
 export type VarianteArtigoIndisponivel = 'nao-encontrado' | 'despublicado' | 'reservado-ausente'
 
 export interface EstadoArtigoIndisponivelProps {
   /**
-   * `nao-encontrado` (404) — nenhum artigo existiu nesse endereço.
-   * `despublicado` (410) — o artigo existiu e saiu do ar.
-   * `reservado-ausente` (404 no slug reservado) — o conteúdo obrigatório
-   * ainda não foi escrito; a rota existe porque é navegação, não dado (§4.1).
+   * `nao-encontrado` (404): nenhum artigo existiu nesse endereço.
+   * `despublicado` (410): o artigo existiu e saiu do ar.
+   * `reservado-ausente` (404 no slug reservado): o conteúdo obrigatório ainda
+   * não foi escrito; a rota existe porque é navegação, não dado.
    *
    * `reservado-ausente` nunca deriva de `410`: o backend bloqueia despublicar
-   * artigo reservado (I28), então esse caso é bug de servidor — não é
-   * mascarado aqui.
+   * artigo reservado, então esse caso é bug de servidor e não é mascarado aqui.
    */
   variante: VarianteArtigoIndisponivel
-  /** Slug tentado — usado para pré-preencher a busca de recuperação. */
+  /** Slug tentado, usado para pré-preencher a busca de recuperação. */
   slugTentado: string
   /** Mensagem que a API devolveu no envelope de erro, se houver (410). */
   motivo?: string
 }
 
-const CONTEUDO: Record<VarianteArtigoIndisponivel, { titulo: string; descricao: string }> = {
+const CONTEUDO: Record<
+  VarianteArtigoIndisponivel,
+  { icone: LucideIcon; titulo: string; tituloDaAba: string; descricao: string }
+> = {
   'nao-encontrado': {
+    icone: CircleHelp,
     titulo: 'Este artigo não existe.',
+    tituloDaAba: 'Artigo não encontrado',
     descricao: 'Não encontramos nenhum artigo publicado neste endereço.',
   },
   despublicado: {
+    icone: ArchiveX,
     titulo: 'Este artigo saiu do ar.',
+    tituloDaAba: 'Artigo fora do ar',
     descricao:
-      'Este artigo já foi publicado, mas não está mais disponível — pode ter sido substituído ou descontinuado.',
+      'Este artigo já foi publicado, mas não está mais disponível: pode ter sido substituído ou descontinuado.',
   },
   'reservado-ausente': {
+    icone: PencilRuler,
     titulo: 'Este conteúdo ainda não foi publicado.',
+    tituloDaAba: 'Conteúdo ainda não publicado',
     descricao: 'A página existe no menu, mas o texto ainda está sendo escrito.',
   },
 }
 
-const ICONE: Record<VarianteArtigoIndisponivel, typeof CircleHelp> = {
-  'nao-encontrado': CircleHelp,
-  despublicado: ArchiveX,
-  'reservado-ausente': PencilRuler,
-}
-
 /**
- * `404`/`410` da página do artigo (§3.4) — página que **explica**, nunca `404`
- * mudo nem redirect silencioso para a home.
+ * `404`/`410` da página do artigo: página que **explica**, nunca `404` mudo nem
+ * redirect silencioso para a home.
  *
  * O CTA do caso reservado vai para a busca **sem termo**: "buscar
  * 'como-funciona'" não significa nada para o leitor, que chegou ali pelo menu.
@@ -55,17 +59,10 @@ export function EstadoArtigoIndisponivel({
   slugTentado,
   motivo,
 }: EstadoArtigoIndisponivelProps) {
-  const { titulo, descricao } = CONTEUDO[variante]
-  const Icone = ICONE[variante]
   const reservado = variante === 'reservado-ausente'
 
   return (
-    <div role="alert" className="flex flex-col items-center gap-3 py-16 text-center">
-      <Icone aria-hidden="true" className="size-10 text-muted" />
-      <h1 className="text-titulo font-semibold text-ink">{titulo}</h1>
-      <p className="max-w-md text-sm text-muted">{descricao}</p>
-      {motivo && <p className="max-w-md text-xs text-muted">{motivo}</p>}
-
+    <EstadoIndisponivel {...CONTEUDO[variante]} motivo={motivo}>
       {reservado ? (
         <Link
           to="/busca"
@@ -83,6 +80,6 @@ export function EstadoArtigoIndisponivel({
           Buscar “{slugTentado}”
         </Link>
       )}
-    </div>
+    </EstadoIndisponivel>
   )
 }

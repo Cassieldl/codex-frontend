@@ -186,3 +186,24 @@ describe('ListaProvedoresHome — data de verificação', () => {
     expect(await screen.findByText('Verificado em 12/08/2026')).toBeInTheDocument()
   })
 })
+
+// jsdom não faz layout: a medida em 390 px fica com o navegador. Aqui se trava a regra que a
+// produz, porque o nome que encolhe antes de a linha quebrar vira "Emiss..." no celular.
+describe('ListaProvedoresHome: nome do provedor no celular', () => {
+  it('ocupa a linha inteira abaixo de sm e só trunca a partir de sm', async () => {
+    const emissorNacional: ProvedorHomeDto = {
+      ...nacional,
+      slug: 'emissor-nacional',
+      nome: 'Emissor Nacional',
+    }
+    renderLista([{ categoria: 'Nacional', total: 1, provedores: [emissorNacional] }])
+
+    const nome = await screen.findByRole('link', { name: 'Emissor Nacional' })
+    const classes = nome.className.split(/\s+/)
+
+    expect(classes).toContain('basis-full')
+    expect(classes).not.toContain('truncate')
+    expect(classes).not.toContain('flex-1')
+    expect(classes).toContain('sm:truncate')
+  })
+})

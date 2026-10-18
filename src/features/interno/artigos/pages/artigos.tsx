@@ -12,16 +12,14 @@ import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { EtiquetaTipoArtigo } from '../../../artigos/components/EtiquetaTipoArtigo'
 import { SLUG_COMO_FUNCIONA } from '../../../artigos/utils/slugsReservados'
-import { useCamposLayoutPorVersao } from '../../camposLayout/hooks/useCamposLayoutPorVersao'
-import { useVersoesLayout } from '../../camposLayout/hooks/useVersoesLayout'
-import { useErrosAdmin } from '../../erros/hooks/useErrosAdmin'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
-import { ArtigoForm, type OpcaoReferenciaArtigo } from '../components/ArtigoForm'
+import { ArtigoForm } from '../components/ArtigoForm'
 import { useArtigoAdminPorId } from '../hooks/useArtigoAdminPorId'
 import { useArtigoExiste } from '../hooks/useArtigoExiste'
 import { useArtigosAdmin } from '../hooks/useArtigosAdmin'
 import { useAtualizarArtigo } from '../hooks/useAtualizarArtigo'
 import { useCriarArtigo } from '../hooks/useCriarArtigo'
+import { useReferenciasDoArtigo } from '../hooks/useReferenciasDoArtigo'
 import { usePublicarArtigo } from '../hooks/usePublicarArtigo'
 import { useRemoverArtigo } from '../hooks/useRemoverArtigo'
 import { useVerificarArtigo } from '../hooks/useVerificarArtigo'
@@ -47,30 +45,10 @@ interface ErroDeEscritaNaTela {
   artigoId: number | null
 }
 
-/**
- * Opções de referência cruzada do `ArtigoForm`. Erros vêm de uma página
- * grande da listagem interna; campos do layout são sempre listados **por
- * versão de layout** (I16), então esta fatia usa a versão mais recente — que
- * é a que o editor tem em mente ao escrever. Versões antigas ficam de fora, e
- * o dia em que isso incomodar pede um seletor de versão no formulário, não um
- * N+1 de rede aqui.
- */
-function useOpcoesDeReferencia(): {
-  campos: OpcaoReferenciaArtigo[]
-  erros: OpcaoReferenciaArtigo[]
-} {
-  const { data: versoesLayout } = useVersoesLayout({ tamanhoPagina: 200 })
-  const versaoMaisRecente = versoesLayout?.items[0]
-  const { data: campos } = useCamposLayoutPorVersao(versaoMaisRecente?.id ?? 0)
-  const { data: erros } = useErrosAdmin({ tamanhoPagina: 200 })
-
-  return {
-    campos: (campos ?? []).map((campo) => ({ id: campo.id, rotulo: campo.nome })),
-    erros: (erros?.items ?? []).map((erro) => ({
-      id: erro.id,
-      rotulo: `${erro.codigo} — ${erro.titulo}`,
-    })),
-  }
+/** Identifica o formulário aberto, para a busca de referências recomeçar a cada artigo. */
+function chaveDoModal(modal: ModalArtigo | null): string | null {
+  if (modal === null) return null
+  return modal.modo === 'editar' ? `editar-${modal.id}` : modal.modo
 }
 
 function formatarVerificacao(iso: string | null): string {
@@ -103,7 +81,7 @@ export function ArtigosPage() {
   const idEmEdicao = modalAberto?.modo === 'editar' ? modalAberto.id : null
   const detalheEmEdicao = useArtigoAdminPorId(idEmEdicao)
 
-  const opcoes = useOpcoesDeReferencia()
+  const referencias = useReferenciasDoArtigo(chaveDoModal(modalAberto))
 
   const criarArtigo = useCriarArtigo()
   const atualizarArtigo = useAtualizarArtigo()
@@ -418,8 +396,8 @@ export function ArtigosPage() {
                   ? { titulo: TITULO_COMO_FUNCIONA, tipo: 'Conceito' }
                   : undefined
               }
-              opcoesCamposLayout={opcoes.campos}
-              opcoesErros={opcoes.erros}
+              buscaDeErros={referencias.buscaDeErros}
+              camposLayout={referencias.camposLayout}
               onSubmit={aoSalvar}
               onCancel={() => setModalAberto(null)}
               isSubmitting={criarArtigo.isPending || atualizarArtigo.isPending}

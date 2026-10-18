@@ -4,6 +4,7 @@ import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { AvisoVocabulario } from '../components/AvisoVocabulario'
 import { ChipVersaoLayout } from '../components/ChipVersaoLayout'
 import { useLayoutIndice } from '../hooks/useLayoutIndice'
@@ -16,6 +17,8 @@ import { LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
  */
 export function LayoutIndicePage() {
   const { data: indice, isLoading, isError, refetch } = useLayoutIndice()
+
+  useTituloDaPagina('Layout InvoiCy')
 
   const semVersoes = !!indice && indice.versoes.length === 0 && indice.vigente === null
 

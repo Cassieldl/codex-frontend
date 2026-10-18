@@ -231,3 +231,14 @@ describe('HomePage', () => {
     expect(screen.getByRole('link', { name: 'Ver o índice completo' })).toBeInTheDocument()
   })
 })
+
+describe('HomePage: título da aba', () => {
+  it('nomeia a aba "Início | Codex"', async () => {
+    server.use(handlerHomeSucesso(homeCompleta))
+
+    renderHome()
+
+    await screen.findByRole('heading', { name: 'Provedores', level: 2 })
+    expect(document.title).toBe('Início | Codex')
+  })
+})

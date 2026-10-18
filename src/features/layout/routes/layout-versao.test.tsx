@@ -87,9 +87,10 @@ function trilhaDaPagina(): string {
   return (trilha?.textContent ?? '').replace(/\s+/g, ' ').trim()
 }
 
-function renderPagina(versaoSlug = '4-12') {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-
+function renderPagina(
+  versaoSlug = '4-12',
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   const rootRoute = createRootRoute({ component: Outlet })
   const rota = createRoute({
     getParentRoute: () => rootRoute,
@@ -268,6 +269,29 @@ describe('LayoutVersaoPage', () => {
     expect(screen.queryByText('Esta versão saiu do ar.')).not.toBeInTheDocument()
   })
 
+  // O QueryClient aqui retenta, como o de produção: um 404 retentado prendia /layout/99 no
+  // skeleton por segundos, sem h1 nenhum.
+  it('/layout/99 inexistente mostra logo exatamente um h1, sem esperar retentativa', async () => {
+    let requisicoesDaVersao = 0
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      http.get(`${API_URL}/layout/versoes/99`, () => {
+        requisicoesDaVersao += 1
+        return HttpResponse.json(
+          { error: { code: 'VERSAO_LAYOUT_NAO_ENCONTRADA', message: 'Não encontrada.' } },
+          { status: 404 },
+        )
+      }),
+    )
+    // Sem espera entre tentativas, uma retentativa aparece na contagem em vez de só atrasar o h1.
+    renderPagina('99', new QueryClient({ defaultOptions: { queries: { retryDelay: 0 } } }))
+
+    const titulo = await screen.findByRole('heading', { level: 1 })
+    expect(titulo).toHaveTextContent('Esta versão do Layout InvoiCy não existe.')
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(requisicoesDaVersao).toBe(1)
+  })
+
   it('erro sem desfecho nomeado cai no estado de erro genérico, nunca em tela vazia', async () => {
     server.use(
       handlerLayoutIndiceSucesso(indiceFake),
@@ -334,5 +358,34 @@ describe('LayoutVersaoPage', () => {
 
     expect(await screen.findByText('Carregando o dicionário de campos…')).toBeInTheDocument()
     expect(await screen.findByText('Número do RPS')).toBeInTheDocument()
+  })
+})
+
+describe('LayoutVersaoPage: título da aba', () => {
+  it('nomeia a aba com a versão escrita por extenso', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      handlerLayoutVersaoSucesso('4-12', paginaFake),
+    )
+    renderPagina()
+
+    await screen.findByRole('heading', { level: 1, name: 'Layout InvoiCy versão 4.12' })
+    expect(document.title).toBe('Layout InvoiCy versão 4.12 | Codex')
+  })
+
+  it('versão inexistente nomeia a aba pelo desfecho', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      http.get(`${API_URL}/layout/versoes/99`, () =>
+        HttpResponse.json(
+          { error: { code: 'VERSAO_LAYOUT_NAO_ENCONTRADA', message: 'Não encontrada.' } },
+          { status: 404 },
+        ),
+      ),
+    )
+    renderPagina('99')
+
+    await screen.findByRole('heading', { level: 1 })
+    expect(document.title).toBe('Versão do Layout InvoiCy não encontrada | Codex')
   })
 })

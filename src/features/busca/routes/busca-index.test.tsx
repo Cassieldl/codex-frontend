@@ -285,3 +285,26 @@ describe('BuscaPage — título da página', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Busca no Codex')
   })
 })
+
+describe('BuscaPage: título da aba', () => {
+  it('leva o termo buscado: "Busca: valor | Codex"', async () => {
+    server.use(
+      http.get(`${API_URL}/provedores`, () => respostaProvedores([])),
+      http.get(`${API_URL}/busca`, () =>
+        respostaBusca(resultadoBase({ qualidade: 'vazia', termo: 'valor', termoUsado: 'valor' })),
+      ),
+    )
+    renderPagina('valor')
+
+    await screen.findByText('O Codex ainda não documenta "valor".')
+    expect(document.title).toBe('Busca: valor | Codex')
+  })
+
+  it('sem termo, "Busca | Codex"', async () => {
+    server.use(http.get(`${API_URL}/provedores`, () => respostaProvedores([])))
+    renderPagina('')
+
+    await screen.findByRole('heading', { level: 1, name: 'Busca no Codex' })
+    expect(document.title).toBe('Busca | Codex')
+  })
+})

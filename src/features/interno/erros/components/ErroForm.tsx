@@ -26,7 +26,7 @@ const MENSAGEM_VERSOES_OBRIGATORIAS =
 // dispara erro retroativo.
 const erroSchema = z
   .object({
-    codigo: z.string().min(1, 'O código é obrigatório.').max(50, 'Máximo de 50 caracteres.'),
+    codigo: z.string().min(1, 'O código é obrigatório.').max(40, 'Máximo de 40 caracteres.'),
     origem: z.enum(['Prefeitura', 'InvoiCy', 'Schema'] as const, {
       error: 'Selecione a origem.',
     }),

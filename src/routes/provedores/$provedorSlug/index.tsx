@@ -16,5 +16,11 @@ function ProvedorIndexRoute() {
 
   if (!provedor) return null
 
-  return <ProvedorIndexConteudo provedorSlug={provedorSlug} versoes={provedor.versoes} />
+  return (
+    <ProvedorIndexConteudo
+      provedorSlug={provedorSlug}
+      provedorNome={provedor.nome}
+      versoes={provedor.versoes}
+    />
+  )
 }

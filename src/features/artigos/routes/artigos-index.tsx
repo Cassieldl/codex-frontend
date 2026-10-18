@@ -7,6 +7,7 @@ import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Pagination } from '../../../components/ui/Pagination'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { CampoBusca } from '../../busca/components/CampoBusca'
 import { CardArtigo } from '../components/CardArtigo'
 import { EstadoTipoArtigoVazio } from '../components/EstadoTipoArtigoVazio'
@@ -41,6 +42,8 @@ export interface ArtigosIndexPageProps extends BuscaArtigos {
  * exigência de "tipo é estrutura" e ainda deixa o filtro copiável no link.
  */
 export function ArtigosIndexPage({ q, tipo, pagina, navegar }: ArtigosIndexPageProps) {
+  useTituloDaPagina('Artigos')
+
   const [termo, setTermo] = useState(q ?? '')
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
 

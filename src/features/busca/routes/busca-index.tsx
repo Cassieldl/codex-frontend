@@ -9,6 +9,7 @@ import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Select } from '../../../components/ui/Select'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { montarLinkSuporte, ROTULO_FALAR_COM_SUPORTE } from '../../../utils/linkSuporte'
 import { useProvedores } from '../../provedores/hooks/useProvedores'
 import { BlocoAutocorrecao } from '../components/BlocoAutocorrecao'
@@ -51,6 +52,9 @@ export interface BuscaPageProps {
  */
 export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
   const [termo, setTermo] = useState(qDaUrl)
+
+  useTituloDaPagina(qDaUrl.trim() ? `Busca: ${qDaUrl.trim()}` : 'Busca')
+
   const termoComDebounce = useDebounce(termo, DEBOUNCE_MS)
 
   // Sincroniza a URL só depois do debounce assentar — não empilha histórico a

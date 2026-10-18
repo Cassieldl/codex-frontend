@@ -7,6 +7,7 @@ import type { ContextoRodape } from '../../../components/layout/RodapeContextual
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
 import { handleApiError } from '../../../utils/handleApiError'
 import { ComunicadosDoContexto } from '../../comunicados/components/ComunicadosDoContexto'
@@ -71,6 +72,8 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
   useEffect(() => {
     if (correcao) navegar(correcao)
   }, [correcao, navegar])
+
+  useTituloDaPagina(!isError && erro ? `${erro.codigo}: ${erro.titulo}` : null)
 
   // Contexto único de provedor/versão (M10 + rodapé §8): só existe quando o
   // erro aplica a exatamente UMA versão de provedor — com zero (erro geral,

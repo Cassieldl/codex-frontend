@@ -43,7 +43,10 @@ export function GrupoResultadoLista({ grupo }: GrupoResultadoListaProps) {
           const conteudo = (
             <>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-card-titulo font-medium text-ink">{item.titulo}</span>
+                {/* Título de erro pode ser um caminho XML sem espaço: sem a quebra, estoura 390 px. */}
+                <span className="min-w-0 text-card-titulo font-medium text-ink [overflow-wrap:anywhere]">
+                  {item.titulo}
+                </span>
                 {item.tipo === 'erro' && (
                   <ResultadoErroGeral
                     provedorNome={item.provedorNome}
@@ -55,7 +58,7 @@ export function GrupoResultadoLista({ grupo }: GrupoResultadoListaProps) {
 
               {legenda && <p className="text-xs text-muted">{legenda}</p>}
 
-              <p className="text-sm text-ink/80">
+              <p className="text-sm text-ink/80 [overflow-wrap:anywhere]">
                 <TrechosDestacados trechos={item.trechos} />
               </p>
             </>

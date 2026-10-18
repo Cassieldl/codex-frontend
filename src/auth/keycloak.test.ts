@@ -1,18 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const initMock = vi.fn()
+const updateTokenMock = vi.fn()
+const clearTokenMock = vi.fn()
 
 vi.mock('keycloak-js', () => ({
   default: vi.fn().mockImplementation(function KeycloakMock() {
     return {
       init: initMock,
+      updateToken: updateTokenMock,
+      clearToken: clearTokenMock,
       token: undefined,
     }
   }),
 }))
 
 const { authStore } = await import('./authStore')
-const { garantirAutenticacao, iniciarAutenticacao } = await import('./keycloak')
+const {
+  encerrarSessaoLocal,
+  garantirAutenticacao,
+  iniciarAutenticacao,
+  renovarTokenSeNecessario,
+  verificarSessao,
+} = await import('./keycloak')
 
 beforeEach(() => {
   initMock.mockReset()
@@ -64,5 +74,49 @@ describe('garantirAutenticacao', () => {
     await iniciarAutenticacao()
 
     await expect(garantirAutenticacao()).resolves.toBe(true)
+  })
+})
+
+describe('verificarSessao', () => {
+  it('distingue o Keycloak fora do ar (indisponivel) do usuário sem sessão (anonimo)', async () => {
+    initMock.mockRejectedValueOnce(new Error('Timeout when waiting for 3rd party check iframe'))
+    iniciarAutenticacao().catch(() => {})
+
+    await expect(verificarSessao()).resolves.toBe('indisponivel')
+
+    initMock.mockResolvedValueOnce(false)
+    await iniciarAutenticacao()
+
+    await expect(verificarSessao()).resolves.toBe('anonimo')
+  })
+})
+
+describe('renovarTokenSeNecessario', () => {
+  it('pede ao keycloak-js um token válido por pelo menos 30 segundos', async () => {
+    updateTokenMock.mockResolvedValueOnce(true)
+
+    await renovarTokenSeNecessario()
+
+    expect(updateTokenMock).toHaveBeenCalledWith(30)
+  })
+
+  it('propaga a recusa da renovação para quem chama decidir a saída', async () => {
+    updateTokenMock.mockRejectedValueOnce(new Error('refresh token vencido'))
+
+    await expect(renovarTokenSeNecessario()).rejects.toThrow('refresh token vencido')
+  })
+})
+
+// Por último: encerrar a sessão é definitivo até a próxima carga da página.
+describe('encerrarSessaoLocal', () => {
+  it('descarta os tokens em memória e a sessão deixa de valer, mesmo com o check-sso autenticado', async () => {
+    initMock.mockResolvedValueOnce(true)
+    await iniciarAutenticacao()
+
+    encerrarSessaoLocal()
+
+    expect(clearTokenMock).toHaveBeenCalledTimes(1)
+    expect(authStore.getState()).toEqual({ estado: 'anonimo' })
+    await expect(garantirAutenticacao()).resolves.toBe(false)
   })
 })

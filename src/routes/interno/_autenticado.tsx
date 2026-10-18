@@ -1,21 +1,32 @@
 import { Link, Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { LogOut } from 'lucide-react'
 import { useEffect } from 'react'
-import { garantirAutenticacao, keycloak } from '../../auth/keycloak'
+import { keycloak, verificarSessao } from '../../auth/keycloak'
 import { ID_CONTEUDO_PRINCIPAL, PularParaConteudo } from '../../components/layout/PularParaConteudo'
 import { BarraDeComando } from '../../features/interno/busca/components/BarraDeComando'
+import {
+  FalhaNaAreaInterna,
+  LoginIndisponivelErro,
+  VerificandoSessao,
+} from '../../features/interno/components/EstadoDaSessao'
 import { PublicarComunicadoGlobal } from '../../features/interno/comunicados/components/PublicarComunicadoGlobal'
 
-// Guard da área interna. Layout pathless — qualquer rota sob `interno/_autenticado/`
-// (telas de outra unidade) herda esta checagem. Sem sessão, redireciona
-// para `/interno/entrar` preservando o destino original na query string.
+// Guard da área interna: toda rota sob `interno/_autenticado/` herda esta checagem. Sem sessão,
+// redireciona para `/interno/entrar` preservando o destino original na query string.
 export const Route = createFileRoute('/interno/_autenticado')({
   beforeLoad: async ({ location }) => {
-    const autenticado = await garantirAutenticacao()
-    if (!autenticado) {
+    const estado = await verificarSessao()
+    if (estado === 'indisponivel') {
+      throw new LoginIndisponivelErro()
+    }
+    if (estado === 'anonimo') {
       throw redirect({ to: '/interno/entrar', search: { destino: location.href } })
     }
   },
+  // O check-sso pode levar segundos (ou estourar o tempo, com o Keycloak fora): nunca tela em branco.
+  pendingMs: 0,
+  pendingComponent: VerificandoSessao,
+  errorComponent: FalhaNaAreaInterna,
   component: LayoutInterno,
 })
 

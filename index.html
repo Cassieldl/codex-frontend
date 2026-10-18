@@ -9,12 +9,11 @@
       content="Como cada provedor de NFS-e trata cada campo do Layout InvoiCy: tipo, tamanho, máscara, obrigatoriedade, destino no XML e erros conhecidos, por provedor e por versão."
     />
     <!--
-      Era "codex-frontend", o nome do pacote gerado pelo scaffold. O portal foi desenhado para ser
-      LINKADO (premissa §3.2 do escopo): este texto é o que aparece na aba, no favorito, no card de
-      compartilhamento e no resultado de busca. Também é WCAG 2.4.2 (Page Titled, nível A) — que
-      pede título descritivo, e por enquanto é o mesmo em todas as rotas.
+      Título padrão, igual a TITULO_PADRAO (src/hooks/useTituloDaPagina.ts): vale enquanto a página
+      carrega. Cada página pública troca pelo próprio assunto no formato "<assunto> | Codex"
+      (WCAG 2.4.2).
     -->
-    <title>Codex — Portal Técnico de Integração NFS-e</title>
+    <title>Portal Técnico de Integração NFS-e | Codex</title>
   </head>
   <body>
     <div id="root"></div>

@@ -1,13 +1,31 @@
-import { renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import {
+  RouterProvider,
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+} from '@tanstack/react-router'
+import { render, renderHook, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { http, HttpResponse } from 'msw'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { EstadoDaSessao } from '../../auth/keycloak'
+import { server } from '../../test/mocks/server'
 
-const garantirAutenticacaoMock = vi.fn()
+const verificarSessaoMock = vi.fn<() => Promise<EstadoDaSessao>>()
 
 vi.mock('../../auth/keycloak', () => ({
-  garantirAutenticacao: garantirAutenticacaoMock,
+  verificarSessao: verificarSessaoMock,
+  encerrarSessaoLocal: vi.fn(),
+  keycloak: { tokenParsed: undefined, logout: vi.fn() },
 }))
 
 const { Route, useNoIndex } = await import('./_autenticado')
+const { LoginIndisponivelErro } = await import('../../features/interno/components/EstadoDaSessao')
+const { navegacaoDoNavegador } = await import('../../auth/sessaoExpirada')
+
+const API_URL = import.meta.env.VITE_API_URL
 
 type ContextoBeforeLoad = Parameters<NonNullable<typeof Route.options.beforeLoad>>[0]
 
@@ -21,13 +39,48 @@ function chamarBeforeLoad(href: string) {
   return beforeLoad(criarContexto(href))
 }
 
+/** Monta as opções reais da rota (guard, pendente, erro e layout) num router de teste. */
+function renderizarAreaInterna(caminho: string) {
+  const rotaRaiz = createRootRoute()
+  const rotaAutenticada = createRoute({
+    getParentRoute: () => rotaRaiz,
+    id: 'autenticado',
+    beforeLoad: ({ location }) => chamarBeforeLoad(location.href),
+    pendingMs: Route.options.pendingMs,
+    pendingComponent: Route.options.pendingComponent,
+    errorComponent: Route.options.errorComponent,
+    component: Route.options.component,
+  })
+  const rotaDaTela = createRoute({
+    getParentRoute: () => rotaAutenticada,
+    path: caminho,
+    component: () => <p>Conteúdo da tela</p>,
+  })
+
+  const router = createRouter({
+    routeTree: rotaRaiz.addChildren([rotaAutenticada.addChildren([rotaDaTela])]),
+    history: createMemoryHistory({ initialEntries: [caminho] }),
+  })
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+}
+
 beforeEach(() => {
-  garantirAutenticacaoMock.mockReset()
+  verificarSessaoMock.mockReset()
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('guard /interno/_autenticado', () => {
   it('sem sessão, redireciona para /interno/entrar preservando ?destino=', async () => {
-    garantirAutenticacaoMock.mockResolvedValue(false)
+    verificarSessaoMock.mockResolvedValue('anonimo')
 
     let capturado: unknown
     try {
@@ -45,13 +98,69 @@ describe('guard /interno/_autenticado', () => {
   })
 
   it('com sessão, deixa passar (não lança redirect)', async () => {
-    garantirAutenticacaoMock.mockResolvedValue(true)
+    verificarSessaoMock.mockResolvedValue('autenticado')
 
     await expect(chamarBeforeLoad('/interno')).resolves.toBeUndefined()
   })
+
+  it('com o Keycloak fora do ar, não manda ao login: o redirect cairia na página de erro do navegador', async () => {
+    verificarSessaoMock.mockResolvedValue('indisponivel')
+
+    await expect(chamarBeforeLoad('/interno')).rejects.toBeInstanceOf(LoginIndisponivelErro)
+  })
 })
 
-describe('useNoIndex — Achado #4 (noindex em /interno/**)', () => {
+describe('telas do guard', () => {
+  it('enquanto o check-sso não responde, mostra que está verificando a sessão', async () => {
+    verificarSessaoMock.mockReturnValue(new Promise<EstadoDaSessao>(() => {}))
+
+    renderizarAreaInterna('/interno/artigos')
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Verificando sua sessão')
+    expect(screen.queryByText('Conteúdo da tela')).not.toBeInTheDocument()
+  })
+
+  it('com o login indisponível, mostra tela própria e tentar de novo recarrega a página', async () => {
+    verificarSessaoMock.mockResolvedValue('indisponivel')
+    const recarregar = vi.spyOn(navegacaoDoNavegador, 'recarregar').mockImplementation(() => {})
+
+    renderizarAreaInterna('/interno/artigos')
+
+    expect(
+      await screen.findByRole('heading', { name: 'O login está indisponível agora' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Conteúdo da tela')).not.toBeInTheDocument()
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Tentar de novo' }))
+
+    expect(recarregar).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('menu da área interna', () => {
+  it('numa tela de detalhe, o menu marca exatamente um item como página atual', async () => {
+    verificarSessaoMock.mockResolvedValue('autenticado')
+    server.use(
+      http.get(`${API_URL}/interno/provedores`, () =>
+        HttpResponse.json({ items: [], totalCount: 0, page: 1, pageSize: 200, totalPages: 0 }),
+      ),
+    )
+
+    renderizarAreaInterna('/interno/provedores/5/versoes/7')
+
+    const menu = await screen.findByRole('navigation', { name: 'Navegação da área interna' })
+    await screen.findByText('Conteúdo da tela')
+
+    const marcados = menu.querySelectorAll('[aria-current="page"]')
+    expect(marcados).toHaveLength(1)
+    expect(within(menu).getByRole('link', { name: 'Provedores' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+})
+
+describe('useNoIndex: noindex em /interno/**', () => {
   it('adiciona <meta name="robots" content="noindex, nofollow"> ao montar e remove ao desmontar', () => {
     expect(document.querySelector('meta[name="robots"]')).toBeNull()
 

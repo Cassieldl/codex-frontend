@@ -191,6 +191,15 @@ describe('ProvedorLayoutPage — endereços que não levam a lugar nenhum', () =
     expect(screen.getByRole('link', { name: 'Ver todos os provedores' })).toBeInTheDocument()
   })
 
+  it('provedor inexistente nomeia a aba pelo desfecho', async () => {
+    server.use(handlerStatus('nao-existe', 404))
+
+    renderPagina({ provedorSlug: 'nao-existe', caminhoAtual: '/provedores/nao-existe' })
+
+    await screen.findByRole('heading', { level: 1, name: 'Este provedor não existe.' })
+    expect(document.title).toBe('Provedor não encontrado | Codex')
+  })
+
   it('410 explica que o provedor saiu do ar, sem oferecer nova tentativa', async () => {
     server.use(handlerStatus('saiu-do-ar', 410))
 

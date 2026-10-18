@@ -62,7 +62,7 @@ export function Pagination({
           id={seletorId}
           value={pageSize}
           onChange={(evento) => onPageSizeChange(Number(evento.target.value))}
-          className="h-8 rounded-[var(--radius-control)] border border-border px-2 text-xs"
+          className="h-8 rounded-[var(--radius-control)] border border-border-control px-2 text-xs"
         >
           {pageSizeOptions.map((opcao) => (
             <option key={opcao} value={opcao}>

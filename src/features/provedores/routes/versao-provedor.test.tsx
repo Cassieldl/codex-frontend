@@ -335,3 +335,22 @@ describe('VersaoProvedorPage — versão do Layout InvoiCy', () => {
     expect(frase.textContent).not.toMatch(/vers[aã]o\s+vers[aã]o/i)
   })
 })
+
+describe('VersaoProvedorPage: título da aba', () => {
+  it('nomeia a aba com o provedor e a versão', async () => {
+    server.use(handlerStatus(200, RESPOSTA_DA_VERSAO))
+    Element.prototype.scrollIntoView = vi.fn()
+    renderPagina()
+
+    await screen.findByRole('heading', { level: 2, name: 'Campos e mapeamento' })
+    expect(document.title).toBe('Prefeitura de Exemplo, versão 0.20 | Codex')
+  })
+
+  it('versão inexistente nomeia a aba pelo desfecho', async () => {
+    server.use(handlerStatus(404))
+    renderPagina()
+
+    await screen.findByRole('heading', { level: 1, name: 'Esta versão não existe.' })
+    expect(document.title).toBe('Versão não encontrada | Codex')
+  })
+})

@@ -75,3 +75,30 @@ describe('GrupoResultadoLista — descricaoCasamento e meta por item (P1/I21)', 
     expect(titulo).not.toHaveTextContent('Correspondência exata')
   })
 })
+
+// jsdom não faz layout: a medida em 390 px fica com o navegador. Aqui se trava a regra que a
+// produz, porque um caminho XML sem espaço não tem onde quebrar e empurra a linha para fora.
+describe('GrupoResultadoLista: texto longo sem espaço no celular', () => {
+  const caminhoXml = 'NFSe/infNFSe/DPS/infDPS/prest/regTrib/regEspTrib'
+
+  it('o título quebra onde precisar e encolhe ao lado do provedor', async () => {
+    renderComRouter(
+      criarGrupo([
+        criarItem({ titulo: caminhoXml, provedorNome: 'Emissor Nacional', versaoRotulo: '0.20' }),
+      ]),
+    )
+
+    const classes = (await screen.findByText(caminhoXml)).className.split(/\s+/)
+
+    expect(classes).toContain('min-w-0')
+    expect(classes).toContain('[overflow-wrap:anywhere]')
+  })
+
+  it('o trecho também quebra, e a quebra fica só nos textos longos, nunca no item inteiro', async () => {
+    renderComRouter(criarGrupo([criarItem({ trechos: [{ texto: caminhoXml, destacado: false }] })]))
+
+    const trecho = await screen.findByText(caminhoXml)
+    expect(trecho.className.split(/\s+/)).toContain('[overflow-wrap:anywhere]')
+    expect(screen.getByRole('link').className).not.toContain('overflow-wrap')
+  })
+})

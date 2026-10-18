@@ -140,7 +140,7 @@ describe('ResultadoBuscaInternaLista — BAIXO-03/BAIXO-04 após a extração da
 
     await usuario.click(
       screen.getByRole('button', {
-        name: 'Copiar link interno de Artigo em rascunho — leva à listagem de artigos, não ao registro',
+        name: 'Copiar link interno de Artigo em rascunho (leva à listagem de artigos, não ao registro)',
       }),
     )
 

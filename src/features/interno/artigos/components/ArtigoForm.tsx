@@ -1,23 +1,31 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useId, useState } from 'react'
-import type { ErroDeCampoApi } from '../../../../utils/handleApiError'
-import { useErrosDeCampoDoServidor } from '../../utils/useErrosDeCampoDoServidor'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
 import { Button } from '../../../../components/ui/Button'
 import { ConteudoArtigo } from '../../../../components/ui/ConteudoArtigo'
 import { Input } from '../../../../components/ui/Input'
 import { Select, type SelectOption } from '../../../../components/ui/Select'
 import { Textarea } from '../../../../components/ui/Textarea'
+import type { ErroDeCampoApi } from '../../../../utils/handleApiError'
 import { ROTULO_TIPO_ARTIGO } from '../../../artigos/components/EtiquetaTipoArtigo'
-import type { ArtigoAdminDetalhe, ArtigoFormDto, TipoArtigo } from '../types/artigoAdmin'
+import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
+import { useErrosDeCampoDoServidor } from '../../utils/useErrosDeCampoDoServidor'
+import type {
+  ArtigoAdminDetalhe,
+  ArtigoFormDto,
+  CampoLayoutVinculadoArtigo,
+  ErroVinculadoArtigo,
+  TipoArtigo,
+} from '../types/artigoAdmin'
+import type { BuscaDeErrosDoArtigo, CamposLayoutDoArtigo } from '../types/referenciasArtigo'
 import { AbasFormulario } from './AbasFormulario'
+import { VinculosDeCamposLayout } from './VinculosDeCamposLayout'
+import { VinculosDeErros } from './VinculosDeErros'
 
 /**
- * Valor de contrato em ASCII (`Mudanca`, M-5), rótulo com acento na exibição —
- * o rótulo vem do mesmo mapa que o índice público usa, para os dois nunca
- * divergirem.
+ * Valor de contrato em ASCII (`Mudanca`), rótulo com acento na exibição: o rótulo vem do mesmo
+ * mapa que o índice público usa, para os dois nunca divergirem.
  */
 const TIPO_OPTIONS: SelectOption[] = (
   ['Conceito', 'Procedimento', 'Mudanca'] satisfies TipoArtigo[]
@@ -27,8 +35,8 @@ const artigoSchema = z.object({
   titulo: z.string().min(1, 'O título é obrigatório.').max(200, 'Máximo de 200 caracteres.'),
   tipo: z.enum(['Conceito', 'Procedimento', 'Mudanca'] as const, { error: 'Selecione o tipo.' }),
   corpo: z.string().min(1, 'O corpo do artigo é obrigatório.'),
-  campoLayoutIds: z.array(z.string()),
-  erroIds: z.array(z.string()),
+  campoLayoutIds: z.array(z.number()),
+  erroIds: z.array(z.number()),
 })
 
 type ArtigoFormValores = z.infer<typeof artigoSchema>
@@ -41,22 +49,17 @@ const CAMPOS_DO_FORMULARIO = [
   'erroIds',
 ] as const satisfies readonly (keyof ArtigoFormValores)[]
 
-export interface OpcaoReferenciaArtigo {
-  id: number
-  rotulo: string
-}
-
 export interface ArtigoFormProps {
   initialData?: ArtigoAdminDetalhe
   /** Pré-preenchimento na criação (ex.: "Criar agora" do artigo reservado). */
   sugestao?: { titulo: string; tipo: TipoArtigo }
-  opcoesCamposLayout: OpcaoReferenciaArtigo[]
-  opcoesErros: OpcaoReferenciaArtigo[]
+  buscaDeErros: BuscaDeErrosDoArtigo
+  camposLayout: CamposLayoutDoArtigo
   onSubmit: (dto: ArtigoFormDto) => void
   onCancel: () => void
   isSubmitting?: boolean
   erroServidor?: string | null
-  /** Erros por campo do 422 — destacam o campo em vez de deixar só a mensagem geral. */
+  /** Erros por campo do 422: destacam o campo em vez de deixar só a mensagem geral. */
   errosDeCampo?: ErroDeCampoApi[]
 }
 
@@ -68,33 +71,72 @@ function valoresIniciais(
     titulo: dado?.titulo ?? sugestao?.titulo ?? '',
     tipo: dado?.tipo ?? sugestao?.tipo ?? 'Conceito',
     corpo: dado?.corpo ?? '',
-    campoLayoutIds: dado?.campoLayoutIds.map(String) ?? [],
-    erroIds: dado?.erroIds.map(String) ?? [],
+    campoLayoutIds: dado?.campoLayoutIds ?? [],
+    erroIds: dado?.erroIds ?? [],
+  }
+}
+
+function indexarPorId<T extends { id: number }>(itens: readonly T[] = []): Map<number, T> {
+  return new Map(itens.map((item) => [item.id, item]))
+}
+
+/**
+ * Resolve o rótulo de cada id escolhido, na ordem em que o detalhe os entrega e com os novos ao
+ * final. Id sem rótulo conhecido continua na lista: nenhum vínculo pode sumir da tela e do envio.
+ */
+function resolverVinculos<T extends { id: number }>(
+  ids: readonly number[],
+  conhecidos: ReadonlyMap<number, T>,
+  ordemDoDetalhe: readonly T[],
+  semRotulo: (id: number) => T,
+): T[] {
+  const posicao = new Map(ordemDoDetalhe.map((item, indice) => [item.id, indice]))
+  const ordenados = [...ids].sort(
+    (a, b) =>
+      (posicao.get(a) ?? ordemDoDetalhe.length + ids.indexOf(a)) -
+      (posicao.get(b) ?? ordemDoDetalhe.length + ids.indexOf(b)),
+  )
+  return ordenados.map((id) => conhecidos.get(id) ?? semRotulo(id))
+}
+
+function erroSemRotulo(id: number): ErroVinculadoArtigo {
+  return { id, codigo: `Erro ${id}`, titulo: '', desativado: false }
+}
+
+function campoSemRotulo(id: number): CampoLayoutVinculadoArtigo {
+  return {
+    id,
+    nome: `Campo ${id}`,
+    caminhoXml: '',
+    versaoLayoutId: 0,
+    versaoLayoutRotulo: '',
+    desativado: false,
   }
 }
 
 /**
- * Formulário único de criar/editar artigo (I25/I26). "Burro": recebe
- * `onSubmit`/`onCancel` por prop e não conhece service nem hook de mutation —
- * quem orquestra é a página.
+ * Formulário único de criar/editar artigo. Burro: recebe `onSubmit`/`onCancel` e as fontes de
+ * referência por prop, e não conhece service nem hook de mutation; quem orquestra é a página.
  *
- * `slug` não é campo: o backend deriva do título, e para o artigo reservado
- * `SlugsReservadosArtigo` garante que renomear o título nunca muda o slug.
+ * `slug` não é campo: o backend deriva do título, e para o artigo reservado renomear o título
+ * nunca muda o slug.
  */
 export function ArtigoForm({
   initialData,
   sugestao,
-  opcoesCamposLayout,
-  opcoesErros,
+  buscaDeErros,
+  camposLayout,
   onSubmit,
   onCancel,
   isSubmitting = false,
   erroServidor,
   errosDeCampo,
 }: ArtigoFormProps) {
-  const camposCheckboxId = useId()
-  const errosCheckboxId = useId()
   const [painelDoCorpo, setPainelDoCorpo] = useState('editar')
+  const [errosConhecidos, setErrosConhecidos] = useState(() => indexarPorId(initialData?.erros))
+  const [camposConhecidos, setCamposConhecidos] = useState(() =>
+    indexarPorId(initialData?.camposLayout),
+  )
 
   const {
     register,
@@ -118,10 +160,44 @@ export function ArtigoForm({
   const camposSelecionados = watch('campoLayoutIds')
   const errosSelecionados = watch('erroIds')
 
-  function alternarSelecao(campo: 'campoLayoutIds' | 'erroIds', id: string) {
+  const errosVinculados = resolverVinculos(
+    errosSelecionados,
+    errosConhecidos,
+    initialData?.erros ?? [],
+    erroSemRotulo,
+  )
+  const camposVinculados = resolverVinculos(
+    camposSelecionados,
+    camposConhecidos,
+    initialData?.camposLayout ?? [],
+    campoSemRotulo,
+  )
+
+  function removerVinculo(campo: 'campoLayoutIds' | 'erroIds', id: number) {
     const atual = campo === 'campoLayoutIds' ? camposSelecionados : errosSelecionados
-    const proximo = atual.includes(id) ? atual.filter((item) => item !== id) : [...atual, id]
-    setValue(campo, proximo, { shouldValidate: true })
+    setValue(
+      campo,
+      atual.filter((item) => item !== id),
+      { shouldValidate: true },
+    )
+  }
+
+  function alternarErro(erro: ErroVinculadoArtigo) {
+    if (errosSelecionados.includes(erro.id)) {
+      removerVinculo('erroIds', erro.id)
+      return
+    }
+    setErrosConhecidos((anteriores) => new Map(anteriores).set(erro.id, erro))
+    setValue('erroIds', [...errosSelecionados, erro.id], { shouldValidate: true })
+  }
+
+  function alternarCampo(campo: CampoLayoutVinculadoArtigo) {
+    if (camposSelecionados.includes(campo.id)) {
+      removerVinculo('campoLayoutIds', campo.id)
+      return
+    }
+    setCamposConhecidos((anteriores) => new Map(anteriores).set(campo.id, campo))
+    setValue('campoLayoutIds', [...camposSelecionados, campo.id], { shouldValidate: true })
   }
 
   function aoSubmeter(valores: ArtigoFormValores) {
@@ -129,8 +205,8 @@ export function ArtigoForm({
       titulo: valores.titulo,
       tipo: valores.tipo,
       corpo: valores.corpo,
-      campoLayoutIds: valores.campoLayoutIds.map(Number),
-      erroIds: valores.erroIds.map(Number),
+      campoLayoutIds: valores.campoLayoutIds,
+      erroIds: valores.erroIds,
     })
   }
 
@@ -160,8 +236,8 @@ export function ArtigoForm({
           required
           options={TIPO_OPTIONS}
           value={tipoAtual}
-          // Editável de propósito (decisoes.md B-2): corrigir uma classificação
-          // errada apagando e recriando quebraria o slug público.
+          // Editável de propósito: corrigir uma classificação errada apagando e recriando
+          // quebraria o slug público.
           onValueChange={(valor) => setValue('tipo', valor as TipoArtigo, { shouldValidate: true })}
           error={errors.tipo?.message}
         />
@@ -190,79 +266,33 @@ export function ArtigoForm({
             valor: 'pre-visualizar',
             rotulo: 'Pré-visualizar',
             conteudo: corpoAtual.trim() ? (
-              // Mesmo renderizador da página pública: um erro de sintaxe de
-              // tabela aparece aqui, não só para o leitor depois de publicado.
+              // Mesmo renderizador da página pública: um erro de sintaxe de tabela aparece aqui,
+              // não só para o leitor depois de publicado.
               <ConteudoArtigo corpo={corpoAtual} className="flex flex-col gap-3 text-sm text-ink" />
             ) : (
               <p className="text-xs text-muted italic">
-                Nada escrito ainda — a pré-visualização aparece conforme você escreve.
+                Nada escrito ainda: a pré-visualização aparece conforme você escreve.
               </p>
             ),
           },
         ]}
       />
 
-      <fieldset className="flex flex-col gap-1.5">
-        <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
-          Campos do layout relacionados
-        </legend>
-        <div className="flex flex-col gap-1.5">
-          {opcoesCamposLayout.length === 0 && (
-            <p className="text-xs text-muted italic">Nenhum campo de layout cadastrado ainda.</p>
-          )}
-          {opcoesCamposLayout.map((opcao) => {
-            const id = String(opcao.id)
-            const inputId = `${camposCheckboxId}-${id}`
-            return (
-              <label
-                key={id}
-                htmlFor={inputId}
-                className="flex items-center gap-2 text-sm text-ink"
-              >
-                <input
-                  id={inputId}
-                  type="checkbox"
-                  className="size-4 rounded-[var(--radius-check)]"
-                  checked={camposSelecionados.includes(id)}
-                  onChange={() => alternarSelecao('campoLayoutIds', id)}
-                />
-                {opcao.rotulo}
-              </label>
-            )
-          })}
-        </div>
-      </fieldset>
+      <VinculosDeCamposLayout
+        vinculados={camposVinculados}
+        fonte={camposLayout}
+        onAlternar={alternarCampo}
+        onRemover={(id) => removerVinculo('campoLayoutIds', id)}
+        erro={errors.campoLayoutIds?.message}
+      />
 
-      <fieldset className="flex flex-col gap-1.5">
-        <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
-          Erros relacionados
-        </legend>
-        <div className="flex flex-col gap-1.5">
-          {opcoesErros.length === 0 && (
-            <p className="text-xs text-muted italic">Nenhum erro cadastrado ainda.</p>
-          )}
-          {opcoesErros.map((opcao) => {
-            const id = String(opcao.id)
-            const inputId = `${errosCheckboxId}-${id}`
-            return (
-              <label
-                key={id}
-                htmlFor={inputId}
-                className="flex items-center gap-2 text-sm text-ink"
-              >
-                <input
-                  id={inputId}
-                  type="checkbox"
-                  className="size-4 rounded-[var(--radius-check)]"
-                  checked={errosSelecionados.includes(id)}
-                  onChange={() => alternarSelecao('erroIds', id)}
-                />
-                {opcao.rotulo}
-              </label>
-            )
-          })}
-        </div>
-      </fieldset>
+      <VinculosDeErros
+        vinculados={errosVinculados}
+        busca={buscaDeErros}
+        onAlternar={alternarErro}
+        onRemover={(id) => removerVinculo('erroIds', id)}
+        erro={errors.erroIds?.message}
+      />
 
       <div className="flex justify-center gap-3">
         <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>

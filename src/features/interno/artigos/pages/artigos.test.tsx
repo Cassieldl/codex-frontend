@@ -12,7 +12,7 @@ import {
 } from '../../../../test/mocks/handlers'
 import { server } from '../../../../test/mocks/server'
 import { SLUG_COMO_FUNCIONA } from '../../../artigos/utils/slugsReservados'
-import type { ArtigoAdminDetalhe, ArtigoAdminListaItem } from '../types/artigoAdmin'
+import type { ArtigoAdminListaItem } from '../types/artigoAdmin'
 import { ArtigosPage } from './artigos'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -54,11 +54,14 @@ const RASCUNHO_COMUM: ArtigoAdminListaItem = {
   versaoConcorrencia: 3,
 }
 
-const DETALHE_RASCUNHO: ArtigoAdminDetalhe = {
+// JSON transcrito do `ArtigoAdminDto`, sem anotação do tipo do cliente.
+const DETALHE_RASCUNHO = {
   ...RASCUNHO_COMUM,
   corpo: '## Antes de comecar',
   campoLayoutIds: [],
   erroIds: [],
+  erros: [],
+  camposLayout: [],
 }
 
 /** Fontes das opções de referência cruzada do formulário — I15a, I16 e I18. */
@@ -346,7 +349,7 @@ describe('ArtigosPage — edição e permissões', () => {
       ...handlersDeReferencia(),
       handlerArtigoExiste(SLUG_COMO_FUNCIONA, 5),
       handlerArtigosAdminLista([RASCUNHO_COMUM]),
-      handlerArtigoAdminDetalhe(DETALHE_RASCUNHO),
+      handlerArtigoAdminDetalhe(RASCUNHO_COMUM.id, DETALHE_RASCUNHO),
     )
 
     renderizarPagina()
@@ -407,5 +410,200 @@ describe('ArtigosPage — edição e permissões', () => {
     await waitFor(() => expect(capturado.corpo).not.toBeNull())
     expect(capturado.ifMatch).toBe('W/"3"')
     expect(String(capturado.corpo?.verificadoEm)).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})
+
+describe('ArtigosPage: vínculos do artigo', () => {
+  const TOTAL_DE_ERROS = 250
+
+  /** Erro de número `n`: o de número 250 só aparece por busca, nunca na primeira página. */
+  function erroNumero(n: number) {
+    return {
+      id: 1000 + n,
+      codigo: `E${String(n).padStart(4, '0')}`,
+      origem: 'Schema',
+      titulo: `Mensagem do erro ${n}`,
+      causaProvavel: null,
+      solucaoSugerida: null,
+      variantes: [],
+      versoesAplicaveis: [],
+      camposRelacionados: [],
+      publicado: true,
+      versaoConcorrencia: 1,
+    }
+  }
+
+  function campoLayout(id: number, nome: string, caminhoXml: string) {
+    return {
+      id,
+      nome,
+      caminhoXml,
+      significado: 'Significado',
+      grupo: null,
+      ordem: id,
+      estado: 'Ativo',
+      versaoLayoutDescontinuadoId: null,
+      publicado: true,
+      versaoConcorrencia: 1,
+    }
+  }
+
+  // JSON transcrito do `ArtigoAdminDto`: o E0999 foi removido e segue vinculado.
+  const DETALHE_COM_VINCULOS = {
+    ...RASCUNHO_COMUM,
+    corpo: '## Antes de comecar',
+    campoLayoutIds: [40],
+    erroIds: [12, 99],
+    erros: [
+      { id: 12, codigo: 'E0037', titulo: 'RPS ja informado', desativado: false },
+      { id: 99, codigo: 'E0999', titulo: 'Erro que saiu do ar', desativado: true },
+    ],
+    camposLayout: [
+      {
+        id: 40,
+        nome: 'ValServicos',
+        caminhoXml: 'Servico/Valores/ValServicos',
+        versaoLayoutId: 3,
+        versaoLayoutRotulo: '8',
+        desativado: false,
+      },
+    ],
+  }
+
+  function servidorDeVinculos() {
+    const termosBuscados: (string | null)[] = []
+    const corposEnviados: unknown[] = []
+
+    server.use(
+      handlerArtigoExiste(SLUG_COMO_FUNCIONA, 5),
+      handlerArtigosAdminLista([RASCUNHO_COMUM]),
+      handlerArtigoAdminDetalhe(RASCUNHO_COMUM.id, DETALHE_COM_VINCULOS),
+      http.get(`${API_URL}/interno/layout/versoes`, () =>
+        HttpResponse.json({
+          items: [
+            { id: 3, rotulo: '8', ordem: 2, publicado: true, versaoConcorrencia: 1 },
+            { id: 2, rotulo: '7', ordem: 1, publicado: true, versaoConcorrencia: 1 },
+          ],
+          totalCount: 2,
+          page: 1,
+          pageSize: 200,
+          totalPages: 1,
+        }),
+      ),
+      http.get(`${API_URL}/interno/layout/versoes/3/campos`, () =>
+        HttpResponse.json({
+          data: [
+            campoLayout(40, 'ValServicos', 'Servico/Valores/ValServicos'),
+            campoLayout(41, 'IssRetido', 'Servico/Valores/IssRetido'),
+          ],
+          message: null,
+        }),
+      ),
+      http.get(`${API_URL}/interno/layout/versoes/2/campos`, () =>
+        HttpResponse.json({
+          data: [campoLayout(3, 'Discriminacao', 'Rps/Discriminacao')],
+          message: null,
+        }),
+      ),
+      http.get(`${API_URL}/interno/erros`, ({ request }) => {
+        const parametros = new URL(request.url).searchParams
+        const termo = parametros.get('q')
+        termosBuscados.push(termo)
+        const tamanhoPagina = Number(parametros.get('tamanhoPagina') ?? 25)
+        const todos = Array.from({ length: TOTAL_DE_ERROS }, (_, indice) => erroNumero(indice + 1))
+        const encontrados = termo ? todos.filter((erro) => erro.codigo === termo) : todos
+        return HttpResponse.json({
+          items: encontrados.slice(0, tamanhoPagina),
+          totalCount: encontrados.length,
+          page: 1,
+          pageSize: tamanhoPagina,
+          totalPages: Math.ceil(encontrados.length / tamanhoPagina),
+        })
+      }),
+      http.put(`${API_URL}/interno/artigos/${RASCUNHO_COMUM.id}`, async ({ request }) => {
+        corposEnviados.push(await request.json())
+        return HttpResponse.json({ data: DETALHE_COM_VINCULOS, message: null })
+      }),
+    )
+
+    return { termosBuscados, corposEnviados }
+  }
+
+  async function abrirEdicao(usuario: ReturnType<typeof userEvent.setup>) {
+    renderizarPagina()
+    await screen.findByText('Migrar para ABRASF 2.04')
+    await usuario.click(
+      screen.getByRole('button', { name: 'Editar artigo Migrar para ABRASF 2.04' }),
+    )
+    return screen.findByRole('dialog')
+  }
+
+  it('mostra os vínculos gravados com rótulo, inclusive o removido, sem depender da busca', async () => {
+    const usuario = userEvent.setup()
+    servidorDeVinculos()
+
+    const dialogo = await abrirEdicao(usuario)
+
+    const errosVinculados = await within(dialogo).findByRole('list', { name: 'Erros vinculados' })
+    const itensDeErro = within(errosVinculados).getAllByRole('listitem')
+    expect(itensDeErro.map((item) => item.textContent)).toEqual([
+      'E0037 RPS ja informado',
+      'E0999 Erro que saiu do arRemovido',
+    ])
+
+    const camposVinculados = within(dialogo).getByRole('list', { name: 'Campos vinculados' })
+    expect(within(camposVinculados).getByRole('listitem')).toHaveTextContent(
+      'ValServicosServico/Valores/ValServicosversão 8',
+    )
+  })
+
+  it('busca um erro além do 200º, troca a versão do layout, remove o removido e envia os ids certos', async () => {
+    const usuario = userEvent.setup()
+    const { termosBuscados, corposEnviados } = servidorDeVinculos()
+
+    const dialogo = await abrirEdicao(usuario)
+    await within(dialogo).findByRole('list', { name: 'Erros vinculados' })
+
+    await usuario.click(
+      within(dialogo).getByRole('button', { name: 'Remover vínculo com o erro E0999' }),
+    )
+
+    expect(within(dialogo).queryByRole('checkbox', { name: /E0250/ })).not.toBeInTheDocument()
+    await usuario.type(
+      within(dialogo).getByRole('searchbox', { name: /Buscar erro para vincular/ }),
+      'E0250',
+    )
+    await usuario.click(await within(dialogo).findByRole('checkbox', { name: /E0250/ }))
+
+    await usuario.click(within(dialogo).getByRole('combobox', { name: /Versão do layout/ }))
+    await usuario.click(within(dialogo).getByRole('option', { name: '7' }))
+    await usuario.click(await within(dialogo).findByRole('checkbox', { name: /Discriminacao/ }))
+
+    const errosVinculados = within(dialogo).getByRole('list', { name: 'Erros vinculados' })
+    expect(
+      within(errosVinculados)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual(['E0037 RPS ja informado', 'E0250 Mensagem do erro 250'])
+
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(corposEnviados).toHaveLength(1))
+    expect(corposEnviados[0]).toMatchObject({ erroIds: [12, 1250], campoLayoutIds: [40, 3] })
+
+    // O debounce guarda a busca até o termo parar de mudar: nenhuma letra solta chega ao servidor.
+    expect(termosBuscados.filter((termo) => termo !== null)).toEqual(['E0250'])
+  })
+
+  it('salvar sem tocar nos vínculos reenvia todos os ids, inclusive o do item removido', async () => {
+    const usuario = userEvent.setup()
+    const { corposEnviados } = servidorDeVinculos()
+
+    const dialogo = await abrirEdicao(usuario)
+    await within(dialogo).findByRole('list', { name: 'Erros vinculados' })
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(corposEnviados).toHaveLength(1))
+    expect(corposEnviados[0]).toMatchObject({ erroIds: [12, 99], campoLayoutIds: [40] })
   })
 })

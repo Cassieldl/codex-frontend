@@ -22,7 +22,7 @@ const ESTADO_PADRAO: EstadoVersaoLayout = 'Prevista'
 // `estado` só existe na edição: `CriarVersaoLayoutDto` (I15b) não aceita o
 // campo — versão nasce sempre `Prevista` por conta do backend.
 const versaoLayoutSchema = z.object({
-  rotulo: z.string().min(1, 'O rótulo é obrigatório.').max(100, 'Máximo de 100 caracteres.'),
+  rotulo: z.string().min(1, 'O rótulo é obrigatório.').max(80, 'Máximo de 80 caracteres.'),
   descricao: z.string().max(2000, 'Máximo de 2000 caracteres.').optional().or(z.literal('')),
   estado: z.enum(['Prevista', 'Vigente', 'Anterior'] as const).optional(),
 })

@@ -1,10 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { ListChecks } from 'lucide-react'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { rotuloVerificacao } from '../../../utils/formatarDataVerificacao'
 import type { VersaoProvedorResumo } from '../types/provedor'
 
 export interface ProvedorIndexConteudoProps {
   provedorSlug: string
+  provedorNome: string
   versoes: VersaoProvedorResumo[]
 }
 
@@ -18,7 +20,13 @@ export interface ProvedorIndexConteudoProps {
  * nenhum `useEffect`/`navigate` — só renderiza a lista, sempre, e nenhum
  * link carrega rótulo de "recomendado" ou "vigente" (U7).
  */
-export function ProvedorIndexConteudo({ provedorSlug, versoes }: ProvedorIndexConteudoProps) {
+export function ProvedorIndexConteudo({
+  provedorSlug,
+  provedorNome,
+  versoes,
+}: ProvedorIndexConteudoProps) {
+  useTituloDaPagina(provedorNome)
+
   return (
     <div className="flex flex-col items-center gap-4 py-10 text-center">
       <ListChecks className="size-10 text-primary-medium" aria-hidden="true" />

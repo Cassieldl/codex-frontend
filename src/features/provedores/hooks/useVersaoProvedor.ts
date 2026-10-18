@@ -76,7 +76,6 @@ export function useVersaoProvedor(provedorSlug: string, versaoSlug: string) {
     },
     enabled: provedorSlug.length > 0 && versaoSlug.length > 0,
     staleTime: DEZ_MINUTOS_MS,
-    retry: (contagem, erro) =>
-      devoRetentar(contagem, erro instanceof ErroVersaoProvedorHttp ? erro : null),
+    retry: (contagem, erro) => devoRetentar(contagem, erro),
   })
 }

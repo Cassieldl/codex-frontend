@@ -73,7 +73,6 @@ export function useProvedorPorSlug(provedorSlug: string) {
     },
     enabled: provedorSlug.length > 0,
     staleTime: DEZ_MINUTOS_MS,
-    retry: (contagem, erro) =>
-      devoRetentar(contagem, erro instanceof ErroProvedorHttp ? erro : null),
+    retry: (contagem, erro) => devoRetentar(contagem, erro),
   })
 }

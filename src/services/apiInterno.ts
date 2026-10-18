@@ -1,13 +1,14 @@
-import axios from 'axios'
-import { garantirAutenticacao, getToken } from '../auth/keycloak'
+import axios, { isAxiosError } from 'axios'
+import { garantirAutenticacao, getToken, renovarTokenSeNecessario } from '../auth/keycloak'
+import { encerrarSessaoEIrParaEntrada } from '../auth/sessaoExpirada'
 
 declare module 'axios' {
   interface AxiosRequestConfig {
     /**
-     * Valor do `xmin` (versão otimista, M9) devolvido no `GET` de detalhe.
+     * Valor do `xmin` (versão otimista) devolvido no `GET` de detalhe.
      * Hooks de mutação (`useAtualizar<Entidade>`, `useRemover<Entidade>`,
      * `usePublicar<Entidade>`) repassam aqui o `etag` guardado no cache do
-     * `useQuery` — nunca reconstroem o `If-Match` a partir de outra fonte.
+     * `useQuery`: nunca reconstroem o `If-Match` a partir de outra fonte.
      */
     etag?: string
   }
@@ -16,16 +17,25 @@ declare module 'axios' {
 const METODOS_MUTACAO = new Set(['put', 'patch', 'delete'])
 
 /**
- * Cliente HTTP da superfície INTERNA da API (`/api/v1/interno/*`). Injeta
- * `Authorization` sempre que houver sessão Keycloak ativa, e anexa
- * `If-Match` em toda mutação que declarar `etag` na config da chamada.
+ * Cliente HTTP da superfície INTERNA da API (`/api/v1/interno/*`). Renova e injeta
+ * `Authorization` sempre que houver sessão Keycloak ativa, e anexa `If-Match` em
+ * toda mutação que declarar `etag` na config da chamada.
  */
 export const apiInterno = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL}/interno`,
 })
 
 apiInterno.interceptors.request.use(async (config) => {
-  await garantirAutenticacao() // só aqui — nunca no cliente público
+  const autenticado = await garantirAutenticacao() // só aqui, nunca no cliente público
+
+  if (autenticado) {
+    try {
+      await renovarTokenSeNecessario()
+    } catch {
+      encerrarSessaoEIrParaEntrada()
+      throw new Error('A sessão expirou e não pôde ser renovada.')
+    }
+  }
 
   const token = getToken()
   if (token) {
@@ -38,4 +48,16 @@ apiInterno.interceptors.request.use(async (config) => {
   }
 
   return config
+})
+
+// Só 401 de requisição que levou token significa sessão perdida; sem token é o guard que decide.
+apiInterno.interceptors.response.use(undefined, (erro: unknown) => {
+  if (
+    isAxiosError(erro) &&
+    erro.response?.status === 401 &&
+    erro.config?.headers?.has('Authorization')
+  ) {
+    encerrarSessaoEIrParaEntrada()
+  }
+  return Promise.reject(erro)
 })

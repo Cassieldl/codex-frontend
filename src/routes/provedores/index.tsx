@@ -12,6 +12,7 @@ import { Skeleton } from '../../components/ui/Skeleton'
 import { CampoBusca } from '../../features/busca/components/CampoBusca'
 import { ListaProvedores } from '../../features/provedores/components/ListaProvedores'
 import { useProvedores } from '../../features/provedores/hooks/useProvedores'
+import { useTituloDaPagina } from '../../hooks/useTituloDaPagina'
 
 const CATEGORIA_OPTIONS = [
   { value: '', label: 'Todas as categorias' },
@@ -40,6 +41,8 @@ function ProvedoresPage() {
 
   const [termo, setTermo] = useState(q ?? '')
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
+
+  useTituloDaPagina('Provedores')
 
   const { data, isLoading, isError, refetch } = useProvedores({
     q: q || undefined,

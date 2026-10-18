@@ -151,3 +151,16 @@ describe('IdVersaoLayoutPage — a versão que está sendo editada', () => {
     expect(titulo).not.toHaveTextContent('Layout InvoiCy')
   })
 })
+
+describe('IdVersaoLayoutPage: trilha', () => {
+  it('o link para a lista de versões não se marca como página atual', async () => {
+    server.use(...handlers())
+
+    const { container } = renderizarPagina()
+
+    const linkIndice = await screen.findByRole('link', { name: 'Campos do layout' })
+
+    expect(linkIndice).not.toHaveAttribute('aria-current')
+    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(0)
+  })
+})

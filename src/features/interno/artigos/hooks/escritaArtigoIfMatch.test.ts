@@ -26,6 +26,25 @@ const detalheDoServidor = {
   verificadoEm: null,
   campoLayoutIds: [3, 8],
   erroIds: [17],
+  erros: [{ id: 17, codigo: 'E0117', titulo: 'RPS invalido', desativado: false }],
+  camposLayout: [
+    {
+      id: 3,
+      nome: 'Discriminacao',
+      caminhoXml: 'Rps/Discriminacao',
+      versaoLayoutId: 2,
+      versaoLayoutRotulo: '7',
+      desativado: false,
+    },
+    {
+      id: 8,
+      nome: 'CodigoServico',
+      caminhoXml: 'Servico/CodigoServico',
+      versaoLayoutId: 2,
+      versaoLayoutRotulo: '7',
+      desativado: false,
+    },
+  ],
   versaoConcorrencia: 31,
 }
 

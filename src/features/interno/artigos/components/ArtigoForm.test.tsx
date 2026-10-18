@@ -2,7 +2,24 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { ArtigoAdminDetalhe } from '../types/artigoAdmin'
+import type { BuscaDeErrosDoArtigo, CamposLayoutDoArtigo } from '../types/referenciasArtigo'
 import { ArtigoForm } from './ArtigoForm'
+
+const CAMPO_DISCRIMINACAO = {
+  id: 3,
+  nome: 'Discriminacao',
+  caminhoXml: 'Rps/Discriminacao',
+  versaoLayoutId: 2,
+  versaoLayoutRotulo: '7',
+  desativado: false,
+}
+
+const CAMPO_CODIGO_SERVICO = {
+  ...CAMPO_DISCRIMINACAO,
+  id: 8,
+  nome: 'CodigoServico',
+  caminhoXml: 'Servico/CodigoServico',
+}
 
 const ARTIGO: ArtigoAdminDetalhe = {
   id: 42,
@@ -15,23 +32,36 @@ const ARTIGO: ArtigoAdminDetalhe = {
   verificadoEm: null,
   campoLayoutIds: [3],
   erroIds: [],
+  erros: [],
+  camposLayout: [CAMPO_DISCRIMINACAO],
   versaoConcorrencia: 7,
   etag: 'W/"7"',
 }
 
-const OPCOES_CAMPOS = [
-  { id: 3, rotulo: 'Discriminacao' },
-  { id: 8, rotulo: 'CodigoServico' },
-]
+const BUSCA_DE_ERROS: BuscaDeErrosDoArtigo = {
+  termo: '',
+  onTermoChange: vi.fn(),
+  resultados: [{ id: 17, codigo: 'E0117', titulo: 'RPS invalido', desativado: false }],
+  totalEncontrado: 1,
+  isBuscando: false,
+  isError: false,
+}
 
-const OPCOES_ERROS = [{ id: 17, rotulo: 'E0117 — RPS invalido' }]
+const CAMPOS_LAYOUT: CamposLayoutDoArtigo = {
+  versoes: [{ id: 2, rotulo: '7' }],
+  versaoSelecionadaId: 2,
+  onVersaoChange: vi.fn(),
+  campos: [CAMPO_DISCRIMINACAO, CAMPO_CODIGO_SERVICO],
+  isLoading: false,
+  isError: false,
+}
 
 function renderizar(props: Partial<React.ComponentProps<typeof ArtigoForm>> = {}) {
   const onSubmit = vi.fn()
   render(
     <ArtigoForm
-      opcoesCamposLayout={OPCOES_CAMPOS}
-      opcoesErros={OPCOES_ERROS}
+      buscaDeErros={BUSCA_DE_ERROS}
+      camposLayout={CAMPOS_LAYOUT}
       onSubmit={onSubmit}
       onCancel={vi.fn()}
       {...props}
@@ -83,8 +113,8 @@ describe('ArtigoForm', () => {
     await usuario.click(screen.getByRole('combobox', { name: /Tipo/ }))
     await usuario.click(screen.getByRole('option', { name: 'Mudança/Migração' }))
 
-    await usuario.click(screen.getByRole('checkbox', { name: 'CodigoServico' }))
-    await usuario.click(screen.getByRole('checkbox', { name: 'E0117 — RPS invalido' }))
+    await usuario.click(screen.getByRole('checkbox', { name: /CodigoServico/ }))
+    await usuario.click(screen.getByRole('checkbox', { name: /E0117/ }))
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
@@ -121,5 +151,28 @@ describe('ArtigoForm', () => {
 
     expect(screen.getByRole('textbox', { name: /Título/ })).toHaveValue('Como funciona')
     expect(screen.getByRole('combobox', { name: /Tipo/ })).toHaveTextContent('Conceito')
+  })
+})
+
+describe('ArtigoForm: vínculos', () => {
+  it('Enter na busca de erros não envia o formulário', async () => {
+    const usuario = userEvent.setup()
+    const { onSubmit } = renderizar({ initialData: ARTIGO })
+
+    await usuario.type(screen.getByRole('searchbox', { name: /Buscar erro/ }), 'E01{Enter}')
+
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('id gravado sem rótulo na resposta continua à vista e no envio', async () => {
+    const usuario = userEvent.setup()
+    const { onSubmit } = renderizar({ initialData: { ...ARTIGO, erroIds: [55], erros: [] } })
+
+    expect(screen.getByRole('list', { name: 'Erros vinculados' })).toHaveTextContent('Erro 55')
+
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ erroIds: [55], campoLayoutIds: [3] })
   })
 })

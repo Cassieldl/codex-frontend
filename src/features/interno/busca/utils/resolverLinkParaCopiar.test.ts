@@ -58,7 +58,7 @@ describe('resolverLinkParaCopiar — PQ-09', () => {
   })
 
   it('cada tipo com rota de edição leva ao seu próprio destino', () => {
-    const destinos = ['erro', 'campoLayout', 'provedor'].map((tipo) =>
+    const destinos = ['erro', 'campolayout', 'provedor'].map((tipo) =>
       resolverLinkParaCopiar(criarItem({ tipo, publicado: false }), URL_BASE),
     )
 

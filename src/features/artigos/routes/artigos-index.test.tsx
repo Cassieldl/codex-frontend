@@ -240,3 +240,14 @@ describe('ArtigosIndexPage — tela 7', () => {
     expect(await screen.findByRole('button', { name: /tentar novamente/i })).toBeInTheDocument()
   })
 })
+
+describe('ArtigosIndexPage: título da aba', () => {
+  it('nomeia a aba "Artigos | Codex"', async () => {
+    registrarHandler(() => ({ items: artigos }))
+
+    renderPagina()
+
+    await screen.findByRole('link', { name: 'Identificar a versão pelo retorno' })
+    expect(document.title).toBe('Artigos | Codex')
+  })
+})

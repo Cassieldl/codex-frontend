@@ -73,7 +73,7 @@ describe('LinhaResultadoBuscaInterna — PQ-09 (publicado por ITEM)', () => {
 
     await usuario.click(
       screen.getByRole('button', {
-        name: 'Copiar link interno de Migrar para ABRASF 2.04 — leva à listagem de artigos, não ao registro',
+        name: 'Copiar link interno de Migrar para ABRASF 2.04 (leva à listagem de artigos, não ao registro)',
       }),
     )
 
@@ -95,7 +95,7 @@ describe('LinhaResultadoBuscaInterna — PQ-09 (publicado por ITEM)', () => {
     expect(screen.getByRole('button', { name: 'Copiar link de Publicado' })).toBeInTheDocument()
     expect(
       screen.getByRole('button', {
-        name: 'Copiar link interno de Rascunho do acervo — leva à listagem de erros conhecidos, não ao registro',
+        name: 'Copiar link interno de Rascunho do acervo (leva à listagem de erros conhecidos, não ao registro)',
       }),
     ).toBeInTheDocument()
     expect(screen.getAllByText('Rascunho')).toHaveLength(1)
@@ -141,7 +141,7 @@ describe('LinhaResultadoBuscaInterna — F-3 (o link interno leva à lista, não
     renderizar(criarItem({ titulo: 'RPS inválido', publicado: false }))
 
     expect(screen.getByRole('button')).toHaveAccessibleName(
-      'Copiar link interno de RPS inválido — leva à listagem de erros conhecidos, não ao registro',
+      'Copiar link interno de RPS inválido (leva à listagem de erros conhecidos, não ao registro)',
     )
   })
 
@@ -149,7 +149,7 @@ describe('LinhaResultadoBuscaInterna — F-3 (o link interno leva à lista, não
     render(
       <ul>
         <LinhaResultadoBuscaInterna
-          item={criarItem({ tipo: 'campoLayout', titulo: 'tomador.cnpj', publicado: false })}
+          item={criarItem({ tipo: 'campolayout', titulo: 'tomador.cnpj', publicado: false })}
         />
         <LinhaResultadoBuscaInterna
           item={criarItem({ tipo: 'provedor', titulo: 'IPM', publicado: false })}
@@ -159,8 +159,8 @@ describe('LinhaResultadoBuscaInterna — F-3 (o link interno leva à lista, não
 
     const nomes = screen.getAllByRole('button').map((botao) => botao.getAttribute('aria-label'))
     expect(nomes).toEqual([
-      'Copiar link interno de tomador.cnpj — leva à listagem de campos do layout, não ao registro',
-      'Copiar link interno de IPM — leva à listagem de provedores, não ao registro',
+      'Copiar link interno de tomador.cnpj (leva à listagem de campos do layout, não ao registro)',
+      'Copiar link interno de IPM (leva à listagem de provedores, não ao registro)',
     ])
   })
 

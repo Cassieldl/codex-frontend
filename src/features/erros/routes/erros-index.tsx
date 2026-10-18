@@ -1,12 +1,15 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
 import { isAxiosError } from 'axios'
+import { CircleHelp } from 'lucide-react'
 import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
+import { EstadoIndisponivel } from '../../../components/ui/EstadoIndisponivel'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import { montarLinkSuporte, ROTULO_FALAR_COM_SUPORTE } from '../../../utils/linkSuporte'
 import { handleApiError } from '../../../utils/handleApiError'
@@ -15,6 +18,16 @@ import { temCodigoParaBuscar, useErrosPorCodigo } from '../hooks/useErrosPorCodi
 export interface NavegarOpcoes {
   href: string
   replace?: boolean
+}
+
+/**
+ * Assunto da aba conforme o desfecho. `null` enquanto carrega, quando resolve direto (a página do
+ * erro assume) e sem código (o estado "não informado" nomeia a aba).
+ */
+function tituloDaAbaDoCodigo(codigo: string, totalEncontrado: number | undefined): string | null {
+  if (totalEncontrado === undefined || totalEncontrado === 1) return null
+  if (totalEncontrado === 0) return `Código ${codigo.trim()} não documentado`
+  return `Código ${codigo.trim()}`
 }
 
 export interface ErrosIndexPageProps {
@@ -55,6 +68,8 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
 
   const mensagemErro = isAxiosError(error) ? handleApiError(error) : undefined
 
+  useTituloDaPagina(tituloDaAbaDoCodigo(codigo, data?.totalCount))
+
   return (
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
@@ -77,18 +92,20 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
         )}
 
         {semCodigo && (
-          <EmptyState
-            message="Esta página abre um erro pelo código, e nenhum código foi informado."
-            action={
-              <Link
-                to="/busca"
-                search={{ q: '' }}
-                className="text-sm font-semibold text-primary-medium hover:underline"
-              >
-                Buscar no Codex
-              </Link>
-            }
-          />
+          <EstadoIndisponivel
+            icone={CircleHelp}
+            titulo="Nenhum código de erro foi informado."
+            tituloDaAba="Código de erro não informado"
+            descricao="Esta página abre um erro pelo código, e nenhum código foi informado."
+          >
+            <Link
+              to="/busca"
+              search={{ q: '' }}
+              className="text-sm font-semibold text-primary-medium hover:underline"
+            >
+              Buscar no Codex
+            </Link>
+          </EstadoIndisponivel>
         )}
 
         {isError && <ErrorState message={mensagemErro} onRetry={() => refetch()} />}

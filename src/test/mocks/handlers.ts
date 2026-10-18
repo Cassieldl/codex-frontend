@@ -15,10 +15,7 @@ import type {
   ComunicadoAdminDetalhe,
   ComunicadoAdminListaItem,
 } from '../../features/interno/comunicados/types/comunicadoAdmin'
-import type {
-  ArtigoAdminDetalhe,
-  ArtigoAdminListaItem,
-} from '../../features/interno/artigos/types/artigoAdmin'
+import type { ArtigoAdminListaItem } from '../../features/interno/artigos/types/artigoAdmin'
 
 /**
  * Handlers base do MSW, compartilhados por toda a suíte. Cada feature
@@ -175,9 +172,10 @@ export function handlerArtigosAdminLista(
   )
 }
 
-export function handlerArtigoAdminDetalhe(artigo: ArtigoAdminDetalhe): HttpHandler {
-  return http.get(`${API_URL}/interno/artigos/${artigo.id}`, () =>
-    HttpResponse.json({ data: artigo, message: null }),
+/** O corpo vem como JSON literal do `ArtigoAdminDto`, sem o tipo do cliente: o teste confere o contrato. */
+export function handlerArtigoAdminDetalhe(id: number, corpo: Record<string, unknown>): HttpHandler {
+  return http.get(`${API_URL}/interno/artigos/${id}`, () =>
+    HttpResponse.json({ data: corpo, message: null }),
   )
 }
 

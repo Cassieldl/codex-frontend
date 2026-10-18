@@ -34,6 +34,12 @@ import { versoesAdminKeys } from '../hooks/versoesAdminKeys'
 import type { AvisoAdmin } from '../types/avisoAdmin'
 import type { CampoVersaoAdmin } from '../types/campoVersaoAdmin'
 
+/** Falha ao publicar ou despublicar um aviso, mostrada junto do aviso que a causou. */
+interface ErroDePublicacaoDoAviso {
+  avisoId: number
+  mensagem: string
+}
+
 const SEVERIDADE_PARA_TOKEN: Record<AvisoAdmin['severidade'], Severidade> = {
   Critico: 'critico',
   Alerta: 'alerta',
@@ -64,7 +70,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
   const criarCampo = useCriarCampoVersao(versaoId)
   const atualizarCampo = useAtualizarCampoVersao()
   const removerCampo = useRemoverCampoVersao()
-  const publicarAviso = usePublicarAviso()
+  const publicarAviso = usePublicarAviso(versoesAdminKeys.detail(versaoId))
   const criarAvisoVersao = useCriarAvisoVersao(versaoId)
   const atualizarAviso = useAtualizarAviso(versoesAdminKeys.detail(versaoId))
   const removerAviso = useRemoverAviso(versoesAdminKeys.detail(versaoId))
@@ -78,6 +84,8 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
   const [avisoParaRemover, setAvisoParaRemover] = useState<AvisoAdmin | null>(null)
   const [campoParaRemover, setCampoParaRemover] = useState<CampoVersaoAdmin | null>(null)
   const [erroRemocao, setErroRemocao] = useState<string | null>(null)
+  const [erroDePublicacaoDoAviso, setErroDePublicacaoDoAviso] =
+    useState<ErroDePublicacaoDoAviso | null>(null)
 
   const [dataVerificacao, setDataVerificacao] = useState('')
 
@@ -117,6 +125,17 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
         },
       )
     }
+  }
+
+  function alternarPublicacaoDoAviso(aviso: AvisoAdmin) {
+    setErroDePublicacaoDoAviso(null)
+    publicarAviso.mutate(
+      { id: aviso.id, publicado: !aviso.publicado, etag: aviso.etag },
+      {
+        onError: (falha) =>
+          setErroDePublicacaoDoAviso({ avisoId: aviso.id, mensagem: handleApiError(falha) }),
+      },
+    )
   }
 
   function confirmarRemocaoDeAviso() {
@@ -181,13 +200,18 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-xs text-muted">
-            <Link to="/interno/provedores" className="hover:underline">
+            <Link
+              to="/interno/provedores"
+              activeOptions={{ exact: true }}
+              className="hover:underline"
+            >
               Provedores
             </Link>{' '}
             /{' '}
             <Link
               to="/interno/provedores/$provedorId"
               params={{ provedorId: String(provedorId) }}
+              activeOptions={{ exact: true }}
               className="hover:underline"
             >
               {provedor?.nome ?? 'Provedor'}
@@ -293,13 +317,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
                     variant="secondary"
                     size="sm"
                     isLoading={publicarAviso.isPending && publicarAviso.variables?.id === aviso.id}
-                    onClick={() =>
-                      publicarAviso.mutate({
-                        id: aviso.id,
-                        publicado: !aviso.publicado,
-                        etag: aviso.etag,
-                      })
-                    }
+                    onClick={() => alternarPublicacaoDoAviso(aviso)}
                   >
                     {aviso.publicado ? 'Despublicar' : 'Publicar'}
                   </Button>
@@ -318,6 +336,11 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
                   </Button>
                 )}
               </div>
+              {erroDePublicacaoDoAviso?.avisoId === aviso.id && (
+                <p role="alert" className="text-sm text-error-texto">
+                  {erroDePublicacaoDoAviso.mensagem}
+                </p>
+              )}
             </li>
           ))}
         </ul>

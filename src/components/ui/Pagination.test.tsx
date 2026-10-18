@@ -147,4 +147,21 @@ describe('Pagination', () => {
 
     expect(screen.getByText('137 registros')).toBeInTheDocument()
   })
+
+  it('o seletor de itens por página usa a borda de controle (3:1), não a decorativa', () => {
+    render(
+      <Pagination
+        page={1}
+        pageSize={25}
+        totalCount={137}
+        totalPages={6}
+        onPageChange={vi.fn()}
+        onPageSizeChange={vi.fn()}
+      />,
+    )
+
+    const classes = screen.getByLabelText('Itens por página').className.split(/\s+/)
+    expect(classes).toContain('border-border-control')
+    expect(classes).not.toContain('border-border')
+  })
 })

@@ -1,10 +1,13 @@
 import { Link } from '@tanstack/react-router'
+import { ArchiveX, CircleHelp } from 'lucide-react'
 import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { ErrorState } from '../../../components/ui/ErrorState'
+import { EstadoIndisponivel } from '../../../components/ui/EstadoIndisponivel'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { construirIdLinhaCampo } from '../../provedores/utils/destaqueAncora'
 import { ErroCampoLayoutHttp, useCampoLayoutPorSlug } from '../hooks/useCampoLayoutPorSlug'
 
@@ -52,6 +55,9 @@ export function LayoutCampoResolucaoPage({ campoSlug, navegar }: LayoutCampoReso
 
   const erroTipado = error instanceof ErroCampoLayoutHttp ? error : null
 
+  // Enquanto localiza e redireciona; nos erros, quem nomeia a aba é o estado de erro.
+  useTituloDaPagina(isError ? null : 'Campo do Layout InvoiCy')
+
   return (
     <div className="flex min-h-screen flex-col">
       <CabecalhoPublico />
@@ -70,10 +76,11 @@ export function LayoutCampoResolucaoPage({ campoSlug, navegar }: LayoutCampoReso
         )}
 
         {isError && erroTipado?.tipo === 'nao_encontrado' && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-            <h1 className="text-subtitulo font-semibold text-ink">
-              Este campo não existe no Layout InvoiCy.
-            </h1>
+          <EstadoIndisponivel
+            icone={CircleHelp}
+            titulo="Este campo não existe no Layout InvoiCy."
+            tituloDaAba="Campo do Layout InvoiCy não encontrado"
+          >
             <Link
               to="/layout"
               activeOptions={{ exact: true }}
@@ -81,15 +88,16 @@ export function LayoutCampoResolucaoPage({ campoSlug, navegar }: LayoutCampoReso
             >
               Ver as versões do Layout InvoiCy
             </Link>
-          </div>
+          </EstadoIndisponivel>
         )}
 
         {isError && erroTipado?.tipo === 'campo_despublicado' && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-            <h1 className="text-subtitulo font-semibold text-ink">Este campo saiu do ar.</h1>
-            <p className="text-sm text-muted">
-              O verbete deste campo não está mais disponível publicamente.
-            </p>
+          <EstadoIndisponivel
+            icone={ArchiveX}
+            titulo="Este campo saiu do ar."
+            tituloDaAba="Campo do Layout InvoiCy fora do ar"
+            descricao="O verbete deste campo não está mais disponível publicamente."
+          >
             <Link
               to="/layout"
               activeOptions={{ exact: true }}
@@ -97,7 +105,7 @@ export function LayoutCampoResolucaoPage({ campoSlug, navegar }: LayoutCampoReso
             >
               Ver as versões publicadas
             </Link>
-          </div>
+          </EstadoIndisponivel>
         )}
 
         {isError && !erroTipado && <ErrorState onRetry={() => refetch()} />}

@@ -9,6 +9,7 @@ import { ConteudoArtigo } from '../../../components/ui/ConteudoArtigo'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { SumarioArtigo } from '../../../components/ui/SumarioArtigo'
 import { corrigirUrlCanonica } from '../../../utils/corrigirUrlCanonica'
 import { handleApiError } from '../../../utils/handleApiError'
@@ -68,6 +69,7 @@ export function ArtigoDetalhePage({
   }, [correcao, navegar])
 
   useLinkCanonico(artigo?.urlCanonica)
+  useTituloDaPagina(!isError && artigo ? artigo.titulo : null)
 
   const varianteIndisponivel = reservado ? 'reservado-ausente' : 'nao-encontrado'
 

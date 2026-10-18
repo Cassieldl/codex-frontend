@@ -77,6 +77,7 @@ const mockLogin = vi.fn<(opcoes?: KeycloakLoginOptions) => Promise<void>>(() =>
 
 vi.mock('../../auth/keycloak', () => ({
   keycloak: { login: mockLogin },
+  verificarSessao: () => Promise.resolve('autenticado'),
   IDIOMA_LOGIN: 'pt-BR',
 }))
 

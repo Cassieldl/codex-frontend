@@ -305,3 +305,44 @@ describe('ArtigoDetalhePage — trilha de volta ao índice', () => {
     expect(document.querySelectorAll('[aria-current="page"]')).toHaveLength(0)
   })
 })
+
+describe('ArtigoDetalhePage: título da aba', () => {
+  it('nomeia a aba com o título do artigo', async () => {
+    server.use(handlerArtigoDetalhe(artigo))
+
+    renderPagina({ artigoSlug: artigo.slug, caminhoAtual: artigo.urlCanonica })
+
+    await screen.findByRole('heading', { level: 1, name: 'Identificar a versão pelo retorno' })
+    expect(document.title).toBe('Identificar a versão pelo retorno | Codex')
+  })
+
+  it('/como-funciona usa o título do artigo reservado', async () => {
+    server.use(
+      handlerArtigoDetalhe({
+        ...artigo,
+        slug: SLUG_COMO_FUNCIONA,
+        titulo: 'Como funciona o Codex',
+        urlCanonica: '/como-funciona',
+        reservado: true,
+      }),
+    )
+
+    renderPagina({
+      artigoSlug: SLUG_COMO_FUNCIONA,
+      caminhoAtual: '/como-funciona',
+      reservado: true,
+    })
+
+    await screen.findByRole('heading', { level: 1, name: 'Como funciona o Codex' })
+    expect(document.title).toBe('Como funciona o Codex | Codex')
+  })
+
+  it('artigo inexistente nomeia a aba pelo desfecho', async () => {
+    server.use(handlerStatus('nao-existe', 404, 'ARTIGO_NAO_ENCONTRADO', 'Artigo não encontrado.'))
+
+    renderPagina({ artigoSlug: 'nao-existe', caminhoAtual: '/artigos/nao-existe' })
+
+    await screen.findByRole('heading', { level: 1, name: 'Este artigo não existe.' })
+    expect(document.title).toBe('Artigo não encontrado | Codex')
+  })
+})

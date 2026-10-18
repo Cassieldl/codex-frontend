@@ -165,3 +165,24 @@ describe('LayoutCampoResolucaoPage', () => {
     expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument()
   })
 })
+
+describe('LayoutCampoResolucaoPage: título da aba', () => {
+  it('campo inexistente nomeia a aba pelo desfecho', async () => {
+    server.use(
+      http.get(`${API_URL}/layout/campos/inexistente`, () =>
+        HttpResponse.json(
+          { error: { code: 'CAMPO_LAYOUT_NAO_ENCONTRADO', message: 'Não encontrado.' } },
+          { status: 404 },
+        ),
+      ),
+    )
+
+    renderPagina('inexistente')
+
+    await screen.findByRole('heading', {
+      level: 1,
+      name: 'Este campo não existe no Layout InvoiCy.',
+    })
+    expect(document.title).toBe('Campo do Layout InvoiCy não encontrado | Codex')
+  })
+})

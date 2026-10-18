@@ -122,3 +122,34 @@ describe('ErroForm', () => {
     )
   })
 })
+
+// Literais, não a constante do schema: o teto é contrato com a coluna `codigo varchar(40)`.
+describe('ErroForm: teto do código', () => {
+  async function salvarComCodigo(codigo: string) {
+    const usuario = userEvent.setup()
+    const { onSubmit } = renderForm()
+
+    await usuario.click(screen.getByLabelText(/código/i))
+    await usuario.paste(codigo)
+    await usuario.type(screen.getByLabelText(/título/i), 'CNPJ inválido')
+    await usuario.type(screen.getByLabelText('Variante 1'), 'O CNPJ informado não é válido.')
+    await usuario.click(screen.getByLabelText('Prefeitura de Exemplo · v1'))
+    await usuario.click(screen.getByRole('button', { name: /salvar/i }))
+
+    return { onSubmit }
+  }
+
+  it('aceita 40 caracteres', async () => {
+    const { onSubmit } = await salvarComCodigo('E'.repeat(40))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+    expect(onSubmit.mock.calls[0][0].codigo).toHaveLength(40)
+  })
+
+  it('recusa 41 caracteres sem enviar', async () => {
+    const { onSubmit } = await salvarComCodigo('E'.repeat(41))
+
+    expect(await screen.findByText('Máximo de 40 caracteres.')).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+})

@@ -81,7 +81,7 @@ export function LinhaResultadoBuscaInterna({
           ariaLabel={
             item.publicado
               ? `Copiar link de ${item.titulo}`
-              : `Copiar link interno de ${item.titulo} — leva à listagem de ${nomeDaListaPorTipo(item.tipo)}, não ao registro`
+              : `Copiar link interno de ${item.titulo} (leva à listagem de ${nomeDaListaPorTipo(item.tipo)}, não ao registro)`
           }
         />
       ) : (

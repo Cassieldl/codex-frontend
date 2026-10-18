@@ -114,3 +114,13 @@ describe('LayoutIndicePage', () => {
     expect(await screen.findByText('Vocabulário, não comportamento.')).toBeInTheDocument()
   })
 })
+
+describe('LayoutIndicePage: título da aba', () => {
+  it('nomeia a aba "Layout InvoiCy | Codex"', async () => {
+    server.use(handlerLayoutIndiceSucesso(indiceCompleto))
+    renderPagina()
+
+    await screen.findAllByRole('link', { name: /Ver o dicionário da versão/ })
+    expect(document.title).toBe('Layout InvoiCy | Codex')
+  })
+})

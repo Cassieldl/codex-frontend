@@ -23,16 +23,35 @@ export interface ArtigoAdminListaItem {
   etag?: string
 }
 
+/** Erro vinculado ao artigo. `desativado` marca o erro removido, que segue vinculado até o editor tirá-lo. */
+export interface ErroVinculadoArtigo {
+  id: number
+  codigo: string
+  titulo: string
+  desativado: boolean
+}
+
+/** Campo do layout vinculado ao artigo, com a versão do layout a que pertence. */
+export interface CampoLayoutVinculadoArtigo {
+  id: number
+  nome: string
+  caminhoXml: string
+  versaoLayoutId: number
+  versaoLayoutRotulo: string
+  desativado: boolean
+}
+
 /**
- * Detalhe (I24, e resposta de I25/I26/I28/I29) — **não** é alias do item de
- * lista: estende com `corpo` e os ids brutos de referência cruzada. Sem os
- * três, o modal de edição abriria com o textarea vazio e nenhum checkbox
- * marcado.
+ * Detalhe (I24, e resposta de I25/I26/I28/I29): estende o item de lista com `corpo` e os vínculos.
+ * Os ids brutos são o que o formulário envia; `erros` e `camposLayout` trazem os mesmos vínculos
+ * rotulados, para o editor ver o que já está gravado mesmo fora do resultado da busca.
  */
 export interface ArtigoAdminDetalhe extends ArtigoAdminListaItem {
   corpo: string
   campoLayoutIds: number[]
   erroIds: number[]
+  erros: ErroVinculadoArtigo[]
+  camposLayout: CampoLayoutVinculadoArtigo[]
 }
 
 /**

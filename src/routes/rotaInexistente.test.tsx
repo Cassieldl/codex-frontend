@@ -50,6 +50,13 @@ describe('endereço que não corresponde a rota nenhuma', () => {
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
   })
 
+  it('nomeia a aba "Página não encontrada | Codex"', async () => {
+    renderizarEndereco('/endereco-que-nunca-existiu')
+
+    await screen.findByRole('heading', { level: 1, name: 'Esta página não existe.' })
+    expect(document.title).toBe('Página não encontrada | Codex')
+  })
+
   it('oferece saída para a busca e para o início', async () => {
     renderizarEndereco('/endereco-que-nunca-existiu')
 

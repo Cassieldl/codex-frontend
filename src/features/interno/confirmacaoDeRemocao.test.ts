@@ -29,7 +29,11 @@ const ACAO_DE_REMOCAO = /aria-label=\{`Remover /
  * Remover uma linha de formulário ainda não salvo (uma variante de mensagem, por exemplo) não
  * toca o servidor: desfazer é digitar de novo. Só a remoção persistida exige confirmação.
  */
-const FORMULARIOS_EM_MEMORIA = ['/erros/components/ErroForm.tsx']
+const FORMULARIOS_EM_MEMORIA = [
+  '/erros/components/ErroForm.tsx',
+  // Tirar um vínculo do formulário de artigo só vale ao salvar.
+  '/artigos/components/ListaDeVinculos.tsx',
+]
 
 function arquivosComRemocao(): string[] {
   return Object.entries(FONTES)

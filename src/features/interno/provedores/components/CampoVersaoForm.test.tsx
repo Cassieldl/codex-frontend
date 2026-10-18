@@ -72,3 +72,43 @@ describe('CampoVersaoForm', () => {
     expect(onSubmit).not.toHaveBeenCalled()
   })
 })
+
+// Literais, não as constantes do schema: cada teto é contrato com a coluna do banco
+// (`tipo varchar(60)`, `tamanho varchar(40)`, `mascara varchar(120)`, `destinoxml varchar(400)`).
+describe('CampoVersaoForm: tetos iguais às colunas', () => {
+  const TETOS = [
+    { rotulo: 'Tipo', campo: 'tipo', teto: 60 },
+    { rotulo: 'Tamanho', campo: 'tamanho', teto: 40 },
+    { rotulo: 'Máscara', campo: 'mascara', teto: 120 },
+    { rotulo: 'Destino no XML', campo: 'destinoXml', teto: 400 },
+  ] as const
+
+  async function salvarCom(rotulo: string, valor: string) {
+    const usuario = userEvent.setup()
+    const { onSubmit } = renderForm()
+
+    await usuario.click(screen.getByRole('combobox', { name: /campo canônico/i }))
+    await usuario.click(screen.getByRole('option', { name: /Número da RPS/i }))
+    if (rotulo !== 'Tipo') await usuario.type(screen.getByLabelText(/tipo/i), 'Texto')
+
+    await usuario.click(screen.getByRole('textbox', { name: new RegExp(rotulo) }))
+    await usuario.paste(valor)
+    await usuario.click(screen.getByRole('button', { name: /salvar/i }))
+
+    return { onSubmit }
+  }
+
+  it.each(TETOS)('$rotulo aceita $teto caracteres', async ({ rotulo, campo, teto }) => {
+    const { onSubmit } = await salvarCom(rotulo, 'x'.repeat(teto))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+    expect(onSubmit.mock.calls[0][0][campo]).toHaveLength(teto)
+  })
+
+  it.each(TETOS)('$rotulo recusa $teto + 1 caracteres sem enviar', async ({ rotulo, teto }) => {
+    const { onSubmit } = await salvarCom(rotulo, 'x'.repeat(teto + 1))
+
+    expect(await screen.findByText(`Máximo de ${teto} caracteres.`)).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+})

@@ -9,6 +9,7 @@ import {
 } from '../components/EstadoProvedorIndisponivel'
 import { ExemplosVersao } from '../components/ExemplosVersao'
 import { ErroVersaoProvedorHttp, useVersaoProvedor } from '../hooks/useVersaoProvedor'
+import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { useCampoDestacadoPorAncora } from '../utils/destaqueAncora'
 
@@ -47,6 +48,12 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
     refetch,
   } = useVersaoProvedor(provedorSlug, versaoSlug)
   const campoDestacado = useCampoDestacadoPorAncora()
+
+  useTituloDaPagina(
+    !isError && versaoPagina
+      ? `${versaoPagina.provedor.nome}, versão ${versaoPagina.versao.rotulo}`
+      : null,
+  )
 
   if (isLoading) {
     return (

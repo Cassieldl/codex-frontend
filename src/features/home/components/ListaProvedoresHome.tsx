@@ -24,10 +24,12 @@ function LinhaProvedorHome({
 
   return (
     <li className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 border-t border-line px-4 py-3 first:border-t-0 hover:shadow-hover">
+      {/* No celular o nome ocupa a linha inteira e os demais itens descem: truncar ali cortava
+          "Emissor Nacional" em "Emiss...". A partir de `sm` volta a ser coluna flexível. */}
       <Link
         to="/provedores/$provedorSlug"
         params={{ provedorSlug: provedor.slug }}
-        className="min-w-0 flex-1 truncate font-medium text-ink hover:underline"
+        className="min-w-0 basis-full font-medium text-ink [overflow-wrap:anywhere] hover:underline sm:flex-1 sm:basis-0 sm:truncate"
       >
         {provedor.nome}
       </Link>

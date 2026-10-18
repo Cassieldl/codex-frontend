@@ -7,6 +7,8 @@ const getTokenMock = vi.fn<() => string | undefined>()
 vi.mock('../auth/keycloak', () => ({
   garantirAutenticacao: garantirAutenticacaoMock,
   getToken: getTokenMock,
+  renovarTokenSeNecessario: vi.fn().mockResolvedValue(undefined),
+  encerrarSessaoLocal: vi.fn(),
 }))
 
 const { apiPublico } = await import('./api')

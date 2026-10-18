@@ -28,6 +28,12 @@ import { useRemoverAviso } from '../hooks/useRemoverAviso'
 import { useVersoesProvedorAdmin } from '../hooks/useVersoesProvedorAdmin'
 import type { AvisoAdmin } from '../types/avisoAdmin'
 
+/** Falha ao publicar ou despublicar um aviso, mostrada junto do aviso que a causou. */
+interface ErroDePublicacaoDoAviso {
+  avisoId: number
+  mensagem: string
+}
+
 const SEVERIDADE_PARA_TOKEN: Record<AvisoAdmin['severidade'], Severidade> = {
   Critico: 'critico',
   Alerta: 'alerta',
@@ -50,7 +56,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
   }))
 
   const publicarProvedor = usePublicarProvedor()
-  const publicarAviso = usePublicarAviso()
+  const publicarAviso = usePublicarAviso(provedoresAdminKeys.detail(provedorId))
   const atualizarProvedor = useAtualizarProvedor()
   const criarAvisoProvedor = useCriarAvisoProvedor(provedorId)
   const atualizarAviso = useAtualizarAviso(provedoresAdminKeys.detail(provedorId))
@@ -64,6 +70,8 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
   const [erroAviso, setErroAviso] = useState<string | null>(null)
   const [avisoParaRemover, setAvisoParaRemover] = useState<AvisoAdmin | null>(null)
   const [erroDeRemocao, setErroDeRemocao] = useState<string | null>(null)
+  const [erroDePublicacaoDoAviso, setErroDePublicacaoDoAviso] =
+    useState<ErroDePublicacaoDoAviso | null>(null)
 
   const [modalVersaoAberto, setModalVersaoAberto] = useState(false)
   const [erroVersao, setErroVersao] = useState<string | null>(null)
@@ -139,6 +147,17 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
     )
   }
 
+  function alternarPublicacaoDoAviso(aviso: AvisoAdmin) {
+    setErroDePublicacaoDoAviso(null)
+    publicarAviso.mutate(
+      { id: aviso.id, publicado: !aviso.publicado, etag: aviso.etag },
+      {
+        onError: (falha) =>
+          setErroDePublicacaoDoAviso({ avisoId: aviso.id, mensagem: handleApiError(falha) }),
+      },
+    )
+  }
+
   /** A mutation só dispara depois da confirmação — nunca do clique na lista. */
   function confirmarRemocao() {
     if (!avisoParaRemover) return
@@ -158,7 +177,11 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-xs text-muted">
-            <Link to="/interno/provedores" className="hover:underline">
+            <Link
+              to="/interno/provedores"
+              activeOptions={{ exact: true }}
+              className="hover:underline"
+            >
               Provedores
             </Link>{' '}
             / {provedor.nome}
@@ -256,13 +279,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
                     variant="secondary"
                     size="sm"
                     isLoading={publicarAviso.isPending && publicarAviso.variables?.id === aviso.id}
-                    onClick={() =>
-                      publicarAviso.mutate({
-                        id: aviso.id,
-                        publicado: !aviso.publicado,
-                        etag: aviso.etag,
-                      })
-                    }
+                    onClick={() => alternarPublicacaoDoAviso(aviso)}
                   >
                     {aviso.publicado ? 'Despublicar' : 'Publicar'}
                   </Button>
@@ -278,6 +295,11 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
                   </Button>
                 )}
               </div>
+              {erroDePublicacaoDoAviso?.avisoId === aviso.id && (
+                <p role="alert" className="text-sm text-error-texto">
+                  {erroDePublicacaoDoAviso.mensagem}
+                </p>
+              )}
             </li>
           ))}
         </ul>
