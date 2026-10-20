@@ -1,6 +1,8 @@
 import type { ErroDeCampoApi } from '../../../../utils/handleApiError'
-import { extrairErrosDeCampo, handleApiError } from '../../../../utils/handleApiError'
+import { extrairErrosDeCampo } from '../../../../utils/handleApiError'
 import { extrairCodigoDeErroApi } from '../../utils/codigoDeErroApi'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
+import type { OrigemDaEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 /**
  * Como o editor sai do erro. Cada valor corresponde a um gesto distinto —
@@ -62,13 +64,16 @@ const RECUPERACAO_POR_CODIGO: Record<string, Recuperacao> = {
 }
 
 /** Traduz o erro de uma escrita de comunicado (I32-I35) no que a tela precisa mostrar. */
-export function interpretarErroDeEscritaComunicado(erro: unknown): ErroDeEscritaComunicado {
+export function interpretarErroDeEscritaComunicado(
+  erro: unknown,
+  origem: OrigemDaEscrita = 'formulario',
+): ErroDeEscritaComunicado {
   const codigo = extrairCodigoDeErroApi(erro)
   const recuperacao = codigo ? RECUPERACAO_POR_CODIGO[codigo] : undefined
 
   return {
     codigo,
-    mensagem: handleApiError(erro),
+    mensagem: mensagemDeErroDeEscrita(erro, origem),
     // O 422 de validação traz os campos culpados; sem repassar, o editor lê "um ou mais campos
     // são inválidos" e não sabe qual.
     errosDeCampo: extrairErrosDeCampo(erro),

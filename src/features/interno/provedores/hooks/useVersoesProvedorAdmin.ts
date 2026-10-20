@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
 import { comEtagDeConcorrenciaNaColecao } from '../../utils/etagDeConcorrencia'
 import type { VersaoAdminListaItem } from '../types/versaoAdmin'
@@ -13,9 +13,12 @@ interface EnvelopeVersoesAdmin {
  * `GET /interno/provedores/{id}/versoes` (I6) — `ApiResponse<T[]>`, role
  * `versoesprovedor-buscar`. O `etag` de cada versão sai do
  * `versaoConcorrencia` do corpo (coleção, sem header por item).
+ *
+ * Exportada para quem busca as versões de vários provedores de uma vez (`useQueries`) dividir o
+ * cache com esta tela.
  */
-export function useVersoesProvedorAdmin(provedorId: number) {
-  return useQuery({
+export function consultaVersoesProvedorAdmin(provedorId: number) {
+  return queryOptions({
     queryKey: versoesAdminKeys.porProvedor(provedorId),
     queryFn: async () => {
       const { data } = await apiInterno.get<EnvelopeVersoesAdmin>(
@@ -25,4 +28,8 @@ export function useVersoesProvedorAdmin(provedorId: number) {
     },
     enabled: provedorId > 0,
   })
+}
+
+export function useVersoesProvedorAdmin(provedorId: number) {
+  return useQuery(consultaVersoesProvedorAdmin(provedorId))
 }

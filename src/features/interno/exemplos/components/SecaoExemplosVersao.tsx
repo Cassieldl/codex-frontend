@@ -7,13 +7,15 @@ import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
-import { handleApiError } from '../../../../utils/handleApiError'
+import { etagNaColecao } from '../../utils/etagDeConcorrencia'
+import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { useAtualizarExemplo } from '../hooks/useAtualizarExemplo'
 import { useCriarExemplo } from '../hooks/useCriarExemplo'
 import { useExemplosPorVersao } from '../hooks/useExemplosPorVersao'
 import { useRemoverExemplo } from '../hooks/useRemoverExemplo'
 import type { CriarExemploDto, ExemploAdmin } from '../types/exemploAdmin'
 import { ExemploForm } from './ExemploForm'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 /**
  * Cap de exemplos por versão (C3). O `422` do backend é a rede de segurança
@@ -60,23 +62,37 @@ export function SecaoExemplosVersao({
   const total = exemplos?.length ?? 0
   const noLimite = total >= LIMITE_EXEMPLOS_POR_VERSAO
 
+  const exemploEmEdicao = typeof modalAberto === 'object' ? modalAberto : null
+  const envioDaEdicao = useEtagDeEnvio(
+    exemploEmEdicao?.id ?? null,
+    etagNaColecao(exemplos, exemploEmEdicao),
+  )
+
+  const envioDaRemocao = useEtagDeEnvio(
+    exemploParaRemover?.id ?? null,
+    etagNaColecao(exemplos, exemploParaRemover),
+  )
+
   function aoSalvar(dto: CriarExemploDto) {
     setErroFormulario(null)
 
     if (modalAberto === 'novo') {
       criarExemplo.mutate(dto, {
         onSuccess: () => setModalAberto(null),
-        onError: (erro) => setErroFormulario(handleApiError(erro)),
+        onError: (erro) => setErroFormulario(mensagemDeErroDeEscrita(erro)),
       })
       return
     }
 
     if (modalAberto) {
       atualizarExemplo.mutate(
-        { id: modalAberto.id, versaoId, dto, etag: modalAberto.etag },
+        { id: modalAberto.id, versaoId, dto, etag: envioDaEdicao.etag },
         {
           onSuccess: () => setModalAberto(null),
-          onError: (erro) => setErroFormulario(handleApiError(erro)),
+          onError: (erro) => {
+            envioDaEdicao.registrarErro(erro)
+            setErroFormulario(mensagemDeErroDeEscrita(erro))
+          },
         },
       )
     }
@@ -102,10 +118,13 @@ export function SecaoExemplosVersao({
 
     setErroRemocao(null)
     removerExemplo.mutate(
-      { id: exemploParaRemover.id, versaoId, etag: exemploParaRemover.etag },
+      { id: exemploParaRemover.id, versaoId, etag: envioDaRemocao.etag },
       {
         onSuccess: () => setExemploParaRemover(null),
-        onError: (erro) => setErroRemocao(handleApiError(erro)),
+        onError: (erro) => {
+          envioDaRemocao.registrarErro(erro)
+          setErroRemocao(mensagemDeErroDeEscrita(erro, 'acao'))
+        },
       },
     )
   }

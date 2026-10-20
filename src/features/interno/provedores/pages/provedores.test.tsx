@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../../auth/keycloak'
 import { server } from '../../../../test/mocks/server'
 import { ProvedoresPage } from './provedores'
+import { MENSAGEM_DE_CONFLITO } from '../../utils/mensagemDeErroDeEscrita'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -352,7 +353,9 @@ describe('ProvedoresPage: publicação', () => {
       const linha = () => linhaDoProvedor('Prefeitura de Exemplo')
       await usuario.click(within(linha()).getByRole('button', { name: 'Publicar' }))
 
-      expect(await within(linha()).findByRole('alert')).toHaveTextContent(message)
+      expect(await within(linha()).findByRole('alert')).toHaveTextContent(
+        code === 'CONFLITO_CONCORRENCIA' ? MENSAGEM_DE_CONFLITO.acao : message,
+      )
       expect(within(linha()).getByText('Rascunho')).toBeInTheDocument()
     },
   )

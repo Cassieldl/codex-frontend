@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../../utils/codigoDeErroApi'
 import type { ComunicadoAdminDetalhe, ComunicadoFormDto } from '../types/comunicadoAdmin'
 import { comunicadosAdminKeys } from './comunicadosAdminKeys'
 
@@ -20,10 +21,14 @@ interface VariaveisAtualizarComunicado {
  * comunicado encerrado antes de republicar (decisoes.md B-4).
  *
  * `409` nunca reseta o modal: a página mantém o formulário aberto com o que
- * foi digitado e oferece recarregar o registro.
+ * foi digitado, e o hook relê o registro para a segunda tentativa levar o etag novo.
  */
 export function useAtualizarComunicado() {
   const queryClient = useQueryClient()
+
+  function invalidar() {
+    void queryClient.invalidateQueries({ queryKey: comunicadosAdminKeys.all })
+  }
 
   return useMutation({
     mutationFn: async ({ id, dto, etag }: VariaveisAtualizarComunicado) => {
@@ -32,8 +37,9 @@ export function useAtualizarComunicado() {
       })
       return data.data
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: comunicadosAdminKeys.all })
+    onSuccess: invalidar,
+    onError: (erro) => {
+      if (ehConflitoDeConcorrencia(erro)) invalidar()
     },
   })
 }

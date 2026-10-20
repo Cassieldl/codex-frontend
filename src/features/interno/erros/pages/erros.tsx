@@ -9,18 +9,19 @@ import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
-import { handleApiError } from '../../../../utils/handleApiError'
-import { useVersoesProvedorAdmin } from '../../provedores/hooks/useVersoesProvedorAdmin'
-import { useProvedoresAdmin } from '../../provedores/hooks/useProvedoresAdmin'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarErro } from '../../hooks/usePublicarErro'
-import { ErroForm, type OpcaoVersaoProvedorErro } from '../components/ErroForm'
+import { etagNaColecao } from '../../utils/etagDeConcorrencia'
+import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
+import { ErroForm } from '../components/ErroForm'
 import { useAtualizarErro } from '../hooks/useAtualizarErro'
 import { useCriarErro } from '../hooks/useCriarErro'
 import { useErroAdminPorId } from '../hooks/useErroAdminPorId'
 import { useErrosAdmin } from '../hooks/useErrosAdmin'
+import { useOpcoesVersoesProvedorErro } from '../hooks/useOpcoesVersoesProvedorErro'
 import { useRemoverErro } from '../hooks/useRemoverErro'
 import type { AtualizarErroDto, ErroAdminListaItem, ErroFormDto } from '../types/erroAdmin'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
@@ -28,27 +29,6 @@ const TAMANHO_PAGINA_PADRAO = 25
 interface ErroDePublicacao {
   erroId: number
   mensagem: string
-}
-
-/**
- * Opções de "provedores e versões aplicáveis" para o `ErroForm` — combina a
- * lista de provedores com as versões de cada um. Sem um endpoint único que já
- * devolva o par "provedor · versão", monta a partir de `useProvedoresAdmin`
- * (uma página grande) + `useVersoesProvedorAdmin` do primeiro provedor
- * expandido; nesta fatia, mantido simples: só o provedor do erro em edição
- * (quando houver) entra na combinação, evitando N+1 de rede a cada render.
- */
-function useOpcoesVersoesProvedorErro(): OpcaoVersaoProvedorErro[] {
-  const { data } = useProvedoresAdmin({ tamanhoPagina: 200 })
-  const primeiroProvedor = data?.items[0]
-  const { data: versoes } = useVersoesProvedorAdmin(primeiroProvedor?.id ?? 0)
-
-  if (!primeiroProvedor || !versoes) return []
-
-  return versoes.map((versao) => ({
-    id: versao.id,
-    rotulo: `${primeiroProvedor.nome} · ${versao.rotulo}`,
-  }))
 }
 
 /** O código fica só leitura na edição e não vai no corpo: o backend não o aceita no PUT. */
@@ -62,7 +42,6 @@ export function ErrosPage() {
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
 
   const { data, isLoading, isError, refetch } = useErrosAdmin({ pagina, tamanhoPagina })
-  const opcoesVersoes = useOpcoesVersoesProvedorErro()
 
   const publicarErro = usePublicarErro()
   const criarErro = useCriarErro()
@@ -71,6 +50,7 @@ export function ErrosPage() {
 
   // Na edição guarda só o id: o item da lista não traz o agregado que o formulário precisa.
   const [modalAberto, setModalAberto] = useState<'novo' | number | null>(null)
+  const opcoesVersoes = useOpcoesVersoesProvedorErro(modalAberto !== null)
   const [erroServidor, setErroServidor] = useState<string | null>(null)
   const [erroParaRemover, setErroParaRemover] = useState<ErroAdminListaItem | null>(null)
   const [erroDeRemocao, setErroDeRemocao] = useState<string | null>(null)
@@ -78,6 +58,12 @@ export function ErrosPage() {
 
   const idEmEdicao = typeof modalAberto === 'number' ? modalAberto : 0
   const detalheEmEdicao = useErroAdminPorId(idEmEdicao)
+  const envioDaEdicao = useEtagDeEnvio(idEmEdicao || null, detalheEmEdicao.data?.etag)
+
+  const envioDaRemocao = useEtagDeEnvio(
+    erroParaRemover?.id ?? null,
+    etagNaColecao(data?.items, erroParaRemover),
+  )
 
   function aoSalvar(dto: ErroFormDto) {
     setErroServidor(null)
@@ -85,7 +71,7 @@ export function ErrosPage() {
     if (modalAberto === 'novo') {
       criarErro.mutate(dto, {
         onSuccess: () => setModalAberto(null),
-        onError: (erro) => setErroServidor(handleApiError(erro)),
+        onError: (erro) => setErroServidor(mensagemDeErroDeEscrita(erro)),
       })
       return
     }
@@ -93,10 +79,13 @@ export function ErrosPage() {
     const erroEmEdicao = detalheEmEdicao.data
     if (erroEmEdicao) {
       atualizarErro.mutate(
-        { id: erroEmEdicao.id, dto: paraAtualizacao(dto), etag: erroEmEdicao.etag },
+        { id: erroEmEdicao.id, dto: paraAtualizacao(dto), etag: envioDaEdicao.etag },
         {
           onSuccess: () => setModalAberto(null),
-          onError: (erro) => setErroServidor(handleApiError(erro)),
+          onError: (erro) => {
+            envioDaEdicao.registrarErro(erro)
+            setErroServidor(mensagemDeErroDeEscrita(erro))
+          },
         },
       )
     }
@@ -108,10 +97,13 @@ export function ErrosPage() {
 
     setErroDeRemocao(null)
     removerErro.mutate(
-      { id: erroParaRemover.id, etag: erroParaRemover.etag },
+      { id: erroParaRemover.id, etag: envioDaRemocao.etag },
       {
         onSuccess: () => setErroParaRemover(null),
-        onError: (falha) => setErroDeRemocao(handleApiError(falha)),
+        onError: (falha) => {
+          envioDaRemocao.registrarErro(falha)
+          setErroDeRemocao(mensagemDeErroDeEscrita(falha, 'acao'))
+        },
       },
     )
   }
@@ -122,13 +114,18 @@ export function ErrosPage() {
       { id: erro.id, publicado: !erro.publicado, etag: erro.etag },
       {
         onError: (falha) =>
-          setErroDePublicacao({ erroId: erro.id, mensagem: handleApiError(falha) }),
+          setErroDePublicacao({
+            erroId: erro.id,
+            mensagem: mensagemDeErroDeEscrita(falha, 'acao'),
+          }),
       },
     )
   }
 
   const propsDoFormulario = {
-    opcoesVersoesProvedor: opcoesVersoes,
+    opcoesVersoesProvedor: opcoesVersoes.opcoes,
+    statusOpcoesVersoes: opcoesVersoes.status,
+    onRecarregarOpcoesVersoes: opcoesVersoes.refetch,
     opcoesCamposLayout: [],
     onSubmit: aoSalvar,
     onCancel: () => setModalAberto(null),

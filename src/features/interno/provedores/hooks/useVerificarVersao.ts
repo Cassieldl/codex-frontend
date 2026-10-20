@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../../utils/codigoDeErroApi'
 import type { VersaoAdminDetalhe } from '../types/versaoAdmin'
 import { verificacoesVencidasKeys } from '../../verificacoesVencidas/hooks/verificacoesVencidasKeys'
 import { versoesAdminKeys } from './versoesAdminKeys'
@@ -23,6 +24,12 @@ interface VariaveisVerificarVersao {
 export function useVerificarVersao() {
   const queryClient = useQueryClient()
 
+  function invalidar({ id }: VariaveisVerificarVersao) {
+    void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(id) })
+    // A versão sai da lista de verificações vencidas do Início assim que é verificada.
+    void queryClient.invalidateQueries({ queryKey: verificacoesVencidasKeys.all })
+  }
+
   return useMutation({
     mutationFn: async ({ id, verificadoEm, etag }: VariaveisVerificarVersao) => {
       const { data } = await apiInterno.put<EnvelopeVersaoAdminDetalhe>(
@@ -32,10 +39,10 @@ export function useVerificarVersao() {
       )
       return data.data
     },
-    onSuccess: (_dados, variaveis) => {
-      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.id) })
-      // A versão sai da lista de verificações vencidas do Início assim que é verificada.
-      void queryClient.invalidateQueries({ queryKey: verificacoesVencidasKeys.all })
+    onSuccess: (_dados, variaveis) => invalidar(variaveis),
+    // Depois de um 409 o detalhe relido traz o etag novo, e o próximo clique passa.
+    onError: (erro, variaveis) => {
+      if (ehConflitoDeConcorrencia(erro)) invalidar(variaveis)
     },
   })
 }

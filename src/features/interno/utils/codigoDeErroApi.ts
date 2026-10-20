@@ -22,3 +22,16 @@ export function extrairCodigoDeErroApi(erro: unknown): string | null {
   const codigo = (envelope as Record<string, unknown>).code
   return typeof codigo === 'string' ? codigo : null
 }
+
+/**
+ * `409 CONFLITO_CONCORRENCIA`: o `If-Match` enviado ficou para trás porque alguém salvou antes.
+ * Os hooks de atualização releem o registro nesse caso, para a segunda tentativa sair com o etag
+ * novo. O 409 de unicidade (`REGISTRO_DUPLICADO`) não entra: é erro do valor digitado.
+ */
+export function ehConflitoDeConcorrencia(erro: unknown): boolean {
+  return (
+    isAxiosError(erro) &&
+    erro.response?.status === 409 &&
+    extrairCodigoDeErroApi(erro) === 'CONFLITO_CONCORRENCIA'
+  )
+}

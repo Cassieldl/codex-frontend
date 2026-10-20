@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../../auth/keycloak'
 import { server } from '../../../../test/mocks/server'
 import { IdVersaoPage } from './idVersao'
+import { MENSAGEM_DE_CONFLITO } from '../../utils/mensagemDeErroDeEscrita'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -168,9 +169,7 @@ describe('IdVersaoPage: publicação de aviso', () => {
 
     await usuario.click(within(item).getByRole('button', { name: 'Despublicar' }))
 
-    expect(await within(item).findByRole('alert')).toHaveTextContent(
-      'O aviso mudou desde a leitura.',
-    )
+    expect(await within(item).findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.acao)
   })
 })
 
@@ -214,9 +213,7 @@ describe('IdVersaoPage: publicação e verificação da versão', () => {
 
     await usuario.click(await screen.findByRole('button', { name: 'Despublicar' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'A versão foi alterada por outra requisição. Recarregue e tente novamente.',
-    )
+    expect(await screen.findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.acao)
   })
 
   it('409 ao confirmar a verificação mostra a mensagem do servidor', async () => {
@@ -241,7 +238,7 @@ describe('IdVersaoPage: publicação e verificação da versão', () => {
     await usuario.type(await screen.findByLabelText('Marcar como verificado em'), '2026-10-01')
     await usuario.click(screen.getByRole('button', { name: 'Confirmar verificação' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('A versão mudou desde a leitura.')
+    expect(await screen.findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.acao)
   })
 })
 

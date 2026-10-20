@@ -21,6 +21,7 @@ import { useAtualizarArtigo } from './artigos/hooks/useAtualizarArtigo'
 import { useCriarArtigo } from './artigos/hooks/useCriarArtigo'
 import { usePublicarArtigo } from './artigos/hooks/usePublicarArtigo'
 import { useRemoverArtigo } from './artigos/hooks/useRemoverArtigo'
+import { useVerificarArtigo } from './artigos/hooks/useVerificarArtigo'
 import { camposLayoutKeys } from './camposLayout/hooks/camposLayoutKeys'
 import { useAtualizarCampoLayout } from './camposLayout/hooks/useAtualizarCampoLayout'
 import { useAtualizarVersaoLayout } from './camposLayout/hooks/useAtualizarVersaoLayout'
@@ -53,6 +54,7 @@ import { useAtualizarAviso } from './provedores/hooks/useAtualizarAviso'
 import { useAtualizarCampoVersao } from './provedores/hooks/useAtualizarCampoVersao'
 import { useAtualizarProvedor } from './provedores/hooks/useAtualizarProvedor'
 import { useAtualizarVersaoProvedor } from './provedores/hooks/useAtualizarVersaoProvedor'
+import { useTrocarSlugProvedor } from './provedores/hooks/useTrocarSlugProvedor'
 import { useCriarAvisoProvedor } from './provedores/hooks/useCriarAvisoProvedor'
 import { useCriarAvisoVersao } from './provedores/hooks/useCriarAvisoVersao'
 import { useCriarCampoVersao } from './provedores/hooks/useCriarCampoVersao'
@@ -60,7 +62,9 @@ import { useCriarProvedor } from './provedores/hooks/useCriarProvedor'
 import { useCriarVersaoProvedor } from './provedores/hooks/useCriarVersaoProvedor'
 import { useRemoverAviso } from './provedores/hooks/useRemoverAviso'
 import { useRemoverCampoVersao } from './provedores/hooks/useRemoverCampoVersao'
+import { useVerificarVersao } from './provedores/hooks/useVerificarVersao'
 import { versoesAdminKeys } from './provedores/hooks/versoesAdminKeys'
+import { verificacoesVencidasKeys } from './verificacoesVencidas/hooks/verificacoesVencidasKeys'
 
 // O `If-Match` esperado sai do verbo: todo PUT e DELETE interno chama `ExigirIfMatch()`, nenhum POST.
 
@@ -79,6 +83,8 @@ interface Esperado {
   mensagem?: string
   retorno?: unknown
   invalida: QueryKey[]
+  /** O que o `409 CONFLITO_CONCORRENCIA` relê, quando difere do sucesso. */
+  invalidaNoConflito?: QueryKey[]
 }
 
 interface CasoDeEscrita {
@@ -170,6 +176,36 @@ async function verificarContrato({ esperado, executar }: CasoDeEscrita) {
   expect(
     esperado.invalida.map((chave) => [chave, queryClient.getQueryState(chave)?.isInvalidated]),
   ).toEqual(esperado.invalida.map((chave) => [chave, true]))
+  expect(queryClient.getQueryState(CHAVE_FORA_DO_ESCOPO)?.isInvalidated).toBe(false)
+}
+
+/** Sem a releitura, a página segue com o etag velho e a segunda tentativa leva outro 409. */
+async function verificarReleituraNoConflito({ esperado, executar }: CasoDeEscrita) {
+  server.use(
+    http.all(`${API_URL}/interno/*`, () =>
+      HttpResponse.json(
+        {
+          error: {
+            code: 'CONFLITO_CONCORRENCIA',
+            message: 'O registro foi alterado por outra requisição. Recarregue e tente novamente.',
+          },
+        },
+        { status: 409 },
+      ),
+    ),
+  )
+
+  const relidas = esperado.invalidaNoConflito ?? esperado.invalida
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  for (const chave of [...relidas, CHAVE_FORA_DO_ESCOPO]) {
+    queryClient.setQueryData(chave, 'em cache')
+  }
+
+  await expect(executar(queryClient)).rejects.toMatchObject({ response: { status: 409 } })
+
+  expect(relidas.map((chave) => [chave, queryClient.getQueryState(chave)?.isInvalidated])).toEqual(
+    relidas.map((chave) => [chave, true]),
+  )
   expect(queryClient.getQueryState(CHAVE_FORA_DO_ESCOPO)?.isInvalidated).toBe(false)
 }
 
@@ -477,6 +513,7 @@ const ATUALIZAR: CasoDeEscrita[] = [
       corpo: erroAtualizacao,
       devolve: erroAdminDetalheDto,
       invalida: [errosAdminKeys.lists()],
+      invalidaNoConflito: [errosAdminKeys.lists(), errosAdminKeys.detail(17)],
     },
   ),
   caso(
@@ -620,6 +657,48 @@ const ATUALIZAR: CasoDeEscrita[] = [
       invalida: [exemplosAdminKeys.porVersao(5), versoesAdminKeys.detail(5)],
     },
   ),
+  caso(
+    'useTrocarSlugProvedor',
+    useTrocarSlugProvedor,
+    [],
+    { id: 42, slug: 'prefeitura-de-exemplo', etag: ETAG },
+    {
+      verbo: 'PUT',
+      rota: '/provedores/42/slug',
+      corpo: { slug: 'prefeitura-de-exemplo' },
+      devolve: provedorAdminDetalheDto,
+      invalida: [provedoresAdminKeys.detail(42), provedoresAdminKeys.lists()],
+    },
+  ),
+]
+
+const VERIFICAR: CasoDeEscrita[] = [
+  caso(
+    'useVerificarArtigo',
+    useVerificarArtigo,
+    [],
+    { id: 23, verificadoEm: '2026-10-19', etag: ETAG },
+    {
+      verbo: 'PUT',
+      rota: '/artigos/23/verificacao',
+      corpo: { verificadoEm: '2026-10-19' },
+      devolve: artigoAdminDto,
+      invalida: [artigosAdminKeys.all],
+    },
+  ),
+  caso(
+    'useVerificarVersao',
+    useVerificarVersao,
+    [],
+    { id: 5, verificadoEm: '2026-10-19', etag: ETAG },
+    {
+      verbo: 'PUT',
+      rota: '/versoes/5/verificacao',
+      corpo: { verificadoEm: '2026-10-19' },
+      devolve: versaoAdminDetalheDto,
+      invalida: [versoesAdminKeys.detail(5), verificacoesVencidasKeys.all],
+    },
+  ),
 ]
 
 const REMOVER: CasoDeEscrita[] = [
@@ -714,20 +793,28 @@ describe('useAtualizar*: PUT com If-Match', () => {
   it.each(ATUALIZAR)('$nome', verificarContrato)
 })
 
+describe('useVerificar*: PUT .../verificacao com { verificadoEm } e If-Match', () => {
+  it.each(VERIFICAR)('$nome', verificarContrato)
+})
+
 describe('useRemover*: DELETE sem corpo e com If-Match', () => {
   it.each(REMOVER)('$nome', verificarContrato)
 })
 
+// Toda escrita com If-Match: publicar, atualizar, verificar e remover. Só a criação (POST) fica fora.
+const COM_IF_MATCH = [...PUBLICAR, ...ATUALIZAR, ...VERIFICAR, ...REMOVER]
+
+describe('escrita com If-Match: 409 de concorrência relê o registro', () => {
+  it.each(COM_IF_MATCH)('$nome', verificarReleituraNoConflito)
+})
+
 // O caminho é conferido: ponteiro para um teste que não importa o hook não vale como cobertura.
 const ACOES_COM_TESTE_PROPRIO: Record<string, string> = {
-  useVerificarArtigo: './artigos/hooks/escritaArtigoIfMatch.test.ts',
-  useVerificarVersao: './provedores/hooks/useVerificarVersao.test.ts',
-  useTrocarSlugProvedor: './provedores/hooks/useTrocarSlugProvedor.test.ts',
   useAlterarEstadoLacunaBusca: './lacunasBusca/hooks/useAlterarEstadoLacunaBusca.test.ts',
   useRegistrarLacunaBusca: './lacunasBusca/hooks/useRegistrarLacunaBusca.test.ts',
 }
 
-const CASOS = [...PUBLICAR, ...CRIAR, ...ATUALIZAR, ...REMOVER]
+const CASOS = [...PUBLICAR, ...CRIAR, ...ATUALIZAR, ...VERIFICAR, ...REMOVER]
 
 const FONTES = import.meta.glob(['./**/*.{ts,tsx}', '!./**/*.test.{ts,tsx}'], {
   query: '?raw',
@@ -791,6 +878,23 @@ describe('universo dos hooks de escrita da área interna', () => {
 
     expect(semLinha).toEqual([])
     expect(linhasSemHook).toEqual([])
+  })
+
+  it('todo hook com If-Match está numa tabela que exige a releitura no 409', async () => {
+    const foraDaTabela: string[] = []
+
+    for (const caminho of arquivosDeEscrita()) {
+      const carregar = MODULOS[caminho]
+      if (!carregar) continue
+
+      for (const [nome, hook] of Object.entries(await carregar())) {
+        if (!/^use(Atualizar|Trocar|Publicar|Verificar|Remover)[A-Z]/.test(nome)) continue
+        const naTabela = COM_IF_MATCH.some((linha) => linha.hook === hook && linha.nome === nome)
+        if (!naTabela) foraDaTabela.push(`${caminho}: ${nome}`)
+      }
+    }
+
+    expect(foraDaTabela).toEqual([])
   })
 
   it.each(Object.entries(ACOES_COM_TESTE_PROPRIO))(

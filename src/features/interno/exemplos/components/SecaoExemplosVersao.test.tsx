@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../../test/mocks/server'
 import { SecaoExemplosVersao } from './SecaoExemplosVersao'
+import { MENSAGEM_DE_CONFLITO } from '../../utils/mensagemDeErroDeEscrita'
 
 /**
  * Literal de propósito: é contrato com `CapExemplosPorVersao` do backend. Importar a constante da
@@ -287,9 +288,7 @@ describe('SecaoExemplosVersao — remoção', () => {
     await usuario.click(screen.getByRole('button', { name: 'Remover exemplo Cenário 1' }))
     await usuario.click(screen.getByRole('button', { name: 'Remover' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'O exemplo foi alterado por outra pessoa. Recarregue e tente de novo.',
-    )
+    expect(await screen.findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.acao)
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })

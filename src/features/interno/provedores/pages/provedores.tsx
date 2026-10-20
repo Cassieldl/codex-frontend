@@ -9,13 +9,13 @@ import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { Button } from '../../../../components/ui/Button'
-import { handleApiError } from '../../../../utils/handleApiError'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarProvedor } from '../../hooks/usePublicarProvedor'
 import { ProvedorForm, type ProvedorFormDto } from '../components/ProvedorForm'
 import { useCriarProvedor } from '../hooks/useCriarProvedor'
 import { useProvedoresAdmin } from '../hooks/useProvedoresAdmin'
 import type { ProvedorAdminListaItem } from '../types/provedorAdmin'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
@@ -48,7 +48,7 @@ export function ProvedoresPage() {
       },
       {
         onSuccess: () => setModalCriarAberto(false),
-        onError: (erro) => setErroCriar(handleApiError(erro)),
+        onError: (erro) => setErroCriar(mensagemDeErroDeEscrita(erro)),
       },
     )
   }
@@ -59,7 +59,10 @@ export function ProvedoresPage() {
       { id: provedor.id, publicado: !provedor.publicado, etag: provedor.etag },
       {
         onError: (falha) =>
-          setErroDePublicacao({ provedorId: provedor.id, mensagem: handleApiError(falha) }),
+          setErroDePublicacao({
+            provedorId: provedor.id,
+            mensagem: mensagemDeErroDeEscrita(falha, 'acao'),
+          }),
       },
     )
   }

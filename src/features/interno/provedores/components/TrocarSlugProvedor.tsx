@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
+import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
 import { Modal } from '../../../../components/ui/Modal'
@@ -11,6 +12,7 @@ import { Toast } from '../../../../components/ui/Toast'
 import { handleApiError } from '../../../../utils/handleApiError'
 import { extrairCodigoDeErroApi } from '../../utils/codigoDeErroApi'
 import { useTrocarSlugProvedor } from '../hooks/useTrocarSlugProvedor'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 const DURACAO_TOAST_MS = 6000
 
@@ -114,7 +116,7 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
             setError('novoSlug', { type: 'server', message: handleApiError(erro) })
             return
           }
-          setErroServidor(handleApiError(erro))
+          setErroServidor(mensagemDeErroDeEscrita(erro))
         },
       },
     )
@@ -137,11 +139,7 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
           className="flex flex-col gap-5"
           noValidate
         >
-          {erroServidor && (
-            <p role="alert" className="text-sm text-error-texto">
-              {erroServidor}
-            </p>
-          )}
+          <ErroDoServidor mensagem={erroServidor} />
 
           <div className="flex flex-col gap-0.5">
             <span className="text-xs font-normal text-ink lg:text-sm">Endereço atual</span>

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { apiInterno } from '../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../utils/codigoDeErroApi'
 
 export interface PayloadPublicacao {
   id: number
@@ -26,6 +27,10 @@ export function criarUsePublicar<T>(rota: (id: number) => string, chaveRaiz: Que
   return function usePublicar() {
     const queryClient = useQueryClient()
 
+    function invalidar() {
+      void queryClient.invalidateQueries({ queryKey: chaveRaiz })
+    }
+
     return useMutation({
       mutationFn: async ({ id, publicado, etag }: PayloadPublicacao) => {
         const { data } = await apiInterno.put<EnvelopePublicacao<T>>(
@@ -35,8 +40,10 @@ export function criarUsePublicar<T>(rota: (id: number) => string, chaveRaiz: Que
         )
         return data.data
       },
-      onSuccess: () => {
-        void queryClient.invalidateQueries({ queryKey: chaveRaiz })
+      onSuccess: invalidar,
+      // Depois de um 409 a lista relida traz o etag novo, e o próximo clique passa.
+      onError: (erro) => {
+        if (ehConflitoDeConcorrencia(erro)) invalidar()
       },
     })
   }

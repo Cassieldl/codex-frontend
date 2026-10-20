@@ -16,6 +16,12 @@ interface Declaracao {
   tipo: string
   corpo: string
   parametros: string
+  genericos: string
+}
+
+interface Exportacao {
+  local: string
+  exportado: string
 }
 
 function semComentarios(fonte: string): string {
@@ -96,20 +102,27 @@ function declaracoes(fonte: string): Declaracao[] {
     /\b(?:const|let)\s+(\w+)\s*(?::\s*([^=\n]+?))?\s*=(?![=>])/g,
   )) {
     const corpo = valorDaDeclaracao(fonte, constante.index + constante[0].length)
-    const seta = corpo.match(/^\s*(?:async\s*)?\(/)
+    const funcao = corpo.match(/^\s*(?:async\s*)?(function\b\s*\*?\s*\w*\s*)?(<[^>]*>)?\s*\(/)
     let parametros = ''
     let retorno = ''
 
-    if (seta) {
-      const abre = seta[0].length - 1
+    if (funcao) {
+      const abre = funcao[0].length - 1
       parametros = corpo.slice(abre, indiceDoFechamento(corpo, abre) + 1)
-      retorno = corpo.slice(abre + parametros.length).match(/^\s*:\s*([^=]+?)\s*=>/)?.[1] ?? ''
+      const anotacaoDoRetorno = funcao[1] ? /^\s*:\s*([^{]+?)\s*\{/ : /^\s*:\s*([^=]+?)\s*=>/
+      retorno = corpo.slice(abre + parametros.length).match(anotacaoDoRetorno)?.[1] ?? ''
     }
 
-    encontradas.push({ nome: constante[1], tipo: constante[2] ?? retorno, corpo, parametros })
+    encontradas.push({
+      nome: constante[1],
+      tipo: constante[2] ?? retorno,
+      corpo,
+      parametros,
+      genericos: funcao?.[2] ?? '',
+    })
   }
 
-  for (const funcao of fonte.matchAll(/\bfunction\s+(\w+)\s*(?:<[^>]*>)?\s*\(/g)) {
+  for (const funcao of fonte.matchAll(/\bfunction\s+(\w+)\s*(<[^>]*>)?\s*\(/g)) {
     const abreParametros = funcao.index + funcao[0].length - 1
     const fechaParametros = indiceDoFechamento(fonte, abreParametros)
     const assinatura = fonte.slice(fechaParametros + 1).match(/^\s*(?::\s*([^{]+?))?\s*\{/)
@@ -121,6 +134,7 @@ function declaracoes(fonte: string): Declaracao[] {
       tipo: assinatura[1] ?? '',
       corpo: fonte.slice(funcao.index, indiceDoFechamento(fonte, abreCorpo) + 1),
       parametros: fonte.slice(abreParametros, fechaParametros + 1),
+      genericos: funcao[2] ?? '',
     })
   }
 
@@ -130,10 +144,11 @@ function declaracoes(fonte: string): Declaracao[] {
 function parametrosTipados(parametros: string): { nome: string; tipo: string }[] {
   const tipados: { nome: string; tipo: string }[] = []
   const lista = parametros.slice(1, -1)
-  const parametro = /(?:^|,)\s*(?:\{[^}]*\}|(\w+))\??\s*:\s*((?:[^,=()<>{}]|<[^>]*>|\{[^}]*\})+)/g
+  const parametro =
+    /(?:^|,)\s*(?:\.\.\.)?(\{[^}]*\}|\[[^\]]*\]|\w+)\??\s*:\s*((?:[^,=()<>{}]|<[^>]*>|\{[^}]*\})+)/g
 
   for (const encontrado of lista.matchAll(parametro)) {
-    if (encontrado[1]) tipados.push({ nome: encontrado[1], tipo: encontrado[2] })
+    tipados.push({ nome: encontrado[1], tipo: encontrado[2] })
   }
 
   return tipados
@@ -150,16 +165,38 @@ function produzResposta(declaracao: Declaracao): boolean {
   return /HttpResponse\.json/.test(declaracao.corpo)
 }
 
+// `export { a as b }` entrega `a` com o nome `b`: a varredura segue o local, quem importa usa o outro.
+function exportacoes(fonte: string): Exportacao[] {
+  const encontradas: Exportacao[] = []
+
+  for (const direta of fonte.matchAll(/\bexport\s+(?:async\s+)?(?:const|let|function)\s+(\w+)/g)) {
+    encontradas.push({ local: direta[1], exportado: direta[1] })
+  }
+
+  for (const lista of fonte.matchAll(/\bexport\s*\{([^}]*)\}(?!\s*from\b)/g)) {
+    for (const parte of lista[1].split(',')) {
+      const [local, exportado = local] = parte.trim().split(/\s+as\s+/)
+      if (local && !/^type\s/.test(local)) encontradas.push({ local, exportado })
+    }
+  }
+
+  return encontradas
+}
+
 // Funções exportadas por src/test/mocks que montam a resposta do MSW.
 function produtoresCompartilhados(fontes: Record<string, string>): string[] {
   return Object.entries(fontes)
     .filter(([arquivo]) => arquivo.startsWith('./mocks/'))
     .flatMap(([, bruta]) => {
       const fonte = semComentarios(bruta)
-      return declaracoes(fonte)
-        .filter(produzResposta)
-        .filter(({ nome }) => new RegExp(`export\\s+function\\s+${nome}\\b`).test(fonte))
-        .map(({ nome }) => nome)
+      const fabricas = new Set(
+        declaracoes(fonte)
+          .filter((declaracao) => declaracao.parametros && produzResposta(declaracao))
+          .map(({ nome }) => nome),
+      )
+      return exportacoes(fonte)
+        .filter(({ local }) => fabricas.has(local))
+        .map(({ exportado }) => exportado)
     })
 }
 
@@ -181,11 +218,11 @@ function fixturesTipadas(bruta: string, produtoresExternos: string[] = []): stri
 function fixturesExportadasTipadas(bruta: string): string[] {
   const fonte = semComentarios(bruta)
   const todas = declaracoes(fonte)
-  const exportadas = todas
-    .map(({ nome }) => nome)
-    .filter((nome) => new RegExp(`export\\s+(?:const|let|function)\\s+${nome}\\b`).test(fonte))
+  const locais = new Set(exportacoes(fonte).map(({ local }) => local))
+  const exportadas = todas.map(({ nome }) => nome).filter((nome) => locais.has(nome))
 
-  return infracoesDoAlcance(fonte, todas, exportadas, new Set())
+  // A fábrica exportada recebe o literal do teste: parâmetro tipado molda a fixture como o retorno.
+  return infracoesDoAlcance(fonte, todas, exportadas, new Set(exportadas))
 }
 
 function infracoesDoAlcance(
@@ -221,6 +258,9 @@ function infracoesDoAlcance(
     const tipo = tipoImportado(declaracao.tipo)
     if (tipo && visitadas.has(declaracao)) infracoes.push(`${declaracao.nome}: ${tipo}`)
     if (!produtores.has(declaracao.nome)) continue
+
+    const tipoDoGenerico = tipoImportado(declaracao.genericos)
+    if (tipoDoGenerico) infracoes.push(`${declaracao.nome}<${tipoDoGenerico}>`)
 
     for (const parametro of parametrosTipados(declaracao.parametros)) {
       const tipoDoParametro = tipoImportado(parametro.tipo)
@@ -320,6 +360,58 @@ describe('fixture de resposta do MSW é JSON literal, sem o tipo do cliente', ()
       'asserção Dto',
     ])
     expect(fixturesExportadasTipadas(`${cabecalho}export const dto = { a: 1 }`)).toEqual([])
+  })
+
+  it('o detector reprova a constante exportada por lista, inclusive renomeada', () => {
+    const cabecalho =
+      "import type { Dto } from '../../features/x/types/dto'\nconst dto: Dto = { a: 1 }\n"
+
+    expect(fixturesExportadasTipadas(`${cabecalho}export { dto }`)).toEqual(['dto: Dto'])
+    expect(fixturesExportadasTipadas(`${cabecalho}export { dto as resposta }`)).toEqual([
+      'dto: Dto',
+    ])
+    expect(
+      fixturesExportadasTipadas(`${cabecalho}export {\n  type Dto,\n  dto as resposta,\n}`),
+    ).toEqual(['dto: Dto'])
+    expect(fixturesExportadasTipadas(`${cabecalho}export { outro } from './outro'`)).toEqual([])
+  })
+
+  it('o detector reprova a fábrica exportada com parâmetro anotado com o tipo do cliente', () => {
+    const cabecalho = "import type { Dto } from '../../features/x/types/dto'\n"
+    const reprovar = (fabrica: string) => fixturesExportadasTipadas(`${cabecalho}${fabrica}`)
+
+    expect(reprovar('export function montar(x: Dto) {\n  return { ...x }\n}')).toEqual([
+      'montar(x: Dto)',
+    ])
+    expect(reprovar('export const montar = (x?: Dto) => ({ ...x })')).toEqual(['montar(x: Dto)'])
+    expect(reprovar('export const montar = function (x: Dto) {\n  return x\n}')).toEqual([
+      'montar(x: Dto)',
+    ])
+    expect(reprovar('export async function montar(x: Dto) {\n  return x\n}')).toEqual([
+      'montar(x: Dto)',
+    ])
+    expect(
+      reprovar('function montar(x: Dto) {\n  return x\n}\nexport { montar as fabrica }'),
+    ).toEqual(['montar(x: Dto)'])
+    expect(reprovar('export function montar({ a }: Dto) {\n  return { a }\n}')).toEqual([
+      'montar({ a }: Dto)',
+    ])
+    expect(reprovar('export function montar(...itens: Dto[]) {\n  return itens\n}')).toEqual([
+      'montar(itens: Dto)',
+    ])
+    expect(reprovar('export function montar<T extends Dto>(x: T) {\n  return x\n}')).toEqual([
+      'montar<Dto>',
+    ])
+    expect(
+      reprovar('export function montar(itens: object[], extras: Partial<{ n: number }> = {}) {}'),
+    ).toEqual([])
+  })
+
+  it('a varredura enxerga o produtor compartilhado exportado por lista com outro nome', () => {
+    const mock =
+      "import { HttpResponse } from 'msw'\nfunction servir() {\n  return HttpResponse.json({})\n}\nexport { servir as handlerServir }"
+
+    expect(produtoresCompartilhados({ './mocks/x.ts': mock })).toEqual(['handlerServir'])
   })
 
   it('o detector aceita o literal e o tipo que não chega à resposta', () => {

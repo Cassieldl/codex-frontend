@@ -28,6 +28,8 @@ import {
   interpretarErroDeEscritaArtigo,
   type ErroDeEscritaArtigo,
 } from '../utils/erroDeEscritaArtigo'
+import type { OrigemDaEscrita } from '../../utils/mensagemDeErroDeEscrita'
+import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
@@ -80,6 +82,7 @@ export function ArtigosPage() {
 
   const idEmEdicao = modalAberto?.modo === 'editar' ? modalAberto.id : null
   const detalheEmEdicao = useArtigoAdminPorId(idEmEdicao)
+  const envioDaEdicao = useEtagDeEnvio(idEmEdicao, detalheEmEdicao.data?.etag)
 
   const referencias = useReferenciasDoArtigo(chaveDoModal(modalAberto))
 
@@ -89,8 +92,8 @@ export function ArtigosPage() {
   const publicarArtigo = usePublicarArtigo()
   const verificarArtigo = useVerificarArtigo()
 
-  function registrarErro(erro: unknown, artigoId: number | null) {
-    setErroDeEscrita({ info: interpretarErroDeEscritaArtigo(erro), artigoId })
+  function registrarErro(erro: unknown, artigoId: number | null, origem: OrigemDaEscrita = 'acao') {
+    setErroDeEscrita({ info: interpretarErroDeEscritaArtigo(erro, origem), artigoId })
   }
 
   function aoSalvar(dto: ArtigoFormDto) {
@@ -99,12 +102,15 @@ export function ArtigosPage() {
     if (modalAberto?.modo === 'editar') {
       const { id } = modalAberto
       atualizarArtigo.mutate(
-        { id, dto, etag: detalheEmEdicao.data?.etag },
+        { id, dto, etag: envioDaEdicao.etag },
         {
           onSuccess: () => setModalAberto(null),
           // 409 nunca reseta o modal: o formulário segue aberto com o que foi
           // digitado, e a recuperação é oferecida na faixa de erro.
-          onError: (erro) => registrarErro(erro, id),
+          onError: (erro) => {
+            envioDaEdicao.registrarErro(erro)
+            registrarErro(erro, id, 'formulario')
+          },
         },
       )
       return
@@ -112,7 +118,7 @@ export function ArtigosPage() {
 
     criarArtigo.mutate(dto, {
       onSuccess: () => setModalAberto(null),
-      onError: (erro) => registrarErro(erro, null),
+      onError: (erro) => registrarErro(erro, null, 'formulario'),
     })
   }
 

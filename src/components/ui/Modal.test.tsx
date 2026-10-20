@@ -262,14 +262,16 @@ describe('Modal — variante painel', () => {
     expect(dialogo.contains(rodape)).toBe(true)
   })
 
-  it('a variante padrão não é rolável nem tem desfoque no fundo', async () => {
+  it('a variante padrão rola dentro da altura da tela e não tem desfoque no fundo', async () => {
     const usuario = userEvent.setup()
     render(<HospedeiroModal />)
     await usuario.click(screen.getByRole('button', { name: 'Abrir modal' }))
 
     const dialogo = screen.getByRole('dialog')
 
-    expect(dialogo.className).not.toContain('overflow-y-auto')
+    expect(dialogo.className).toContain('overflow-y-auto')
+    expect(dialogo.className).toContain('overscroll-contain')
+    expect(dialogo.className).toMatch(/max-h-\[calc\(100dvh-/)
     expect(dialogo.parentElement?.className).not.toContain('backdrop-blur')
   })
 

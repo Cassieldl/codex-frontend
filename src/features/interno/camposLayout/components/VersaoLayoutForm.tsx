@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
+import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
 import { Select, type SelectOption } from '../../../../components/ui/Select'
@@ -92,11 +93,7 @@ export function VersaoLayoutForm({
       className="flex flex-col gap-5"
       noValidate
     >
-      {erroServidor && (
-        <p role="alert" className="text-sm text-error-texto">
-          {erroServidor}
-        </p>
-      )}
+      <ErroDoServidor mensagem={erroServidor} />
 
       <Input label="Rótulo" required error={errors.rotulo?.message} {...register('rotulo')} />
 

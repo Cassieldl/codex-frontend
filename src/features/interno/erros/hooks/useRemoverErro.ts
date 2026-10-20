@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../../utils/codigoDeErroApi'
 import { errosAdminKeys } from './errosAdminKeys'
 
 interface VariaveisRemoverErro {
@@ -11,12 +12,18 @@ interface VariaveisRemoverErro {
 export function useRemoverErro() {
   const queryClient = useQueryClient()
 
+  function invalidar() {
+    void queryClient.invalidateQueries({ queryKey: errosAdminKeys.lists() })
+  }
+
   return useMutation({
     mutationFn: async ({ id, etag }: VariaveisRemoverErro) => {
       await apiInterno.delete(`/erros/${id}`, { etag })
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: errosAdminKeys.lists() })
+    onSuccess: invalidar,
+    // Depois de um 409 a lista relida traz o etag novo, e a próxima confirmação passa.
+    onError: (erro) => {
+      if (ehConflitoDeConcorrencia(erro)) invalidar()
     },
   })
 }

@@ -9,10 +9,11 @@ import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
-import { handleApiError } from '../../../../utils/handleApiError'
 import { formatarVersaoLayout } from '../../../../utils/versaoDoLayout'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarCampoLayout } from '../../hooks/usePublicarCampoLayout'
+import { etagNaColecao } from '../../utils/etagDeConcorrencia'
+import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { CampoLayoutForm, type CampoLayoutFormDto } from '../components/CampoLayoutForm'
 import { useAtualizarCampoLayout } from '../hooks/useAtualizarCampoLayout'
 import { useCamposLayoutPorVersao } from '../hooks/useCamposLayoutPorVersao'
@@ -20,6 +21,7 @@ import { useCriarCampoLayout } from '../hooks/useCriarCampoLayout'
 import { useRemoverCampoLayout } from '../hooks/useRemoverCampoLayout'
 import { useVersoesLayout } from '../hooks/useVersoesLayout'
 import type { CampoLayoutAdmin } from '../types/campoLayoutAdmin'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 /** Falha ao publicar ou despublicar, mostrada na linha do campo que a causou. */
 interface ErroDePublicacao {
@@ -60,6 +62,17 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
   // carregada para o select de descontinuação — nenhuma requisição a mais.
   const rotuloDaVersao = versoesLayout?.items.find((versao) => versao.id === versaoLayoutId)?.rotulo
 
+  const campoEmEdicao = typeof modalAberto === 'object' ? modalAberto : null
+  const envioDaEdicao = useEtagDeEnvio(
+    campoEmEdicao?.id ?? null,
+    etagNaColecao(campos, campoEmEdicao),
+  )
+
+  const envioDaRemocao = useEtagDeEnvio(
+    campoParaRemover?.id ?? null,
+    etagNaColecao(campos, campoParaRemover),
+  )
+
   function aoSalvar(dto: CampoLayoutFormDto) {
     setErroServidor(null)
 
@@ -74,7 +87,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
         },
         {
           onSuccess: () => setModalAberto(null),
-          onError: (erro) => setErroServidor(handleApiError(erro)),
+          onError: (erro) => setErroServidor(mensagemDeErroDeEscrita(erro)),
         },
       )
       return
@@ -93,11 +106,14 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
             estado: dto.estado ?? 'Ativo',
             versaoLayoutDescontinuadoId: dto.versaoLayoutDescontinuadoId,
           },
-          etag: modalAberto.etag,
+          etag: envioDaEdicao.etag,
         },
         {
           onSuccess: () => setModalAberto(null),
-          onError: (erro) => setErroServidor(handleApiError(erro)),
+          onError: (erro) => {
+            envioDaEdicao.registrarErro(erro)
+            setErroServidor(mensagemDeErroDeEscrita(erro))
+          },
         },
       )
     }
@@ -122,7 +138,10 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
       { id: campo.id, publicado: !campo.publicado, etag: campo.etag },
       {
         onError: (falha) =>
-          setErroDePublicacao({ campoId: campo.id, mensagem: handleApiError(falha) }),
+          setErroDePublicacao({
+            campoId: campo.id,
+            mensagem: mensagemDeErroDeEscrita(falha, 'acao'),
+          }),
       },
     )
   }
@@ -133,10 +152,13 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
 
     setErroDeRemocao(null)
     removerCampo.mutate(
-      { id: campoParaRemover.id, versaoLayoutId, etag: campoParaRemover.etag },
+      { id: campoParaRemover.id, versaoLayoutId, etag: envioDaRemocao.etag },
       {
         onSuccess: () => setCampoParaRemover(null),
-        onError: (falha) => setErroDeRemocao(handleApiError(falha)),
+        onError: (falha) => {
+          envioDaRemocao.registrarErro(falha)
+          setErroDeRemocao(mensagemDeErroDeEscrita(falha, 'acao'))
+        },
       },
     )
   }

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../../utils/codigoDeErroApi'
 import { versoesAdminKeys } from '../../provedores/hooks/versoesAdminKeys'
 import { exemplosAdminKeys } from './exemplosAdminKeys'
 
@@ -17,15 +18,21 @@ export interface VariaveisRemoverExemplo {
 export function useRemoverExemplo() {
   const queryClient = useQueryClient()
 
+  function invalidar(variaveis: VariaveisRemoverExemplo) {
+    void queryClient.invalidateQueries({
+      queryKey: exemplosAdminKeys.porVersao(variaveis.versaoId),
+    })
+    void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.versaoId) })
+  }
+
   return useMutation({
     mutationFn: async ({ id, etag }: VariaveisRemoverExemplo) => {
       await apiInterno.delete(`/exemplos/${id}`, { etag })
     },
-    onSuccess: (_dados, variaveis) => {
-      void queryClient.invalidateQueries({
-        queryKey: exemplosAdminKeys.porVersao(variaveis.versaoId),
-      })
-      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.versaoId) })
+    onSuccess: (_dados, variaveis) => invalidar(variaveis),
+    // Depois de um 409 a lista relida traz o etag novo, e a próxima confirmação passa.
+    onError: (erro, variaveis) => {
+      if (ehConflitoDeConcorrencia(erro)) invalidar(variaveis)
     },
   })
 }

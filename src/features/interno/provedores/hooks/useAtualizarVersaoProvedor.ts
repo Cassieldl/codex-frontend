@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../../utils/codigoDeErroApi'
 import type { AtualizarVersaoDto, VersaoAdminDetalhe } from '../types/versaoAdmin'
 import { versoesAdminKeys } from './versoesAdminKeys'
 
@@ -15,9 +16,17 @@ interface VariaveisAtualizarVersao {
   etag?: string
 }
 
-/** `PUT /interno/versoes/{id}` (I8b) — role `versoesprovedor-atualizar`, `If-Match` obrigatório. */
+/**
+ * `PUT /interno/versoes/{id}` (I8b), role `versoesprovedor-atualizar`, `If-Match` obrigatório.
+ * No `409` de concorrência relê detalhe e lista, para a segunda tentativa levar o etag novo.
+ */
 export function useAtualizarVersaoProvedor() {
   const queryClient = useQueryClient()
+
+  function invalidar({ id, provedorId }: VariaveisAtualizarVersao) {
+    void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(id) })
+    void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.porProvedor(provedorId) })
+  }
 
   return useMutation({
     mutationFn: async ({ id, dto, etag }: VariaveisAtualizarVersao) => {
@@ -26,11 +35,9 @@ export function useAtualizarVersaoProvedor() {
       })
       return data.data
     },
-    onSuccess: (_dados, variaveis) => {
-      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.id) })
-      void queryClient.invalidateQueries({
-        queryKey: versoesAdminKeys.porProvedor(variaveis.provedorId),
-      })
+    onSuccess: (_dados, variaveis) => invalidar(variaveis),
+    onError: (erro, variaveis) => {
+      if (ehConflitoDeConcorrencia(erro)) invalidar(variaveis)
     },
   })
 }

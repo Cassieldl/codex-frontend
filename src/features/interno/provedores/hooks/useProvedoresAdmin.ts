@@ -18,7 +18,15 @@ interface PaginatedResponseCru<T> {
  * `versaoConcorrencia` do corpo (header `ETag` não alcança item de lista) —
  * é o que permite publicar/despublicar direto da lista.
  */
-export function useProvedoresAdmin(params: ListarProvedoresAdminParams) {
+interface OpcoesProvedoresAdmin {
+  /** Desligado, a lista não é buscada: quem só precisa dela num modal liga ao abrir. */
+  enabled?: boolean
+}
+
+export function useProvedoresAdmin(
+  params: ListarProvedoresAdminParams,
+  { enabled = true }: OpcoesProvedoresAdmin = {},
+) {
   return useQuery({
     queryKey: provedoresAdminKeys.list(params),
     queryFn: async () => {
@@ -29,5 +37,6 @@ export function useProvedoresAdmin(params: ListarProvedoresAdminParams) {
       return { ...data, items: comEtagDeConcorrenciaNaColecao(data.items, 'items') }
     },
     placeholderData: keepPreviousData,
+    enabled,
   })
 }

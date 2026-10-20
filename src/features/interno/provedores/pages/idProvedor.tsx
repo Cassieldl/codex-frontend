@@ -9,10 +9,11 @@ import { ErrorState } from '../../../../components/ui/ErrorState'
 import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
-import { handleApiError } from '../../../../utils/handleApiError'
 import { useVersoesLayout } from '../../camposLayout/hooks/useVersoesLayout'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarAviso } from '../../hooks/usePublicarAviso'
+import { etagNaColecao } from '../../utils/etagDeConcorrencia'
+import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { usePublicarProvedor } from '../../hooks/usePublicarProvedor'
 import { AvisoForm, type AvisoFormDto } from '../components/AvisoForm'
 import { ProvedorForm, type ProvedorFormDto } from '../components/ProvedorForm'
@@ -27,6 +28,7 @@ import { provedoresAdminKeys } from '../hooks/provedoresAdminKeys'
 import { useRemoverAviso } from '../hooks/useRemoverAviso'
 import { useVersoesProvedorAdmin } from '../hooks/useVersoesProvedorAdmin'
 import type { AvisoAdmin } from '../types/avisoAdmin'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 /** Falha ao publicar ou despublicar um aviso, mostrada junto do aviso que a causou. */
 interface ErroDePublicacaoDoAviso {
@@ -64,6 +66,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
   const criarVersao = useCriarVersaoProvedor(provedorId)
 
   const [modalEditarAberto, setModalEditarAberto] = useState(false)
+  const envioDaEdicao = useEtagDeEnvio(modalEditarAberto ? provedorId : null, provedor?.etag)
   const [erroEditar, setErroEditar] = useState<string | null>(null)
 
   const [modalAvisoAberto, setModalAvisoAberto] = useState<'novo' | AvisoAdmin | null>(null)
@@ -76,6 +79,17 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
 
   const [modalVersaoAberto, setModalVersaoAberto] = useState(false)
   const [erroVersao, setErroVersao] = useState<string | null>(null)
+
+  const avisoEmEdicao = typeof modalAvisoAberto === 'object' ? modalAvisoAberto : null
+  const envioDoAviso = useEtagDeEnvio(
+    avisoEmEdicao?.id ?? null,
+    etagNaColecao(provedor?.avisos, avisoEmEdicao),
+  )
+
+  const envioDaRemocao = useEtagDeEnvio(
+    avisoParaRemover?.id ?? null,
+    etagNaColecao(provedor?.avisos, avisoParaRemover),
+  )
 
   if (isLoading) {
     return (
@@ -97,11 +111,14 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
       {
         id: provedorId,
         dto: { nome: dto.nome, categoria: dto.categoria, aliases: dto.aliases },
-        etag: provedor?.etag,
+        etag: envioDaEdicao.etag,
       },
       {
         onSuccess: () => setModalEditarAberto(false),
-        onError: (erro) => setErroEditar(handleApiError(erro)),
+        onError: (erro) => {
+          envioDaEdicao.registrarErro(erro)
+          setErroEditar(mensagemDeErroDeEscrita(erro))
+        },
       },
     )
   }
@@ -119,7 +136,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
         },
         {
           onSuccess: () => setModalAvisoAberto(null),
-          onError: (erro) => setErroAviso(handleApiError(erro)),
+          onError: (erro) => setErroAviso(mensagemDeErroDeEscrita(erro)),
         },
       )
       return
@@ -127,10 +144,13 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
 
     if (modalAvisoAberto) {
       atualizarAviso.mutate(
-        { id: modalAvisoAberto.id, dto, etag: modalAvisoAberto.etag },
+        { id: modalAvisoAberto.id, dto, etag: envioDoAviso.etag },
         {
           onSuccess: () => setModalAvisoAberto(null),
-          onError: (erro) => setErroAviso(handleApiError(erro)),
+          onError: (erro) => {
+            envioDoAviso.registrarErro(erro)
+            setErroAviso(mensagemDeErroDeEscrita(erro))
+          },
         },
       )
     }
@@ -143,7 +163,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
       { versaoLayoutId: dto.versaoLayoutId, rotulo: dto.rotulo, introducao: dto.introducao },
       {
         onSuccess: () => setModalVersaoAberto(false),
-        onError: (erro) => setErroVersao(handleApiError(erro)),
+        onError: (erro) => setErroVersao(mensagemDeErroDeEscrita(erro)),
       },
     )
   }
@@ -152,7 +172,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
     setErroDePublicacao(null)
     publicarProvedor.mutate(
       { id: provedorId, publicado, etag },
-      { onError: (falha) => setErroDePublicacao(handleApiError(falha)) },
+      { onError: (falha) => setErroDePublicacao(mensagemDeErroDeEscrita(falha, 'acao')) },
     )
   }
 
@@ -162,7 +182,10 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
       { id: aviso.id, publicado: !aviso.publicado, etag: aviso.etag },
       {
         onError: (falha) =>
-          setErroDePublicacaoDoAviso({ avisoId: aviso.id, mensagem: handleApiError(falha) }),
+          setErroDePublicacaoDoAviso({
+            avisoId: aviso.id,
+            mensagem: mensagemDeErroDeEscrita(falha, 'acao'),
+          }),
       },
     )
   }
@@ -173,10 +196,13 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
 
     setErroDeRemocao(null)
     removerAviso.mutate(
-      { id: avisoParaRemover.id, etag: avisoParaRemover.etag },
+      { id: avisoParaRemover.id, etag: envioDaRemocao.etag },
       {
         onSuccess: () => setAvisoParaRemover(null),
-        onError: (falha) => setErroDeRemocao(handleApiError(falha)),
+        onError: (falha) => {
+          envioDaRemocao.registrarErro(falha)
+          setErroDeRemocao(mensagemDeErroDeEscrita(falha, 'acao'))
+        },
       },
     )
   }

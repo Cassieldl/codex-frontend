@@ -132,11 +132,13 @@ describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
       screen.getByRole('link', { name: 'Campo ausente quer dizer “não se aplica”' }),
     ).toHaveAttribute('href', '/artigos/campo-ausente-nao-se-aplica')
 
-    // Ordem de leitura: campos relacionados vêm antes dos artigos.
-    const titulos = screen.getAllByRole('heading', { level: 2 }).map((titulo) => titulo.textContent)
-    expect(titulos.indexOf('Campos relacionados')).toBeLessThan(
-      titulos.indexOf('Artigos relacionados'),
-    )
+    // Ordem de leitura: campos antes dos artigos, com os dois títulos presentes.
+    const secoesRelacionadas = ['Campos relacionados', 'Artigos relacionados']
+    const titulos = screen
+      .getAllByRole('heading', { level: 2 })
+      .map((titulo) => titulo.textContent)
+      .filter((titulo) => titulo !== null && secoesRelacionadas.includes(titulo))
+    expect(titulos).toEqual(secoesRelacionadas)
   })
 })
 

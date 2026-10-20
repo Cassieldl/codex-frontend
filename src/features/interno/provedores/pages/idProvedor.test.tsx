@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../../auth/keycloak'
 import { server } from '../../../../test/mocks/server'
 import { IdProvedorPage } from './idProvedor'
+import { MENSAGEM_DE_CONFLITO } from '../../utils/mensagemDeErroDeEscrita'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -148,9 +149,7 @@ describe('IdProvedorPage: publicação de aviso', () => {
 
     await usuario.click(within(item).getByRole('button', { name: 'Publicar' }))
 
-    expect(await within(item).findByRole('alert')).toHaveTextContent(
-      'O aviso mudou desde a leitura.',
-    )
+    expect(await within(item).findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.acao)
 
     // O conflito relê o detalhe: a edição do outro editor aparece, e com ela o etag novo.
     expect(await within(item).findByText('Renove o certificado A1 até sexta.')).toBeInTheDocument()
@@ -197,7 +196,9 @@ describe('IdProvedorPage: publicação do provedor', () => {
 
     await usuario.click(await screen.findByRole('button', { name: 'Despublicar' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      code === 'CONFLITO_CONCORRENCIA' ? MENSAGEM_DE_CONFLITO.acao : message,
+    )
     expect(screen.getByRole('button', { name: 'Despublicar' })).toBeInTheDocument()
   })
 })

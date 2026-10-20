@@ -29,6 +29,8 @@ import {
   interpretarErroDeEscritaComunicado,
   type ErroDeEscritaComunicado,
 } from '../utils/erroDeEscritaComunicado'
+import type { OrigemDaEscrita } from '../../utils/mensagemDeErroDeEscrita'
+import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
@@ -85,6 +87,7 @@ export function ComunicadosPage() {
 
   const idEmEdicao = modalAberto?.modo === 'editar' ? modalAberto.id : null
   const detalheEmEdicao = useComunicadoAdminPorId(idEmEdicao)
+  const envioDaEdicao = useEtagDeEnvio(idEmEdicao, detalheEmEdicao.data?.etag)
 
   const { data: provedores } = useProvedoresAdmin({ tamanhoPagina: 200 })
   const opcoesProvedores: OpcaoProvedorComunicado[] = (provedores?.items ?? []).map((provedor) => ({
@@ -97,8 +100,12 @@ export function ComunicadosPage() {
   const removerComunicado = useRemoverComunicado()
   const publicarComunicado = usePublicarComunicado()
 
-  function registrarErro(erro: unknown, comunicadoId: number | null) {
-    setErroDeEscrita({ info: interpretarErroDeEscritaComunicado(erro), comunicadoId })
+  function registrarErro(
+    erro: unknown,
+    comunicadoId: number | null,
+    origem: OrigemDaEscrita = 'acao',
+  ) {
+    setErroDeEscrita({ info: interpretarErroDeEscritaComunicado(erro, origem), comunicadoId })
   }
 
   function aoSalvar(dto: ComunicadoFormDto) {
@@ -107,7 +114,7 @@ export function ComunicadosPage() {
     if (modalAberto?.modo === 'novo') {
       criarComunicado.mutate(dto, {
         onSuccess: () => setModalAberto(null),
-        onError: (erro) => registrarErro(erro, null),
+        onError: (erro) => registrarErro(erro, null, 'formulario'),
       })
       return
     }
@@ -115,12 +122,15 @@ export function ComunicadosPage() {
     if (modalAberto?.modo === 'editar') {
       const { id } = modalAberto
       atualizarComunicado.mutate(
-        { id, dto, etag: detalheEmEdicao.data?.etag },
+        { id, dto, etag: envioDaEdicao.etag },
         {
           onSuccess: () => setModalAberto(null),
           // 409 nunca reseta o modal: o formulário segue aberto com o que
           // foi digitado, e a recuperação é oferecida na faixa de erro.
-          onError: (erro) => registrarErro(erro, id),
+          onError: (erro) => {
+            envioDaEdicao.registrarErro(erro)
+            registrarErro(erro, id, 'formulario')
+          },
         },
       )
     }

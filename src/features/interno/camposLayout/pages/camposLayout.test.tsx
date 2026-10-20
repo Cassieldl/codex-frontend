@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query'
 import {
   Outlet,
   RouterProvider,
@@ -7,13 +7,14 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../../auth/keycloak'
 import { server } from '../../../../test/mocks/server'
 import { CamposLayoutPage } from './camposLayout'
+import { MENSAGEM_DE_CONFLITO } from '../../utils/mensagemDeErroDeEscrita'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -342,7 +343,9 @@ describe('CamposLayoutPage: edição', () => {
     renderizarPagina()
     await editarRotulo('Layout 8.00', 'Layout 8.01')
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      code === 'CONFLITO_CONCORRENCIA' ? MENSAGEM_DE_CONFLITO.formulario : message,
+    )
     expect(
       screen.getByRole('heading', { name: 'Editar versão do Layout InvoiCy' }),
     ).toBeInTheDocument()
@@ -422,8 +425,77 @@ describe('CamposLayoutPage: publicação', () => {
       const linha = () => linhaDaVersao('Layout 8.00')
       await usuario.click(within(linha()).getByRole('button', { name: 'Publicar' }))
 
-      expect(await within(linha()).findByRole('alert')).toHaveTextContent(message)
+      expect(await within(linha()).findByRole('alert')).toHaveTextContent(
+        code === 'CONFLITO_CONCORRENCIA' ? MENSAGEM_DE_CONFLITO.acao : message,
+      )
       expect(within(linha()).getByText('Rascunho')).toBeInTheDocument()
     },
   )
+})
+
+describe('CamposLayoutPage: 409 na edição', () => {
+  afterEach(() => {
+    focusManager.setFocused(undefined)
+  })
+
+  it('refoco sem 409 mantém o etag da abertura, e só depois do 409 vale o relido', async () => {
+    const usuario = userEvent.setup()
+    let versaoNoServidor = 7
+    let leiturasDaLista = 0
+    const ifMatchRecebidos: (string | null)[] = []
+
+    server.use(
+      http.get(`${API_URL}/interno/layout/versoes`, () => {
+        leiturasDaLista += 1
+        return HttpResponse.json(
+          paginaDeVersoes([{ ...VERSAO_VIGENTE, versaoConcorrencia: versaoNoServidor }]),
+        )
+      }),
+      http.put(`${API_URL}/interno/layout/versoes/:id`, ({ request }) => {
+        const ifMatch = request.headers.get('If-Match')
+        ifMatchRecebidos.push(ifMatch)
+        if (ifMatch !== `W/"${versaoNoServidor}"`) {
+          return HttpResponse.json(
+            { error: { code: 'CONFLITO_CONCORRENCIA', message: 'A versão foi alterada.' } },
+            { status: 409 },
+          )
+        }
+        return HttpResponse.json({ data: { ...VERSAO_VIGENTE, versaoConcorrencia: 10 } })
+      }),
+    )
+
+    renderizarPagina()
+    await screen.findByText('Layout 8.00')
+    await usuario.click(
+      within(linhaDaVersao('Layout 8.00')).getByRole('button', {
+        name: 'Editar versão do layout Layout 8.00',
+      }),
+    )
+    const campoRotulo = await screen.findByRole('textbox', { name: /Rótulo/ })
+    await usuario.clear(campoRotulo)
+    await usuario.type(campoRotulo, 'Layout 8.01')
+
+    // Outra pessoa salva e a aba volta ao foco: a lista relida traz o etag novo.
+    versaoNoServidor = 9
+    act(() => {
+      focusManager.setFocused(false)
+      focusManager.setFocused(true)
+    })
+    await waitFor(() => expect(leiturasDaLista).toBe(2))
+
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.formulario)
+    expect(screen.getByRole('textbox', { name: /Rótulo/ })).toHaveValue('Layout 8.01')
+    await waitFor(() => expect(leiturasDaLista).toBe(3))
+
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('heading', { name: 'Editar versão do Layout InvoiCy' }),
+      ).not.toBeInTheDocument(),
+    )
+    expect(ifMatchRecebidos).toEqual(['W/"7"', 'W/"9"'])
+  })
 })

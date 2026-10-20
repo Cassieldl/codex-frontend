@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../../utils/codigoDeErroApi'
 import type { ArtigoAdminDetalhe, ArtigoFormDto } from '../types/artigoAdmin'
 import { artigosAdminKeys } from './artigosAdminKeys'
 
@@ -20,18 +21,23 @@ interface VariaveisAtualizarArtigo {
  * reindexação no backend; o cliente não faz nada a mais por isso.
  *
  * `409` nunca reseta o modal: a página mantém o formulário aberto com o que
- * foi digitado e oferece recarregar o registro.
+ * foi digitado, e o hook relê o registro para a segunda tentativa levar o etag novo.
  */
 export function useAtualizarArtigo() {
   const queryClient = useQueryClient()
+
+  function invalidar() {
+    void queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
+  }
 
   return useMutation({
     mutationFn: async ({ id, dto, etag }: VariaveisAtualizarArtigo) => {
       const { data } = await apiInterno.put<EnvelopeArtigoAdmin>(`/artigos/${id}`, dto, { etag })
       return data.data
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
+    onSuccess: invalidar,
+    onError: (erro) => {
+      if (ehConflitoDeConcorrencia(erro)) invalidar()
     },
   })
 }

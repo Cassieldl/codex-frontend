@@ -3,6 +3,7 @@ import { useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
+import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
 import { Select, type SelectOption } from '../../../../components/ui/Select'
@@ -119,11 +120,7 @@ export function AvisoForm({
       className="flex flex-col gap-5"
       noValidate
     >
-      {erroServidor && (
-        <p role="alert" className="text-sm text-error-texto">
-          {erroServidor}
-        </p>
-      )}
+      <ErroDoServidor mensagem={erroServidor} />
 
       <p className="text-xs text-muted">
         {escopo === 'Provedor'

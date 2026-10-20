@@ -68,10 +68,12 @@ const overlayPorVariante = {
   painel: 'bg-ink/40 backdrop-blur-[3px] p-4 max-[899px]:items-end max-[899px]:p-0',
 }
 
+// Nas duas variantes o próprio diálogo é a região rolável: com o foco nele, setas e PageDown rolam o
+// conteúdo em vez do documento de trás.
 const dialogoPorVariante = {
-  padrao: 'px-7 py-5',
-  // O próprio diálogo é a região rolável: com o foco nele, setas e PageDown rolam o conteúdo em vez
-  // do documento de trás. Cabeçalho e rodapé são `sticky` dentro dele.
+  // O teto desconta o `p-4` do fundo, para o fim do formulário nunca ficar fora da tela.
+  padrao: 'px-7 py-5 overflow-y-auto overscroll-contain max-h-[calc(100dvh-2rem)]',
+  // Cabeçalho e rodapé são `sticky` dentro dele.
   painel:
     'overflow-y-auto overscroll-contain max-h-[min(86vh,900px)] transition-[opacity,translate] duration-200 starting:opacity-0 max-[899px]:max-h-[92dvh] max-[899px]:rounded-b-none max-[899px]:starting:translate-y-6 pb-[env(safe-area-inset-bottom)]',
 }

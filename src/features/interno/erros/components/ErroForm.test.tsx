@@ -153,3 +153,50 @@ describe('ErroForm: teto do código', () => {
     expect(onSubmit).not.toHaveBeenCalled()
   })
 })
+
+describe('ErroForm: erro de servidor e fieldset de versões', () => {
+  function formulario(props: Partial<ErroFormProps> = {}) {
+    return (
+      <ErroForm
+        opcoesVersoesProvedor={opcoesVersoes}
+        opcoesCamposLayout={[]}
+        onSubmit={vi.fn()}
+        onCancel={vi.fn()}
+        {...props}
+      />
+    )
+  }
+
+  it('o erro de servidor que chega com o formulário rolado vai para a área visível', () => {
+    const rolagem = vi.fn<Element['scrollIntoView']>()
+    Element.prototype.scrollIntoView = rolagem
+
+    try {
+      const { rerender } = render(formulario({ erroServidor: null }))
+      rerender(formulario({ erroServidor: 'Outra pessoa salvou este registro.' }))
+
+      expect(rolagem.mock.contexts).toEqual([screen.getByRole('alert')])
+    } finally {
+      Reflect.deleteProperty(Element.prototype, 'scrollIntoView')
+    }
+  })
+
+  it('depois de "Tentar novamente" dar certo, o foco vai para a primeira caixa do fieldset', async () => {
+    const usuario = userEvent.setup()
+    const onRecarregarOpcoesVersoes = vi.fn()
+    const { rerender } = render(
+      formulario({
+        opcoesVersoesProvedor: [],
+        statusOpcoesVersoes: 'erro',
+        onRecarregarOpcoesVersoes,
+      }),
+    )
+
+    await usuario.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    expect(onRecarregarOpcoesVersoes).toHaveBeenCalledTimes(1)
+
+    rerender(formulario({ statusOpcoesVersoes: 'pronto', onRecarregarOpcoesVersoes }))
+
+    expect(screen.getByRole('checkbox', { name: 'Prefeitura de Exemplo · v1' })).toHaveFocus()
+  })
+})

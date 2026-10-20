@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
 import { Textarea } from '../../../../components/ui/Textarea'
 import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
@@ -44,11 +45,7 @@ export function DecisaoLacunaBuscaForm({
       className="flex flex-col gap-5"
       noValidate
     >
-      {erroServidor && (
-        <p role="alert" className="text-sm text-error-texto">
-          {erroServidor}
-        </p>
-      )}
+      <ErroDoServidor mensagem={erroServidor} />
 
       <Textarea
         label="Nota (opcional)"

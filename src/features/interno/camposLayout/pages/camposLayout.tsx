@@ -9,14 +9,16 @@ import { Modal } from '../../../../components/ui/Modal'
 import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
-import { handleApiError } from '../../../../utils/handleApiError'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarVersaoLayout } from '../../hooks/usePublicarVersaoLayout'
+import { etagNaColecao } from '../../utils/etagDeConcorrencia'
+import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { VersaoLayoutForm, type VersaoLayoutFormDto } from '../components/VersaoLayoutForm'
 import { useAtualizarVersaoLayout } from '../hooks/useAtualizarVersaoLayout'
 import { useCriarVersaoLayout } from '../hooks/useCriarVersaoLayout'
 import { useVersoesLayout } from '../hooks/useVersoesLayout'
 import type { VersaoLayoutAdmin } from '../types/versaoLayoutAdmin'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
@@ -39,6 +41,12 @@ export function CamposLayoutPage() {
   const atualizarVersaoLayout = useAtualizarVersaoLayout()
   const publicarVersaoLayout = usePublicarVersaoLayout()
 
+  const versaoEmEdicao = typeof modalAberto === 'object' ? modalAberto : null
+  const envioDaEdicao = useEtagDeEnvio(
+    versaoEmEdicao?.id ?? null,
+    etagNaColecao(data?.items, versaoEmEdicao),
+  )
+
   function aoSalvar(dto: VersaoLayoutFormDto) {
     setErroServidor(null)
 
@@ -47,7 +55,7 @@ export function CamposLayoutPage() {
         { rotulo: dto.rotulo, descricao: dto.descricao },
         {
           onSuccess: () => setModalAberto(null),
-          onError: (erro) => setErroServidor(handleApiError(erro)),
+          onError: (erro) => setErroServidor(mensagemDeErroDeEscrita(erro)),
         },
       )
       return
@@ -61,11 +69,14 @@ export function CamposLayoutPage() {
         {
           id: modalAberto.id,
           dto: { rotulo: dto.rotulo, descricao: dto.descricao, estado: dto.estado },
-          etag: modalAberto.etag,
+          etag: envioDaEdicao.etag,
         },
         {
           onSuccess: () => setModalAberto(null),
-          onError: (erro) => setErroServidor(handleApiError(erro)),
+          onError: (erro) => {
+            envioDaEdicao.registrarErro(erro)
+            setErroServidor(mensagemDeErroDeEscrita(erro))
+          },
         },
       )
     }
@@ -77,7 +88,10 @@ export function CamposLayoutPage() {
       { id: versaoLayout.id, publicado: !versaoLayout.publicado, etag: versaoLayout.etag },
       {
         onError: (falha) =>
-          setErroDePublicacao({ versaoLayoutId: versaoLayout.id, mensagem: handleApiError(falha) }),
+          setErroDePublicacao({
+            versaoLayoutId: versaoLayout.id,
+            mensagem: mensagemDeErroDeEscrita(falha, 'acao'),
+          }),
       },
     )
   }

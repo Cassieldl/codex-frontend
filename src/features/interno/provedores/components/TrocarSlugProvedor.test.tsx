@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../../test/mocks/server'
 import { TrocarSlugProvedor } from './TrocarSlugProvedor'
+import { MENSAGEM_DE_CONFLITO } from '../../utils/mensagemDeErroDeEscrita'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -185,9 +186,7 @@ describe('TrocarSlugProvedor (I37)', () => {
     await usuario.type(campo, 'prefeitura-de-sao-jose')
     await usuario.click(screen.getByRole('button', { name: 'Confirmar troca' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'O provedor foi alterado por outra requisição. Recarregue e tente novamente.',
-    )
+    expect(await screen.findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.formulario)
     // O valor digitado não é o culpado: marcar o campo mandaria o editor corrigir
     // o que estava certo.
     expect(campo).toHaveAttribute('aria-invalid', 'false')

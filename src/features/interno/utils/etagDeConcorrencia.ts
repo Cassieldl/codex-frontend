@@ -50,3 +50,17 @@ export function comEtagDeConcorrenciaNaColecao<T extends ComVersaoConcorrencia>(
 
   return colecao.map(comEtagDeConcorrencia)
 }
+
+interface ItemComEtag {
+  id: number
+  etag?: string
+}
+
+/** Etag do item na leitura atual da coleção, ou o da cópia quando ele não está mais nela. */
+export function etagNaColecao(
+  colecao: readonly ItemComEtag[] | undefined,
+  item: ItemComEtag | null,
+): string | undefined {
+  if (!item) return undefined
+  return colecao?.find((atual) => atual.id === item.id)?.etag ?? item.etag
+}

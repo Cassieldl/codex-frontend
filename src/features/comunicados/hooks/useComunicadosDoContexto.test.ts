@@ -5,6 +5,7 @@ import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import {
   COMUNICADO_CRITICO_DO_PROVEDOR,
+  COMUNICADO_DE_VERSAO,
   COMUNICADO_GLOBAL,
   handlerComunicadosRegistrandoChamadas,
 } from '../../../test/mocks/comunicadosContexto'
@@ -21,9 +22,11 @@ function envolverComQueryClient(queryClient = new QueryClient()) {
 
 describe('useComunicadosDoContexto', () => {
   it('lê o envelope `data` e devolve os comunicados na ordem do servidor', async () => {
+    // Três itens numa ordem que nenhuma ordenação plausível do cliente produz (id, severidade, vencimento).
     const { handler } = handlerComunicadosRegistrandoChamadas([
-      COMUNICADO_CRITICO_DO_PROVEDOR,
       COMUNICADO_GLOBAL,
+      COMUNICADO_DE_VERSAO,
+      COMUNICADO_CRITICO_DO_PROVEDOR,
     ])
     server.use(handler)
 
@@ -32,7 +35,7 @@ describe('useComunicadosDoContexto', () => {
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data?.map((comunicado) => comunicado.id)).toEqual([2, 1])
+    expect(result.current.data?.map((comunicado) => comunicado.id)).toEqual([1, 3, 2])
   })
 
   it('falha nomeando a coleção quando a resposta vem crua, sem o envelope `data`', async () => {

@@ -12,11 +12,12 @@ import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
-import { handleApiError } from '../../../../utils/handleApiError'
 import { useCamposLayoutPorVersao } from '../../camposLayout/hooks/useCamposLayoutPorVersao'
 import { SecaoExemplosVersao } from '../../exemplos/components/SecaoExemplosVersao'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarAviso } from '../../hooks/usePublicarAviso'
+import { etagNaColecao } from '../../utils/etagDeConcorrencia'
+import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { usePublicarVersaoProvedor } from '../../hooks/usePublicarVersaoProvedor'
 import { AvisoForm, type AvisoFormDto } from '../components/AvisoForm'
 import { CampoVersaoForm } from '../components/CampoVersaoForm'
@@ -37,6 +38,7 @@ import type {
   CampoVersaoAdmin,
   CriarCampoVersaoDto,
 } from '../types/campoVersaoAdmin'
+import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 /** Falha ao publicar ou despublicar um aviso, mostrada junto do aviso que a causou. */
 interface ErroDePublicacaoDoAviso {
@@ -104,6 +106,28 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
   const [dataVerificacao, setDataVerificacao] = useState('')
   const [erroDeVerificacao, setErroDeVerificacao] = useState<string | null>(null)
 
+  const campoEmEdicao = typeof modalCampoAberto === 'object' ? modalCampoAberto : null
+  const envioDoCampo = useEtagDeEnvio(
+    campoEmEdicao?.id ?? null,
+    etagNaColecao(respostaCampos?.campos, campoEmEdicao),
+  )
+
+  const envioDaRemocaoDoAviso = useEtagDeEnvio(
+    avisoParaRemover?.id ?? null,
+    etagNaColecao(versao?.avisos, avisoParaRemover),
+  )
+
+  const envioDaRemocaoDoCampo = useEtagDeEnvio(
+    campoParaRemover?.id ?? null,
+    etagNaColecao(respostaCampos?.campos, campoParaRemover),
+  )
+
+  const avisoEmEdicao = typeof modalAvisoAberto === 'object' ? modalAvisoAberto : null
+  const envioDoAviso = useEtagDeEnvio(
+    avisoEmEdicao?.id ?? null,
+    etagNaColecao(versao?.avisos, avisoEmEdicao),
+  )
+
   if (isLoading) {
     return (
       <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
@@ -126,17 +150,24 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
     if (modalCampoAberto === 'novo') {
       criarCampo.mutate(dto, {
         onSuccess: () => setModalCampoAberto(null),
-        onError: (erro) => setErroCampo(handleApiError(erro)),
+        onError: (erro) => setErroCampo(mensagemDeErroDeEscrita(erro)),
       })
       return
     }
 
     if (modalCampoAberto) {
       atualizarCampo.mutate(
-        { id: modalCampoAberto.id, dto: paraAtualizacao(dto), etag: modalCampoAberto.etag },
+        {
+          id: modalCampoAberto.id,
+          dto: paraAtualizacao(dto),
+          etag: envioDoCampo.etag,
+        },
         {
           onSuccess: () => setModalCampoAberto(null),
-          onError: (erro) => setErroCampo(handleApiError(erro)),
+          onError: (erro) => {
+            envioDoCampo.registrarErro(erro)
+            setErroCampo(mensagemDeErroDeEscrita(erro))
+          },
         },
       )
     }
@@ -146,7 +177,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
     setErroDePublicacao(null)
     publicarVersao.mutate(
       { id: versaoId, publicado, etag },
-      { onError: (falha) => setErroDePublicacao(handleApiError(falha)) },
+      { onError: (falha) => setErroDePublicacao(mensagemDeErroDeEscrita(falha, 'acao')) },
     )
   }
 
@@ -154,7 +185,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
     setErroDeVerificacao(null)
     verificarVersao.mutate(
       { id: versaoId, verificadoEm, etag },
-      { onError: (falha) => setErroDeVerificacao(handleApiError(falha)) },
+      { onError: (falha) => setErroDeVerificacao(mensagemDeErroDeEscrita(falha, 'acao')) },
     )
   }
 
@@ -164,7 +195,10 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
       { id: aviso.id, publicado: !aviso.publicado, etag: aviso.etag },
       {
         onError: (falha) =>
-          setErroDePublicacaoDoAviso({ avisoId: aviso.id, mensagem: handleApiError(falha) }),
+          setErroDePublicacaoDoAviso({
+            avisoId: aviso.id,
+            mensagem: mensagemDeErroDeEscrita(falha, 'acao'),
+          }),
       },
     )
   }
@@ -174,10 +208,13 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
 
     setErroRemocao(null)
     removerAviso.mutate(
-      { id: avisoParaRemover.id, etag: avisoParaRemover.etag },
+      { id: avisoParaRemover.id, etag: envioDaRemocaoDoAviso.etag },
       {
         onSuccess: () => setAvisoParaRemover(null),
-        onError: (erro) => setErroRemocao(handleApiError(erro)),
+        onError: (erro) => {
+          envioDaRemocaoDoAviso.registrarErro(erro)
+          setErroRemocao(mensagemDeErroDeEscrita(erro, 'acao'))
+        },
       },
     )
   }
@@ -187,10 +224,13 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
 
     setErroRemocao(null)
     removerCampo.mutate(
-      { id: campoParaRemover.id, etag: campoParaRemover.etag },
+      { id: campoParaRemover.id, etag: envioDaRemocaoDoCampo.etag },
       {
         onSuccess: () => setCampoParaRemover(null),
-        onError: (erro) => setErroRemocao(handleApiError(erro)),
+        onError: (erro) => {
+          envioDaRemocaoDoCampo.registrarErro(erro)
+          setErroRemocao(mensagemDeErroDeEscrita(erro, 'acao'))
+        },
       },
     )
   }
@@ -209,7 +249,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
         },
         {
           onSuccess: () => setModalAvisoAberto(null),
-          onError: (erro) => setErroAviso(handleApiError(erro)),
+          onError: (erro) => setErroAviso(mensagemDeErroDeEscrita(erro)),
         },
       )
       return
@@ -217,10 +257,13 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
 
     if (modalAvisoAberto) {
       atualizarAviso.mutate(
-        { id: modalAvisoAberto.id, dto, etag: modalAvisoAberto.etag },
+        { id: modalAvisoAberto.id, dto, etag: envioDoAviso.etag },
         {
           onSuccess: () => setModalAvisoAberto(null),
-          onError: (erro) => setErroAviso(handleApiError(erro)),
+          onError: (erro) => {
+            envioDoAviso.registrarErro(erro)
+            setErroAviso(mensagemDeErroDeEscrita(erro))
+          },
         },
       )
     }

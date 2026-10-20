@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../../utils/codigoDeErroApi'
 import { artigosAdminKeys } from './artigosAdminKeys'
 
 interface VariaveisRemoverArtigo {
@@ -18,12 +19,18 @@ interface VariaveisRemoverArtigo {
 export function useRemoverArtigo() {
   const queryClient = useQueryClient()
 
+  function invalidar() {
+    void queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
+  }
+
   return useMutation({
     mutationFn: async ({ id, etag }: VariaveisRemoverArtigo) => {
       await apiInterno.delete(`/artigos/${id}`, { etag })
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
+    onSuccess: invalidar,
+    // Depois de um 409 a lista relida traz o etag novo, e a próxima confirmação passa.
+    onError: (erro) => {
+      if (ehConflitoDeConcorrencia(erro)) invalidar()
     },
   })
 }

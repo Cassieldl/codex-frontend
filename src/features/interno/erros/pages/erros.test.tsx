@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../../auth/keycloak'
 import { server } from '../../../../test/mocks/server'
 import { ErrosPage } from './erros'
+import { MENSAGEM_DE_CONFLITO } from '../../utils/mensagemDeErroDeEscrita'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -289,7 +290,9 @@ describe('ErrosPage: remoção só depois de confirmar', () => {
     const usuario = await abrirConfirmacaoDeRemocao('E0118')
     await usuario.click(screen.getByRole('button', { name: 'Remover' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      code === 'CONFLITO_CONCORRENCIA' ? MENSAGEM_DE_CONFLITO.acao : message,
+    )
     expect(screen.getByRole('heading', { name: 'Remover erro' })).toBeInTheDocument()
   })
 })
@@ -343,7 +346,9 @@ describe('ErrosPage: publicação', () => {
       await screen.findByText('E0117')
       await usuario.click(within(linhaDoErro('E0117')).getByRole('button', { name: 'Publicar' }))
 
-      expect(await within(linhaDoErro('E0117')).findByRole('alert')).toHaveTextContent(message)
+      expect(await within(linhaDoErro('E0117')).findByRole('alert')).toHaveTextContent(
+        code === 'CONFLITO_CONCORRENCIA' ? MENSAGEM_DE_CONFLITO.acao : message,
+      )
       expect(within(linhaDoErro('E0117')).getByText('Rascunho')).toBeInTheDocument()
       expect(within(linhaDoErro('E0118')).queryByRole('alert')).not.toBeInTheDocument()
     },
@@ -489,5 +494,273 @@ describe('ErrosPage: edição parte do detalhe, não do item da lista', () => {
         },
       },
     ])
+  })
+})
+
+describe('ErrosPage: formulário maior que a tela', () => {
+  it('o diálogo rola e o Tab alcança o Salvar', async () => {
+    const usuario = userEvent.setup()
+    criarServidorDeErros([ERRO_RASCUNHO])
+
+    renderizarPagina()
+    await screen.findByText('E0117')
+    await usuario.click(screen.getByRole('button', { name: 'Novo erro' }))
+
+    const dialogo = await screen.findByRole('dialog', { name: 'Novo erro' })
+    expect(dialogo.className).toContain('overflow-y-auto')
+    expect(dialogo.className).toMatch(/max-h-\[calc\(100dvh-/)
+
+    const salvar = within(dialogo).getByRole('button', { name: 'Salvar' })
+    for (let tecla = 0; tecla < 30 && document.activeElement !== salvar; tecla += 1) {
+      await usuario.tab()
+    }
+    expect(salvar).toHaveFocus()
+  })
+})
+
+// JSON transcrito de `ProvedorAdminListaItemDto` e `VersaoAdminListaItemDto`.
+const PROVEDOR_NACIONAL = {
+  id: 41,
+  slug: 'emissor-nacional',
+  nome: 'Emissor Nacional',
+  categoria: 'Nacional',
+  identificadorInvoicy: 'NACIONAL',
+  publicado: true,
+  versaoConcorrencia: 3,
+}
+
+const PROVEDOR_JOINVILLE = {
+  id: 42,
+  slug: 'joinville',
+  nome: 'Joinville',
+  categoria: 'Proprio',
+  identificadorInvoicy: 'JOINVILLE',
+  publicado: true,
+  versaoConcorrencia: 5,
+}
+
+function versaoDoProvedor(id: number, provedorId: number, rotulo: string) {
+  return {
+    id,
+    provedorId,
+    slug: rotulo.toLowerCase().replace(/\W+/g, '-'),
+    rotulo,
+    versaoLayoutId: 2,
+    publicado: true,
+    verificadoEm: null,
+    versaoConcorrencia: 1,
+  }
+}
+
+describe('ErrosPage: versões de todos os provedores no formulário', () => {
+  it('erro ligado à versão do segundo provedor abre com ela marcada e salva sem perder o vínculo', async () => {
+    let liberarVersoesDoSegundo = () => {}
+    const portao = new Promise<void>((resolver) => {
+      liberarVersoesDoSegundo = resolver
+    })
+    const corposDoPut: unknown[] = []
+
+    server.use(
+      http.get(`${API_URL}/interno/provedores`, () =>
+        HttpResponse.json({
+          items: [PROVEDOR_NACIONAL, PROVEDOR_JOINVILLE],
+          totalCount: 2,
+          page: 1,
+          pageSize: 200,
+          totalPages: 1,
+        }),
+      ),
+      http.get(`${API_URL}/interno/provedores/41/versoes`, () =>
+        HttpResponse.json({ data: [versaoDoProvedor(51, 41, '1.00')], message: null }),
+      ),
+      http.get(`${API_URL}/interno/provedores/42/versoes`, async () => {
+        await portao
+        return HttpResponse.json({ data: [versaoDoProvedor(52, 42, 'ABRASF 2.04')], message: null })
+      }),
+      http.get(`${API_URL}/interno/erros`, () => HttpResponse.json(paginaDeErros([ERRO_RASCUNHO]))),
+      http.get(`${API_URL}/interno/erros/:id`, () =>
+        HttpResponse.json({
+          data: {
+            ...ERRO_RASCUNHO,
+            causaProvavel: null,
+            solucaoSugerida: null,
+            variantes: ['RPS já convertido'],
+            versoesProvedorIds: [52],
+            camposLayoutIds: [],
+          },
+          message: null,
+        }),
+      ),
+      http.put(`${API_URL}/interno/erros/:id`, async ({ request }) => {
+        corposDoPut.push(await request.json())
+        return HttpResponse.json({ data: { ...ERRO_RASCUNHO }, message: null })
+      }),
+    )
+
+    renderizarPagina()
+    const usuario = await abrirEdicao('E0117')
+
+    expect(await screen.findByText('Carregando provedores e versões…')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('checkbox', { name: 'Emissor Nacional · 1.00' }),
+    ).not.toBeChecked()
+
+    liberarVersoesDoSegundo()
+
+    expect(await screen.findByRole('checkbox', { name: 'Joinville · ABRASF 2.04' })).toBeChecked()
+    expect(screen.queryByText('Carregando provedores e versões…')).not.toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(corposDoPut).toHaveLength(1))
+    expect(corposDoPut[0]).toMatchObject({ versoesProvedorIds: [52] })
+  })
+})
+
+describe('ErrosPage: 409 na edição', () => {
+  it('mantém o que foi digitado e a segunda tentativa sai com o etag relido e passa', async () => {
+    criarServidorDeErros([ERRO_PUBLICADO])
+    let versaoNoServidor = 10
+    let leiturasDoDetalhe = 0
+    const tentativas: { ifMatch: string | null; titulo: unknown }[] = []
+
+    server.use(
+      http.get(`${API_URL}/interno/erros/:id`, () => {
+        leiturasDoDetalhe += 1
+        const resposta = HttpResponse.json({
+          data: { ...DETALHE_DO_ERRO_PUBLICADO.data, versaoConcorrencia: versaoNoServidor },
+          message: null,
+        })
+        // Outra pessoa salva logo depois de o modal abrir.
+        versaoNoServidor = 12
+        return resposta
+      }),
+      http.put(`${API_URL}/interno/erros/:id`, async ({ request }) => {
+        const ifMatch = request.headers.get('If-Match')
+        const corpo = (await request.json()) as { titulo: unknown }
+        tentativas.push({ ifMatch, titulo: corpo.titulo })
+
+        if (ifMatch !== `W/"${versaoNoServidor}"`) {
+          return HttpResponse.json(
+            {
+              error: {
+                code: 'CONFLITO_CONCORRENCIA',
+                message: 'O erro foi alterado por outra requisição. Recarregue e tente novamente.',
+              },
+            },
+            { status: 409 },
+          )
+        }
+        return HttpResponse.json({ data: DETALHE_DO_ERRO_PUBLICADO.data, message: null })
+      }),
+    )
+
+    renderizarPagina()
+    const usuario = await abrirEdicao('E0118')
+
+    const titulo = await screen.findByRole('textbox', { name: /Título/ })
+    await usuario.clear(titulo)
+    await usuario.type(titulo, 'CNPJ do tomador recusado')
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.formulario)
+    expect(screen.getByRole('textbox', { name: /Título/ })).toHaveValue('CNPJ do tomador recusado')
+    await waitFor(() => expect(leiturasDoDetalhe).toBe(2))
+
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'Editar erro' })).not.toBeInTheDocument(),
+    )
+    expect(tentativas).toEqual([
+      { ifMatch: 'W/"10"', titulo: 'CNPJ do tomador recusado' },
+      { ifMatch: 'W/"12"', titulo: 'CNPJ do tomador recusado' },
+    ])
+  })
+})
+
+describe('ErrosPage: 409 na remoção', () => {
+  it('a segunda confirmação sai com o etag da lista relida, não com o do item guardado ao abrir', async () => {
+    let versaoNoServidor = 9
+    let leiturasDaLista = 0
+    let removido = false
+    const ifMatchRecebidos: (string | null)[] = []
+
+    server.use(
+      handlerProvedoresVazio(),
+      http.get(`${API_URL}/interno/erros`, () => {
+        leiturasDaLista += 1
+        const itens = removido ? [] : [{ ...ERRO_PUBLICADO, versaoConcorrencia: versaoNoServidor }]
+        // Outra pessoa publica de novo logo depois de a lista chegar.
+        versaoNoServidor = 11
+        return HttpResponse.json(paginaDeErros(itens))
+      }),
+      http.delete(`${API_URL}/interno/erros/:id`, ({ request }) => {
+        const ifMatch = request.headers.get('If-Match')
+        ifMatchRecebidos.push(ifMatch)
+        if (ifMatch !== `W/"${versaoNoServidor}"`) {
+          return HttpResponse.json(
+            {
+              error: {
+                code: 'CONFLITO_CONCORRENCIA',
+                message: 'O erro foi alterado por outra requisição. Recarregue e tente novamente.',
+              },
+            },
+            { status: 409 },
+          )
+        }
+        removido = true
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    renderizarPagina()
+    const usuario = await abrirConfirmacaoDeRemocao('E0118')
+    await usuario.click(screen.getByRole('button', { name: 'Remover' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.acao)
+    await waitFor(() => expect(leiturasDaLista).toBe(2))
+
+    await usuario.click(screen.getByRole('button', { name: 'Remover' }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'Remover erro' })).not.toBeInTheDocument(),
+    )
+    expect(ifMatchRecebidos).toEqual(['W/"9"', 'W/"11"'])
+  })
+})
+
+describe('ErrosPage: opções de versões só com o modal aberto', () => {
+  it('a lista sozinha não busca provedores nem versões; abrir "Novo erro" busca', async () => {
+    const usuario = userEvent.setup()
+    const leiturasDeProvedores: string[] = []
+    criarServidorDeErros([ERRO_RASCUNHO])
+    server.use(
+      http.get(`${API_URL}/interno/provedores`, ({ request }) => {
+        leiturasDeProvedores.push(new URL(request.url).pathname)
+        return HttpResponse.json({
+          items: [PROVEDOR_NACIONAL],
+          totalCount: 1,
+          page: 1,
+          pageSize: 200,
+          totalPages: 1,
+        })
+      }),
+      http.get(`${API_URL}/interno/provedores/:id/versoes`, ({ request }) => {
+        leiturasDeProvedores.push(new URL(request.url).pathname)
+        return HttpResponse.json({ data: [versaoDoProvedor(51, 41, '1.00')], message: null })
+      }),
+    )
+
+    renderizarPagina()
+    await screen.findByText('E0117')
+    expect(leiturasDeProvedores).toEqual([])
+
+    await usuario.click(screen.getByRole('button', { name: 'Novo erro' }))
+
+    expect(
+      await screen.findByRole('checkbox', { name: 'Emissor Nacional · 1.00' }),
+    ).toBeInTheDocument()
+    expect(leiturasDeProvedores).toHaveLength(2)
   })
 })

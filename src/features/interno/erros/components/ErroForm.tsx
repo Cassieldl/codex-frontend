@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus, Trash2 } from 'lucide-react'
-import { useId } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { z } from 'zod'
+import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
 import { Select, type SelectOption } from '../../../../components/ui/Select'
@@ -72,9 +73,14 @@ export interface OpcaoCampoLayoutErro {
   rotulo: string
 }
 
+export type StatusOpcoesVersoes = 'carregando' | 'erro' | 'pronto'
+
 export interface ErroFormProps {
   initialData?: ErroAdminDetalhe
   opcoesVersoesProvedor: OpcaoVersaoProvedorErro[]
+  /** Fora de `pronto`, as versões já ligadas ao erro seguem no valor do campo, só sem caixa na tela. */
+  statusOpcoesVersoes?: StatusOpcoesVersoes
+  onRecarregarOpcoesVersoes?: () => void
   opcoesCamposLayout: OpcaoCampoLayoutErro[]
   onSubmit: (dto: ErroFormDto) => void
   onCancel: () => void
@@ -100,6 +106,8 @@ function valoresIniciais(dado?: ErroAdminDetalhe): ErroFormValores {
 export function ErroForm({
   initialData,
   opcoesVersoesProvedor,
+  statusOpcoesVersoes = 'pronto',
+  onRecarregarOpcoesVersoes,
   opcoesCamposLayout,
   onSubmit,
   onCancel,
@@ -107,6 +115,8 @@ export function ErroForm({
   erroServidor,
 }: ErroFormProps) {
   const versoesCheckboxId = useId()
+  const fieldsetVersoesRef = useRef<HTMLFieldSetElement>(null)
+  const focarVersoesAoRecuperarRef = useRef(false)
   const camposCheckboxId = useId()
   const isEdicao = initialData !== undefined
 
@@ -130,6 +140,21 @@ export function ErroForm({
   const origemAtual = watch('origem')
   const versoesSelecionadas = watch('versoesProvedorIds')
   const camposSelecionados = watch('camposLayoutIds')
+
+  // O alerta some com o botão focado dentro dele: sem isto o foco cairia no body.
+  useEffect(() => {
+    if (statusOpcoesVersoes === 'erro' || !focarVersoesAoRecuperarRef.current) return
+    focarVersoesAoRecuperarRef.current = false
+
+    const fieldset = fieldsetVersoesRef.current
+    const primeiraCaixa = fieldset?.querySelector<HTMLInputElement>('input[type="checkbox"]')
+    ;(primeiraCaixa ?? fieldset)?.focus()
+  }, [statusOpcoesVersoes])
+
+  function tentarCarregarVersoes() {
+    focarVersoesAoRecuperarRef.current = true
+    onRecarregarOpcoesVersoes?.()
+  }
 
   function aoSubmeter(valores: ErroFormValores) {
     onSubmit({
@@ -156,11 +181,7 @@ export function ErroForm({
       className="flex flex-col gap-5"
       noValidate
     >
-      {erroServidor && (
-        <p role="alert" className="text-sm text-error-texto">
-          {erroServidor}
-        </p>
-      )}
+      <ErroDoServidor mensagem={erroServidor} />
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Input
@@ -244,7 +265,7 @@ export function ErroForm({
         </Button>
       </fieldset>
 
-      <fieldset className="flex flex-col gap-1.5">
+      <fieldset ref={fieldsetVersoesRef} tabIndex={-1} className="flex flex-col gap-1.5">
         <legend className="mb-1 text-xs font-semibold text-ink lg:text-sm">
           {origemAtual === 'Prefeitura' && (
             <span aria-hidden="true" className="text-error-texto">
@@ -261,6 +282,26 @@ export function ErroForm({
 
         {errors.versoesProvedorIds?.message && (
           <p className="text-xs text-error-texto">{errors.versoesProvedorIds.message}</p>
+        )}
+
+        {statusOpcoesVersoes === 'carregando' && (
+          <p aria-live="polite" aria-busy="true" className="text-xs text-muted">
+            Carregando provedores e versões…
+          </p>
+        )}
+
+        {statusOpcoesVersoes === 'erro' && (
+          <div role="alert" className="flex flex-wrap items-center gap-2 text-xs text-error-texto">
+            <span>
+              Não foi possível carregar todas as versões. As já ligadas a este erro continuam no
+              cadastro.
+            </span>
+            {onRecarregarOpcoesVersoes && (
+              <Button type="button" variant="secondary" size="sm" onClick={tentarCarregarVersoes}>
+                Tentar novamente
+              </Button>
+            )}
+          </div>
         )}
 
         <div className="flex flex-col gap-1.5">

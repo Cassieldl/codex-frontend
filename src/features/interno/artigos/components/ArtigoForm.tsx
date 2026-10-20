@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
 import { ConteudoArtigo } from '../../../../components/ui/ConteudoArtigo'
 import { Input } from '../../../../components/ui/Input'
@@ -216,11 +217,7 @@ export function ArtigoForm({
       className="flex flex-col gap-5"
       noValidate
     >
-      {erroServidor && (
-        <p role="alert" className="text-sm text-error-texto">
-          {erroServidor}
-        </p>
-      )}
+      <ErroDoServidor mensagem={erroServidor} />
 
       {initialData?.reservado && (
         <p role="status" className="text-xs text-muted">

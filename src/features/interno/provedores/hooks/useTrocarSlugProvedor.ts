@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
+import { ehConflitoDeConcorrencia } from '../../utils/codigoDeErroApi'
 import type { ProvedorAdminDetalhe } from '../types/provedorAdmin'
 import { provedoresAdminKeys } from './provedoresAdminKeys'
 
@@ -24,10 +25,16 @@ export interface VariaveisTrocarSlugProvedor {
  *
  * Invalida o detalhe **e** a listagem: o slug é o endereço público do provedor e
  * aparece nos dois lugares — deixar a lista com o valor velho entregaria um link
- * que só redireciona.
+ * que só redireciona. O `409` de concorrência relê os dois também, para a
+ * segunda tentativa levar o etag novo.
  */
 export function useTrocarSlugProvedor() {
   const queryClient = useQueryClient()
+
+  function invalidar({ id }: VariaveisTrocarSlugProvedor) {
+    void queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.detail(id) })
+    void queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.lists() })
+  }
 
   return useMutation({
     mutationFn: async ({ id, slug, etag }: VariaveisTrocarSlugProvedor) => {
@@ -38,9 +45,9 @@ export function useTrocarSlugProvedor() {
       )
       return data.data
     },
-    onSuccess: (_dados, variaveis) => {
-      void queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.detail(variaveis.id) })
-      void queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.lists() })
+    onSuccess: (_dados, variaveis) => invalidar(variaveis),
+    onError: (erro, variaveis) => {
+      if (ehConflitoDeConcorrencia(erro)) invalidar(variaveis)
     },
   })
 }
