@@ -6,13 +6,13 @@ import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { handlerHomeCruSemEnvelope, handlerHomeErro } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
-import type { HomeDto } from '../types/home'
 import { homeKeys } from './homeKeys'
 import { useHome } from './useHome'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const home: HomeDto = {
+// JSON literal transcrito de HomeDto, sem o tipo do cliente.
+const home = {
   comunicados: [],
   provedoresPorCategoria: [
     {
@@ -22,6 +22,7 @@ const home: HomeDto = {
         {
           slug: 'nacional-adn',
           nome: 'Nacional/ADN',
+          ultimaVersao: { slug: '1-01', rotulo: '1.01' },
           versoes: [{ slug: '1-01', rotulo: '1.01' }],
           verificadoEm: '2026-08-12',
           temComunicado: false,

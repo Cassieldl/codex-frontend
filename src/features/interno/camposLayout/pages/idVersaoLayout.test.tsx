@@ -7,7 +7,8 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../../auth/keycloak'
@@ -162,5 +163,39 @@ describe('IdVersaoLayoutPage: trilha', () => {
 
     expect(linkIndice).not.toHaveAttribute('aria-current')
     expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(0)
+  })
+})
+
+describe('IdVersaoLayoutPage: publicação de campo canônico', () => {
+  it('409 ao despublicar mostra a mensagem do servidor na linha do campo', async () => {
+    keycloak.tokenParsed = {
+      resource_access: {
+        'codex-backend': { roles: ['campolayout-buscar', 'campolayout-publicar'] },
+      },
+    }
+    server.use(
+      ...handlers(),
+      http.put(`${API_URL}/interno/campos-layout/90/publicacao`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: 'CONFLITO_CONCORRENCIA',
+              message: 'O campo foi alterado por outra requisição. Recarregue e tente novamente.',
+            },
+          },
+          { status: 409 },
+        ),
+      ),
+    )
+    const usuario = userEvent.setup()
+    renderizarPagina()
+
+    await screen.findByText('Razão social do prestador')
+    const linha = () => screen.getByRole('row', { name: /Razão social do prestador/ })
+    await usuario.click(within(linha()).getByRole('button', { name: 'Despublicar' }))
+
+    expect(await within(linha()).findByRole('alert')).toHaveTextContent(
+      'O campo foi alterado por outra requisição. Recarregue e tente novamente.',
+    )
   })
 })

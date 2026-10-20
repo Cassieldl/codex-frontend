@@ -17,11 +17,18 @@ import { usePublicarErro } from '../../hooks/usePublicarErro'
 import { ErroForm, type OpcaoVersaoProvedorErro } from '../components/ErroForm'
 import { useAtualizarErro } from '../hooks/useAtualizarErro'
 import { useCriarErro } from '../hooks/useCriarErro'
+import { useErroAdminPorId } from '../hooks/useErroAdminPorId'
 import { useErrosAdmin } from '../hooks/useErrosAdmin'
 import { useRemoverErro } from '../hooks/useRemoverErro'
-import type { ErroAdminDetalhe, ErroAdminListaItem, ErroFormDto } from '../types/erroAdmin'
+import type { AtualizarErroDto, ErroAdminListaItem, ErroFormDto } from '../types/erroAdmin'
 
 const TAMANHO_PAGINA_PADRAO = 25
+
+/** Falha ao publicar ou despublicar, mostrada na linha do erro que a causou. */
+interface ErroDePublicacao {
+  erroId: number
+  mensagem: string
+}
 
 /**
  * Opções de "provedores e versões aplicáveis" para o `ErroForm` — combina a
@@ -44,6 +51,11 @@ function useOpcoesVersoesProvedorErro(): OpcaoVersaoProvedorErro[] {
   }))
 }
 
+/** O código fica só leitura na edição e não vai no corpo: o backend não o aceita no PUT. */
+function paraAtualizacao({ codigo: _codigo, ...dto }: ErroFormDto): AtualizarErroDto {
+  return dto
+}
+
 export function ErrosPage() {
   const permissoes = usePermissoesInterno()
   const [pagina, setPagina] = useState(1)
@@ -57,10 +69,15 @@ export function ErrosPage() {
   const atualizarErro = useAtualizarErro()
   const removerErro = useRemoverErro()
 
-  const [modalAberto, setModalAberto] = useState<'novo' | ErroAdminDetalhe | null>(null)
+  // Na edição guarda só o id: o item da lista não traz o agregado que o formulário precisa.
+  const [modalAberto, setModalAberto] = useState<'novo' | number | null>(null)
   const [erroServidor, setErroServidor] = useState<string | null>(null)
   const [erroParaRemover, setErroParaRemover] = useState<ErroAdminListaItem | null>(null)
   const [erroDeRemocao, setErroDeRemocao] = useState<string | null>(null)
+  const [erroDePublicacao, setErroDePublicacao] = useState<ErroDePublicacao | null>(null)
+
+  const idEmEdicao = typeof modalAberto === 'number' ? modalAberto : 0
+  const detalheEmEdicao = useErroAdminPorId(idEmEdicao)
 
   function aoSalvar(dto: ErroFormDto) {
     setErroServidor(null)
@@ -73,9 +90,10 @@ export function ErrosPage() {
       return
     }
 
-    if (modalAberto) {
+    const erroEmEdicao = detalheEmEdicao.data
+    if (erroEmEdicao) {
       atualizarErro.mutate(
-        { id: modalAberto.id, dto, etag: modalAberto.etag },
+        { id: erroEmEdicao.id, dto: paraAtualizacao(dto), etag: erroEmEdicao.etag },
         {
           onSuccess: () => setModalAberto(null),
           onError: (erro) => setErroServidor(handleApiError(erro)),
@@ -96,6 +114,26 @@ export function ErrosPage() {
         onError: (falha) => setErroDeRemocao(handleApiError(falha)),
       },
     )
+  }
+
+  function alternarPublicacao(erro: ErroAdminListaItem) {
+    setErroDePublicacao(null)
+    publicarErro.mutate(
+      { id: erro.id, publicado: !erro.publicado, etag: erro.etag },
+      {
+        onError: (falha) =>
+          setErroDePublicacao({ erroId: erro.id, mensagem: handleApiError(falha) }),
+      },
+    )
+  }
+
+  const propsDoFormulario = {
+    opcoesVersoesProvedor: opcoesVersoes,
+    opcoesCamposLayout: [],
+    onSubmit: aoSalvar,
+    onCancel: () => setModalAberto(null),
+    isSubmitting: criarErro.isPending || atualizarErro.isPending,
+    erroServidor,
   }
 
   return (
@@ -128,7 +166,7 @@ export function ErrosPage() {
 
       {!isLoading && !isError && data && data.items.length > 0 && (
         <>
-          <TableRoot>
+          <TableRoot rotulo="Erros conhecidos">
             <TableHeader>
               <tr>
                 <TableCell header>Código</TableCell>
@@ -157,7 +195,7 @@ export function ErrosPage() {
                           variant="secondary"
                           size="sm"
                           aria-label={`Editar erro ${erro.codigo}`}
-                          onClick={() => setModalAberto(erro)}
+                          onClick={() => setModalAberto(erro.id)}
                         >
                           <Pencil className="size-4" aria-hidden="true" />
                         </Button>
@@ -169,13 +207,7 @@ export function ErrosPage() {
                           isLoading={
                             publicarErro.isPending && publicarErro.variables?.id === erro.id
                           }
-                          onClick={() =>
-                            publicarErro.mutate({
-                              id: erro.id,
-                              publicado: !erro.publicado,
-                              etag: erro.etag,
-                            })
-                          }
+                          onClick={() => alternarPublicacao(erro)}
                         >
                           {erro.publicado ? 'Despublicar' : 'Publicar'}
                         </Button>
@@ -191,6 +223,11 @@ export function ErrosPage() {
                         </Button>
                       )}
                     </div>
+                    {erroDePublicacao?.erroId === erro.id && (
+                      <p role="alert" className="mt-1 text-sm text-error-texto">
+                        {erroDePublicacao.mensagem}
+                      </p>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -217,15 +254,27 @@ export function ErrosPage() {
         title={modalAberto === 'novo' ? 'Novo erro' : 'Editar erro'}
         size="lg"
       >
-        <ErroForm
-          initialData={modalAberto === 'novo' ? undefined : (modalAberto ?? undefined)}
-          opcoesVersoesProvedor={opcoesVersoes}
-          opcoesCamposLayout={[]}
-          onSubmit={aoSalvar}
-          onCancel={() => setModalAberto(null)}
-          isSubmitting={criarErro.isPending || atualizarErro.isPending}
-          erroServidor={erroServidor}
-        />
+        {modalAberto === 'novo' && <ErroForm {...propsDoFormulario} />}
+
+        {idEmEdicao > 0 && detalheEmEdicao.isLoading && (
+          <div aria-live="polite" aria-busy="true" className="flex flex-col gap-3">
+            <span className="sr-only">Carregando erro…</span>
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        )}
+
+        {idEmEdicao > 0 && detalheEmEdicao.isError && (
+          <ErrorState onRetry={() => detalheEmEdicao.refetch()} />
+        )}
+
+        {idEmEdicao > 0 && detalheEmEdicao.data && (
+          <ErroForm
+            key={detalheEmEdicao.data.id}
+            initialData={detalheEmEdicao.data}
+            {...propsDoFormulario}
+          />
+        )}
       </Modal>
 
       {/*

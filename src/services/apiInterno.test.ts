@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios'
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { MockInstance } from 'vitest'
 
 const garantirAutenticacaoMock = vi.fn<() => Promise<boolean>>()
 const getTokenMock = vi.fn<() => string | undefined>()
@@ -28,20 +29,20 @@ type Ocorrencia = 'renovou' | 'requisitou'
 function adapterQueResponde(status: number, ocorrencias: Ocorrencia[] = []) {
   const capturas: InternalAxiosRequestConfig[] = []
 
-  apiInterno.defaults.adapter = async (config): Promise<AxiosResponse> => {
+  apiInterno.defaults.adapter = (config): Promise<AxiosResponse> => {
     ocorrencias.push('requisitou')
     capturas.push(config)
     const resposta: AxiosResponse = { data: {}, status, statusText: '', headers: {}, config }
     if (status >= 400) {
-      throw new AxiosError('falha', String(status), config, null, resposta)
+      return Promise.reject(new AxiosError('falha', String(status), config, null, resposta))
     }
-    return resposta
+    return Promise.resolve(resposta)
   }
 
   return capturas
 }
 
-let irPara: ReturnType<typeof vi.spyOn>
+let irPara: MockInstance<ModuloSessaoExpirada['navegacaoDoNavegador']['ir']>
 
 // Cada teste é uma carga nova do documento: a trava de saída da sessão recomeça solta.
 beforeEach(async () => {
@@ -68,9 +69,10 @@ describe('apiInterno: renovação do token', () => {
     const ocorrencias: Ocorrencia[] = []
     let tokenEmMemoria = 'token-vencido'
     getTokenMock.mockImplementation(() => tokenEmMemoria)
-    renovarTokenMock.mockImplementation(async () => {
+    renovarTokenMock.mockImplementation(() => {
       ocorrencias.push('renovou')
       tokenEmMemoria = 'token-renovado'
+      return Promise.resolve()
     })
     const capturas = adapterQueResponde(200, ocorrencias)
 

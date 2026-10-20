@@ -4,13 +4,13 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { ErroListaItem } from '../types/erro'
 import { errosKeys } from './errosKeys'
 import { useErrosPorCodigo } from './useErrosPorCodigo'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const itemFake: ErroListaItem = {
+// JSON literal transcrito de ErroListaItemDto, sem o tipo do cliente.
+const itemFake = {
   slug: 'e0117-cnpj-tomador-invalido',
   codigo: 'E0117',
   titulo: 'CNPJ do tomador inválido',

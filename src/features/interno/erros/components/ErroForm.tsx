@@ -92,9 +92,8 @@ function valoresIniciais(dado?: ErroAdminDetalhe): ErroFormValores {
     variantes: dado?.variantes.length
       ? dado.variantes.map((texto) => ({ texto }))
       : [{ texto: '' }],
-    versoesProvedorIds:
-      dado?.versoesAplicaveis.map((versao) => String(versao.versaoProvedorId)) ?? [],
-    camposLayoutIds: dado?.camposRelacionados.map((campo) => String(campo.campoLayoutId)) ?? [],
+    versoesProvedorIds: dado?.versoesProvedorIds.map(String) ?? [],
+    camposLayoutIds: dado?.camposLayoutIds.map(String) ?? [],
   }
 }
 
@@ -109,6 +108,7 @@ export function ErroForm({
 }: ErroFormProps) {
   const versoesCheckboxId = useId()
   const camposCheckboxId = useId()
+  const isEdicao = initialData !== undefined
 
   const {
     register,
@@ -163,7 +163,14 @@ export function ErroForm({
       )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Input label="Código" required error={errors.codigo?.message} {...register('codigo')} />
+        <Input
+          label="Código"
+          required
+          readOnly={isEdicao}
+          hint={isEdicao ? 'O código não muda depois de criado.' : undefined}
+          error={errors.codigo?.message}
+          {...register('codigo')}
+        />
         <Select
           label="Origem"
           required

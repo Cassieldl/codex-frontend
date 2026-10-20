@@ -109,7 +109,7 @@ export function ExemplosVersao({ exemplos, provedorSlug, versaoSlug }: ExemplosV
                 {aberto && (
                   <pre
                     tabIndex={0}
-                    role="group"
+                    role="region"
                     aria-label={`XML do exemplo ${exemplo.nome}`}
                     className="overflow-auto rounded-[var(--radius-input)] border border-border bg-surface-disabled p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
                   >

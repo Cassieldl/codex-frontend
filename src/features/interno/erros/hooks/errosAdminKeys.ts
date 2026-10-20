@@ -13,4 +13,5 @@ const base = criarFabricaDeChaves<ListarErrosAdminParams>('errosAdmin')
 
 export const errosAdminKeys = {
   ...base,
+  detail: (id: number) => [...base.all, 'detail', id] as const,
 }

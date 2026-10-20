@@ -4,14 +4,7 @@ import { ShieldX, TriangleAlert } from 'lucide-react'
 import { navegacaoDoNavegador } from '../../../auth/sessaoExpirada'
 import { Button } from '../../../components/ui/Button'
 import { ErrorState } from '../../../components/ui/ErrorState'
-
-/** Sinaliza ao guard da área interna que o Keycloak não respondeu ao check-sso. */
-export class LoginIndisponivelErro extends Error {
-  constructor() {
-    super('O serviço de login não respondeu.')
-    this.name = 'LoginIndisponivelErro'
-  }
-}
+import { LoginIndisponivelErro } from './loginIndisponivelErro'
 
 /** Enquanto o check-sso não responde, a área interna não fica em branco. */
 export function VerificandoSessao() {
@@ -38,6 +31,7 @@ export function LoginIndisponivel({ onTentarDeNovo }: LoginIndisponivelProps) {
         O serviço de autenticação da Migrate não respondeu. O portal público continua no ar; a área
         interna volta assim que o login responder.
       </p>
+      {/* eslint-disable-next-line jsx-a11y/no-autofocus -- tela de bloqueio com uma ação principal */}
       <Button onClick={onTentarDeNovo} autoFocus>
         Tentar de novo
       </Button>
@@ -62,6 +56,7 @@ export function AcessoRecusado({ onSair, onTentarDeNovo }: AcessoRecusadoProps) 
         responsável pelo Codex.
       </p>
       <div className="flex flex-wrap justify-center gap-3">
+        {/* eslint-disable-next-line jsx-a11y/no-autofocus -- tela de bloqueio com uma ação principal */}
         <Button onClick={onSair} autoFocus>
           Sair da conta Migrate
         </Button>

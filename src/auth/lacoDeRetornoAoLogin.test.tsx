@@ -39,9 +39,9 @@ type ClienteInterno = (typeof import('../services/apiInterno'))['apiInterno']
 
 /** A API recusa com 401 toda requisição que leva token, como um backend que não aceita o client. */
 function apiQueRecusaTodoToken(apiInterno: ClienteInterno) {
-  apiInterno.defaults.adapter = async (config): Promise<AxiosResponse> => {
+  apiInterno.defaults.adapter = (config): Promise<AxiosResponse> => {
     const resposta: AxiosResponse = { data: {}, status: 401, statusText: '', headers: {}, config }
-    throw new AxiosError('recusado', '401', config, null, resposta)
+    return Promise.reject(new AxiosError('recusado', '401', config, null, resposta))
   }
 }
 
@@ -124,7 +124,10 @@ describe('laço de volta ao login', () => {
 
     const gravado = Object.keys(sessionStorage).map((chave) => sessionStorage.getItem(chave))
     expect(gravado.join('')).not.toContain('token-que-a-api-recusa')
-    expect(JSON.parse(gravado[0] ?? '{}')).toEqual({ contador: 1, desde: expect.any(Number) })
+    expect(JSON.parse(gravado[0] ?? '{}')).toEqual({
+      contador: 1,
+      desde: expect.any(Number) as unknown,
+    })
   })
 
   it('tentar de novo recomeça a contagem e vai ao login', async () => {

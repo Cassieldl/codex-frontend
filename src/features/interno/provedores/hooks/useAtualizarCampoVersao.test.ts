@@ -4,21 +4,22 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../../test/mocks/server'
-import type { AtualizarCampoVersaoDto, CampoVersaoAdmin } from '../types/campoVersaoAdmin'
+import type { AtualizarCampoVersaoDto } from '../types/campoVersaoAdmin'
 import { useAtualizarCampoVersao } from './useAtualizarCampoVersao'
 
 const API_URL = import.meta.env.VITE_API_URL
 
 const dtoFake: AtualizarCampoVersaoDto = {
-  campoLayoutId: 7,
   tipo: 'Texto',
   estadoPreenchimento: 'Obrigatorio',
   ordem: 1,
   notaPreenchimento: 'Parágrafo inteiro digitado pelo analista, não pode sumir em erro.',
 }
 
-const campoFake: CampoVersaoAdmin = {
+// JSON literal transcrito de CampoVersaoAdminDto, sem o tipo do cliente.
+const campoFake = {
   id: 99,
+  versaoProvedorId: 5,
   campoLayoutId: 7,
   campoLayoutNome: 'Número da RPS',
   tipo: 'Texto',
@@ -28,7 +29,7 @@ const campoFake: CampoVersaoAdmin = {
   estadoPreenchimento: 'Obrigatorio',
   condicao: null,
   exemplo: null,
-  notaPreenchimento: dtoFake.notaPreenchimento ?? null,
+  notaPreenchimento: 'Parágrafo inteiro digitado pelo analista, não pode sumir em erro.',
   destinoXml: null,
   notaTransformacao: null,
   ordem: 1,

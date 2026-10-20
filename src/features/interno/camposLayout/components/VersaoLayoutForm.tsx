@@ -72,10 +72,16 @@ export function VersaoLayoutForm({
 
   const estadoAtual = watch('estado')
 
+  // O backend lê descrição ausente como "permanece" e string vazia como "limpar".
+  function descricaoParaEnvio(descricao: string | undefined): string | undefined {
+    if (descricao) return descricao
+    return modo === 'editar' && initialData?.descricao ? '' : undefined
+  }
+
   function aoSubmeter(valores: VersaoLayoutFormValores) {
     onSubmit({
       rotulo: valores.rotulo,
-      descricao: valores.descricao || undefined,
+      descricao: descricaoParaEnvio(valores.descricao),
       estado: modo === 'editar' ? valores.estado : undefined,
     })
   }

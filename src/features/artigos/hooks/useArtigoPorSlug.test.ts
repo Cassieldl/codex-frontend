@@ -5,12 +5,12 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { ArtigoDetalhe } from '../types/artigo'
 import { useArtigoPorSlug } from './useArtigoPorSlug'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const artigo: ArtigoDetalhe = {
+// JSON literal transcrito de ArtigoDetalheDto, sem o tipo do cliente.
+const artigo = {
   slug: 'campo-ausente-nao-se-aplica',
   tipo: 'Conceito',
   titulo: 'Campo ausente quer dizer "não se aplica"',

@@ -1,4 +1,5 @@
 import type { AvisoPublico } from '../types/provedor'
+import { ehColecao } from '../../../utils/ehColecao'
 
 /**
  * Confere, na fronteira com a API, que `avisos` chegou e que cada aviso traz `camposAfetados` como
@@ -13,7 +14,7 @@ import type { AvisoPublico } from '../types/provedor'
 export function exigirAvisosPublicos(
   avisos: readonly AvisoPublico[] | null | undefined,
 ): readonly AvisoPublico[] {
-  if (!Array.isArray(avisos))
+  if (!ehColecao(avisos))
     throw new Error('A resposta da API não trouxe a coleção "avisos", que o contrato exige.')
 
   for (const aviso of avisos) {

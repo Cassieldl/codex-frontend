@@ -22,7 +22,8 @@ vi.mock('../../auth/keycloak', () => ({
 }))
 
 const { Route, useNoIndex } = await import('./_autenticado')
-const { LoginIndisponivelErro } = await import('../../features/interno/components/EstadoDaSessao')
+const { LoginIndisponivelErro } =
+  await import('../../features/interno/components/loginIndisponivelErro')
 const { navegacaoDoNavegador } = await import('../../auth/sessaoExpirada')
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -33,7 +34,7 @@ function criarContexto(href: string): ContextoBeforeLoad {
   return { location: { href } } as unknown as ContextoBeforeLoad
 }
 
-function chamarBeforeLoad(href: string) {
+function chamarBeforeLoad(href: string): unknown {
   const beforeLoad = Route.options.beforeLoad
   if (!beforeLoad) throw new Error('beforeLoad não definido na rota _autenticado')
   return beforeLoad(criarContexto(href))

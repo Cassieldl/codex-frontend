@@ -25,7 +25,7 @@ export function useCriarCampoVersao(versaoId: number) {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: camposVersaoKeys.all })
+      void queryClient.invalidateQueries({ queryKey: camposVersaoKeys.all })
     },
   })
 }

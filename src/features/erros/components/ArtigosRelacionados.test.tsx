@@ -28,12 +28,20 @@ const artigos: ReferenciaArtigo[] = [
   },
 ]
 
+// O RouterProvider monta de forma assíncrona: sem esperar a âncora, a ausência seria afirmada no vazio.
+const ANCORA_DE_MONTAGEM = 'rota do erro montada'
+
 function renderBloco(lista: ReferenciaArtigo[]) {
   const rootRoute = createRootRoute({ component: Outlet })
   const rotaErro = createRoute({
     getParentRoute: () => rootRoute,
     path: '/erros/e0117',
-    component: () => <ArtigosRelacionados artigos={lista} />,
+    component: () => (
+      <>
+        <p>{ANCORA_DE_MONTAGEM}</p>
+        <ArtigosRelacionados artigos={lista} />
+      </>
+    ),
   })
   const rotaArtigo = createRoute({
     getParentRoute: () => rootRoute,
@@ -62,8 +70,10 @@ describe('ArtigosRelacionados', () => {
     expect(screen.getByText('Procedimento')).toBeInTheDocument()
   })
 
-  it('coleção vazia não renderiza a seção nem o título órfão', () => {
+  it('coleção vazia não renderiza a seção nem o título órfão', async () => {
     const { container } = renderBloco([])
+
+    expect(await screen.findByText(ANCORA_DE_MONTAGEM)).toBeInTheDocument()
 
     expect(screen.queryByRole('heading', { name: 'Artigos relacionados' })).not.toBeInTheDocument()
     expect(container.querySelectorAll('section')).toHaveLength(0)

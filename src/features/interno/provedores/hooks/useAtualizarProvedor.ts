@@ -33,8 +33,8 @@ export function useAtualizarProvedor() {
       return data.data
     },
     onSuccess: (_dados, variaveis) => {
-      queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.detail(variaveis.id) })
-      queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.detail(variaveis.id) })
+      void queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.lists() })
     },
   })
 }

@@ -15,8 +15,15 @@ import { usePublicarProvedor } from '../../hooks/usePublicarProvedor'
 import { ProvedorForm, type ProvedorFormDto } from '../components/ProvedorForm'
 import { useCriarProvedor } from '../hooks/useCriarProvedor'
 import { useProvedoresAdmin } from '../hooks/useProvedoresAdmin'
+import type { ProvedorAdminListaItem } from '../types/provedorAdmin'
 
 const TAMANHO_PAGINA_PADRAO = 25
+
+/** Falha ao publicar ou despublicar, mostrada na linha do provedor que a causou. */
+interface ErroDePublicacao {
+  provedorId: number
+  mensagem: string
+}
 
 export function ProvedoresPage() {
   const permissoes = usePermissoesInterno()
@@ -24,6 +31,7 @@ export function ProvedoresPage() {
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
   const [modalCriarAberto, setModalCriarAberto] = useState(false)
   const [erroCriar, setErroCriar] = useState<string | null>(null)
+  const [erroDePublicacao, setErroDePublicacao] = useState<ErroDePublicacao | null>(null)
 
   const { data, isLoading, isError, refetch } = useProvedoresAdmin({ pagina, tamanhoPagina })
   const criarProvedor = useCriarProvedor()
@@ -41,6 +49,17 @@ export function ProvedoresPage() {
       {
         onSuccess: () => setModalCriarAberto(false),
         onError: (erro) => setErroCriar(handleApiError(erro)),
+      },
+    )
+  }
+
+  function alternarPublicacao(provedor: ProvedorAdminListaItem) {
+    setErroDePublicacao(null)
+    publicarProvedor.mutate(
+      { id: provedor.id, publicado: !provedor.publicado, etag: provedor.etag },
+      {
+        onError: (falha) =>
+          setErroDePublicacao({ provedorId: provedor.id, mensagem: handleApiError(falha) }),
       },
     )
   }
@@ -75,7 +94,7 @@ export function ProvedoresPage() {
 
       {!isLoading && !isError && data && data.items.length > 0 && (
         <>
-          <TableRoot>
+          <TableRoot rotulo="Provedores">
             <TableHeader>
               <tr>
                 <TableCell header>Nome</TableCell>
@@ -116,16 +135,15 @@ export function ProvedoresPage() {
                           publicarProvedor.isPending &&
                           publicarProvedor.variables?.id === provedor.id
                         }
-                        onClick={() =>
-                          publicarProvedor.mutate({
-                            id: provedor.id,
-                            publicado: !provedor.publicado,
-                            etag: provedor.etag,
-                          })
-                        }
+                        onClick={() => alternarPublicacao(provedor)}
                       >
                         {provedor.publicado ? 'Despublicar' : 'Publicar'}
                       </Button>
+                    )}
+                    {erroDePublicacao?.provedorId === provedor.id && (
+                      <p role="alert" className="mt-1 text-sm text-error-texto">
+                        {erroDePublicacao.mensagem}
+                      </p>
                     )}
                   </TableCell>
                 </TableRow>

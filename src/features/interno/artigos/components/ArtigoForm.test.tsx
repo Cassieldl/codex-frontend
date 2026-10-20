@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { ArtigoAdminDetalhe } from '../types/artigoAdmin'
 import type { BuscaDeErrosDoArtigo, CamposLayoutDoArtigo } from '../types/referenciasArtigo'
+import type { ArtigoFormProps } from './ArtigoForm'
 import { ArtigoForm } from './ArtigoForm'
 
 const CAMPO_DISCRIMINACAO = {
@@ -57,7 +58,7 @@ const CAMPOS_LAYOUT: CamposLayoutDoArtigo = {
 }
 
 function renderizar(props: Partial<React.ComponentProps<typeof ArtigoForm>> = {}) {
-  const onSubmit = vi.fn()
+  const onSubmit = vi.fn<ArtigoFormProps['onSubmit']>()
   render(
     <ArtigoForm
       buscaDeErros={BUSCA_DE_ERROS}

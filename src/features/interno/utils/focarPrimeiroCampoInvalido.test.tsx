@@ -21,6 +21,7 @@ function FormularioDeTeste() {
 
   return (
     <form onSubmit={handleSubmit(() => {}, focarPrimeiroCampoInvalido)} noValidate>
+      {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props -- reproduz o select próprio, um botão marcado inválido */}
       <button type="button" aria-invalid="true" aria-label="Campo próprio, sem register">
         Selecione
       </button>
@@ -69,11 +70,11 @@ describe('todo formulário da área interna leva o foco ao primeiro erro', () =>
     query: '?raw',
     import: 'default',
     eager: true,
-  }) as Record<string, string>
+  })
 
   function formularios(): string[] {
     return Object.keys(FONTES).filter(
-      (caminho) => !caminho.endsWith('.test.tsx') && FONTES[caminho]!.includes('handleSubmit('),
+      (caminho) => !caminho.endsWith('.test.tsx') && FONTES[caminho].includes('handleSubmit('),
     )
   }
 
@@ -84,7 +85,7 @@ describe('todo formulário da área interna leva o foco ao primeiro erro', () =>
 
   it('nenhum chama handleSubmit sem o tratamento de inválido', () => {
     const semTratamento = formularios().filter((caminho) =>
-      /handleSubmit\(\s*\w+\s*\)/.test(FONTES[caminho]!),
+      /handleSubmit\(\s*\w+\s*\)/.test(FONTES[caminho]),
     )
 
     expect(semTratamento).toEqual([])
@@ -101,7 +102,7 @@ describe('todo formulário da área interna leva o foco ao primeiro erro', () =>
    */
   it('nenhum deixa o foco de erro do RHF ligado', () => {
     const comFocoDoRhf = formularios().filter(
-      (caminho) => !FONTES[caminho]!.includes('shouldFocusError: false'),
+      (caminho) => !FONTES[caminho].includes('shouldFocusError: false'),
     )
 
     expect(comFocoDoRhf).toEqual([])

@@ -229,6 +229,7 @@ export function Modal(props: ModalProps) {
   )
 
   return createPortal(
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- clique no fundo fecha; pelo teclado, o Escape já fecha
     <div
       className={clsx(overlayClasses, overlayPorVariante[variante])}
       onMouseDown={(evento) => {

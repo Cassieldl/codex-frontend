@@ -10,6 +10,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSyncExternalStore } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Mock } from 'vitest'
 import type { ModalDoCampoProps } from '../types/modalDoCampo'
 import { ModalDoCampo } from './ModalDoCampo'
 
@@ -160,8 +161,11 @@ function regiaoDeAnuncio() {
     .find((regiao) => regiao.hasAttribute('data-anuncio-de-navegacao'))!
 }
 
+let rolagem: Mock<Element['scrollIntoView']>
+
 beforeEach(() => {
-  Element.prototype.scrollIntoView = vi.fn()
+  rolagem = vi.fn<Element['scrollIntoView']>()
+  Element.prototype.scrollIntoView = rolagem
 })
 
 describe('ModalDoCampo — identificação', () => {
@@ -346,18 +350,16 @@ describe('ModalDoCampo — seção inicial', () => {
     renderizar(propsBase({ secaoInicial: 'rejeicoes' }))
     await screen.findByRole('region', { name: 'Rejeições registradas (1)' })
 
-    const rolar = vi.mocked(Element.prototype.scrollIntoView)
-
-    expect(rolar).toHaveBeenCalledTimes(1)
-    expect(rolar).toHaveBeenCalledWith({ block: 'start' })
-    expect((rolar.mock.contexts[0] as HTMLElement).id).toBe('rejeicoes-do-campo')
+    expect(rolagem).toHaveBeenCalledTimes(1)
+    expect(rolagem).toHaveBeenCalledWith({ block: 'start' })
+    expect((rolagem.mock.contexts[0] as HTMLElement).id).toBe('rejeicoes-do-campo')
   })
 
   it('sem a prop, não rola', async () => {
     renderizar(propsBase())
     await screen.findByRole('region', { name: 'Rejeições registradas (1)' })
 
-    expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled()
+    expect(rolagem).not.toHaveBeenCalled()
   })
 
   it('navegar para outro campo não repete a rolagem da abertura', async () => {
@@ -368,7 +370,7 @@ describe('ModalDoCampo — seção inicial', () => {
     await screen.findByRole('dialog', { name: 'tpSusp' })
     expect(screen.getByRole('region', { name: 'Rejeições registradas (1)' })).toBeInTheDocument()
 
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalledTimes(1)
+    expect(rolagem).toHaveBeenCalledTimes(1)
   })
 })
 

@@ -23,7 +23,7 @@ export function useRemoverArtigo() {
       await apiInterno.delete(`/artigos/${id}`, { etag })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
+      void queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
     },
   })
 }

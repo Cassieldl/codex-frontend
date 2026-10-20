@@ -4,7 +4,7 @@ import Markdown from 'react-markdown'
 import type { Components, ExtraProps } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { caminhoInternoSeguro } from '../../utils/caminhoInternoSeguro'
-import { gerarAncoraSecao } from './SumarioArtigo'
+import { gerarAncoraSecao } from './secoesDoArtigo'
 
 /**
  * Elementos permitidos no corpo do artigo (`arquitetura.md` E9 +

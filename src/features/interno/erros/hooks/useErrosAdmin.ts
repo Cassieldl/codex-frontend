@@ -12,11 +12,7 @@ interface PaginatedResponseCru<T> {
   totalPages: number
 }
 
-/**
- * `GET /interno/erros` (I18) — `PaginatedResponse<T>` cru, role `erros-buscar`.
- * O `etag` de cada item vem do `versaoConcorrencia` do corpo: erro é agregado
- * editado por modal a partir da própria lista, sem round-trip de detalhe.
- */
+/** `GET /interno/erros`: o item não traz o agregado, por isso editar busca o detalhe (`useErroAdminPorId`). */
 export function useErrosAdmin(params: ListarErrosAdminParams) {
   return useQuery({
     queryKey: errosAdminKeys.list(params),

@@ -12,7 +12,6 @@ import {
 } from '../../../../test/mocks/handlers'
 import { server } from '../../../../test/mocks/server'
 import { SLUG_COMO_FUNCIONA } from '../../../artigos/utils/slugsReservados'
-import type { ArtigoAdminListaItem } from '../types/artigoAdmin'
 import { ArtigosPage } from './artigos'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -32,7 +31,8 @@ function autenticarCom(roles: string[]) {
   keycloak.tokenParsed = { resource_access: { 'codex-backend': { roles } } }
 }
 
-const RESERVADO_PUBLICADO: ArtigoAdminListaItem = {
+// JSON literal transcrito de ArtigoAdminListaItemDto, sem o tipo do cliente.
+const RESERVADO_PUBLICADO = {
   id: 5,
   slug: SLUG_COMO_FUNCIONA,
   tipo: 'Conceito',
@@ -43,7 +43,7 @@ const RESERVADO_PUBLICADO: ArtigoAdminListaItem = {
   versaoConcorrencia: 12,
 }
 
-const RASCUNHO_COMUM: ArtigoAdminListaItem = {
+const RASCUNHO_COMUM = {
   id: 6,
   slug: 'migrar-para-abrasf-204',
   tipo: 'Mudanca',
@@ -288,7 +288,14 @@ describe('ArtigosPage — artigo reservado bloqueia remover e despublicar', () =
       http.put(`${API_URL}/interno/artigos/5/publicacao`, async ({ request }) => {
         publicacoes.push(await request.json())
         return HttpResponse.json({
-          data: { ...RESERVADO_PUBLICADO, corpo: '', campoLayoutIds: [], erroIds: [] },
+          data: {
+            ...RESERVADO_PUBLICADO,
+            corpo: '',
+            campoLayoutIds: [],
+            erroIds: [],
+            erros: [],
+            camposLayout: [],
+          },
           message: null,
         })
       }),

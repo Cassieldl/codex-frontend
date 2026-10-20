@@ -52,7 +52,7 @@ function verbeteDoCampo(slug: string, ondeEUsado: unknown) {
 }
 
 /** Os dois hooks juntos, como o modal os usa: o atraso mora fora do conteúdo que remonta. */
-function usarUsosDoCampo(campoSlug: string) {
+function useUsosDoCampo(campoSlug: string) {
   return useUsosDoCampoLayout(campoSlug, useSlugAssentadoDoCampo(campoSlug))
 }
 
@@ -94,7 +94,7 @@ function responderVerbeteComOndeEUsado(ondeEUsado: unknown) {
 function mensagemDoErro(cliente: QueryClient, slug: string): string | undefined {
   // O erro do `select` mora no resultado do observador, não no estado da query.
   const consulta = cliente.getQueryCache().find({ queryKey: layoutKeys.campo(slug) })
-  const erro = consulta?.observers[0]?.getCurrentResult().error
+  const erro: unknown = consulta?.observers[0]?.getCurrentResult().error
   return erro instanceof Error ? erro.message : undefined
 }
 
@@ -108,7 +108,7 @@ describe('useUsosDoCampoLayout — leitura', () => {
       'valor-servicos': [USO_COM_DOIS_DESTINOS, USO_SEM_DESTINO, USO_COM_DESTINOS_OMITIDOS],
     })
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(criarCliente()),
     })
 
@@ -125,7 +125,7 @@ describe('useUsosDoCampoLayout — leitura', () => {
   it('campo sem nenhum uso é resultado legítimo: lista vazia, sem erro', async () => {
     responderUsos({ 'valor-servicos': [] })
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(criarCliente()),
     })
 
@@ -142,7 +142,7 @@ describe('useUsosDoCampoLayout — leitura', () => {
       ),
     )
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(criarCliente()),
     })
 
@@ -160,7 +160,7 @@ describe('useUsosDoCampoLayout — leitura', () => {
       ),
     )
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(criarCliente()),
     })
 
@@ -181,7 +181,7 @@ describe('useUsosDoCampoLayout — leitura', () => {
       }),
     )
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(criarCliente()),
     })
     await waitFor(() => expect(result.current.isError).toBe(true))
@@ -196,13 +196,13 @@ describe('useUsosDoCampoLayout — leitura', () => {
     const requisitados = responderUsos({ 'valor-servicos': [USO_COM_DOIS_DESTINOS] })
     const cliente = criarCliente()
 
-    const primeira = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const primeira = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(cliente),
     })
     await waitFor(() => expect(primeira.result.current.usos).toBeDefined())
     primeira.unmount()
 
-    const segunda = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const segunda = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(cliente),
     })
 
@@ -218,7 +218,7 @@ describe('useUsosDoCampoLayout — contrato (D-1)', () => {
     responderVerbeteComOndeEUsado([usoSemDestinoXml])
     const cliente = criarCliente()
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(cliente),
     })
 
@@ -235,7 +235,7 @@ describe('useUsosDoCampoLayout — contrato (D-1)', () => {
     responderVerbeteComOndeEUsado([usoSemEstado])
     const cliente = criarCliente()
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(cliente),
     })
 
@@ -250,7 +250,7 @@ describe('useUsosDoCampoLayout — contrato (D-1)', () => {
     responderVerbeteComOndeEUsado([{ ...USO_COM_DOIS_DESTINOS, estadoPreenchimento: 'Foo' }])
     const cliente = criarCliente()
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(cliente),
     })
 
@@ -264,7 +264,7 @@ describe('useUsosDoCampoLayout — contrato (D-1)', () => {
   it('destinoXml nulo, com a chave presente, NÃO é erro', async () => {
     responderVerbeteComOndeEUsado([USO_SEM_DESTINO])
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(criarCliente()),
     })
 
@@ -276,7 +276,7 @@ describe('useUsosDoCampoLayout — contrato (D-1)', () => {
     responderVerbeteComOndeEUsado(undefined)
     const cliente = criarCliente()
 
-    const { result } = renderHook(() => usarUsosDoCampo('valor-servicos'), {
+    const { result } = renderHook(() => useUsosDoCampo('valor-servicos'), {
       wrapper: envolver(cliente),
     })
 
@@ -304,7 +304,7 @@ describe('useUsosDoCampoLayout — atraso da navegação (250 ms)', () => {
     usarRelogioFalso()
     const requisitados = responderUsos({ 'valor-servicos': [] })
 
-    renderHook(() => usarUsosDoCampo('valor-servicos'), { wrapper: envolver(criarCliente()) })
+    renderHook(() => useUsosDoCampo('valor-servicos'), { wrapper: envolver(criarCliente()) })
 
     await avancar(0)
     await vi.waitFor(() => expect(requisitados).toEqual(['valor-servicos']))
@@ -320,7 +320,7 @@ describe('useUsosDoCampoLayout — atraso da navegação (250 ms)', () => {
       e: [USO_COM_DOIS_DESTINOS],
     })
 
-    const { result, rerender } = renderHook(({ slug }) => usarUsosDoCampo(slug), {
+    const { result, rerender } = renderHook(({ slug }) => useUsosDoCampo(slug), {
       initialProps: { slug: 'a' },
       wrapper: envolver(criarCliente()),
     })
@@ -358,7 +358,7 @@ describe('useUsosDoCampoLayout — atraso da navegação (250 ms)', () => {
     usarRelogioFalso()
     responderUsos({ a: [USO_COM_DOIS_DESTINOS], b: [USO_SEM_DESTINO] })
 
-    const { result, rerender } = renderHook(({ slug }) => usarUsosDoCampo(slug), {
+    const { result, rerender } = renderHook(({ slug }) => useUsosDoCampo(slug), {
       initialProps: { slug: 'a' },
       wrapper: envolver(criarCliente()),
     })

@@ -5,19 +5,19 @@ import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { handlerCampoLayoutDespublicado } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
-import type { CampoLayoutVerbete } from '../types/layoutPublico'
 import { ErroCampoLayoutHttp, useCampoLayoutPorSlug } from './useCampoLayoutPorSlug'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const verbeteFake: CampoLayoutVerbete = {
+// JSON literal transcrito de CampoLayoutVerbeteDto, sem o tipo do cliente.
+const verbeteFake = {
   slug: 'numero-do-rps',
   nome: 'Número do RPS',
   caminhoXml: 'Nfse/Rps/IdentificacaoRps/Numero',
   significado: 'Numeração sequencial do recibo.',
   estado: 'Ativo',
-  versaoExibicao: { slug: '4-12', rotulo: '4.12' },
-  versaoOrigem: { slug: '4-10', rotulo: '4.10' },
+  versaoExibicao: { slug: '4-12', rotulo: '4.12', estado: 'Vigente', ordem: 2, totalCampos: 58 },
+  versaoOrigem: { slug: '4-10', rotulo: '4.10', estado: 'Anterior', ordem: 1, totalCampos: 55 },
   versaoDescontinuado: null,
   ondeEUsado: [],
 }

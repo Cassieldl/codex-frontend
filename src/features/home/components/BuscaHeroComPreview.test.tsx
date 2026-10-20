@@ -12,16 +12,12 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type {
-  GrupoResultado,
-  ResultadoBusca,
-  ResultadoItem,
-} from '../../busca/types/resultadoBusca'
 import { BuscaHeroComPreview } from './BuscaHeroComPreview'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-function item(titulo: string, url: string): ResultadoItem {
+// JSON literal transcrito de ResultadoBuscaDto, sem o tipo do cliente.
+function item(titulo: string, url: string) {
   return {
     tipo: 'erro',
     rotulo: 'Erro',
@@ -39,14 +35,11 @@ function item(titulo: string, url: string): ResultadoItem {
   }
 }
 
-function grupoDeErros(itens: ResultadoItem[]): GrupoResultado {
+function grupoDeErros(itens: object[]) {
   return { tipo: 'erro', rotulo: 'Erros', total: itens.length, pontuacao: 1, itens }
 }
 
-function resultado(
-  grupos: GrupoResultado[],
-  overrides: Partial<ResultadoBusca> = {},
-): ResultadoBusca {
+function resultado(grupos: ReturnType<typeof grupoDeErros>[], overrides: object = {}) {
   return {
     termo: 'e01',
     termoUsado: 'e01',

@@ -16,7 +16,7 @@ export function useRemoverErro() {
       await apiInterno.delete(`/erros/${id}`, { etag })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: errosAdminKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: errosAdminKeys.lists() })
     },
   })
 }

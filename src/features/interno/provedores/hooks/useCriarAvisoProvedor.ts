@@ -25,7 +25,7 @@ export function useCriarAvisoProvedor(provedorId: number) {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.detail(provedorId) })
+      void queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.detail(provedorId) })
     },
   })
 }

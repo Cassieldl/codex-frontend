@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { OpcaoCampoAfetado } from './AvisoForm'
+import type { OpcaoCampoAfetado, AvisoFormProps } from './AvisoForm'
 import { AvisoForm } from './AvisoForm'
 
 const opcoesCampos: OpcaoCampoAfetado[] = [{ id: 1, rotulo: 'Número da RPS' }]
@@ -39,7 +39,7 @@ describe('AvisoForm', () => {
 
   it('escopo="Provedor" nunca envia campoVersaoIds, mesmo que o estado interno os carregue', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<AvisoFormProps['onSubmit']>()
     render(<AvisoForm escopo="Provedor" onSubmit={onSubmit} onCancel={vi.fn()} />)
 
     await usuario.type(screen.getByLabelText(/título/i), 'Instabilidade temporária')
@@ -52,7 +52,7 @@ describe('AvisoForm', () => {
 
   it('escopo="Versao" envia os ids marcados em campoVersaoIds', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<AvisoFormProps['onSubmit']>()
     render(
       <AvisoForm
         escopo="Versao"
@@ -92,7 +92,7 @@ const opcoesComTresCampos: OpcaoCampoAfetado[] = [
   { id: 3, rotulo: 'ValorIss' },
 ]
 
-function renderizarEdicaoDeAvisoDeVersao(onSubmit = vi.fn()) {
+function renderizarEdicaoDeAvisoDeVersao(onSubmit = vi.fn<AvisoFormProps['onSubmit']>()) {
   render(
     <AvisoForm
       escopo="Versao"
@@ -137,7 +137,7 @@ describe('AvisoForm — edição de aviso com campos afetados gravados', () => {
 
   it('aviso de provedor envia campoVersaoIds vazio ao editar, mesmo que o aviso traga ids', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<AvisoFormProps['onSubmit']>()
     render(
       <AvisoForm
         escopo="Provedor"

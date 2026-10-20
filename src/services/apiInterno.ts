@@ -59,5 +59,6 @@ apiInterno.interceptors.response.use(undefined, (erro: unknown) => {
   ) {
     encerrarSessaoEIrParaEntrada()
   }
+  // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- repassa o erro do Axios, lido com isAxiosError
   return Promise.reject(erro)
 })

@@ -6,9 +6,9 @@ import { ID_CONTEUDO_PRINCIPAL, PularParaConteudo } from '../../components/layou
 import { BarraDeComando } from '../../features/interno/busca/components/BarraDeComando'
 import {
   FalhaNaAreaInterna,
-  LoginIndisponivelErro,
   VerificandoSessao,
 } from '../../features/interno/components/EstadoDaSessao'
+import { LoginIndisponivelErro } from '../../features/interno/components/loginIndisponivelErro'
 import { PublicarComunicadoGlobal } from '../../features/interno/comunicados/components/PublicarComunicadoGlobal'
 
 // Guard da área interna: toda rota sob `interno/_autenticado/` herda esta checagem. Sem sessão,

@@ -143,16 +143,16 @@ describe('UsosDoCampo — lista', () => {
 
     const [issNet, abrasf, betha] = await itensDaLista()
 
-    expect(within(issNet!).getByText('vServ')).toBeInTheDocument()
-    expect(within(issNet!).getByText('vServPrest')).toBeInTheDocument()
+    expect(within(issNet).getByText('vServ')).toBeInTheDocument()
+    expect(within(issNet).getByText('vServPrest')).toBeInTheDocument()
     expect(issNet).toHaveTextContent('DPS/infDPS/serv/vServ')
     expect(issNet).toHaveTextContent('DPS/infDPS/serv/vServPrest')
 
-    expect(within(betha!).getByText('ValServicos')).toBeInTheDocument()
-    expect(within(betha!).getByText('e mais destinos')).toBeInTheDocument()
-    expect(within(betha!).queryByText('…')).toBeNull()
+    expect(within(betha).getByText('ValServicos')).toBeInTheDocument()
+    expect(within(betha).getByText('e mais destinos')).toBeInTheDocument()
+    expect(within(betha).queryByText('…')).toBeNull()
 
-    expect(within(abrasf!).getByText('sem destino no XML deste provedor')).toBeInTheDocument()
+    expect(within(abrasf).getByText('sem destino no XML deste provedor')).toBeInTheDocument()
   })
 
   it('a obrigatoriedade sai de estadoPreenchimento, um valor por provedor', async () => {
@@ -161,10 +161,10 @@ describe('UsosDoCampo — lista', () => {
 
     const [issNet, abrasf, betha] = await itensDaLista()
 
-    expect(within(issNet!).getByText('Obrigatório')).toBeInTheDocument()
-    expect(within(abrasf!).getByText('Opcional')).toBeInTheDocument()
-    expect(within(betha!).getByText('Condicional')).toBeInTheDocument()
-    expect(within(issNet!).queryByText('Opcional')).toBeNull()
+    expect(within(issNet).getByText('Obrigatório')).toBeInTheDocument()
+    expect(within(abrasf).getByText('Opcional')).toBeInTheDocument()
+    expect(within(betha).getByText('Condicional')).toBeInTheDocument()
+    expect(within(issNet).queryByText('Opcional')).toBeNull()
   })
 
   it('o link leva à linha do campo na versão do provedor, em rota tipada e na mesma aba', async () => {

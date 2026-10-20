@@ -37,7 +37,7 @@ export function useCriarComunicado() {
       return { comunicado: data.data, mensagem: data.message }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: comunicadosAdminKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: comunicadosAdminKeys.lists() })
     },
   })
 }

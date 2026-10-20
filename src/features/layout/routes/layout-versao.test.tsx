@@ -10,6 +10,7 @@ import {
 import { render, screen, within } from '@testing-library/react'
 import { delay, http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Mock } from 'vitest'
 import {
   construirCamposLayout,
   construirGrupoCamposLayout,
@@ -20,12 +21,12 @@ import {
   handlerLayoutVersaoSucesso,
 } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
-import type { LayoutIndice, LayoutVersaoPagina } from '../types/layoutPublico'
 import { LayoutVersaoPage } from './layout-versao'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const indiceFake: LayoutIndice = {
+// JSON literal transcrito de LayoutIndiceDto, sem o tipo do cliente.
+const indiceFake = {
   vigente: { slug: '4-12', rotulo: '4.12', estado: 'Vigente', ordem: 2, totalCampos: 2 },
   versoes: [
     { slug: '4-13', rotulo: '4.13', estado: 'Prevista', ordem: 3, totalCampos: 3 },
@@ -34,7 +35,7 @@ const indiceFake: LayoutIndice = {
   ],
 }
 
-const paginaFake: LayoutVersaoPagina = {
+const paginaFake = {
   versao: {
     slug: '4-12',
     rotulo: '4.12',
@@ -83,7 +84,7 @@ const paginaFake: LayoutVersaoPagina = {
 
 function trilhaDaPagina(): string {
   const principal = screen.getByRole('main')
-  const trilha = within(principal).getAllByRole('link', { name: 'Layout InvoiCy' })[0]!.closest('p')
+  const trilha = within(principal).getAllByRole('link', { name: 'Layout InvoiCy' })[0].closest('p')
   return (trilha?.textContent ?? '').replace(/\s+/g, ' ').trim()
 }
 
@@ -109,9 +110,12 @@ function renderPagina(
   )
 }
 
+let rolagem: Mock<Element['scrollIntoView']>
+
 beforeEach(() => {
   // jsdom não implementa rolagem — sem o duplo, a âncora derrubaria a página.
-  Element.prototype.scrollIntoView = vi.fn()
+  rolagem = vi.fn<Element['scrollIntoView']>()
+  Element.prototype.scrollIntoView = rolagem
 })
 
 afterEach(() => {
@@ -155,10 +159,10 @@ describe('LayoutVersaoPage', () => {
   })
 
   it('o rótulo que já chega com "Versão" não gera "versão Versão" em lugar nenhum da tela', async () => {
-    const paginaComRotuloCompleto: LayoutVersaoPagina = {
+    const paginaComRotuloCompleto = {
       ...paginaFake,
       versao: { ...paginaFake.versao, rotulo: 'Versão 4.12' },
-      anterior: { ...paginaFake.anterior!, rotulo: 'Versão 4.10' },
+      anterior: { ...paginaFake.anterior, rotulo: 'Versão 4.10' },
     }
     server.use(
       handlerLayoutIndiceSucesso(indiceFake),
@@ -225,7 +229,7 @@ describe('LayoutVersaoPage', () => {
     expect(linha).not.toBeNull()
     expect(document.getElementById('bloco-Valores')).toHaveProperty('open', true)
     expect(linha?.className).toContain('bg-highlight-anchor')
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ block: 'center' })
+    expect(rolagem).toHaveBeenCalledWith({ block: 'center' })
     // A linha não apontada nunca recebe o realce nem a marca de campo atual.
     expect(document.getElementById('campo-numero-do-rps')?.className).not.toContain(
       'bg-highlight-anchor',
@@ -317,7 +321,7 @@ describe('LayoutVersaoPage', () => {
   })
 
   it('versão densa: o índice lateral lista cada bloco com a própria contagem', async () => {
-    const paginaDensa: LayoutVersaoPagina = {
+    const paginaDensa = {
       ...paginaFake,
       totalCampos: 45,
       camposPorGrupo: [

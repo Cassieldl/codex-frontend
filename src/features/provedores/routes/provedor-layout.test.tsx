@@ -17,12 +17,12 @@ import {
   handlerComunicadosRegistrandoChamadas,
 } from '../../../test/mocks/comunicadosContexto'
 import { server } from '../../../test/mocks/server'
-import type { ProvedorDetalhe } from '../types/provedor'
 import { ProvedorLayoutPage } from './provedor-layout'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const provedorFake: ProvedorDetalhe = {
+// JSON literal transcrito de ProvedorDetalheDto, sem o tipo do cliente.
+const provedorFake = {
   slug: 'prefeitura-exemplo',
   nome: 'Prefeitura de Exemplo',
   categoria: 'Nacional',
@@ -32,7 +32,7 @@ const provedorFake: ProvedorDetalhe = {
     {
       slug: 'v1',
       rotulo: 'Versão 1',
-      verificadoEm: '2026-07-01T00:00:00Z',
+      verificadoEm: '2026-07-01',
       url: '/provedores/prefeitura-exemplo/v1',
     },
   ],
@@ -96,7 +96,7 @@ function renderPagina({
   return { ...utils, navegar }
 }
 
-function handlerProvedor(slugRequisitado: string, provedor: ProvedorDetalhe) {
+function handlerProvedor(slugRequisitado: string, provedor: object) {
   return http.get(`${API_URL}/provedores/${slugRequisitado}`, () =>
     HttpResponse.json({ data: provedor, message: null }),
   )
@@ -116,7 +116,7 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
   })
 
   it('redireciona para o slug novo quando o payload devolve um canônico divergente, sem versão', async () => {
-    const provedorComSlugNovo: ProvedorDetalhe = { ...provedorFake, slug: 'slug-novo' }
+    const provedorComSlugNovo = { ...provedorFake, slug: 'slug-novo' }
     server.use(handlerProvedor('slug-antigo', provedorComSlugNovo))
 
     const { navegar } = renderPagina({
@@ -133,7 +133,7 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
   })
 
   it('preserva o segmento de versão ao corrigir o slug do provedor', async () => {
-    const provedorComSlugNovo: ProvedorDetalhe = { ...provedorFake, slug: 'slug-novo' }
+    const provedorComSlugNovo = { ...provedorFake, slug: 'slug-novo' }
     server.use(handlerProvedor('slug-antigo', provedorComSlugNovo))
 
     const { navegar } = renderPagina({
@@ -153,7 +153,7 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
   // `replace: true`; este teste reforça que `navegar` nunca é chamado com
   // outro valor além de `true`.
   it('o redirecionamento é sempre replace:true, nunca uma navegação que empilha histórico', async () => {
-    const provedorComSlugNovo: ProvedorDetalhe = { ...provedorFake, slug: 'slug-novo' }
+    const provedorComSlugNovo = { ...provedorFake, slug: 'slug-novo' }
     server.use(handlerProvedor('slug-antigo', provedorComSlugNovo))
 
     const { navegar } = renderPagina({
@@ -162,7 +162,7 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
     })
 
     await waitFor(() => expect(navegar).toHaveBeenCalled())
-    expect(navegar.mock.calls[0]![0]).toEqual({ href: '/provedores/slug-novo', replace: true })
+    expect(navegar.mock.calls[0][0]).toEqual({ href: '/provedores/slug-novo', replace: true })
   })
 })
 
@@ -294,7 +294,7 @@ describe('ProvedorLayoutPage — comunicados do contexto', () => {
       '/provedores/prefeitura-exemplo/2-04',
     )
     expect(chamadas).toHaveLength(1)
-    expect(chamadas[0]!.search).toBe('?provedor=prefeitura-exemplo')
+    expect(chamadas[0].search).toBe('?provedor=prefeitura-exemplo')
   })
 
   it('na página da versão, a consulta leva o provedor e a versão', async () => {
@@ -309,12 +309,12 @@ describe('ProvedorLayoutPage — comunicados do contexto', () => {
 
     await screen.findByRole('heading', { level: 3, name: 'Layout 2.04 em homologação' })
     expect(chamadas).toHaveLength(1)
-    expect(chamadas[0]!.searchParams.get('provedor')).toBe('prefeitura-exemplo')
-    expect(chamadas[0]!.searchParams.get('versao')).toBe('2-04')
+    expect(chamadas[0].searchParams.get('provedor')).toBe('prefeitura-exemplo')
+    expect(chamadas[0].searchParams.get('versao')).toBe('2-04')
   })
 
   it('o comunicado vem antes dos avisos do provedor e da barra de versões', async () => {
-    const provedorComAviso: ProvedorDetalhe = {
+    const provedorComAviso = {
       ...provedorFake,
       avisos: [
         {

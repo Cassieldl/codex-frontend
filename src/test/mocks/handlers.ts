@@ -1,21 +1,5 @@
 import { HttpResponse, http } from 'msw'
 import type { HttpHandler } from 'msw'
-import type { ArtigoDetalhe, ArtigoListaItem } from '../../features/artigos/types/artigo'
-import type { PaginaDeArtigos } from '../../features/artigos/hooks/useArtigos'
-import type { ResultadoBusca } from '../../features/busca/types/resultadoBusca'
-import type { HomeDto } from '../../features/home/types/home'
-import type {
-  CampoLayoutPublico,
-  CampoLayoutVerbete,
-  GrupoCamposLayout,
-  LayoutIndice,
-  LayoutVersaoPagina,
-} from '../../features/layout/types/layoutPublico'
-import type {
-  ComunicadoAdminDetalhe,
-  ComunicadoAdminListaItem,
-} from '../../features/interno/comunicados/types/comunicadoAdmin'
-import type { ArtigoAdminListaItem } from '../../features/interno/artigos/types/artigoAdmin'
 
 /**
  * Handlers base do MSW, compartilhados por toda a suíte. Cada feature
@@ -44,7 +28,7 @@ export const handlers: HttpHandler[] = [
  * próprio `server.use(...)` (disciplina atual do arquivo).
  */
 export function handlerBuscaVazia(): HttpHandler {
-  const resultado: ResultadoBusca = {
+  const resultado = {
     termo: '',
     termoUsado: '',
     correcao: null,
@@ -93,8 +77,8 @@ export function handlerErroDetalhePadrao(slug = 'e0117'): HttpHandler {
  * teste passe contra um mock "conveniente" (AP-ARQUITETURA-001).
  */
 export function handlerArtigosLista(
-  items: ArtigoListaItem[],
-  extras: Partial<Omit<PaginaDeArtigos, 'items'>> = {},
+  items: object[],
+  extras: Partial<{ totalCount: number; page: number; pageSize: number; totalPages: number }> = {},
 ): HttpHandler {
   return http.get(`${API_URL}/artigos`, () =>
     HttpResponse.json({
@@ -108,7 +92,8 @@ export function handlerArtigosLista(
   )
 }
 
-export function handlerArtigoDetalhe(artigo: ArtigoDetalhe): HttpHandler {
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- o genérico livra a fixture literal da checagem de propriedade excedente
+export function handlerArtigoDetalhe<Artigo extends { slug: string }>(artigo: Artigo): HttpHandler {
   return http.get(`${API_URL}/artigos/${artigo.slug}`, () =>
     HttpResponse.json({ data: artigo, message: null }),
   )
@@ -125,7 +110,7 @@ export function handlerArtigoDetalhe(artigo: ArtigoDetalhe): HttpHandler {
  * valor do `If-Match` é DERIVADO de `versaoConcorrencia` pelo hook de leitura.
  */
 export function handlerComunicadosLista(
-  items: ComunicadoAdminListaItem[],
+  items: object[],
   extras: Partial<{ totalCount: number; page: number; pageSize: number; totalPages: number }> = {},
 ): HttpHandler {
   return http.get(`${API_URL}/interno/comunicados`, () =>
@@ -140,7 +125,10 @@ export function handlerComunicadosLista(
   )
 }
 
-export function handlerComunicadoDetalhe(comunicado: ComunicadoAdminDetalhe): HttpHandler {
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- o genérico livra a fixture literal da checagem de propriedade excedente
+export function handlerComunicadoDetalhe<Comunicado extends { id: number }>(
+  comunicado: Comunicado,
+): HttpHandler {
   return http.get(`${API_URL}/interno/comunicados/${comunicado.id}`, () =>
     HttpResponse.json({ data: comunicado, message: null }),
   )
@@ -157,7 +145,7 @@ export function handlerComunicadoDetalhe(comunicado: ComunicadoAdminDetalhe): Ht
  * valor do `If-Match` é DERIVADO de `versaoConcorrencia` pelo hook de leitura.
  */
 export function handlerArtigosAdminLista(
-  items: ArtigoAdminListaItem[],
+  items: object[],
   extras: Partial<{ totalCount: number; page: number; pageSize: number; totalPages: number }> = {},
 ): HttpHandler {
   return http.get(`${API_URL}/interno/artigos`, () =>
@@ -179,20 +167,8 @@ export function handlerArtigoAdminDetalhe(id: number, corpo: Record<string, unkn
   )
 }
 
-/**
- * Bloco FRONT-A — P9/P10/P11/P12 (Home e Layout InvoiCy público). Sucesso
- * simples, "para não bloquear B/C" (`analise-frontend.md` §2.8): FRONT-B/C
- * estendem estes mesmos handlers com os casos que as próprias telas
- * precisam (`server.use(...)`), sem apagar os defaults daqui.
- *
- * Os corpos abaixo são transcritos dos DTOs do servidor e **não** levam
- * anotação do tipo do cliente: anotar faria o compilador forçar o mock a ter a
- * forma que o cliente acredita, e o teste passaria a confirmar a crença em vez
- * do contrato. Foi assim que dois campos divergentes chegaram ao QA com a
- * suíte verde. `overrides` continua tipado — ali o tipo é conveniência de
- * fixture, não fonte da forma.
- */
-export function handlerHomeSucesso(overrides: Partial<HomeDto> = {}): HttpHandler {
+// Corpos transcritos dos DTOs sem tipo do cliente: anotar faria o teste confirmar a crença, não o contrato.
+export function handlerHomeSucesso(overrides: object = {}): HttpHandler {
   const home = {
     comunicados: [],
     provedoresPorCategoria: [],
@@ -204,7 +180,7 @@ export function handlerHomeSucesso(overrides: Partial<HomeDto> = {}): HttpHandle
   return http.get(`${API_URL}/home`, () => HttpResponse.json({ data: home, message: null }))
 }
 
-export function handlerLayoutIndiceSucesso(overrides: Partial<LayoutIndice> = {}): HttpHandler {
+export function handlerLayoutIndiceSucesso(overrides: object = {}): HttpHandler {
   const indice = {
     vigente: null,
     versoes: [],
@@ -216,7 +192,7 @@ export function handlerLayoutIndiceSucesso(overrides: Partial<LayoutIndice> = {}
 
 export function handlerLayoutVersaoSucesso(
   versaoSlug: string,
-  overrides: Partial<LayoutVersaoPagina> = {},
+  overrides: object = {},
 ): HttpHandler {
   const pagina = {
     versao: {
@@ -240,7 +216,7 @@ export function handlerLayoutVersaoSucesso(
 
 export function handlerCampoLayoutVerbeteSucesso(
   campoSlug: string,
-  overrides: Partial<CampoLayoutVerbete> = {},
+  overrides: object = {},
 ): HttpHandler {
   const verbete = {
     slug: campoSlug,
@@ -248,8 +224,8 @@ export function handlerCampoLayoutVerbeteSucesso(
     caminhoXml: `Rps/${campoSlug}`,
     significado: `Significado de ${campoSlug}`,
     estado: 'Ativo',
-    versaoExibicao: { slug: 'v1', rotulo: 'Versão 1' },
-    versaoOrigem: { slug: 'v1', rotulo: 'Versão 1' },
+    versaoExibicao: { slug: 'v1', rotulo: 'Versão 1', estado: 'Vigente', ordem: 1, totalCampos: 1 },
+    versaoOrigem: { slug: 'v1', rotulo: 'Versão 1', estado: 'Vigente', ordem: 1, totalCampos: 1 },
     versaoDescontinuado: null,
     ondeEUsado: [],
     ...overrides,
@@ -330,8 +306,8 @@ export function handlerCampoLayoutDespublicado(
 export function construirCamposLayout(
   quantidade: number,
   prefixo = 'campo',
-  overrides: Partial<CampoLayoutPublico> = {},
-): CampoLayoutPublico[] {
+  overrides: object = {},
+) {
   return Array.from({ length: quantidade }, (_, indice) => ({
     slug: `${prefixo}-${indice + 1}`,
     nome: `Campo ${indice + 1}`,
@@ -345,11 +321,7 @@ export function construirCamposLayout(
   }))
 }
 
-export function construirGrupoCamposLayout(
-  grupo: string,
-  grupoSlug: string,
-  campos: CampoLayoutPublico[],
-): GrupoCamposLayout {
+export function construirGrupoCamposLayout(grupo: string, grupoSlug: string, campos: object[]) {
   return { grupo, grupoSlug, campos }
 }
 
@@ -376,6 +348,6 @@ export function handlerHomeErro(status = 500): HttpHandler {
  * entre dois arquivos escritos pela mesma pessoa no mesmo dia
  * (AP-ARQUITETURA-001).
  */
-export function handlerHomeCruSemEnvelope(home: HomeDto): HttpHandler {
+export function handlerHomeCruSemEnvelope(home: object): HttpHandler {
   return http.get(`${API_URL}/home`, () => HttpResponse.json(home))
 }

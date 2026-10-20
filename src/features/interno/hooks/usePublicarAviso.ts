@@ -27,7 +27,7 @@ export function usePublicarAviso(chaveParaInvalidar: QueryKey) {
     },
     // Também no erro: depois de um 409 o detalhe relido traz o etag novo, e a próxima tentativa passa.
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: chaveParaInvalidar })
+      void queryClient.invalidateQueries({ queryKey: chaveParaInvalidar })
     },
   })
 }

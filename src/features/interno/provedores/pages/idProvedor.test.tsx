@@ -173,3 +173,31 @@ describe('IdProvedorPage: trilha', () => {
     expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(0)
   })
 })
+
+describe('IdProvedorPage: publicação do provedor', () => {
+  it.each([
+    [
+      409,
+      'CONFLITO_CONCORRENCIA',
+      'O provedor foi alterado por outra requisição. Recarregue e tente novamente.',
+    ],
+    [422, 'VALIDACAO_NEGOCIO', 'O provedor não pode ser despublicado no estado atual.'],
+  ])('%i ao despublicar mostra a mensagem do servidor', async (status, code, message) => {
+    keycloak.tokenParsed = {
+      resource_access: { 'codex-backend': { roles: ['provedores-buscar', 'provedores-publicar'] } },
+    }
+    criarServidorDeAviso()
+    server.use(
+      http.put(`${API_URL}/interno/provedores/${ID_PROVEDOR}/publicacao`, () =>
+        HttpResponse.json({ error: { code, message } }, { status }),
+      ),
+    )
+    const usuario = userEvent.setup()
+    renderizarPagina()
+
+    await usuario.click(await screen.findByRole('button', { name: 'Despublicar' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    expect(screen.getByRole('button', { name: 'Despublicar' })).toBeInTheDocument()
+  })
+})

@@ -19,7 +19,7 @@ export function useRemoverComunicado() {
       await apiInterno.delete(`/comunicados/${id}`, { etag })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: comunicadosAdminKeys.all })
+      void queryClient.invalidateQueries({ queryKey: comunicadosAdminKeys.all })
     },
   })
 }

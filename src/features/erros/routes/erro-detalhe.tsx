@@ -81,8 +81,8 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
   const contextoUnico =
     erro && erro.versoesAplicaveis.length === 1
       ? {
-          provedorSlug: erro.versoesAplicaveis[0]!.provedorSlug,
-          versaoSlug: erro.versoesAplicaveis[0]!.versaoSlug,
+          provedorSlug: erro.versoesAplicaveis[0].provedorSlug,
+          versaoSlug: erro.versoesAplicaveis[0].versaoSlug,
         }
       : null
 

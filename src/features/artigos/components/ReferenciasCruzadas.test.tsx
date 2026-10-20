@@ -8,7 +8,8 @@ import {
 } from '@tanstack/react-router'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { ReferenciasCruzadas, grupoDoCampo } from './ReferenciasCruzadas'
+import { grupoDoCampo } from './grupoDoCampo'
+import { ReferenciasCruzadas } from './ReferenciasCruzadas'
 
 // Transcrito da resposta real de GET /api/v1/artigos/{slug} — sem anotação de tipo do cliente,
 // para o compilador não forçar o mock a ter a forma que a tela acredita.

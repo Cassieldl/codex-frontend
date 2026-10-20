@@ -17,7 +17,7 @@ export function useRemoverCampoLayout() {
       await apiInterno.delete(`/campos-layout/${id}`, { etag })
     },
     onSuccess: (_dados, variaveis) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: camposLayoutKeys.porVersaoLayout(variaveis.versaoLayoutId),
       })
     },

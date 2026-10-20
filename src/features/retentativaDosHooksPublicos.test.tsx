@@ -15,25 +15,29 @@ const API_URL = import.meta.env.VITE_API_URL
 interface HookPublico {
   nome: string
   caminho: string
-  usar: () => UseQueryResult<unknown>
+  useConsulta: () => UseQueryResult
 }
 
 const HOOKS_PUBLICOS: HookPublico[] = [
-  { nome: 'useLayoutVersao', caminho: '/layout/versoes/99', usar: () => useLayoutVersao('99') },
+  {
+    nome: 'useLayoutVersao',
+    caminho: '/layout/versoes/99',
+    useConsulta: () => useLayoutVersao('99'),
+  },
   {
     nome: 'useCampoLayoutPorSlug',
     caminho: '/layout/campos/inexistente',
-    usar: () => useCampoLayoutPorSlug('inexistente'),
+    useConsulta: () => useCampoLayoutPorSlug('inexistente'),
   },
   {
     nome: 'useProvedorPorSlug',
     caminho: '/provedores/inexistente',
-    usar: () => useProvedorPorSlug('inexistente'),
+    useConsulta: () => useProvedorPorSlug('inexistente'),
   },
   {
     nome: 'useVersaoProvedor',
     caminho: '/provedores/ipm/versoes/99',
-    usar: () => useVersaoProvedor('ipm', '99'),
+    useConsulta: () => useVersaoProvedor('ipm', '99'),
   },
 ]
 
@@ -61,7 +65,7 @@ async function contarRequisicoes(hook: HookPublico, resposta: RespostaDaApi): Pr
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   )
 
-  const { result } = renderHook(hook.usar, { wrapper: envolver })
+  const { result } = renderHook(hook.useConsulta, { wrapper: envolver })
   await waitFor(() => expect(result.current.isError).toBe(true))
   return requisicoes
 }

@@ -191,7 +191,7 @@ describe('ConteudoDoCampo — ordem das seções', () => {
     ]
 
     secoes.slice(1).forEach((secao, indice) => {
-      expect(vemDepois(secoes[indice]!, secao)).toBe(true)
+      expect(vemDepois(secoes[indice], secao)).toBe(true)
     })
   })
 })

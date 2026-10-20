@@ -4,13 +4,13 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { VersaoProvedorPagina } from '../types/versaoProvedorPagina'
 import { provedoresKeys } from './provedoresKeys'
 import { ErroVersaoProvedorHttp, useVersaoProvedor } from './useVersaoProvedor'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const versaoPaginaFake: VersaoProvedorPagina = {
+// JSON literal transcrito de VersaoProvedorPaginaDto, sem o tipo do cliente.
+const versaoPaginaFake = {
   provedor: {
     slug: 'prefeitura-exemplo',
     nome: 'Prefeitura de Exemplo',
@@ -20,7 +20,7 @@ const versaoPaginaFake: VersaoProvedorPagina = {
   versao: {
     slug: 'v1',
     rotulo: 'Versão 1',
-    verificadoEm: '2026-07-01T00:00:00Z',
+    verificadoEm: '2026-07-01',
     introducao: null,
     versaoLayoutRotulo: '2026.1',
   },

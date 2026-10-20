@@ -5,28 +5,29 @@ import { http, HttpResponse } from 'msw'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { server } from '../../../../test/mocks/server'
-import type { ResultadoBusca, ResultadoItem } from '../../../busca/types/resultadoBusca'
 import { BarraDeComando } from './BarraDeComando'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-function criarItem(sobrescritas: Partial<ResultadoItem>): ResultadoItem {
-  return {
-    tipo: 'erro',
-    rotulo: 'Erro',
-    chave: 'e0117-ipm',
-    titulo: 'RPS inválido',
-    url: '/erros/e0117-ipm',
-    provedorNome: null,
-    versaoRotulo: null,
-    versoes: null,
-    descricaoCasamento: '',
-    publicado: true,
-    meta: null,
-    pontuacao: 1,
-    trechos: [],
-    ...sobrescritas,
-  }
+// JSON literal transcrito de BuscaItemDto, sem o tipo do cliente.
+const ITEM_BASE = {
+  tipo: 'erro',
+  rotulo: 'Erro',
+  chave: 'e0117-ipm',
+  titulo: 'RPS inválido',
+  url: '/erros/e0117-ipm',
+  provedorNome: null,
+  versaoRotulo: null,
+  versoes: null,
+  descricaoCasamento: '',
+  publicado: true,
+  meta: null,
+  pontuacao: 1,
+  trechos: [],
+}
+
+function criarItem(sobrescritas: Partial<typeof ITEM_BASE>) {
+  return { ...ITEM_BASE, ...sobrescritas }
 }
 
 const PRIMEIRO = criarItem({ titulo: 'Primeiro resultado', url: '/erros/primeiro' })
@@ -39,8 +40,8 @@ const TERCEIRO = criarItem({
 })
 
 /** Resposta de I21 no shape real — `ApiResponse<ResultadoBusca>`, dois grupos. */
-function handlerBuscaInterna(itens: ResultadoItem[] = [PRIMEIRO, SEGUNDO, TERCEIRO]) {
-  const resultado: ResultadoBusca = {
+function handlerBuscaInterna(itens = [PRIMEIRO, SEGUNDO, TERCEIRO]) {
+  const resultado = {
     termo: 'rps',
     termoUsado: 'rps',
     correcao: null,

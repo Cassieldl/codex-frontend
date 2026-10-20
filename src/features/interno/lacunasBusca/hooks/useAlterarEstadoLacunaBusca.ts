@@ -35,7 +35,7 @@ export function useAlterarEstadoLacunaBusca() {
       return data.data
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: lacunasBuscaKeys.all })
+      void queryClient.invalidateQueries({ queryKey: lacunasBuscaKeys.all })
     },
   })
 }

@@ -22,7 +22,7 @@ export function useCriarAvisoVersao(versaoId: number) {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(versaoId) })
+      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(versaoId) })
     },
   })
 }

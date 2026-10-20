@@ -27,6 +27,16 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Formatação
+        run: npm run format:check
+
+      # O lint usa os tipos, e as rotas tipam a partir do `src/routeTree.gen.ts`, que não é versionado.
+      - name: Gerar a árvore de rotas
+        run: npm run prebuild
+
+      - name: Lint
+        run: npm run lint
+
       # `npm run build` é `tsc -b && vite build`. O typecheck tem de ser ESTE comando: nesta raiz
       # `tsc --noEmit` lê um tsconfig com `files: []`, checa ZERO arquivo e sai 0 sempre — já
       # custou uma demanda inteira de gate inerte neste projeto.

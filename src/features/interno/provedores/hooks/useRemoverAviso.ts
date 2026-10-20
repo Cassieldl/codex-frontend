@@ -15,7 +15,7 @@ export function useRemoverAviso(chaveParaInvalidar: QueryKey) {
       await apiInterno.delete(`/avisos/${id}`, { etag })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: chaveParaInvalidar })
+      void queryClient.invalidateQueries({ queryKey: chaveParaInvalidar })
     },
   })
 }

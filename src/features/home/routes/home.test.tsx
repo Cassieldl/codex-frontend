@@ -13,19 +13,19 @@ import { describe, expect, it, vi } from 'vitest'
 import { handlerHomeErro, handlerHomeSucesso } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
 import { homeKeys } from '../hooks/homeKeys'
-import type { HomeDto } from '../types/home'
 import { HomePage } from './home'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const homeCompleta: Partial<HomeDto> = {
+// JSON literal transcrito de HomeDto, sem o tipo do cliente.
+const homeCompleta = {
   comunicados: [
     {
       titulo: 'transmissão indisponível em Produção',
       corpo: 'Serviço fora do ar.',
       severidade: 'Critico',
       abrangencia: 'Provedor',
-      expiraEm: '2026-08-19T09:00:00',
+      expiraEm: '2026-08-19T09:00:00+00:00',
       provedorNome: 'Nacional/ADN',
       url: '/provedores/nacional-adn',
     },
@@ -34,7 +34,7 @@ const homeCompleta: Partial<HomeDto> = {
       corpo: 'Renove antes do vencimento.',
       severidade: 'Alerta',
       abrangencia: 'Provedor',
-      expiraEm: '2026-09-01T12:00:00',
+      expiraEm: '2026-09-01T12:00:00+00:00',
       provedorNome: 'IPM Sistemas',
       url: '/provedores/ipm',
     },
@@ -47,6 +47,7 @@ const homeCompleta: Partial<HomeDto> = {
         {
           slug: 'ipm',
           nome: 'IPM Sistemas',
+          ultimaVersao: { slug: '2-04', rotulo: '2.04' },
           versoes: [{ slug: '2-04', rotulo: '2.04' }],
           verificadoEm: '2026-08-12',
           temComunicado: true,
@@ -72,7 +73,7 @@ const homeCompleta: Partial<HomeDto> = {
   ],
 }
 
-function renderHome(navegarParaBusca = vi.fn(), dadoEmCache?: Partial<HomeDto>) {
+function renderHome(navegarParaBusca = vi.fn(), dadoEmCache?: object) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
   // `updatedAt` antigo é o que importa: com o dado fresco, o `staleTime` de um

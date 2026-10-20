@@ -43,7 +43,7 @@ async function contarTentativas(status: number): Promise<number> {
     () =>
       useQuery({
         queryKey: ['recurso-de-teste', status],
-        queryFn: async () => (await apiPublico.get('/recurso-de-teste')).data,
+        queryFn: async () => (await apiPublico.get<unknown>('/recurso-de-teste')).data,
       }),
     { wrapper: envolver },
   )
@@ -87,7 +87,7 @@ describe('main.tsx', () => {
     const carregar = fontes['./main.tsx']
     expect(carregar).toBeDefined()
 
-    const fonte = await carregar!()
+    const fonte = await carregar()
 
     expect(fonte).toContain('criarQueryClient()')
     expect(fonte).not.toMatch(/new QueryClient\(/)

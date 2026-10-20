@@ -21,13 +21,13 @@ import {
 } from '../../../test/mocks/comunicadosContexto'
 import { handlerErroDetalhePadrao } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
-import type { ErroDetalhe } from '../types/erro'
 import { ErroDetalhePage } from './erro-detalhe'
 
 const API_URL = import.meta.env.VITE_API_URL
 const TEXTO_FALHA_COMUNICADOS = 'Não foi possível verificar os comunicados agora.'
 
-const erroBase: ErroDetalhe = {
+// JSON literal transcrito de ErroDetalheDto, sem o tipo do cliente.
+const erroBase = {
   slug: 'e0117-cnpj-tomador-invalido',
   codigo: 'E0117',
   origem: 'Prefeitura',
@@ -99,7 +99,7 @@ describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
   })
 
   it('com artigos ligados, a seção lista os links depois dos campos relacionados', async () => {
-    const erro: ErroDetalhe = {
+    const erro = {
       ...erroBase,
       camposRelacionados: [
         {
@@ -144,7 +144,7 @@ describe('ErroDetalhePage — causa provável', () => {
   it('preserva a quebra entre a regra da Sefin e o lugar onde ela se aplica', async () => {
     // Formato da carga do Emissor Nacional: regra numa linha, caminho na seguinte.
     const causa = 'Regra da Sefin: O CNPJ do tomador deve ser válido.\nOnde: DPS/infDPS/toma/CNPJ'
-    const erro: ErroDetalhe = { ...erroBase, causaProvavel: causa }
+    const erro = { ...erroBase, causaProvavel: causa }
     server.use(
       http.get(`${API_URL}/erros/${erro.slug}`, () =>
         HttpResponse.json({ data: erro, message: null }),
@@ -173,7 +173,7 @@ describe('ErroDetalhePage — correção de URL canônica (F-4)', () => {
   })
 
   it('redireciona para /erros/{slug} quando o endereço atual diverge do slug canônico', async () => {
-    const erroComSlugNovo: ErroDetalhe = { ...erroBase, slug: 'e0117-slug-novo' }
+    const erroComSlugNovo = { ...erroBase, slug: 'e0117-slug-novo' }
     server.use(
       http.get(`${API_URL}/erros/e0117-slug-antigo`, () =>
         HttpResponse.json({ data: erroComSlugNovo, message: null }),
@@ -207,7 +207,7 @@ describe('ErroDetalhePage — rodapé: próximo passo e caminho ao suporte (§7.
     versaoRotulo: '1.1',
   }
 
-  async function renderComErro(erro: ErroDetalhe) {
+  async function renderComErro(erro: { slug: string; codigo: string; [campo: string]: unknown }) {
     server.use(
       http.get(`${API_URL}/erros/${erro.slug}`, () =>
         HttpResponse.json({ data: erro, message: null }),
@@ -298,14 +298,14 @@ describe('ErroDetalhePage — comunicados do contexto', () => {
     }
   }
 
-  function servirErro(erro: ErroDetalhe) {
+  function servirErro(erro: { slug: string }) {
     return http.get(`${API_URL}/erros/${erro.slug}`, () =>
       HttpResponse.json({ data: erro, message: null }),
     )
   }
 
   it('erro em várias versões de provedores diferentes: uma consulta com `provedor` repetido', async () => {
-    const erro: ErroDetalhe = {
+    const erro = {
       ...erroBase,
       versoesAplicaveis: [
         versaoAplicavel('prefeitura-a', 'v1'),
@@ -324,11 +324,11 @@ describe('ErroDetalhePage — comunicados do contexto', () => {
       await screen.findByRole('heading', { level: 3, name: 'Instabilidade na emissão' }),
     ).toBeInTheDocument()
     expect(chamadas).toHaveLength(1)
-    expect(chamadas[0]!.search).toBe('?provedor=prefeitura-a&provedor=prefeitura-b')
+    expect(chamadas[0].search).toBe('?provedor=prefeitura-a&provedor=prefeitura-b')
   })
 
   it('erro em uma única versão: a consulta leva o provedor e a versão', async () => {
-    const erro: ErroDetalhe = {
+    const erro = {
       ...erroBase,
       versoesAplicaveis: [versaoAplicavel('prefeitura-a', 'v1')],
     }
@@ -338,8 +338,8 @@ describe('ErroDetalhePage — comunicados do contexto', () => {
     renderPagina({ erroSlug: erro.slug })
 
     await screen.findByRole('heading', { level: 3, name: 'Layout 2.04 em homologação' })
-    expect(chamadas[0]!.searchParams.getAll('provedor')).toEqual(['prefeitura-a'])
-    expect(chamadas[0]!.searchParams.get('versao')).toBe('v1')
+    expect(chamadas[0].searchParams.getAll('provedor')).toEqual(['prefeitura-a'])
+    expect(chamadas[0].searchParams.get('versao')).toBe('v1')
   })
 
   it('erro geral: consulta sem parâmetro e mostra só o que o servidor devolve (os globais)', async () => {
@@ -351,11 +351,11 @@ describe('ErroDetalhePage — comunicados do contexto', () => {
     expect(
       await screen.findByRole('heading', { level: 3, name: 'Manutenção programada da plataforma' }),
     ).toBeInTheDocument()
-    expect(chamadas[0]!.search).toBe('')
+    expect(chamadas[0].search).toBe('')
   })
 
   it('com mais de 10 provedores aplicáveis, consulta os 10 primeiros', async () => {
-    const erro: ErroDetalhe = {
+    const erro = {
       ...erroBase,
       versoesAplicaveis: Array.from({ length: 12 }, (_, indice) =>
         versaoAplicavel(`prefeitura-${indice + 1}`, 'v1'),
@@ -368,13 +368,13 @@ describe('ErroDetalhePage — comunicados do contexto', () => {
 
     await screen.findByRole('heading', { level: 1, name: 'E0117' })
     await waitFor(() => expect(chamadas).toHaveLength(1))
-    expect(chamadas[0]!.searchParams.getAll('provedor')).toEqual(
+    expect(chamadas[0].searchParams.getAll('provedor')).toEqual(
       Array.from({ length: 10 }, (_, indice) => `prefeitura-${indice + 1}`),
     )
   })
 
   it('o comunicado vem antes da causa provável', async () => {
-    const erro: ErroDetalhe = { ...erroBase, causaProvavel: 'Causa.' }
+    const erro = { ...erroBase, causaProvavel: 'Causa.' }
     const { handler } = handlerComunicadosRegistrandoChamadas([COMUNICADO_GLOBAL])
     server.use(servirErro(erro), handler)
 

@@ -5,13 +5,13 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { ErroDetalhe } from '../types/erro'
 import { errosKeys } from './errosKeys'
 import { useErroPorSlug } from './useErroPorSlug'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const erroFake: ErroDetalhe = {
+// JSON literal transcrito de ErroDetalheDto, sem o tipo do cliente.
+const erroFake = {
   slug: 'e0117-cnpj-tomador-invalido',
   codigo: 'E0117',
   origem: 'Prefeitura',

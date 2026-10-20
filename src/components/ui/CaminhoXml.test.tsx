@@ -115,7 +115,7 @@ describe('nenhum componente usa token de borda como cor de texto', () => {
     query: '?raw',
     import: 'default',
     eager: true,
-  }) as Record<string, string>
+  })
 
   function arquivosDeProducao(): string[] {
     return Object.keys(FONTES).filter((caminho) => !caminho.endsWith('.test.tsx'))
@@ -135,7 +135,7 @@ describe('nenhum componente usa token de borda como cor de texto', () => {
   // constantes e templates, e a versão restrita ao atributo deixava essas passarem.
   it('não usa text-line em lugar nenhum', () => {
     const comTextoIlegivel = arquivosDeProducao().filter((caminho) =>
-      /(?<![\w-])text-line(?![\w-])/.test(FONTES[caminho]!),
+      /(?<![\w-])text-line(?![\w-])/.test(FONTES[caminho]),
     )
 
     expect(comTextoIlegivel).toEqual([])

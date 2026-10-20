@@ -4,12 +4,12 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { ArtigoListaItem } from '../types/artigo'
 import { useArtigos } from './useArtigos'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const artigos: ArtigoListaItem[] = [
+// JSON literal transcrito de ArtigoListaItemDto, sem o tipo do cliente.
+const artigos = [
   {
     slug: 'identificar-a-versao-pelo-retorno',
     tipo: 'Procedimento',

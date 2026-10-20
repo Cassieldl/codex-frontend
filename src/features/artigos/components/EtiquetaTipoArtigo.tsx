@@ -2,24 +2,7 @@ import clsx from 'clsx'
 import { ArrowRightLeft, BookOpen, ListOrdered } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { TipoArtigo } from '../types/artigo'
-
-/**
- * Rótulo visível de cada tipo. O valor de contrato é ASCII (`Mudanca`, M-5) —
- * o acento vive só aqui, no ponto de exibição, como já acontece com
- * `Proprio`/"Próprio" em `ProvedorForm`.
- */
-export const ROTULO_TIPO_ARTIGO: Record<TipoArtigo, string> = {
-  Conceito: 'Conceito',
-  Procedimento: 'Procedimento',
-  Mudanca: 'Mudança/Migração',
-}
-
-/** Como ler cada tipo — texto de apoio do índice, nunca substitui o rótulo. */
-export const LEITURA_TIPO_ARTIGO: Record<TipoArtigo, string> = {
-  Conceito: 'leitura para entender',
-  Procedimento: 'leitura para executar',
-  Mudanca: 'leitura para ajustar o ERP',
-}
+import { ROTULO_TIPO_ARTIGO } from './rotulosTipoArtigo'
 
 const GLIFO_TIPO_ARTIGO: Record<TipoArtigo, LucideIcon> = {
   Conceito: BookOpen,

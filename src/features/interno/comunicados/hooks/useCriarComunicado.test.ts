@@ -4,13 +4,14 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../../test/mocks/server'
-import type { ComunicadoAdminDetalhe, ComunicadoFormDto } from '../types/comunicadoAdmin'
+import type { ComunicadoFormDto } from '../types/comunicadoAdmin'
 import { useCriarComunicado } from './useCriarComunicado'
 import type { ResultadoCriarComunicado } from './useCriarComunicado'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const detalheCriado: ComunicadoAdminDetalhe = {
+// JSON literal transcrito de ComunicadoAdminDto, sem o tipo do cliente.
+const detalheCriado = {
   id: 90,
   titulo: 'Instabilidade na SEFIN',
   corpo: 'Emissões podem demorar até as 18h.',

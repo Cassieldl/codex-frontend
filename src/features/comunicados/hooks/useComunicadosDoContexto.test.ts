@@ -59,7 +59,7 @@ describe('useComunicadosDoContexto', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(chamadas).toHaveLength(1)
-    expect(chamadas[0]!.search).toBe('?provedor=prefeitura-exemplo')
+    expect(chamadas[0].search).toBe('?provedor=prefeitura-exemplo')
   })
 
   it('provedor e versão: manda os dois', async () => {
@@ -72,8 +72,8 @@ describe('useComunicadosDoContexto', () => {
     )
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(chamadas[0]!.searchParams.get('provedor')).toBe('prefeitura-exemplo')
-    expect(chamadas[0]!.searchParams.get('versao')).toBe('2-04')
+    expect(chamadas[0].searchParams.get('provedor')).toBe('prefeitura-exemplo')
+    expect(chamadas[0].searchParams.get('versao')).toBe('2-04')
   })
 
   it('vários provedores: repete `provedor`, no formato que o servidor lê', async () => {
@@ -85,7 +85,7 @@ describe('useComunicadosDoContexto', () => {
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(chamadas[0]!.search).toBe('?provedor=a&provedor=b')
+    expect(chamadas[0].search).toBe('?provedor=a&provedor=b')
   })
 
   it('sem provedor: nenhum parâmetro (o servidor devolve só os globais)', async () => {
@@ -97,7 +97,7 @@ describe('useComunicadosDoContexto', () => {
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(chamadas[0]!.search).toBe('')
+    expect(chamadas[0].search).toBe('')
   })
 
   it('mais de 10 provedores: manda os 10 primeiros distintos', async () => {
@@ -110,7 +110,7 @@ describe('useComunicadosDoContexto', () => {
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(chamadas[0]!.searchParams.getAll('provedor')).toEqual(slugs.slice(0, 10))
+    expect(chamadas[0].searchParams.getAll('provedor')).toEqual(slugs.slice(0, 10))
   })
 
   it('versão com mais de um provedor: não manda a versão (o servidor responderia 400)', async () => {
@@ -123,7 +123,7 @@ describe('useComunicadosDoContexto', () => {
     )
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(chamadas[0]!.searchParams.has('versao')).toBe(false)
+    expect(chamadas[0].searchParams.has('versao')).toBe(false)
   })
 
   it('cada contexto tem a própria entrada de cache', async () => {

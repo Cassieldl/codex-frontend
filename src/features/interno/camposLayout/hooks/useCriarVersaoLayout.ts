@@ -18,7 +18,7 @@ export function useCriarVersaoLayout() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: versoesLayoutKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: versoesLayoutKeys.lists() })
     },
   })
 }

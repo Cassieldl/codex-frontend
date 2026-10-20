@@ -31,7 +31,7 @@ export function useAtualizarArtigo() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
+      void queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
     },
   })
 }

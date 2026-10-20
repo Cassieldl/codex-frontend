@@ -36,7 +36,7 @@ export function criarUsePublicar<T>(rota: (id: number) => string, chaveRaiz: Que
         return data.data
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: chaveRaiz })
+        void queryClient.invalidateQueries({ queryKey: chaveRaiz })
       },
     })
   }

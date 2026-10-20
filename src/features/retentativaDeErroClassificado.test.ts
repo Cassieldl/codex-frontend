@@ -10,7 +10,7 @@ const FONTES_HOOKS = import.meta.glob('./**/hooks/*.ts', {
   query: '?raw',
   import: 'default',
   eager: true,
-}) as Record<string, string>
+})
 
 function semComentarios(fonte: string): string {
   return fonte.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')

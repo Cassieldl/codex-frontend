@@ -22,7 +22,7 @@ export function useCriarErro() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: errosAdminKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: errosAdminKeys.lists() })
     },
   })
 }

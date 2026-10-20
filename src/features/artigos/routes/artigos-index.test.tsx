@@ -13,12 +13,12 @@ import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { server } from '../../../test/mocks/server'
-import type { ArtigoListaItem } from '../types/artigo'
 import { ArtigosIndexPage } from './artigos-index'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const artigos: ArtigoListaItem[] = [
+// JSON literal transcrito de ArtigoListaItemDto, sem o tipo do cliente.
+const artigos = [
   {
     slug: 'identificar-a-versao-pelo-retorno',
     tipo: 'Procedimento',
@@ -105,9 +105,7 @@ function renderPagina(urlInicial = '/artigos') {
   return { ...utils, router }
 }
 
-function registrarHandler(
-  responder: (url: URL) => { items: ArtigoListaItem[]; totalCount?: number },
-) {
+function registrarHandler(responder: (url: URL) => { items: object[]; totalCount?: number }) {
   const urlsChamadas: URL[] = []
 
   server.use(
@@ -140,8 +138,8 @@ describe('ArtigosIndexPage — tela 7', () => {
     // 'Procedimento' aparece na aba e na etiqueta do card — escopar no card
     // evita casar com a aba e dar falso positivo.
     const cards = screen.getAllByRole('article')
-    expect(within(cards[0]!).getByText('Procedimento')).toBeInTheDocument()
-    expect(within(cards[1]!).getByText('Conceito')).toBeInTheDocument()
+    expect(within(cards[0]).getByText('Procedimento')).toBeInTheDocument()
+    expect(within(cards[1]).getByText('Conceito')).toBeInTheDocument()
   })
 
   it('trocar de aba muda a URL e refaz a consulta com o tipo filtrado', async () => {

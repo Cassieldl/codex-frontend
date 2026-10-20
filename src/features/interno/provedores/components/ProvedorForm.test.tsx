@@ -2,12 +2,14 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { ProvedorForm, separarAliases } from './ProvedorForm'
+import type { ProvedorFormProps } from './ProvedorForm'
+import { ProvedorForm } from './ProvedorForm'
+import { separarAliases } from './separarAliases'
 
 // Os tetos são contrato com o validator do backend e com as colunas: os testes escrevem o literal.
 
 function renderizar() {
-  const onSubmit = vi.fn()
+  const onSubmit = vi.fn<ProvedorFormProps['onSubmit']>()
   render(<ProvedorForm onSubmit={onSubmit} onCancel={vi.fn()} />)
   return { onSubmit }
 }
@@ -46,7 +48,7 @@ describe('ProvedorForm — tetos', () => {
     })
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
-    const dto = onSubmit.mock.calls[0]![0]
+    const dto = onSubmit.mock.calls[0][0]
     expect(dto.nome).toHaveLength(160)
     expect(dto.identificadorInvoicy).toHaveLength(80)
     expect(dto.aliases).toEqual(['a'.repeat(160)])
@@ -91,7 +93,7 @@ describe('ProvedorForm — aliases repetidos', () => {
     await preencherESalvar({ aliases: 'ADN\nadn' })
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
-    expect(onSubmit.mock.calls[0]![0].aliases).toEqual(['ADN', 'adn'])
+    expect(onSubmit.mock.calls[0][0].aliases).toEqual(['ADN', 'adn'])
   })
 })
 

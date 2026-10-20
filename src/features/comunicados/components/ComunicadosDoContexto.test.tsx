@@ -78,7 +78,7 @@ describe('ComunicadosDoContexto', () => {
 
     const alertas = await screen.findAllByRole('alert')
     expect(alertas).toHaveLength(1)
-    expect(within(alertas[0]!).getByText('Instabilidade na emissão')).toBeInTheDocument()
+    expect(within(alertas[0]).getByText('Instabilidade na emissão')).toBeInTheDocument()
   })
 
   it('preserva a quebra de parágrafo do corpo', async () => {

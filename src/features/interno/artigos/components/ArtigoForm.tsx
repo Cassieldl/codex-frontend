@@ -8,7 +8,7 @@ import { Input } from '../../../../components/ui/Input'
 import { Select, type SelectOption } from '../../../../components/ui/Select'
 import { Textarea } from '../../../../components/ui/Textarea'
 import type { ErroDeCampoApi } from '../../../../utils/handleApiError'
-import { ROTULO_TIPO_ARTIGO } from '../../../artigos/components/EtiquetaTipoArtigo'
+import { ROTULO_TIPO_ARTIGO } from '../../../artigos/components/rotulosTipoArtigo'
 import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import { useErrosDeCampoDoServidor } from '../../utils/useErrosDeCampoDoServidor'
 import type {

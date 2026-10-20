@@ -103,14 +103,16 @@ describe('área interna — nenhum hook mapeia coleção sem a guarda', () => {
     query: '?raw',
     import: 'default',
     eager: true,
-  }) as Record<string, string>
+  })
 
   function arquivosDeHook(): string[] {
-    return Object.keys(FONTES)
-      .filter((caminho) => !caminho.endsWith('.test.ts'))
-      // O próprio helper contém o `.map(comEtagDeConcorrencia)` — é a implementação da guarda.
-      .filter((caminho) => !caminho.endsWith('etagDeConcorrencia.ts'))
-      .sort()
+    return (
+      Object.keys(FONTES)
+        .filter((caminho) => !caminho.endsWith('.test.ts'))
+        // O próprio helper contém o `.map(comEtagDeConcorrencia)`: é a implementação da guarda.
+        .filter((caminho) => !caminho.endsWith('etagDeConcorrencia.ts'))
+        .sort()
+    )
   }
 
   it('a varredura enxerga os hooks da área interna', () => {

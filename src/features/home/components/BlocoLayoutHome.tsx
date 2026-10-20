@@ -1,4 +1,4 @@
-import { Link, type LinkProps } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { LayoutResumoHome } from '../types/home'
@@ -31,11 +31,6 @@ function descreverMudancas(layout: LayoutResumoHome): string | null {
  * `layout: null` faz a seção inteira sumir — nunca um "Layout ainda não
  * publicado" que pareça falha. Vocabulário comum sem versão publicada é uma
  * etapa normal do acervo, não um erro a anunciar.
- *
- * O destino (`/layout`) é criado por FRONT-C nesta mesma demanda, então o `to`
- * passa pelo cast de `LinkProps['to']` — mesmo padrão já usado por
- * `CabecalhoPublico` e `RodapeContextual` para rota ainda fora do espaço
- * tipado no momento da escrita.
  */
 export function BlocoLayoutHome({ layout }: BlocoLayoutHomeProps) {
   if (!layout) return null
@@ -81,7 +76,7 @@ export function BlocoLayoutHome({ layout }: BlocoLayoutHomeProps) {
         </div>
 
         <Link
-          to={'/layout' as unknown as LinkProps['to']}
+          to="/layout"
           className="flex shrink-0 items-center gap-2 text-sm font-semibold text-primary-medium hover:underline"
         >
           Ver detalhes

@@ -21,13 +21,13 @@ const FONTES_HOOKS = import.meta.glob('./**/hooks/*.ts', {
   query: '?raw',
   import: 'default',
   eager: true,
-}) as Record<string, string>
+})
 
 const FONTES_TELAS = import.meta.glob(['./**/*.tsx', '../routes/**/*.tsx'], {
   query: '?raw',
   import: 'default',
   eager: true,
-}) as Record<string, string>
+})
 
 /**
  * `export type TipoErroX = 'a' | 'b' | 'c'`, em uma linha ou quebrado em várias.

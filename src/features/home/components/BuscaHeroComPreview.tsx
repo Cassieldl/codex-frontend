@@ -94,6 +94,7 @@ export function BuscaHeroComPreview({ aoSubmeter }: BuscaHeroComPreviewProps) {
   const semResultado = resultado?.qualidade === 'vazia'
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- recebe o Escape que sobe do campo de busca
     <div
       className="relative max-w-3xl"
       onKeyDown={(evento) => evento.key === 'Escape' && setDispensado(true)}

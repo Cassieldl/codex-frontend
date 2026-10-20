@@ -33,9 +33,9 @@ export function useVerificarVersao() {
       return data.data
     },
     onSuccess: (_dados, variaveis) => {
-      queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.id) })
+      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.id) })
       // A versão sai da lista de verificações vencidas do Início assim que é verificada.
-      queryClient.invalidateQueries({ queryKey: verificacoesVencidasKeys.all })
+      void queryClient.invalidateQueries({ queryKey: verificacoesVencidasKeys.all })
     },
   })
 }

@@ -4,13 +4,13 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../../test/mocks/server'
-import type { ResultadoBusca } from '../../../busca/types/resultadoBusca'
 import { buscaInternaKeys } from './buscaInternaKeys'
 import { useResultadoBuscaInterna } from './useResultadoBuscaInterna'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const resultadoFake: ResultadoBusca = {
+// JSON literal transcrito de ResultadoBuscaDto, sem o tipo do cliente.
+const resultadoFake = {
   termo: 'e0117',
   termoUsado: 'e0117',
   correcao: null,

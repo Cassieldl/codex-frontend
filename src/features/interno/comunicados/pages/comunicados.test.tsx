@@ -7,7 +7,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../../auth/keycloak'
 import { handlerComunicadoDetalhe, handlerComunicadosLista } from '../../../../test/mocks/handlers'
 import { server } from '../../../../test/mocks/server'
-import type { ComunicadoAdminDetalhe, ComunicadoAdminListaItem } from '../types/comunicadoAdmin'
 import { ComunicadosPage } from './comunicados'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -48,7 +47,8 @@ function handlerProvedores() {
   )
 }
 
-const RASCUNHO_VIGENTE: ComunicadoAdminListaItem = {
+// JSON literal transcrito de ComunicadoAdminListaItemDto, sem o tipo do cliente.
+const RASCUNHO_VIGENTE = {
   id: 11,
   titulo: 'Rascunho ainda vigente',
   severidade: 'Alerta',
@@ -61,7 +61,7 @@ const RASCUNHO_VIGENTE: ComunicadoAdminListaItem = {
   versaoConcorrencia: 3,
 }
 
-const PUBLICADO_VIGENTE: ComunicadoAdminListaItem = {
+const PUBLICADO_VIGENTE = {
   id: 12,
   titulo: 'Publicado e vigente',
   severidade: 'Critico',
@@ -74,7 +74,7 @@ const PUBLICADO_VIGENTE: ComunicadoAdminListaItem = {
   versaoConcorrencia: 5,
 }
 
-const PUBLICADO_ENCERRADO: ComunicadoAdminListaItem = {
+const PUBLICADO_ENCERRADO = {
   id: 13,
   titulo: 'Publicado e já encerrado',
   severidade: 'Informativo',
@@ -87,7 +87,7 @@ const PUBLICADO_ENCERRADO: ComunicadoAdminListaItem = {
   versaoConcorrencia: 8,
 }
 
-const DETALHE_PUBLICADO_ENCERRADO: ComunicadoAdminDetalhe = {
+const DETALHE_PUBLICADO_ENCERRADO = {
   ...PUBLICADO_ENCERRADO,
   corpo: 'Este comunicado já venceu.',
   provedorId: 4,
@@ -312,7 +312,7 @@ describe('ComunicadosPage — publicar comunicado expirado (B-4)', () => {
 
   it('mostra a mensagem do backend inteira — ela é o requisito, não decoração', async () => {
     const usuario = userEvent.setup()
-    const rascunhoEncerrado: ComunicadoAdminListaItem = {
+    const rascunhoEncerrado = {
       ...PUBLICADO_ENCERRADO,
       publicado: false,
       encerrado: true,
@@ -342,7 +342,7 @@ describe('ComunicadosPage — publicar comunicado expirado (B-4)', () => {
 
   it('a saída oferecida é editar a expiração, e abre o formulário do comunicado', async () => {
     const usuario = userEvent.setup()
-    const rascunhoEncerrado: ComunicadoAdminListaItem = {
+    const rascunhoEncerrado = {
       ...PUBLICADO_ENCERRADO,
       publicado: false,
       encerrado: true,

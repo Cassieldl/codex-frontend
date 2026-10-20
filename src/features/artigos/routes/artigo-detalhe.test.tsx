@@ -12,13 +12,13 @@ import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
 import { handlerArtigoDetalhe } from '../../../test/mocks/handlers'
-import type { ArtigoDetalhe } from '../types/artigo'
 import { SLUG_COMO_FUNCIONA } from '../utils/slugsReservados'
 import { ArtigoDetalhePage } from './artigo-detalhe'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const artigo: ArtigoDetalhe = {
+// JSON literal transcrito de ArtigoDetalheDto, sem o tipo do cliente.
+const artigo = {
   slug: 'identificar-a-versao-pelo-retorno',
   tipo: 'Procedimento',
   titulo: 'Identificar a versão pelo retorno',
@@ -163,7 +163,7 @@ describe('ArtigoDetalhePage — tela 8', () => {
   })
 
   it('redireciona para urlCanonica quando o endereço atual diverge (§3.1)', async () => {
-    const reservadoAcessadoPorArtigos: ArtigoDetalhe = {
+    const reservadoAcessadoPorArtigos = {
       ...artigo,
       slug: SLUG_COMO_FUNCIONA,
       titulo: 'Como funciona o Codex',
@@ -252,7 +252,7 @@ describe('ArtigoDetalhePage — tela 9 (/como-funciona)', () => {
   })
 
   it('quando o artigo reservado existe, renderiza o conteúdo sem redirecionar', async () => {
-    const comoFunciona: ArtigoDetalhe = {
+    const comoFunciona = {
       ...artigo,
       slug: SLUG_COMO_FUNCIONA,
       tipo: 'Conceito',

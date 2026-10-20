@@ -104,7 +104,7 @@ function responderCampos(ondeEUsado: unknown = USOS): string[] {
 /** Faz o papel da tela da versão: guarda o campo aberto e navega entre os vizinhos. */
 function PaginaDeTeste() {
   const [indice, setIndice] = useState(0)
-  const campo = CAMPOS[indice]!
+  const campo = CAMPOS[indice]
   const anterior = CAMPOS[indice - 1]
   const proximo = CAMPOS[indice + 1]
 

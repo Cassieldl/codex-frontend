@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiInterno } from '../../../../services/apiInterno'
-import type { ErroAdminDetalhe, ErroFormDto } from '../types/erroAdmin'
+import type { AtualizarErroDto, ErroAdminDetalhe } from '../types/erroAdmin'
 import { errosAdminKeys } from './errosAdminKeys'
 
 interface EnvelopeErroAdminDetalhe {
@@ -10,7 +10,7 @@ interface EnvelopeErroAdminDetalhe {
 
 interface VariaveisAtualizarErro {
   id: number
-  dto: ErroFormDto
+  dto: AtualizarErroDto
   etag?: string
 }
 
@@ -30,7 +30,7 @@ export function useAtualizarErro() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: errosAdminKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: errosAdminKeys.lists() })
     },
   })
 }

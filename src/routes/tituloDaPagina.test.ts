@@ -14,13 +14,13 @@ const FONTES_ROTAS = import.meta.glob('./**/*.tsx', {
   query: '?raw',
   import: 'default',
   eager: true,
-}) as Record<string, string>
+})
 
 const FONTES_FEATURES = import.meta.glob('../features/**/*.{ts,tsx}', {
   query: '?raw',
   import: 'default',
   eager: true,
-}) as Record<string, string>
+})
 
 const FONTES: Record<string, string> = { ...FONTES_ROTAS, ...FONTES_FEATURES }
 

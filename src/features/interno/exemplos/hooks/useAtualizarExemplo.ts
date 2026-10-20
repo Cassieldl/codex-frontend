@@ -30,8 +30,10 @@ export function useAtualizarExemplo() {
       return data.data
     },
     onSuccess: (_dados, variaveis) => {
-      queryClient.invalidateQueries({ queryKey: exemplosAdminKeys.porVersao(variaveis.versaoId) })
-      queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.versaoId) })
+      void queryClient.invalidateQueries({
+        queryKey: exemplosAdminKeys.porVersao(variaveis.versaoId),
+      })
+      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.versaoId) })
     },
   })
 }

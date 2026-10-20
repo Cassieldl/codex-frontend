@@ -12,28 +12,29 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { ProvedorListaItem } from '../../provedores/types/provedor'
-import type { ResultadoBusca } from '../types/resultadoBusca'
 import { BuscaPage, type NavegarBuscaOpcoes } from './busca-index'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const IPM: ProvedorListaItem = {
+// JSON literal transcrito de ProvedorListaItemDto, sem o tipo do cliente.
+const IPM = {
   slug: 'ipm-sistemas',
   nome: 'IPM Sistemas',
   categoria: 'Nacional',
+  identificadorInvoicy: 'IPM',
   verificadoEm: null,
   versoes: [],
 }
-const BETHA: ProvedorListaItem = {
+const BETHA = {
   slug: 'betha-sistemas',
   nome: 'Betha Sistemas',
   categoria: 'Nacional',
+  identificadorInvoicy: 'BETHA',
   verificadoEm: null,
   versoes: [],
 }
 
-function respostaProvedores(items: ProvedorListaItem[]) {
+function respostaProvedores(items: object[]) {
   return HttpResponse.json({
     items,
     totalCount: items.length,
@@ -43,7 +44,8 @@ function respostaProvedores(items: ProvedorListaItem[]) {
   })
 }
 
-function resultadoBase(sobrescritas: Partial<ResultadoBusca> = {}): ResultadoBusca {
+// JSON literal transcrito de ResultadoBuscaDto, sem o tipo do cliente.
+function resultadoBase(sobrescritas: Record<string, unknown> = {}) {
   return {
     termo: 'e0117',
     termoUsado: 'e0117',
@@ -57,7 +59,7 @@ function resultadoBase(sobrescritas: Partial<ResultadoBusca> = {}): ResultadoBus
   }
 }
 
-function respostaBusca(resultado: ResultadoBusca) {
+function respostaBusca(resultado: object) {
   return HttpResponse.json({ data: resultado, message: null })
 }
 
@@ -114,7 +116,7 @@ describe('BuscaPage — filtro por provedor (P-01)', () => {
     await usuario.click(await screen.findByRole('option', { name: 'IPM Sistemas' }))
 
     await waitFor(() => expect(navigate).toHaveBeenCalledTimes(1))
-    const opcoesChamada = navigate.mock.calls[0]![0]
+    const opcoesChamada = navigate.mock.calls[0][0]
     expect(opcoesChamada.replace).toBe(true)
     expect(opcoesChamada.search({ q: 'e0117', provedor: undefined })).toEqual({
       q: 'e0117',

@@ -32,6 +32,7 @@ const respostaDaApiComCorrecao = {
 type TokenNoFio = (typeof respostaDaApiComCorrecao)['data']['correcao']['tokens'][number]
 
 type MesmoFormato<A, B> =
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- o T só existe para comparar A e B com igualdade exata
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
 
 // Falha no `tsc -b` se o tipo do cliente divergir do token que a API envia.

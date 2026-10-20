@@ -5,12 +5,12 @@ import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
 import { provedoresAdminKeys } from '../provedores/hooks/provedoresAdminKeys'
-import type { ProvedorAdminDetalhe } from '../provedores/types/provedorAdmin'
 import { usePublicarProvedor } from './usePublicarProvedor'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const provedorFake: ProvedorAdminDetalhe = {
+// JSON literal transcrito de ProvedorAdminDetalheDto, sem o tipo do cliente.
+const provedorFake = {
   id: 42,
   slug: 'prefeitura-de-exemplo',
   nome: 'Prefeitura de Exemplo',

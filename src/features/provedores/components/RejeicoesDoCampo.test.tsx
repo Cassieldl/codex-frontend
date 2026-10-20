@@ -99,7 +99,7 @@ describe('RejeicoesDoCampo — cada rejeição', () => {
     renderizar()
     await screen.findByText('montado')
 
-    expect(screen.getByText(ERRO_COM_MENSAGEM_PROPRIA.variantes[0]!)).toBeInTheDocument()
+    expect(screen.getByText(ERRO_COM_MENSAGEM_PROPRIA.variantes[0])).toBeInTheDocument()
     expect(screen.getAllByText(ERRO_COM_MENSAGEM_IGUAL.titulo)).toHaveLength(1)
   })
 
@@ -131,7 +131,7 @@ describe('RejeicoesDoCampo — rejeição do campo ausente do resumo da versão'
     expect(within(item).queryByRole('link')).toBeNull()
     expect(within(secao).getAllByRole('link')).toHaveLength(2)
     expect(consoleError).toHaveBeenCalledTimes(1)
-    expect(consoleError.mock.calls[0]![0]).toContain(ERRO_COM_MENSAGEM_PROPRIA.slug)
+    expect(consoleError.mock.calls[0][0]).toContain(ERRO_COM_MENSAGEM_PROPRIA.slug)
   })
 
   it('não acusa nada no console quando todas as rejeições estão no resumo', async () => {

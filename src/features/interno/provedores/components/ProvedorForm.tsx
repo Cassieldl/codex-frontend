@@ -7,6 +7,7 @@ import { Input } from '../../../../components/ui/Input'
 import { Select, type SelectOption } from '../../../../components/ui/Select'
 import { Textarea } from '../../../../components/ui/Textarea'
 import type { CategoriaProvedor, ProvedorAdminDetalhe } from '../types/provedorAdmin'
+import { separarAliases } from './separarAliases'
 
 const CATEGORIA_OPTIONS: SelectOption[] = [
   { value: 'Nacional', label: 'Nacional' },
@@ -15,17 +16,6 @@ const CATEGORIA_OPTIONS: SelectOption[] = [
 
 /** Tetos do validator do backend, que são os das colunas (`ProvedorValidators`). */
 const TAMANHO_MAXIMO_ALIAS = 160
-
-/**
- * Um alias por linha, sem espaço nas pontas e sem linha vazia. É o mesmo recorte usado no envio:
- * validar outra coisa deixaria passar o que o servidor recusa.
- */
-export function separarAliases(texto: string | undefined): string[] {
-  return (texto ?? '')
-    .split('\n')
-    .map((alias) => alias.trim())
-    .filter(Boolean)
-}
 
 const provedorSchema = z.object({
   nome: z.string().min(1, 'O nome é obrigatório.').max(160, 'Máximo de 160 caracteres.'),

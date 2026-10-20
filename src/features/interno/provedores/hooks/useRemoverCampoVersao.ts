@@ -16,7 +16,7 @@ export function useRemoverCampoVersao() {
       await apiInterno.delete(`/campos-versao/${id}`, { etag })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: camposVersaoKeys.all })
+      void queryClient.invalidateQueries({ queryKey: camposVersaoKeys.all })
     },
   })
 }

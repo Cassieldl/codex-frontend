@@ -5,7 +5,6 @@ import { http, HttpResponse } from 'msw'
 import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../../test/mocks/server'
-import type { ExemploAdmin } from '../types/exemploAdmin'
 import { SecaoExemplosVersao } from './SecaoExemplosVersao'
 
 /**
@@ -18,7 +17,8 @@ const API_URL = import.meta.env.VITE_API_URL
 
 const VERSAO_ID = 10
 
-function exemplo(id: number): Omit<ExemploAdmin, 'etag'> {
+// JSON literal transcrito de ExemploAdminDto, sem o tipo do cliente.
+function exemplo(id: number) {
   return {
     id,
     versaoProvedorId: VERSAO_ID,

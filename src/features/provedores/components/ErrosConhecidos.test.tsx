@@ -8,7 +8,8 @@ import {
 } from '@tanstack/react-router'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { ErrosConhecidos, mensagensQueAcrescentam } from './ErrosConhecidos'
+import { mensagensQueAcrescentam } from './camposDosErrosConhecidos'
+import { ErrosConhecidos } from './ErrosConhecidos'
 
 /**
  * Transcrito do `ErroResumoPublicoDto` real, **sem anotação do tipo do cliente**: anotar faria o
@@ -101,7 +102,7 @@ function renderizar(
 }
 
 function itensDaLista() {
-  return within(screen.getAllByRole('list')[0]!)
+  return within(screen.getAllByRole('list')[0])
     .getAllByRole('listitem')
     .filter((item) => item.querySelector('a'))
 }
@@ -132,7 +133,7 @@ describe('ErrosConhecidos — cada erro', () => {
     renderizar()
     await screen.findByText(ERRO_COM_MENSAGEM_PROPRIA.titulo)
 
-    expect(screen.getByText(ERRO_COM_MENSAGEM_PROPRIA.variantes[0]!)).toBeInTheDocument()
+    expect(screen.getByText(ERRO_COM_MENSAGEM_PROPRIA.variantes[0])).toBeInTheDocument()
     expect(screen.getAllByText(ERRO_COM_MENSAGEM_IGUAL.titulo)).toHaveLength(1)
   })
 

@@ -15,15 +15,15 @@ const { apiPublico } = await import('./api')
 const { apiInterno } = await import('./apiInterno')
 
 function criarAdapterEspiao(capturas: InternalAxiosRequestConfig[]) {
-  return async (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
+  return (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
     capturas.push(config)
-    return {
+    return Promise.resolve({
       data: {},
       status: 200,
       statusText: 'OK',
       headers: {},
       config,
-    }
+    })
   }
 }
 

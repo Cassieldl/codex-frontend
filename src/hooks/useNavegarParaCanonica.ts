@@ -16,7 +16,7 @@ export function useNavegarParaCanonica(): (destino: DestinoDeNavegacao) => void 
 
   return useCallback(
     ({ href, replace }: DestinoDeNavegacao) => {
-      void navigate({ to: href, replace } as unknown as Parameters<typeof navigate>[0])
+      void navigate({ to: href, replace })
     },
     [navigate],
   )

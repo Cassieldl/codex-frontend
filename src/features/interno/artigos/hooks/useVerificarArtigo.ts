@@ -33,7 +33,7 @@ export function useVerificarArtigo() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
+      void queryClient.invalidateQueries({ queryKey: artigosAdminKeys.all })
     },
   })
 }

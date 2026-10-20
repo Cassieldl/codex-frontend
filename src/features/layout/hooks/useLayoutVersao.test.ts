@@ -8,12 +8,12 @@ import {
   handlerLayoutVersaoDespublicada,
 } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
-import type { LayoutVersaoPagina } from '../types/layoutPublico'
 import { ErroLayoutVersaoHttp, useLayoutVersao } from './useLayoutVersao'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const paginaFake: LayoutVersaoPagina = {
+// JSON literal transcrito de LayoutVersaoDto, sem o tipo do cliente.
+const paginaFake = {
   versao: {
     slug: '4-13',
     rotulo: '4.13',

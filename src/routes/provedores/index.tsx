@@ -52,11 +52,11 @@ function ProvedoresPage() {
   })
 
   function aoBuscarSubmit() {
-    navigate({ search: (anterior) => ({ ...anterior, q: termo || undefined, pagina: 1 }) })
+    void navigate({ search: (anterior) => ({ ...anterior, q: termo || undefined, pagina: 1 }) })
   }
 
   function aoMudarCategoria(valor: string) {
-    navigate({
+    void navigate({
       search: (anterior) => ({
         ...anterior,
         categoria: (valor || undefined) as 'Nacional' | 'Proprio' | undefined,
@@ -67,7 +67,7 @@ function ProvedoresPage() {
 
   function aoMudarTamanhoPagina(novoTamanho: number) {
     setTamanhoPagina(novoTamanho)
-    navigate({ search: (anterior) => ({ ...anterior, pagina: 1 }) })
+    void navigate({ search: (anterior) => ({ ...anterior, pagina: 1 }) })
   }
 
   return (

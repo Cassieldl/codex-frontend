@@ -4,12 +4,12 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { LayoutIndice } from '../types/layoutPublico'
 import { useLayoutIndice } from './useLayoutIndice'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const indiceFake: LayoutIndice = {
+// JSON literal transcrito de LayoutIndiceDto, sem o tipo do cliente.
+const indiceFake = {
   vigente: { slug: '4-12', rotulo: '4.12', estado: 'Vigente', ordem: 2, totalCampos: 58 },
   versoes: [
     { slug: '4-13', rotulo: '4.13', estado: 'Prevista', ordem: 3, totalCampos: 62 },

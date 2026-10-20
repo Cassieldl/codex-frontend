@@ -33,7 +33,7 @@ export function useAtualizarComunicado() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: comunicadosAdminKeys.all })
+      void queryClient.invalidateQueries({ queryKey: comunicadosAdminKeys.all })
     },
   })
 }

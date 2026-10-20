@@ -49,5 +49,5 @@ export interface CriarCampoVersaoDto {
   ordem: number
 }
 
-/** `AtualizarCampoVersaoDto` (I13a). */
-export type AtualizarCampoVersaoDto = CriarCampoVersaoDto
+/** `AtualizarCampoVersaoDto` (I13a): sem `campoLayoutId`, porque o vínculo com o campo canônico não muda. */
+export type AtualizarCampoVersaoDto = Omit<CriarCampoVersaoDto, 'campoLayoutId'>

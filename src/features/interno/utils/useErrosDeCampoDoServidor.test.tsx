@@ -121,12 +121,12 @@ describe('useErrosDeCampoDoServidor — não re-dispara com array novo a cada re
       // nada — que era exatamente o defeito do ISSUE-QA-1.
       useEffect(() => {
         clearErrors('titulo')
-        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [tentativa, clearErrors])
 
       // Lista nova por tentativa, com o MESMO conteúdo — é o que o `onError` produz.
       const errosDeCampo = useMemo(
         () => [{ field: 'titulo', message: 'Já existe um comunicado com este título.' }],
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- `tentativa` não é lida, mas gera a lista nova do teste
         [tentativa],
       )
 

@@ -111,6 +111,7 @@ export function CampoVersaoForm({
     defaultValues: valoresIniciais(initialData),
   })
 
+  const isEdicao = initialData !== undefined
   const estadoAtual = watch('estadoPreenchimento')
   const campoLayoutIdAtual = watch('campoLayoutId')
 
@@ -118,6 +119,11 @@ export function CampoVersaoForm({
     value: String(opcao.id),
     label: `${opcao.nome} (${opcao.caminhoXml})`,
   }))
+
+  const rotuloDoCampoCanonico =
+    opcoesSelect.find((opcao) => opcao.value === campoLayoutIdAtual)?.label ??
+    initialData?.campoLayoutNome ??
+    ''
 
   function aoSubmeter(valores: CampoVersaoFormValores) {
     const dto: CriarCampoVersaoDto = {
@@ -149,15 +155,25 @@ export function CampoVersaoForm({
         </p>
       )}
 
-      <Select
-        label="Campo canônico"
-        required
-        options={opcoesSelect}
-        value={campoLayoutIdAtual || null}
-        onValueChange={(valor) => setValue('campoLayoutId', valor, { shouldValidate: true })}
-        error={errors.campoLayoutId?.message}
-        placeholder="Selecione o campo do Layout InvoiCy"
-      />
+      {isEdicao ? (
+        <Input
+          label="Campo canônico"
+          required
+          readOnly
+          value={rotuloDoCampoCanonico}
+          hint="O campo canônico não muda depois de criado. Para trocar, remova e crie de novo."
+        />
+      ) : (
+        <Select
+          label="Campo canônico"
+          required
+          options={opcoesSelect}
+          value={campoLayoutIdAtual || null}
+          onValueChange={(valor) => setValue('campoLayoutId', valor, { shouldValidate: true })}
+          error={errors.campoLayoutId?.message}
+          placeholder="Selecione o campo do Layout InvoiCy"
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Input label="Tipo" required error={errors.tipo?.message} {...register('tipo')} />

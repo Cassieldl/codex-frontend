@@ -15,19 +15,19 @@ import {
   handlerCampoLayoutVerbeteSucesso,
 } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
-import type { CampoLayoutVerbete } from '../types/layoutPublico'
 import { LayoutCampoResolucaoPage } from './layout-campo-resolucao'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const verbeteMinimo: CampoLayoutVerbete = {
+// JSON literal transcrito de CampoLayoutVerbeteDto, sem o tipo do cliente.
+const verbeteMinimo = {
   slug: 'numero-do-rps',
   nome: 'Número do RPS',
   caminhoXml: 'Nfse/Rps/IdentificacaoRps/Numero',
   significado: 'Numeração sequencial do recibo.',
   estado: 'Ativo',
-  versaoExibicao: { slug: '4-12', rotulo: '4.12' },
-  versaoOrigem: { slug: '4-10', rotulo: '4.10' },
+  versaoExibicao: { slug: '4-12', rotulo: '4.12', estado: 'Vigente', ordem: 2, totalCampos: 58 },
+  versaoOrigem: { slug: '4-10', rotulo: '4.10', estado: 'Anterior', ordem: 1, totalCampos: 55 },
   versaoDescontinuado: null,
   ondeEUsado: [],
 }
@@ -60,8 +60,20 @@ describe('LayoutCampoResolucaoPage', () => {
   it('redireciona para a versão de exibição com a âncora do campo, substituindo o histórico', async () => {
     server.use(
       handlerCampoLayoutVerbeteSucesso('numero-do-rps', {
-        versaoExibicao: { slug: '4-12', rotulo: '4.12' },
-        versaoOrigem: { slug: '4-10', rotulo: '4.10' },
+        versaoExibicao: {
+          slug: '4-12',
+          rotulo: '4.12',
+          estado: 'Vigente',
+          ordem: 2,
+          totalCampos: 58,
+        },
+        versaoOrigem: {
+          slug: '4-10',
+          rotulo: '4.10',
+          estado: 'Anterior',
+          ordem: 1,
+          totalCampos: 55,
+        },
       }),
     )
 
@@ -85,14 +97,28 @@ describe('LayoutCampoResolucaoPage', () => {
   it('a decisão de destino ignora `ondeEUsado`, mesmo quando ele aponta outra versão', async () => {
     server.use(
       handlerCampoLayoutVerbeteSucesso('numero-do-rps', {
-        versaoExibicao: { slug: '4-12', rotulo: '4.12' },
-        versaoOrigem: { slug: '4-10', rotulo: '4.10' },
+        versaoExibicao: {
+          slug: '4-12',
+          rotulo: '4.12',
+          estado: 'Vigente',
+          ordem: 2,
+          totalCampos: 58,
+        },
+        versaoOrigem: {
+          slug: '4-10',
+          rotulo: '4.10',
+          estado: 'Anterior',
+          ordem: 1,
+          totalCampos: 55,
+        },
         ondeEUsado: [
           {
             provedorSlug: 'prefeitura-exemplo',
             provedorNome: 'Prefeitura de Exemplo',
             versaoSlug: 'versao-de-provedor',
             versaoRotulo: 'Versão de provedor',
+            destinoXml: null,
+            estadoPreenchimento: 'Obrigatorio',
           },
         ],
       }),
@@ -101,7 +127,7 @@ describe('LayoutCampoResolucaoPage', () => {
     const { navegar } = renderPagina('numero-do-rps')
 
     await waitFor(() => expect(navegar).toHaveBeenCalled())
-    expect(navegar.mock.calls[0]![0]).toEqual({
+    expect(navegar.mock.calls[0][0]).toEqual({
       to: '/layout/$versaoSlug',
       params: { versaoSlug: '4-12' },
       hash: 'campo-numero-do-rps',

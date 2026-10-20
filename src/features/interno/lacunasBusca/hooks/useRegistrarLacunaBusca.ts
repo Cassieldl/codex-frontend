@@ -21,7 +21,7 @@ export function useRegistrarLacunaBusca() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lacunasBuscaKeys.all })
+      void queryClient.invalidateQueries({ queryKey: lacunasBuscaKeys.all })
     },
   })
 }

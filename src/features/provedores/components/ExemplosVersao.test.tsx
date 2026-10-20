@@ -126,7 +126,7 @@ describe('ExemplosVersao (tela 5)', () => {
 
     await usuario.click(screen.getByRole('button', { name: 'Ver o XML' }))
 
-    const bloco = screen.getByRole('group', { name: 'XML do exemplo ISS retido' })
+    const bloco = screen.getByRole('region', { name: 'XML do exemplo ISS retido' })
     expect(bloco.tagName).toBe('PRE')
     expect(bloco).toHaveAttribute('tabindex', '0')
   })

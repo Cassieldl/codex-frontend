@@ -18,15 +18,14 @@ function criarAuthStore(estadoInicial: AuthState) {
   let state = estadoInicial
   const ouvintes = new Set<Ouvinte>()
 
+  // Arrow functions: o hook passa getState e subscribe soltos para o useSyncExternalStore.
   return {
-    getState(): AuthState {
-      return state
-    },
-    setState(parcial: Partial<AuthState>): void {
+    getState: (): AuthState => state,
+    setState: (parcial: Partial<AuthState>): void => {
       state = { ...state, ...parcial }
       ouvintes.forEach((ouvinte) => ouvinte(state))
     },
-    subscribe(ouvinte: Ouvinte): () => void {
+    subscribe: (ouvinte: Ouvinte): (() => void) => {
       ouvintes.add(ouvinte)
       return () => {
         ouvintes.delete(ouvinte)

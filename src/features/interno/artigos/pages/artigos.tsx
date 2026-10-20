@@ -161,11 +161,11 @@ export function ArtigosPage() {
     if (!erroDeEscrita) return
 
     if (erroDeEscrita.info.acao === 'recarregar-registro') {
-      detalheEmEdicao.refetch()
+      void detalheEmEdicao.refetch()
     }
     if (erroDeEscrita.info.acao === 'recarregar-lista') {
       setModalAberto(null)
-      refetch()
+      void refetch()
     }
 
     setErroDeEscrita(null)
@@ -256,7 +256,7 @@ export function ArtigosPage() {
 
       {!isLoading && !isError && temArtigos && data && (
         <>
-          <TableRoot>
+          <TableRoot rotulo="Artigos">
             <TableHeader>
               <tr>
                 <TableCell header>Título</TableCell>

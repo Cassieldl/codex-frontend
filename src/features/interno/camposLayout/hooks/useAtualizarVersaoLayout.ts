@@ -31,7 +31,7 @@ export function useAtualizarVersaoLayout() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: versoesLayoutKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: versoesLayoutKeys.lists() })
     },
   })
 }

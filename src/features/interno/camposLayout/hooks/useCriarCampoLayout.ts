@@ -21,7 +21,7 @@ export function useCriarCampoLayout(versaoLayoutId: number) {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: camposLayoutKeys.porVersaoLayout(versaoLayoutId),
       })
     },

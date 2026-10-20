@@ -12,12 +12,12 @@ import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { handlerLayoutIndiceSucesso } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
-import type { LayoutIndice } from '../types/layoutPublico'
 import { LayoutIndicePage } from './layout-index'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const indiceCompleto: LayoutIndice = {
+// JSON literal transcrito de LayoutIndiceDto, sem o tipo do cliente.
+const indiceCompleto = {
   vigente: { slug: '4-12', rotulo: '4.12', estado: 'Vigente', ordem: 2, totalCampos: 58 },
   versoes: [
     { slug: '4-13', rotulo: '4.13', estado: 'Prevista', ordem: 3, totalCampos: 62 },

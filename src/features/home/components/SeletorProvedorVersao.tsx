@@ -44,7 +44,10 @@ export function SeletorProvedorVersao({ provedores }: SeletorProvedorVersaoProps
 
   function abrir() {
     if (provedorSlug === null || versaoSlug === null) return
-    navigate({ to: '/provedores/$provedorSlug/$versaoSlug', params: { provedorSlug, versaoSlug } })
+    void navigate({
+      to: '/provedores/$provedorSlug/$versaoSlug',
+      params: { provedorSlug, versaoSlug },
+    })
   }
 
   return (

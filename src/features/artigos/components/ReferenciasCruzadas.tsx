@@ -4,20 +4,11 @@ import { ArrowRight, ChevronDown } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import type { ReferenciaCampoLayout, ReferenciaErro } from '../types/artigo'
+import { grupoDoCampo } from './grupoDoCampo'
 
 export interface ReferenciasCruzadasProps {
   camposLayout: ReferenciaCampoLayout[]
   erros: ReferenciaErro[]
-}
-
-/**
- * Grupo do campo no Layout InvoiCy (`Servico/Valores` em `//Servico/Valores/ValAliqISS`), ou
- * `null` quando o campo fica na raiz do RPS — aí o caminho só repetiria o nome.
- */
-export function grupoDoCampo(caminhoXml: string): string | null {
-  const relativo = caminhoXml.replace(/^\/\//, '')
-  const fimDoGrupo = relativo.lastIndexOf('/')
-  return fimDoGrupo > 0 ? relativo.slice(0, fimDoGrupo) : null
 }
 
 /**
@@ -39,6 +30,7 @@ function CamposRelacionadosDoArtigo({ campos }: { campos: ReferenciaCampoLayout[
   }
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- recebe o Escape que sobe das tags
     <section
       aria-labelledby="campos-layout-relacionados-titulo"
       className="flex flex-col gap-3"

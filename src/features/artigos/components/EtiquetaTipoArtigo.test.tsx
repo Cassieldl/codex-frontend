@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { TipoArtigo } from '../types/artigo'
-import { EtiquetaTipoArtigo, ROTULO_TIPO_ARTIGO } from './EtiquetaTipoArtigo'
+import { EtiquetaTipoArtigo } from './EtiquetaTipoArtigo'
+import { ROTULO_TIPO_ARTIGO } from './rotulosTipoArtigo'
 
 describe('EtiquetaTipoArtigo', () => {
   it('traduz o valor ASCII do contrato para o rótulo visível', () => {

@@ -3,6 +3,11 @@ import { useId, useMemo, useState } from 'react'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import type { ErroResumoPublico, GrupoCampoVersao } from '../types/versaoProvedorPagina'
+import {
+  indexarCamposPorErro,
+  mensagensQueAcrescentam,
+  normalizar,
+} from './camposDosErrosConhecidos'
 
 /** Quantos erros aparecem de cada vez — a versão do Emissor Nacional tem mais de 450, e a busca acha o resto. */
 export const ERROS_POR_VEZ = 10
@@ -11,36 +16,6 @@ export interface ErrosConhecidosProps {
   resumo: { total: number; itens: ErroResumoPublico[] }
   /** Os campos da versão: é deles que sai o campo de cada erro, pelo vínculo campo → erro. */
   camposPorGrupo: GrupoCampoVersao[]
-}
-
-interface CampoDoErro {
-  slug: string
-  nome: string
-}
-
-function normalizar(texto: string): string {
-  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-}
-
-/** Erro → campos da versão ligados a ele: o vínculo vem dos campos, e aqui é lido ao contrário. */
-export function indexarCamposPorErro(grupos: GrupoCampoVersao[]): Map<string, CampoDoErro[]> {
-  const indice = new Map<string, CampoDoErro[]>()
-  for (const campo of grupos.flatMap((grupo) => grupo.campos)) {
-    for (const erro of campo.errosConhecidos) {
-      const campos = indice.get(erro.slug) ?? []
-      campos.push({ slug: campo.campoLayoutSlug, nome: campo.nome })
-      indice.set(erro.slug, campos)
-    }
-  }
-  return indice
-}
-
-/** A mensagem observada só acrescenta quando difere do título — na maioria dos erros, é a mesma. */
-export function mensagensQueAcrescentam(erro: ErroResumoPublico): string[] {
-  const titulo = normalizar(erro.titulo).replace(/\.$/, '').trim()
-  return erro.variantes.filter(
-    (mensagem) => normalizar(mensagem).replace(/\.$/, '').trim() !== titulo,
-  )
 }
 
 /**

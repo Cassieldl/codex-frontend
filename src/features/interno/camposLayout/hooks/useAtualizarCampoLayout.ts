@@ -32,7 +32,7 @@ export function useAtualizarCampoLayout() {
       return data.data
     },
     onSuccess: (_dados, variaveis) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: camposLayoutKeys.porVersaoLayout(variaveis.versaoLayoutId),
       })
     },

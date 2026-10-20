@@ -21,6 +21,12 @@ import { useRemoverCampoLayout } from '../hooks/useRemoverCampoLayout'
 import { useVersoesLayout } from '../hooks/useVersoesLayout'
 import type { CampoLayoutAdmin } from '../types/campoLayoutAdmin'
 
+/** Falha ao publicar ou despublicar, mostrada na linha do campo que a causou. */
+interface ErroDePublicacao {
+  campoId: number
+  mensagem: string
+}
+
 export interface IdVersaoLayoutPageProps {
   versaoLayoutId: number
 }
@@ -43,6 +49,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
   const [erroServidor, setErroServidor] = useState<string | null>(null)
   const [campoParaRemover, setCampoParaRemover] = useState<CampoLayoutAdmin | null>(null)
   const [erroDeRemocao, setErroDeRemocao] = useState<string | null>(null)
+  const [erroDePublicacao, setErroDePublicacao] = useState<ErroDePublicacao | null>(null)
 
   const opcoesVersaoDescontinuar = (versoesLayout?.items ?? [])
     .filter((versao) => versao.id !== versaoLayoutId)
@@ -109,6 +116,17 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
     return <ErrorState onRetry={() => refetch()} />
   }
 
+  function alternarPublicacao(campo: CampoLayoutAdmin) {
+    setErroDePublicacao(null)
+    publicarCampo.mutate(
+      { id: campo.id, publicado: !campo.publicado, etag: campo.etag },
+      {
+        onError: (falha) =>
+          setErroDePublicacao({ campoId: campo.id, mensagem: handleApiError(falha) }),
+      },
+    )
+  }
+
   /** A mutation só dispara depois da confirmação — nunca do clique na lista. */
   function confirmarRemocao() {
     if (!campoParaRemover) return
@@ -156,7 +174,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
       )}
 
       {campos && campos.length > 0 && (
-        <TableRoot>
+        <TableRoot rotulo="Campos canônicos da versão">
           <TableHeader>
             <tr>
               <TableCell header>Nome</TableCell>
@@ -197,13 +215,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
                         isLoading={
                           publicarCampo.isPending && publicarCampo.variables?.id === campo.id
                         }
-                        onClick={() =>
-                          publicarCampo.mutate({
-                            id: campo.id,
-                            publicado: !campo.publicado,
-                            etag: campo.etag,
-                          })
-                        }
+                        onClick={() => alternarPublicacao(campo)}
                       >
                         {campo.publicado ? 'Despublicar' : 'Publicar'}
                       </Button>
@@ -219,6 +231,11 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
                       </Button>
                     )}
                   </div>
+                  {erroDePublicacao?.campoId === campo.id && (
+                    <p role="alert" className="mt-1 text-sm text-error-texto">
+                      {erroDePublicacao.mensagem}
+                    </p>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

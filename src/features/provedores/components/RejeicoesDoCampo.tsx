@@ -3,7 +3,7 @@ import { useEffect, useId, useMemo } from 'react'
 
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import type { ErroDoCampo, ErroResumoPublico } from '../types/versaoProvedorPagina'
-import { mensagensQueAcrescentam } from './ErrosConhecidos'
+import { mensagensQueAcrescentam } from './camposDosErrosConhecidos'
 
 /** Âncora da seção: o modal rola até ela quando o leitor chega pelo contador de rejeições. */
 export const ID_SECAO_REJEICOES = 'rejeicoes-do-campo'

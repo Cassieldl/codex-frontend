@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiPublico } from '../../../services/api'
+import { ehColecao } from '../../../utils/ehColecao'
 import type { ComunicadoContexto, ContextoDeComunicados } from '../types/comunicadoContexto'
 import { limitarProvedoresDoContexto } from '../utils/limitarProvedoresDoContexto'
 import { comunicadosKeys } from './comunicadosKeys'
@@ -22,7 +23,7 @@ const UM_MINUTO_MS = 1000 * 60
 function exigirComunicados(
   comunicados: readonly ComunicadoContexto[] | null | undefined,
 ): readonly ComunicadoContexto[] {
-  if (!Array.isArray(comunicados))
+  if (!ehColecao(comunicados))
     throw new Error('A resposta da API não trouxe a coleção "comunicados", que o contrato exige.')
 
   return comunicados

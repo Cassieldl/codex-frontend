@@ -10,12 +10,12 @@ import {
   renderComDestinoLento,
   sairDaPaginaEEsperarDestino,
 } from '../../../test/saidaDaPagina'
-import type { ProvedorDetalhe } from '../types/provedor'
 import { ProvedorLayoutRota } from './provedor-layout-rota'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-function provedorComSlug(slug: string): ProvedorDetalhe {
+// JSON literal transcrito de ProvedorDetalheDto, sem o tipo do cliente.
+function provedorComSlug(slug: string) {
   return {
     slug,
     nome: `Provedor ${slug}`,
@@ -26,14 +26,14 @@ function provedorComSlug(slug: string): ProvedorDetalhe {
       {
         slug: 'v1',
         rotulo: 'Versão 1',
-        verificadoEm: '2026-07-01T00:00:00Z',
+        verificadoEm: '2026-07-01',
         url: `/provedores/${slug}/v1`,
       },
     ],
   }
 }
 
-function handlerProvedor(slugRequisitado: string, provedor: ProvedorDetalhe) {
+function handlerProvedor(slugRequisitado: string, provedor: object) {
   return http.get(`${API_URL}/provedores/${slugRequisitado}`, () =>
     HttpResponse.json({ data: provedor, message: null }),
   )
@@ -118,7 +118,7 @@ describe('ProvedorLayoutRota — versão aberta', () => {
     await screen.findByRole('heading', { level: 1, name: 'Provedor ipm' })
 
     await waitFor(() => expect(chamadas).toHaveLength(1))
-    expect(chamadas[0]!.searchParams.get('versao')).toBe('v1')
+    expect(chamadas[0].searchParams.get('versao')).toBe('v1')
   })
 
   it('sem versão na URL, a página não recebe versão', async () => {
@@ -129,7 +129,7 @@ describe('ProvedorLayoutRota — versão aberta', () => {
     await screen.findByRole('heading', { level: 1, name: 'Provedor ipm' })
 
     await waitFor(() => expect(chamadas).toHaveLength(1))
-    expect(chamadas[0]!.searchParams.get('versao')).toBeNull()
+    expect(chamadas[0].searchParams.get('versao')).toBeNull()
   })
 })
 

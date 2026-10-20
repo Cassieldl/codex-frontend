@@ -80,6 +80,7 @@ describe('Modal — devolução de foco ao gatilho', () => {
         </button>
         {aberto && (
           <Modal isOpen title="Busca rápida" onClose={() => setAberto(false)}>
+            {/* eslint-disable-next-line jsx-a11y/no-autofocus -- o cenário testado é justamente o campo com autoFocus no modal */}
             <input aria-label="Termo" autoFocus={comAutoFocus} />
           </Modal>
         )}

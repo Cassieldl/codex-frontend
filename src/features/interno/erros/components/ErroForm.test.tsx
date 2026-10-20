@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { OpcaoVersaoProvedorErro } from './ErroForm'
+import type { OpcaoVersaoProvedorErro, ErroFormProps } from './ErroForm'
 import { ErroForm } from './ErroForm'
 
 const opcoesVersoes: OpcaoVersaoProvedorErro[] = [{ id: 1, rotulo: 'Prefeitura de Exemplo · v1' }]
 
-function renderForm(onSubmit = vi.fn()) {
+function renderForm(onSubmit = vi.fn<ErroFormProps['onSubmit']>()) {
   render(
     <ErroForm
       opcoesVersoesProvedor={opcoesVersoes}

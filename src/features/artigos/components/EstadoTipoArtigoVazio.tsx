@@ -1,6 +1,6 @@
 import { Inbox, SearchX } from 'lucide-react'
 import type { TipoArtigo } from '../types/artigo'
-import { ROTULO_TIPO_ARTIGO } from './EtiquetaTipoArtigo'
+import { ROTULO_TIPO_ARTIGO } from './rotulosTipoArtigo'
 
 export type VarianteTipoArtigoVazio = 'sem-acervo' | 'sem-resultado'
 

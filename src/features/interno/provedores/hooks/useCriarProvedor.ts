@@ -18,7 +18,7 @@ export function useCriarProvedor() {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: provedoresAdminKeys.lists() })
     },
   })
 }

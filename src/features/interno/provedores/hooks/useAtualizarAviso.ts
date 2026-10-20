@@ -28,7 +28,7 @@ export function useAtualizarAviso(chaveParaInvalidar: QueryKey) {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: chaveParaInvalidar })
+      void queryClient.invalidateQueries({ queryKey: chaveParaInvalidar })
     },
   })
 }

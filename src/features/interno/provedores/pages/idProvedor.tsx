@@ -72,6 +72,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
   const [erroDeRemocao, setErroDeRemocao] = useState<string | null>(null)
   const [erroDePublicacaoDoAviso, setErroDePublicacaoDoAviso] =
     useState<ErroDePublicacaoDoAviso | null>(null)
+  const [erroDePublicacao, setErroDePublicacao] = useState<string | null>(null)
 
   const [modalVersaoAberto, setModalVersaoAberto] = useState(false)
   const [erroVersao, setErroVersao] = useState<string | null>(null)
@@ -147,6 +148,14 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
     )
   }
 
+  function alternarPublicacao(publicado: boolean, etag?: string) {
+    setErroDePublicacao(null)
+    publicarProvedor.mutate(
+      { id: provedorId, publicado, etag },
+      { onError: (falha) => setErroDePublicacao(handleApiError(falha)) },
+    )
+  }
+
   function alternarPublicacaoDoAviso(aviso: AvisoAdmin) {
     setErroDePublicacaoDoAviso(null)
     publicarAviso.mutate(
@@ -219,19 +228,19 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
             <Button
               variant="secondary"
               isLoading={publicarProvedor.isPending}
-              onClick={() =>
-                publicarProvedor.mutate({
-                  id: provedorId,
-                  publicado: !provedor.publicado,
-                  etag: provedor.etag,
-                })
-              }
+              onClick={() => alternarPublicacao(!provedor.publicado, provedor.etag)}
             >
               {provedor.publicado ? 'Despublicar' : 'Publicar'}
             </Button>
           )}
         </div>
       </div>
+
+      {erroDePublicacao && (
+        <p role="alert" className="text-sm text-error-texto">
+          {erroDePublicacao}
+        </p>
+      )}
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">

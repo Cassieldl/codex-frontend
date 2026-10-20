@@ -32,8 +32,8 @@ export function useCriarExemplo(versaoId: number) {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: exemplosAdminKeys.porVersao(versaoId) })
-      queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(versaoId) })
+      void queryClient.invalidateQueries({ queryKey: exemplosAdminKeys.porVersao(versaoId) })
+      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(versaoId) })
     },
   })
 }

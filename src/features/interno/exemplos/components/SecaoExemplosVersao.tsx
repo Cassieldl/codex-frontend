@@ -155,7 +155,7 @@ export function SecaoExemplosVersao({
       )}
 
       {podeBuscar && !isLoading && !isError && total > 0 && (
-        <TableRoot>
+        <TableRoot rotulo="Exemplos desta versão">
           <TableHeader>
             <tr>
               <TableCell header>Cenário</TableCell>

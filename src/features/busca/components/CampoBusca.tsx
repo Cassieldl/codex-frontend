@@ -56,6 +56,7 @@ export function CampoBusca({
           type="search"
           role="searchbox"
           value={valor}
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- opcional por prop, ligado só onde digitar é a única tarefa
           autoFocus={autoFocus}
           onChange={(evento) => onValorChange(evento.target.value)}
           placeholder={placeholder}

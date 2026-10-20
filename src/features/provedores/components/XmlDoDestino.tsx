@@ -28,7 +28,7 @@ function Tag({ nome, ehFechamento = false }: { nome: string; ehFechamento?: bool
 function montarLinhas(niveis: string[], exemplo: string | null): LinhaDoXml[] {
   const indiceDoAlvo = niveis.length - 1
   const ancestrais = niveis.slice(0, indiceDoAlvo)
-  const tagDoAlvo = niveis[indiceDoAlvo]!
+  const tagDoAlvo = niveis[indiceDoAlvo]
 
   const aberturas = ancestrais.map((tag, nivel) => ({
     chave: `abre-${nivel}`,

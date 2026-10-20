@@ -70,7 +70,7 @@ describe('CamposRelacionados', () => {
   // O slug vem da API: o caminho é montado por parâmetro tipado, que codifica o que não é segmento.
   it('sem contexto, slug com caracteres de caminho não escapa do segmento', async () => {
     renderComRouter({
-      campos: [{ ...campos[0]!, slug: 'a/../b?x=1#y', nome: 'Slug estranho' }],
+      campos: [{ ...campos[0], slug: 'a/../b?x=1#y', nome: 'Slug estranho' }],
       contexto: null,
     })
 

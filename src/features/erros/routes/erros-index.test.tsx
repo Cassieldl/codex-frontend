@@ -11,7 +11,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { ErroListaItem } from '../types/erro'
 import { ErrosIndexPage } from './erros-index'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -46,13 +45,14 @@ function renderPagina(codigo: string) {
   return { ...utils, navigate }
 }
 
-function respostaPaginada(items: ErroListaItem[], totalCount = items.length) {
+function respostaPaginada(items: object[], totalCount = items.length) {
   return HttpResponse.json({ items, totalCount, page: 1, pageSize: 50, totalPages: 1 })
 }
 
 describe('ErrosIndexPage — /erros?codigo=', () => {
   it('totalCount === 1 navega direto para a página do erro', async () => {
-    const item: ErroListaItem = {
+    // JSON literal transcrito de ErroListaItemDto, sem o tipo do cliente.
+    const item = {
       slug: 'e0117-ipm-sistemas',
       codigo: 'E0117',
       titulo: 'CNPJ do tomador inválido',
@@ -69,14 +69,14 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
   })
 
   it('totalCount > 1 renderiza a lista de desambiguação, sem navegar', async () => {
-    const itemA: ErroListaItem = {
+    const itemA = {
       slug: 'e0117-ipm-sistemas',
       codigo: 'E0117',
       titulo: 'CNPJ do tomador inválido',
       origem: 'Prefeitura',
       provedorNome: 'IPM Sistemas',
     }
-    const itemB: ErroListaItem = {
+    const itemB = {
       slug: 'e0117-betha-sistemas',
       codigo: 'E0117',
       titulo: 'Código de verificação inválido',
@@ -97,14 +97,14 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
   })
 
   it('desambiguação mostra "Geral" (nunca "—") quando o item não tem provedor (U9)', async () => {
-    const itemGeral: ErroListaItem = {
+    const itemGeral = {
       slug: 'e0117-geral',
       codigo: 'E0117',
       titulo: 'Erro genérico de schema',
       origem: 'Schema',
       provedorNome: null,
     }
-    const itemProvedor: ErroListaItem = {
+    const itemProvedor = {
       slug: 'e0117-ipm-sistemas',
       codigo: 'E0117',
       titulo: 'CNPJ do tomador inválido',
@@ -176,14 +176,14 @@ describe('ErrosIndexPage — sem código na URL', () => {
 })
 
 describe('ErrosIndexPage: título da aba', () => {
-  const itemIpm: ErroListaItem = {
+  const itemIpm = {
     slug: 'e0117-ipm-sistemas',
     codigo: 'E0117',
     titulo: 'CNPJ do tomador inválido',
     origem: 'Prefeitura',
     provedorNome: 'IPM Sistemas',
   }
-  const itemBetha: ErroListaItem = {
+  const itemBetha = {
     slug: 'e0117-betha',
     codigo: 'E0117',
     titulo: 'Código de verificação inválido',

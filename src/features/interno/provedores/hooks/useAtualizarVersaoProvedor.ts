@@ -27,8 +27,8 @@ export function useAtualizarVersaoProvedor() {
       return data.data
     },
     onSuccess: (_dados, variaveis) => {
-      queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.id) })
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.id) })
+      void queryClient.invalidateQueries({
         queryKey: versoesAdminKeys.porProvedor(variaveis.provedorId),
       })
     },

@@ -166,11 +166,11 @@ export function ComunicadosPage() {
     const { info, comunicadoId } = erroDeEscrita
 
     if (info.acao === 'recarregar-registro') {
-      detalheEmEdicao.refetch()
+      void detalheEmEdicao.refetch()
     }
     if (info.acao === 'recarregar-lista') {
       setModalAberto(null)
-      refetch()
+      void refetch()
     }
     if (info.acao === 'editar-expiracao' && comunicadoId !== null) {
       setModalAberto({ modo: 'editar', id: comunicadoId })
@@ -259,7 +259,7 @@ export function ComunicadosPage() {
 
       {!isLoading && !isError && temComunicados && data && (
         <>
-          <TableRoot>
+          <TableRoot rotulo="Comunicados">
             <TableHeader>
               <tr>
                 <TableCell header>Título</TableCell>

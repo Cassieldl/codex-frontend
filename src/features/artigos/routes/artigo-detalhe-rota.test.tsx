@@ -9,12 +9,12 @@ import {
   renderComDestinoLento,
   sairDaPaginaEEsperarDestino,
 } from '../../../test/saidaDaPagina'
-import type { ArtigoDetalhe } from '../types/artigo'
 import { ArtigoDetalheRota } from './artigo-detalhe-rota'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-function artigoComSlug(slug: string): ArtigoDetalhe {
+// JSON literal transcrito de ArtigoDetalheDto, sem o tipo do cliente.
+function artigoComSlug(slug: string) {
   return {
     slug,
     tipo: 'Procedimento',

@@ -57,7 +57,7 @@ describe('entrar — redirectUri usa caminhoInternoSeguro + concatenação com o
   // apenas *path* dentro do host legítimo, nunca um host novo. Ver comentário
   // em `caminhoInternoSeguro.ts` e o "NÃO REMOVER" em `entrar.tsx`.
   it('estrutural: concatenar com origem literal impede troca de host mesmo sem o filtro', () => {
-    const uriSemPassarPeloFiltro = `${ORIGEM}${'//evil.com'}`
+    const uriSemPassarPeloFiltro = `${ORIGEM}//evil.com`
     expect(new URL(uriSemPassarPeloFiltro).origin).toBe(ORIGEM)
   })
 })

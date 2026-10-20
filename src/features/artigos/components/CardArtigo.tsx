@@ -37,10 +37,7 @@ export function CardArtigo({ artigo, mostrarTipo = true }: CardArtigoProps) {
       </div>
 
       {artigo.verificadoEm && (
-        <SeloVerificacao
-          data={artigo.verificadoEm}
-          className="shrink-0 sm:w-44 sm:justify-end"
-        />
+        <SeloVerificacao data={artigo.verificadoEm} className="shrink-0 sm:w-44 sm:justify-end" />
       )}
     </article>
   )

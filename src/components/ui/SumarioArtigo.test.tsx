@@ -1,12 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import {
-  LIMIAR_SECAO_ATUAL_PX,
-  SumarioArtigo,
-  agruparSecoes,
-  extrairSecoesDoCorpo,
-  gerarAncoraSecao,
-} from './SumarioArtigo'
+import { SumarioArtigo } from './SumarioArtigo'
+import { agruparSecoes, extrairSecoesDoCorpo, gerarAncoraSecao } from './secoesDoArtigo'
+import { LIMIAR_SECAO_ATUAL_PX } from './useSecaoAtual'
 
 describe('gerarAncoraSecao', () => {
   it('remove acentos e espaços, tudo minúsculo, unido por hífen', () => {

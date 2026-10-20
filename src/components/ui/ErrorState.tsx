@@ -24,6 +24,7 @@ export function ErrorState({
     <div role="alert" className="flex flex-col items-center gap-3 py-12 text-center">
       <TriangleAlert aria-hidden="true" className="size-10 text-error" />
       <p className="text-sm text-muted">{message}</p>
+      {/* eslint-disable-next-line jsx-a11y/no-autofocus -- opcional por prop, para o erro que ocupa a página inteira */}
       <Button variant="secondary" onClick={onRetry} autoFocus={autoFocusRetry}>
         Tentar novamente
       </Button>

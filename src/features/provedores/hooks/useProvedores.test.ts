@@ -4,16 +4,17 @@ import { http, HttpResponse } from 'msw'
 import { createElement, type ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../../test/mocks/server'
-import type { ProvedorListaItem } from '../types/provedor'
 import { useProvedores } from './useProvedores'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const provedorFake: ProvedorListaItem = {
+// JSON literal transcrito de ProvedorListaItemDto, sem o tipo do cliente.
+const provedorFake = {
   slug: 'prefeitura-exemplo',
   nome: 'Prefeitura de Exemplo',
   categoria: 'Nacional',
-  verificadoEm: '2026-07-01T00:00:00Z',
+  identificadorInvoicy: 'EXEMPLO',
+  verificadoEm: '2026-07-01',
   versoes: [{ slug: 'v1', rotulo: 'Versão 1' }],
 }
 

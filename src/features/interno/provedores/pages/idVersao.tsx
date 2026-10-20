@@ -32,7 +32,11 @@ import { useVerificarVersao } from '../hooks/useVerificarVersao'
 import { useVersaoAdminPorId } from '../hooks/useVersaoAdminPorId'
 import { versoesAdminKeys } from '../hooks/versoesAdminKeys'
 import type { AvisoAdmin } from '../types/avisoAdmin'
-import type { CampoVersaoAdmin } from '../types/campoVersaoAdmin'
+import type {
+  AtualizarCampoVersaoDto,
+  CampoVersaoAdmin,
+  CriarCampoVersaoDto,
+} from '../types/campoVersaoAdmin'
 
 /** Falha ao publicar ou despublicar um aviso, mostrada junto do aviso que a causou. */
 interface ErroDePublicacaoDoAviso {
@@ -50,6 +54,14 @@ const ESTADO_PARA_TOKEN: Record<CampoVersaoAdmin['estadoPreenchimento'], EstadoP
   Obrigatorio: 'obrigatorio',
   Opcional: 'opcional',
   Condicional: 'condicional',
+}
+
+/** O campo canônico fica só leitura na edição e não vai no corpo: o backend não o aceita no PUT. */
+function paraAtualizacao({
+  campoLayoutId: _campoLayoutId,
+  ...dto
+}: CriarCampoVersaoDto): AtualizarCampoVersaoDto {
+  return dto
 }
 
 export interface IdVersaoPageProps {
@@ -87,7 +99,10 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
   const [erroDePublicacaoDoAviso, setErroDePublicacaoDoAviso] =
     useState<ErroDePublicacaoDoAviso | null>(null)
 
+  const [erroDePublicacao, setErroDePublicacao] = useState<string | null>(null)
+
   const [dataVerificacao, setDataVerificacao] = useState('')
+  const [erroDeVerificacao, setErroDeVerificacao] = useState<string | null>(null)
 
   if (isLoading) {
     return (
@@ -105,7 +120,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
 
   const publicadoEfetivo = versao.publicado && (provedor?.publicado ?? true)
 
-  function aoSalvarCampo(dto: Parameters<typeof criarCampo.mutate>[0]) {
+  function aoSalvarCampo(dto: CriarCampoVersaoDto) {
     setErroCampo(null)
 
     if (modalCampoAberto === 'novo') {
@@ -118,13 +133,29 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
 
     if (modalCampoAberto) {
       atualizarCampo.mutate(
-        { id: modalCampoAberto.id, dto, etag: modalCampoAberto.etag },
+        { id: modalCampoAberto.id, dto: paraAtualizacao(dto), etag: modalCampoAberto.etag },
         {
           onSuccess: () => setModalCampoAberto(null),
           onError: (erro) => setErroCampo(handleApiError(erro)),
         },
       )
     }
+  }
+
+  function alternarPublicacao(publicado: boolean, etag?: string) {
+    setErroDePublicacao(null)
+    publicarVersao.mutate(
+      { id: versaoId, publicado, etag },
+      { onError: (falha) => setErroDePublicacao(handleApiError(falha)) },
+    )
+  }
+
+  function confirmarVerificacao(verificadoEm: string, etag?: string) {
+    setErroDeVerificacao(null)
+    verificarVersao.mutate(
+      { id: versaoId, verificadoEm, etag },
+      { onError: (falha) => setErroDeVerificacao(handleApiError(falha)) },
+    )
   }
 
   function alternarPublicacaoDoAviso(aviso: AvisoAdmin) {
@@ -230,18 +261,18 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
           <Button
             variant="secondary"
             isLoading={publicarVersao.isPending}
-            onClick={() =>
-              publicarVersao.mutate({
-                id: versaoId,
-                publicado: !versao.publicado,
-                etag: versao.etag,
-              })
-            }
+            onClick={() => alternarPublicacao(!versao.publicado, versao.etag)}
           >
             {versao.publicado ? 'Despublicar' : 'Publicar'}
           </Button>
         )}
       </div>
+
+      {erroDePublicacao && (
+        <p role="alert" className="text-sm text-error-texto">
+          {erroDePublicacao}
+        </p>
+      )}
 
       {permissoes.versoesProvedor.atualizar && (
         <section className="flex items-end gap-3">
@@ -255,13 +286,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
             variant="secondary"
             isLoading={verificarVersao.isPending}
             disabled={!dataVerificacao}
-            onClick={() =>
-              verificarVersao.mutate({
-                id: versaoId,
-                verificadoEm: dataVerificacao,
-                etag: versao.etag,
-              })
-            }
+            onClick={() => confirmarVerificacao(dataVerificacao, versao.etag)}
           >
             Confirmar verificação
           </Button>
@@ -269,6 +294,12 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
             <p className="text-xs text-muted">Última verificação: {versao.verificadoEm}</p>
           )}
         </section>
+      )}
+
+      {erroDeVerificacao && (
+        <p role="alert" className="text-sm text-error-texto">
+          {erroDeVerificacao}
+        </p>
       )}
 
       <section className="flex flex-col gap-3">
@@ -301,7 +332,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
                 <EtiquetaPublicacao
                   publicadoProprio={aviso.publicado}
                   publicadoEfetivo={aviso.publicado && publicadoEfetivo}
-                  motivoOculto={!publicadoEfetivo ? `${versao.rotulo}` : undefined}
+                  motivoOculto={!publicadoEfetivo ? versao.rotulo : undefined}
                 />
               </div>
               <h3 className="text-card-titulo font-medium text-ink">{aviso.titulo}</h3>
@@ -368,7 +399,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
         )}
 
         {!camposCarregando && respostaCampos && respostaCampos.campos.length > 0 && (
-          <TableRoot>
+          <TableRoot rotulo="Campos desta versão">
             <TableHeader>
               <tr>
                 <TableCell header>Campo</TableCell>

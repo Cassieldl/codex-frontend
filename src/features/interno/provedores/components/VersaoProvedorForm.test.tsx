@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { VersaoAdminDetalhe } from '../types/versaoAdmin'
+import type { VersaoProvedorFormProps } from './VersaoProvedorForm'
 import { VersaoProvedorForm } from './VersaoProvedorForm'
 
 const VERSAO: VersaoAdminDetalhe = {
@@ -18,7 +19,7 @@ const VERSAO: VersaoAdminDetalhe = {
 }
 
 function renderizarEdicao() {
-  const onSubmit = vi.fn()
+  const onSubmit = vi.fn<VersaoProvedorFormProps['onSubmit']>()
   render(
     <VersaoProvedorForm
       initialData={VERSAO}
@@ -46,7 +47,7 @@ describe('VersaoProvedorForm — rótulo', () => {
     await salvarComRotulo('a'.repeat(80))
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
-    expect(onSubmit.mock.calls[0]![0].rotulo).toHaveLength(80)
+    expect(onSubmit.mock.calls[0][0].rotulo).toHaveLength(80)
   })
 
   it('recusa 81 caracteres sem enviar', async () => {
@@ -64,6 +65,6 @@ describe('VersaoProvedorForm — edição', () => {
     await salvarComRotulo('0.21')
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
-    expect(onSubmit.mock.calls[0]![0].versaoLayoutId).toBeUndefined()
+    expect(onSubmit.mock.calls[0][0].versaoLayoutId).toBeUndefined()
   })
 })

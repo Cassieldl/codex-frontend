@@ -1,3 +1,5 @@
+import { ehColecao } from '../../../utils/ehColecao'
+
 /** Recurso da área interna que carrega o validador de concorrência otimista no corpo. */
 export interface ComVersaoConcorrencia {
   versaoConcorrencia: number
@@ -43,7 +45,7 @@ export function comEtagDeConcorrenciaNaColecao<T extends ComVersaoConcorrencia>(
   colecao: readonly T[] | null | undefined,
   campo: string,
 ): (T & { etag: string })[] {
-  if (!Array.isArray(colecao))
+  if (!ehColecao(colecao))
     throw new Error(`A resposta da API não trouxe a coleção "${campo}", que o contrato exige.`)
 
   return colecao.map(comEtagDeConcorrencia)

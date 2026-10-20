@@ -21,7 +21,7 @@ export function useCriarVersaoProvedor(provedorId: number) {
       return data.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: versoesAdminKeys.porProvedor(provedorId) })
+      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.porProvedor(provedorId) })
     },
   })
 }

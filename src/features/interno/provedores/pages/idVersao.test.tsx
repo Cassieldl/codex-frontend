@@ -187,3 +187,212 @@ describe('IdVersaoPage: trilha', () => {
     expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(0)
   })
 })
+
+function autenticarCom(roles: string[]) {
+  keycloak.tokenParsed = { resource_access: { 'codex-backend': { roles } } }
+}
+
+describe('IdVersaoPage: publicação e verificação da versão', () => {
+  it('409 ao despublicar mostra a mensagem do servidor', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'versoesprovedor-publicar'])
+    criarServidorDeAviso()
+    server.use(
+      http.put(`${API_URL}/interno/versoes/${ID_VERSAO}/publicacao`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: 'CONFLITO_CONCORRENCIA',
+              message: 'A versão foi alterada por outra requisição. Recarregue e tente novamente.',
+            },
+          },
+          { status: 409 },
+        ),
+      ),
+    )
+    const usuario = userEvent.setup()
+    renderizarPagina()
+
+    await usuario.click(await screen.findByRole('button', { name: 'Despublicar' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'A versão foi alterada por outra requisição. Recarregue e tente novamente.',
+    )
+  })
+
+  it('409 ao confirmar a verificação mostra a mensagem do servidor', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'versoesprovedor-atualizar'])
+    criarServidorDeAviso()
+    server.use(
+      http.put(`${API_URL}/interno/versoes/${ID_VERSAO}/verificacao`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: 'CONFLITO_CONCORRENCIA',
+              message: 'A versão mudou desde a leitura.',
+            },
+          },
+          { status: 409 },
+        ),
+      ),
+    )
+    const usuario = userEvent.setup()
+    renderizarPagina()
+
+    await usuario.type(await screen.findByLabelText('Marcar como verificado em'), '2026-10-01')
+    await usuario.click(screen.getByRole('button', { name: 'Confirmar verificação' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('A versão mudou desde a leitura.')
+  })
+})
+
+describe('IdVersaoPage: edição de campo da versão', () => {
+  // JSON transcrito de `CampoVersaoAdminDto`, sem anotação do tipo do cliente.
+  const CAMPO_DA_VERSAO = {
+    id: 81,
+    versaoProvedorId: ID_VERSAO,
+    campoLayoutId: 7,
+    campoLayoutNome: 'Número da RPS',
+    tipo: 'Texto',
+    tamanho: null,
+    mascara: null,
+    dominio: null,
+    estadoPreenchimento: 'Obrigatorio',
+    condicao: null,
+    exemplo: '123',
+    notaPreenchimento: null,
+    destinoXml: null,
+    notaTransformacao: null,
+    ordem: 1,
+    versaoConcorrencia: 6,
+  }
+
+  it('o campo canônico fica só leitura e o PUT vai sem campoLayoutId', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'camposversao-atualizar'])
+    criarServidorDeAviso()
+    const corposRecebidos: unknown[] = []
+    server.use(
+      http.get(`${API_URL}/interno/versoes/${ID_VERSAO}/campos`, () =>
+        HttpResponse.json({
+          data: { campos: [CAMPO_DA_VERSAO], camposLayoutAusentes: [] },
+          message: null,
+        }),
+      ),
+      http.get(`${API_URL}/interno/layout/versoes/${ID_VERSAO_LAYOUT}/campos`, () =>
+        HttpResponse.json({
+          data: [
+            {
+              id: 7,
+              nome: 'Número da RPS',
+              caminhoXml: '//Rps/Numero',
+              significado: 'Número sequencial do RPS.',
+              grupo: 'Rps',
+              ordem: 1,
+              versaoLayoutId: ID_VERSAO_LAYOUT,
+              versaoDescontinuacaoId: null,
+              publicado: true,
+              versaoConcorrencia: 1,
+            },
+            {
+              id: 8,
+              nome: 'Data de emissão',
+              caminhoXml: '//Rps/DataEmissao',
+              significado: 'Data em que o RPS foi emitido.',
+              grupo: 'Rps',
+              ordem: 2,
+              versaoLayoutId: ID_VERSAO_LAYOUT,
+              versaoDescontinuacaoId: null,
+              publicado: true,
+              versaoConcorrencia: 1,
+            },
+          ],
+          message: null,
+        }),
+      ),
+      http.put(`${API_URL}/interno/campos-versao/81`, async ({ request }) => {
+        corposRecebidos.push(await request.json())
+        return HttpResponse.json({
+          data: { ...CAMPO_DA_VERSAO, versaoConcorrencia: 7 },
+          message: null,
+        })
+      }),
+    )
+    const usuario = userEvent.setup()
+    renderizarPagina()
+
+    await usuario.click(await screen.findByRole('button', { name: 'Editar campo Número da RPS' }))
+
+    const campoCanonico = await screen.findByRole('textbox', { name: /Campo canônico/ })
+    expect(campoCanonico).toHaveAttribute('readonly')
+    expect(campoCanonico).toHaveValue('Número da RPS (//Rps/Numero)')
+    expect(screen.queryByRole('combobox', { name: /Campo canônico/ })).not.toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() =>
+      expect(corposRecebidos).toEqual([
+        { tipo: 'Texto', estadoPreenchimento: 'Obrigatorio', exemplo: '123', ordem: 1 },
+      ]),
+    )
+  })
+})
+
+describe('IdVersaoPage: tabelas da página', () => {
+  it('a tabela de campos e a de exemplos são regiões com nomes distintos', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'exemplos-buscar'])
+    criarServidorDeAviso()
+    // JSON transcrito de `CampoVersaoAdminDto` e `ExemploAdminDto`, sem anotação do tipo do cliente.
+    server.use(
+      http.get(`${API_URL}/interno/versoes/${ID_VERSAO}/campos`, () =>
+        HttpResponse.json({
+          data: {
+            campos: [
+              {
+                id: 81,
+                versaoProvedorId: ID_VERSAO,
+                campoLayoutId: 7,
+                campoLayoutNome: 'Número da RPS',
+                tipo: 'Texto',
+                tamanho: null,
+                mascara: null,
+                dominio: null,
+                estadoPreenchimento: 'Obrigatorio',
+                condicao: null,
+                exemplo: '123',
+                notaPreenchimento: null,
+                destinoXml: null,
+                notaTransformacao: null,
+                ordem: 1,
+                versaoConcorrencia: 6,
+              },
+            ],
+            camposLayoutAusentes: [],
+          },
+          message: null,
+        }),
+      ),
+      http.get(`${API_URL}/interno/versoes/${ID_VERSAO}/exemplos`, () =>
+        HttpResponse.json({
+          data: [
+            {
+              id: 3,
+              versaoProvedorId: ID_VERSAO,
+              slug: 'iss-retido',
+              nome: 'ISS retido',
+              descricao: null,
+              xml: '<Rps />',
+              versaoConcorrencia: 1,
+            },
+          ],
+          message: null,
+        }),
+      ),
+    )
+    renderizarPagina()
+
+    expect(await screen.findByRole('region', { name: 'Campos desta versão' })).toBeInTheDocument()
+    expect(await screen.findByRole('region', { name: 'Exemplos desta versão' })).toBeInTheDocument()
+
+    const nomes = screen.getAllByRole('region').map((regiao) => regiao.getAttribute('aria-label'))
+    expect(new Set(nomes).size).toBe(nomes.length)
+  })
+})

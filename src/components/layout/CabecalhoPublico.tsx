@@ -1,4 +1,4 @@
-import { Link, type LinkProps } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import clsx from 'clsx'
 import type { ReactNode } from 'react'
 import { PularParaConteudo } from './PularParaConteudo'
@@ -83,14 +83,8 @@ export function CabecalhoPublico({ variante = 'padrao', children }: CabecalhoPub
           >
             Provedores
           </Link>
-          {/*
-            `/layout` ainda não existe como rota registrada nesta unidade
-            (FRONT-C cria as telas) — cast via `LinkProps['to']`, mesmo padrão
-            de `RodapeContextual.tsx`/`AbasNavegaveis.tsx` para link de
-            destino fora do espaço de rotas tipado no momento da escrita.
-          */}
           <Link
-            to={'/layout' as unknown as LinkProps['to']}
+            to="/layout"
             activeOptions={{ exact: true }}
             className={clsx(
               'text-sm font-medium hover:underline',

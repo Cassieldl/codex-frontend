@@ -65,6 +65,7 @@ export function InicioPage() {
         <Input
           label="Buscar no Codex"
           id="busca-interna"
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- a página inicial interna é a busca
           autoFocus
           placeholder="Código do erro, nome do provedor, campo…"
           maxLength={LIMITES_LACUNA_BUSCA.termo}

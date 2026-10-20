@@ -22,8 +22,10 @@ export function useRemoverExemplo() {
       await apiInterno.delete(`/exemplos/${id}`, { etag })
     },
     onSuccess: (_dados, variaveis) => {
-      queryClient.invalidateQueries({ queryKey: exemplosAdminKeys.porVersao(variaveis.versaoId) })
-      queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.versaoId) })
+      void queryClient.invalidateQueries({
+        queryKey: exemplosAdminKeys.porVersao(variaveis.versaoId),
+      })
+      void queryClient.invalidateQueries({ queryKey: versoesAdminKeys.detail(variaveis.versaoId) })
     },
   })
 }

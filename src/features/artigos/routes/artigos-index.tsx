@@ -11,7 +11,7 @@ import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { CampoBusca } from '../../busca/components/CampoBusca'
 import { CardArtigo } from '../components/CardArtigo'
 import { EstadoTipoArtigoVazio } from '../components/EstadoTipoArtigoVazio'
-import { LEITURA_TIPO_ARTIGO, ROTULO_TIPO_ARTIGO } from '../components/EtiquetaTipoArtigo'
+import { LEITURA_TIPO_ARTIGO, ROTULO_TIPO_ARTIGO } from '../components/rotulosTipoArtigo'
 import { useArtigos } from '../hooks/useArtigos'
 import { TIPOS_ARTIGO, type TipoArtigo } from '../types/artigo'
 

@@ -20,12 +20,19 @@ import type { VersaoLayoutAdmin } from '../types/versaoLayoutAdmin'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
+/** Falha ao publicar ou despublicar, mostrada na linha da versão que a causou. */
+interface ErroDePublicacao {
+  versaoLayoutId: number
+  mensagem: string
+}
+
 export function CamposLayoutPage() {
   const permissoes = usePermissoesInterno()
   const [pagina, setPagina] = useState(1)
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
   const [modalAberto, setModalAberto] = useState<'novo' | VersaoLayoutAdmin | null>(null)
   const [erroServidor, setErroServidor] = useState<string | null>(null)
+  const [erroDePublicacao, setErroDePublicacao] = useState<ErroDePublicacao | null>(null)
 
   const { data, isLoading, isError, refetch } = useVersoesLayout({ pagina, tamanhoPagina })
   const criarVersaoLayout = useCriarVersaoLayout()
@@ -64,6 +71,17 @@ export function CamposLayoutPage() {
     }
   }
 
+  function alternarPublicacao(versaoLayout: VersaoLayoutAdmin) {
+    setErroDePublicacao(null)
+    publicarVersaoLayout.mutate(
+      { id: versaoLayout.id, publicado: !versaoLayout.publicado, etag: versaoLayout.etag },
+      {
+        onError: (falha) =>
+          setErroDePublicacao({ versaoLayoutId: versaoLayout.id, mensagem: handleApiError(falha) }),
+      },
+    )
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
@@ -95,7 +113,7 @@ export function CamposLayoutPage() {
 
       {!isLoading && !isError && data && data.items.length > 0 && (
         <>
-          <TableRoot>
+          <TableRoot rotulo="Versões do Layout InvoiCy">
             <TableHeader>
               <tr>
                 <TableCell header>Rótulo</TableCell>
@@ -143,18 +161,17 @@ export function CamposLayoutPage() {
                             publicarVersaoLayout.isPending &&
                             publicarVersaoLayout.variables?.id === versaoLayout.id
                           }
-                          onClick={() =>
-                            publicarVersaoLayout.mutate({
-                              id: versaoLayout.id,
-                              publicado: !versaoLayout.publicado,
-                              etag: versaoLayout.etag,
-                            })
-                          }
+                          onClick={() => alternarPublicacao(versaoLayout)}
                         >
                           {versaoLayout.publicado ? 'Despublicar' : 'Publicar'}
                         </Button>
                       )}
                     </div>
+                    {erroDePublicacao?.versaoLayoutId === versaoLayout.id && (
+                      <p role="alert" className="mt-1 text-sm text-error-texto">
+                        {erroDePublicacao.mensagem}
+                      </p>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

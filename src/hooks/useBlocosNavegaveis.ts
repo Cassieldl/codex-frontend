@@ -189,6 +189,7 @@ export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
     abrirCampo(campoDestacado)
     setAlvoDeRolagem(campoDestacado)
     // Só o slug dispara a chegada; o filtro lido é o do render em que ele mudou.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campoDestacado])
 
   // A linha só está no DOM com o bloco aberto: a rolagem espera o commit do efeito acima.

@@ -27,14 +27,20 @@ npm run dev
 
 ## Scripts
 
-| Script               | O que faz                                   |
-| -------------------- | ------------------------------------------- |
-| `npm run dev`        | Sobe o servidor de desenvolvimento (Vite)   |
-| `npm run build`      | `tsc -b` (checagem de tipos) + `vite build` |
-| `npm run preview`    | Serve o build de produção localmente        |
-| `npm run test`       | Roda a suíte de testes (Vitest) uma vez     |
-| `npm run test:watch` | Roda a suíte de testes em modo watch        |
-| `npm run format`     | Formata o projeto com Prettier              |
+| Script                 | O que faz                                   |
+| ---------------------- | ------------------------------------------- |
+| `npm run dev`          | Sobe o servidor de desenvolvimento (Vite)   |
+| `npm run build`        | `tsc -b` (checagem de tipos) + `vite build` |
+| `npm run preview`      | Serve o build de produção localmente        |
+| `npm run test`         | Roda a suíte de testes (Vitest) uma vez     |
+| `npm run test:watch`   | Roda a suíte de testes em modo watch        |
+| `npm run format`       | Formata o projeto com Prettier              |
+| `npm run format:check` | Confere a formatação sem alterar arquivos   |
+| `npm run lint`         | ESLint sem tolerar warning                  |
+| `npm run lint:fix`     | ESLint corrigindo o que for automático      |
+| `npm run typecheck`    | Checagem de tipos (`tsc -b`)                |
+
+O `npm install` instala o hook de pre-commit, que roda Prettier e ESLint nos arquivos staged.
 
 ## Variáveis de ambiente
 

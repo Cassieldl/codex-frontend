@@ -16,7 +16,7 @@ import type { BaseSyntheticEvent } from 'react'
  * resultado da validação — e, de quebra, isso o põe atrás do foco que o próprio RHF acabou de dar.
  */
 export function focarPrimeiroCampoInvalido(_erros: unknown, evento?: BaseSyntheticEvent): void {
-  const formulario = evento?.target
+  const formulario: unknown = evento?.target
 
   if (!(formulario instanceof HTMLFormElement)) return
 

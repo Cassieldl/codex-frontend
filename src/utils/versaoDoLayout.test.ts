@@ -44,7 +44,7 @@ const VERSAO_ANTES_DO_HELPER = /vers[aã]o\s*(?:\$?\{|['"`]\s*\+)\s*formatarVers
 
 function acharInterpolacaoCruaDepoisDeLayoutInvoicy(fonte: string): string[] {
   return [...fonte.matchAll(DEPOIS_DE_LAYOUT_INVOICY)]
-    .filter(([, , expressao]) => !expressao!.startsWith('formatarVersaoLayout('))
+    .filter(([, , expressao]) => !expressao.startsWith('formatarVersaoLayout('))
     .map(([trecho]) => trecho)
 }
 
@@ -97,7 +97,7 @@ describe('o código de produção não monta versão do layout à mão', () => {
     query: '?raw',
     import: 'default',
     eager: true,
-  }) as Record<string, string>
+  })
 
   const arquivosDeProducao = Object.keys(FONTES).filter((caminho) => !caminho.endsWith('.test.tsx'))
 
@@ -108,7 +108,7 @@ describe('o código de produção não monta versão do layout à mão', () => {
     expect(arquivosDeProducao.some((caminho) => caminho.includes('/features/layout/'))).toBe(true)
 
     const mencoes = arquivosDeProducao.reduce(
-      (soma, caminho) => soma + (FONTES[caminho]!.match(/Layout InvoiCy/g)?.length ?? 0),
+      (soma, caminho) => soma + (FONTES[caminho].match(/Layout InvoiCy/g)?.length ?? 0),
       0,
     )
     expect(mencoes).toBeGreaterThanOrEqual(20)
@@ -116,7 +116,7 @@ describe('o código de produção não monta versão do layout à mão', () => {
 
   it('depois de "Layout InvoiCy" só entra formatarVersaoLayout', () => {
     const montagensCrus = arquivosDeProducao.filter(
-      (caminho) => acharInterpolacaoCruaDepoisDeLayoutInvoicy(FONTES[caminho]!).length > 0,
+      (caminho) => acharInterpolacaoCruaDepoisDeLayoutInvoicy(FONTES[caminho]).length > 0,
     )
 
     expect(montagensCrus).toEqual([])
@@ -124,7 +124,7 @@ describe('o código de produção não monta versão do layout à mão', () => {
 
   it('"versão" não vem escrita antes de formatarVersaoLayout', () => {
     const duplicadas = arquivosDeProducao.filter(
-      (caminho) => acharVersaoDuplicada(FONTES[caminho]!).length > 0,
+      (caminho) => acharVersaoDuplicada(FONTES[caminho]).length > 0,
     )
 
     expect(duplicadas).toEqual([])

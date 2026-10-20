@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { OpcaoCampoLayout } from '../types/campoVersaoAdmin'
+import type { CampoVersaoFormProps } from './CampoVersaoForm'
 import { CampoVersaoForm } from './CampoVersaoForm'
 
 const opcoes: OpcaoCampoLayout[] = [
@@ -9,7 +10,7 @@ const opcoes: OpcaoCampoLayout[] = [
   { id: 8, nome: 'Data de emissão', caminhoXml: '//Rps/DataEmissao' },
 ]
 
-function renderForm(onSubmit = vi.fn()) {
+function renderForm(onSubmit = vi.fn<CampoVersaoFormProps['onSubmit']>()) {
   render(<CampoVersaoForm opcoesCampoLayout={opcoes} onSubmit={onSubmit} onCancel={vi.fn()} />)
   return { onSubmit }
 }

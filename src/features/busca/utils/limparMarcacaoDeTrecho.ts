@@ -81,8 +81,8 @@ export function limparMarcacaoDosTrechos(trechos: readonly TrechoResultado[]): T
 
   if (ultimo < 0) return limpos
 
-  limpos[0] = { ...limpos[0]!, texto: limpos[0]!.texto.replace(/^\s+/, '') }
-  limpos[ultimo] = { ...limpos[ultimo]!, texto: limpos[ultimo]!.texto.replace(/\s+$/, '') }
+  limpos[0] = { ...limpos[0], texto: limpos[0].texto.replace(/^\s+/, '') }
+  limpos[ultimo] = { ...limpos[ultimo], texto: limpos[ultimo].texto.replace(/\s+$/, '') }
 
   return limpos
 }

@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { ExemploAdmin } from '../types/exemploAdmin'
+import type { ExemploFormProps } from './ExemploForm'
 import { ExemploForm } from './ExemploForm'
 
 /**
@@ -39,7 +40,7 @@ const exemploExistente: ExemploAdmin = {
 describe('ExemploForm — teto do XML (C3)', () => {
   it('aceita XML acentuado de exatamente 65536 CARACTERES, ainda que passe de 65536 bytes', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
     const xmlNoLimite = xmlAcentuadoCom(TETO_XML_CARACTERES)
 
     // A régua é a mesma do backend (`xml.Length` de uma string .NET, UTF-16).
@@ -60,7 +61,7 @@ describe('ExemploForm — teto do XML (C3)', () => {
 
   it('reprova XML com um caractere a mais que o teto, com mensagem em português', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
 
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
 
@@ -78,7 +79,7 @@ describe('ExemploForm — teto do XML (C3)', () => {
 describe('ExemploForm — teto do resumo', () => {
   it('aceita resumo de exatamente 500 caracteres', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
 
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
 
@@ -92,7 +93,7 @@ describe('ExemploForm — teto do resumo', () => {
 
   it('reprova resumo com um caractere a mais que o teto', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
 
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
 
@@ -111,7 +112,7 @@ describe('ExemploForm — teto do resumo', () => {
 describe('ExemploForm — demais regras', () => {
   it('exige nome e XML antes de chamar o servidor', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
 
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
@@ -123,7 +124,7 @@ describe('ExemploForm — demais regras', () => {
 
   it('reprova nome sem letra nem número — o slug seria derivado para vazio', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
 
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
 
@@ -139,7 +140,7 @@ describe('ExemploForm — demais regras', () => {
 
   it('resumo em branco vira undefined no payload, nunca string vazia', async () => {
     const usuario = userEvent.setup()
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
 
     render(<ExemploForm onSubmit={onSubmit} onCancel={() => {}} />)
 

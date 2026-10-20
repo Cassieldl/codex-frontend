@@ -38,6 +38,7 @@ describe('useVerificarVersao', () => {
         createElement(QueryClientProvider, { client: queryClient }, children),
     })
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- o act assíncrono drena as microtarefas da mutação
     await act(async () => {
       result.current.mutate({ id: 11, verificadoEm: '2026-10-05', etag: 'W/"4"' })
     })

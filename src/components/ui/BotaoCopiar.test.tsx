@@ -141,7 +141,7 @@ describe('nenhuma dica aparece só no hover', () => {
     query: '?raw',
     import: 'default',
     eager: true,
-  }) as Record<string, string>
+  })
 
   function arquivosDeProducao(): string[] {
     return Object.keys(FONTES).filter((caminho) => !caminho.endsWith('.test.tsx'))
@@ -176,7 +176,7 @@ describe('copiar link no portal público é só o ícone', () => {
     query: '?raw',
     import: 'default',
     eager: true,
-  }) as Record<string, string>
+  })
 
   function botoesDeCopiarLink(): { arquivo: string; bloco: string }[] {
     return Object.entries(FONTES)
