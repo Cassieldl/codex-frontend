@@ -46,6 +46,7 @@ export function ModalDoVerbete({
   onFechar,
   devolverFoco,
   linkDoCampo,
+  estrutura,
 }: ModalDoVerbeteProps) {
   const slugAssentado = useSlugAssentadoDoCampo(campo.slug)
 
@@ -71,7 +72,7 @@ export function ModalDoVerbete({
       devolverFoco={devolverFoco}
       linkDoCampo={linkDoCampo}
     >
-      <ConteudoDoVerbete campo={campo} slugAssentado={slugAssentado} />
+      <ConteudoDoVerbete campo={campo} slugAssentado={slugAssentado} estrutura={estrutura} />
     </ModalDeCampoNavegavel>
   )
 }

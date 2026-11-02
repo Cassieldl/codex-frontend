@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react'
 import type { BlocoDoLayout, SubgrupoDoLayout } from '../../../utils/blocosDoLayout'
 import type { CampoLayoutPublico } from '../types/layoutPublico'
+import type { FormatosDoCampo } from '../utils/formatosDoCampoNaEstrutura'
 import { CLASSE_SO_NO_DESKTOP, LinhaDoVerbete } from './LinhaDoVerbete'
 
 export interface BlocoDoDicionarioProps {
@@ -16,6 +17,13 @@ export interface BlocoDoDicionarioProps {
   /** Sincroniza o estado com o `<details>`: o navegador também abre o bloco (Ctrl+F, fragmento). */
   onAlternar: (raiz: string, aberto: boolean) => void
   onAbrirCampo: (slug: string) => void
+  /** Liga o atalho "Ver na estrutura" de cada linha. */
+  atalhoDaEstrutura?: AtalhoDaEstruturaNoDicionario
+}
+
+export interface AtalhoDaEstruturaNoDicionario {
+  versaoSlug: string
+  formatosDoCampo: FormatosDoCampo
 }
 
 interface ColunaDoBloco {
@@ -88,6 +96,7 @@ export function BlocoDoDicionario({
   slugAtivo,
   onAlternar,
   onAbrirCampo,
+  atalhoDaEstrutura,
 }: BlocoDoDicionarioProps) {
   return (
     <details
@@ -154,6 +163,8 @@ export function BlocoDoDicionario({
                   versaoRotulo={versaoRotulo}
                   ativo={campo.slug === slugAtivo}
                   onAbrir={onAbrirCampo}
+                  versaoSlug={atalhoDaEstrutura?.versaoSlug}
+                  formatosNaEstrutura={atalhoDaEstrutura?.formatosDoCampo(campo.slug)}
                 />
               ))}
             </tbody>

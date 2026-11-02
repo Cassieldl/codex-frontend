@@ -4,7 +4,9 @@ import type { MouseEvent } from 'react'
 import { CaminhoXml } from '../../../components/ui/CaminhoXml'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { construirIdLinhaCampo } from '../../provedores/utils/destaqueAncora'
+import type { FormatoDaEstrutura } from '../types/estruturaLayout'
 import type { CampoLayoutPublico } from '../types/layoutPublico'
+import { LinksVerNaEstrutura } from './LinksVerNaEstrutura'
 
 export interface LinhaDoVerbeteProps {
   campo: CampoLayoutPublico
@@ -14,6 +16,10 @@ export interface LinhaDoVerbeteProps {
   ativo: boolean
   /** Precisa ser estável (`useCallback`): sem isso o `memo` não evita nenhum render. */
   onAbrir: (slug: string) => void
+  /** Com os dois, a linha mostra o atalho para a estrutura. */
+  versaoSlug?: string
+  /** Array estável por formato (ver `criarFormatosDoCampo`), pelo mesmo motivo do `onAbrir`. */
+  formatosNaEstrutura?: readonly FormatoDaEstrutura[]
 }
 
 /** Colunas que somem em tela estreita; o resumo móvel dentro da 1ª célula as substitui. */
@@ -34,6 +40,8 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
   versaoRotulo,
   ativo,
   onAbrir,
+  versaoSlug,
+  formatosNaEstrutura,
 }: LinhaDoVerbeteProps) {
   const slug = campo.slug
 
@@ -70,6 +78,17 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
         >
           {campo.nome}
         </button>
+
+        {versaoSlug && formatosNaEstrutura && (
+          <LinksVerNaEstrutura
+            versaoSlug={versaoSlug}
+            campoSlug={slug}
+            nomeDoCampo={campo.nome}
+            formatos={formatosNaEstrutura}
+            variante="compacta"
+            className="ml-2 text-xs"
+          />
+        )}
 
         {campo.novoNestaVersao && (
           <span className={CLASSE_DO_SELO_DE_NOVO}>

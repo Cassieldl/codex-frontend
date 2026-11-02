@@ -7,6 +7,7 @@ import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { CampoLayoutPublico, GrupoCamposLayout } from '../types/layoutPublico'
 import { campoPassaNoDicionario } from '../utils/filtroDoDicionario'
 import { BlocoDoDicionario } from './BlocoDoDicionario'
+import type { AtalhoDaEstruturaNoDicionario } from './BlocoDoDicionario'
 import { FiltrosDoDicionario } from './FiltrosDoDicionario'
 import { ModalDoVerbete } from './ModalDoVerbete'
 
@@ -22,6 +23,8 @@ export interface DicionarioDaVersaoProps {
   origemUrl: string
   /** Slug do campo apontado por `#campo-{slug}`, se houver. */
   campoDestacado?: string | null
+  /** Liga os atalhos "Ver na estrutura" nas linhas e no modal. */
+  atalhoDaEstrutura?: AtalhoDaEstruturaNoDicionario
 }
 
 function slugDoCampo(campo: CampoLayoutPublico): string {
@@ -45,6 +48,7 @@ export function DicionarioDaVersao({
   camposPorGrupo,
   origemUrl,
   campoDestacado = null,
+  atalhoDaEstrutura,
 }: DicionarioDaVersaoProps) {
   const tituloId = useId()
   const buscaRef = useRef<HTMLInputElement | null>(null)
@@ -202,6 +206,7 @@ export function DicionarioDaVersao({
                 slugAtivo={slugAtivo}
                 onAlternar={alternarBloco}
                 onAbrirCampo={abrirCampo}
+                atalhoDaEstrutura={atalhoDaEstrutura}
               />
             ))}
           </div>
@@ -222,6 +227,12 @@ export function DicionarioDaVersao({
           onFechar={fecharCampo}
           devolverFoco={devolverFoco}
           linkDoCampo={`${origemUrl}${itemAberto.campo.urlCanonica}`}
+          estrutura={
+            atalhoDaEstrutura && {
+              versaoSlug: atalhoDaEstrutura.versaoSlug,
+              formatos: atalhoDaEstrutura.formatosDoCampo(itemAberto.campo.slug),
+            }
+          }
         />
       )}
     </section>

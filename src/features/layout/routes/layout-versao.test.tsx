@@ -96,7 +96,9 @@ function renderPagina(
   const rota = createRoute({
     getParentRoute: () => rootRoute,
     path: '/layout/$versaoSlug',
-    component: () => <LayoutVersaoPage versaoSlug={versaoSlug} />,
+    component: () => (
+      <LayoutVersaoPage versaoSlug={versaoSlug} visao="dicionario" aoMudarVisao={() => {}} />
+    ),
   })
   const router = createRouter({
     routeTree: rootRoute.addChildren([rota]),

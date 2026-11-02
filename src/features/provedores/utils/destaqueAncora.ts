@@ -8,12 +8,24 @@ export function construirIdLinhaCampo(campoLayoutSlug: string): string {
 }
 
 /** Extrai o slug do campo a partir de um hash de URL (`#campo-{slug}` → `{slug}`). */
-export function extrairSlugDoHash(hash: string): string | null {
+export function extrairSlugDoHash(hash: string, prefixo = PREFIXO_ANCORA_CAMPO): string | null {
   const semSustenido = hash.replace(/^#/, '')
-  if (!semSustenido.startsWith(PREFIXO_ANCORA_CAMPO)) return null
+  if (!semSustenido.startsWith(prefixo)) return null
 
-  const slug = semSustenido.slice(PREFIXO_ANCORA_CAMPO.length)
+  const slug = semSustenido.slice(prefixo.length)
   return slug.length > 0 ? slug : null
+}
+
+const PREFIXO_ANCORA_ESTRUTURA = 'estrutura-'
+
+/** `id` da linha de uma tag na estrutura XML/JSON do layout (`#estrutura-{slug}`). */
+export function construirIdLinhaEstrutura(campoSlug: string): string {
+  return `${PREFIXO_ANCORA_ESTRUTURA}${campoSlug}`
+}
+
+/** Aceita o hash com ou sem `#`: o router entrega sem. */
+export function extrairSlugDaEstruturaDoHash(hash: string): string | null {
+  return extrairSlugDoHash(hash, PREFIXO_ANCORA_ESTRUTURA)
 }
 
 /**

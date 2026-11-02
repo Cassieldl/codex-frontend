@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { ArchiveX, CircleHelp, Layers } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useMemo } from 'react'
@@ -9,19 +9,42 @@ import { ErrorState } from '../../../components/ui/ErrorState'
 import { EstadoIndisponivel } from '../../../components/ui/EstadoIndisponivel'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
+import { agruparEmBlocos, sequenciaDosBlocos } from '../../../utils/blocosDoLayout'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
-import { useCampoDestacadoPorAncora } from '../../provedores/utils/destaqueAncora'
+import { AbasFormulario } from '../../interno/artigos/components/AbasFormulario'
+import {
+  extrairSlugDaEstruturaDoHash,
+  useCampoDestacadoPorAncora,
+} from '../../provedores/utils/destaqueAncora'
 import { AvisoVocabulario } from '../components/AvisoVocabulario'
 import { ChipVersaoLayout } from '../components/ChipVersaoLayout'
 import { DicionarioDaVersao } from '../components/DicionarioDaVersao'
+import { EstruturaDaVersao } from '../components/EstruturaDaVersao'
 import { HistoricoVersoesLayout } from '../components/HistoricoVersoesLayout'
+import { ErroEstruturaIndisponivel, useEstruturaLayout } from '../hooks/useEstruturaLayout'
 import { useLayoutIndice } from '../hooks/useLayoutIndice'
 import { ErroLayoutVersaoHttp, useLayoutVersao } from '../hooks/useLayoutVersao'
 import type { TipoErroLayoutVersao } from '../hooks/useLayoutVersao'
+import { VISOES_DO_LAYOUT } from '../types/estruturaLayout'
+import type { FormatoDaEstrutura, VisaoDoLayout } from '../types/estruturaLayout'
 import { LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
+import { criarFormatosDoCampo } from '../utils/formatosDoCampoNaEstrutura'
 
 export interface LayoutVersaoPageProps {
   versaoSlug: string
+  /** Aba aberta, vinda de `?visao=`. */
+  visao: VisaoDoLayout
+  aoMudarVisao: (visao: VisaoDoLayout) => void
+}
+
+const ROTULO_DA_ABA: Record<VisaoDoLayout, string> = {
+  dicionario: 'Dicionário',
+  xml: 'XML (SOAP)',
+  json: 'JSON (REST)',
+}
+
+function ehVisaoDoLayout(valor: string): valor is VisaoDoLayout {
+  return (VISOES_DO_LAYOUT as readonly string[]).includes(valor)
 }
 
 const ESTADO_POR_TIPO_DE_ERRO: Record<
@@ -54,10 +77,36 @@ const ESTADO_POR_TIPO_DE_ERRO: Record<
  * para o histórico: se ele falhar, o dicionário continua de pé — a falha do
  * acessório nunca derruba o conteúdo principal.
  */
-export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
+export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVersaoPageProps) {
   const { data: pagina, isLoading, isError, error, refetch } = useLayoutVersao(versaoSlug)
   const { data: indice } = useLayoutIndice()
   const campoDestacado = useCampoDestacadoPorAncora()
+
+  const formatoAberto: FormatoDaEstrutura | null = visao === 'dicionario' ? null : visao
+  // A estrutura só é buscada com a aba XML ou JSON aberta; no dicionário vale o que estiver em cache.
+  const consultaDaEstrutura = useEstruturaLayout(versaoSlug, formatoAberto !== null)
+  const hash = useLocation({ select: (local) => local.hash })
+  const slugAncoraDaEstrutura = formatoAberto ? extrairSlugDaEstruturaDoHash(hash) : null
+
+  const estruturaIndisponivel = consultaDaEstrutura.error instanceof ErroEstruturaIndisponivel
+  const formatosDoCampo = useMemo(
+    () => criarFormatosDoCampo(consultaDaEstrutura.data, estruturaIndisponivel),
+    [consultaDaEstrutura.data, estruturaIndisponivel],
+  )
+  const atalhoDaEstrutura = useMemo(
+    () => ({ versaoSlug, formatosDoCampo }),
+    [versaoSlug, formatosDoCampo],
+  )
+  const camposPorSlug = useMemo(
+    () =>
+      new Map(
+        sequenciaDosBlocos(agruparEmBlocos(pagina?.camposPorGrupo ?? [])).map((item) => [
+          item.campo.slug,
+          item,
+        ]),
+      ),
+    [pagina],
+  )
 
   const camposNovos = useMemo(
     () =>
@@ -167,12 +216,43 @@ export function LayoutVersaoPage({ versaoSlug }: LayoutVersaoPageProps) {
               </p>
             )}
 
-            <DicionarioDaVersao
-              versaoRotulo={pagina.versao.rotulo}
-              totalCampos={pagina.totalCampos}
-              camposPorGrupo={pagina.camposPorGrupo}
-              origemUrl={origemUrl}
-              campoDestacado={campoDestacado}
+            <AbasFormulario
+              ariaLabel="Formas de ver o Layout InvoiCy"
+              valorAtivo={visao}
+              onValorAtivoChange={(valor) => {
+                if (ehVisaoDoLayout(valor)) aoMudarVisao(valor)
+              }}
+              abas={VISOES_DO_LAYOUT.map((aba) => ({
+                valor: aba,
+                rotulo: ROTULO_DA_ABA[aba],
+                // Só o painel aberto é montado: a página continua leve e o modal de uma aba não
+                // sobrevive à troca.
+                conteudo:
+                  aba !== visao ? null : aba === 'dicionario' ? (
+                    <DicionarioDaVersao
+                      versaoRotulo={pagina.versao.rotulo}
+                      totalCampos={pagina.totalCampos}
+                      camposPorGrupo={pagina.camposPorGrupo}
+                      origemUrl={origemUrl}
+                      campoDestacado={campoDestacado}
+                      atalhoDaEstrutura={atalhoDaEstrutura}
+                    />
+                  ) : (
+                    <EstruturaDaVersao
+                      formato={aba}
+                      versaoSlug={versaoSlug}
+                      versaoRotulo={pagina.versao.rotulo}
+                      estrutura={consultaDaEstrutura.data}
+                      isLoading={consultaDaEstrutura.isLoading}
+                      error={consultaDaEstrutura.error}
+                      onRetry={() => void consultaDaEstrutura.refetch()}
+                      camposPorSlug={camposPorSlug}
+                      formatosDoCampo={formatosDoCampo}
+                      slugAncora={slugAncoraDaEstrutura}
+                      origemUrl={origemUrl}
+                    />
+                  ),
+              }))}
             />
 
             {indice && (

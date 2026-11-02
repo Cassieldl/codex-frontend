@@ -1,5 +1,12 @@
 import type { VizinhoDeCampo } from '../../../types/vizinhoDeCampo'
+import type { FormatoDaEstrutura } from './estruturaLayout'
 import type { CampoLayoutPublico } from './layoutPublico'
+
+/** Destino dos atalhos "Ver na estrutura": a versão e os formatos em que a tag existe. */
+export interface AtalhoDaEstrutura {
+  versaoSlug: string
+  formatos: readonly FormatoDaEstrutura[]
+}
 
 export interface ModalDoVerbeteProps {
   campo: CampoLayoutPublico
@@ -18,4 +25,6 @@ export interface ModalDoVerbeteProps {
   devolverFoco: () => void
   /** Endereço absoluto copiado pelo botão do cabeçalho: origem + `campo.urlCanonica`. */
   linkDoCampo: string
+  /** Sem ele, o modal não mostra os atalhos para a estrutura. */
+  estrutura?: AtalhoDaEstrutura
 }

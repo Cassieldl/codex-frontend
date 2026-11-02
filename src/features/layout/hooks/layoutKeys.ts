@@ -15,4 +15,6 @@ export const layoutKeys = {
   versao: (versaoSlug: string) => [...raiz, 'versao', versaoSlug] as const,
   /** P12 — `GET /layout/campos/{slug}`: resolução do redirect (A3) e usos no modal do campo. */
   campo: (campoSlug: string) => [...raiz, 'campo', campoSlug] as const,
+  /** `GET /layout/versoes/{slug}/estrutura`: árvore XML e JSON da versão. */
+  estrutura: (versaoSlug: string) => [...raiz, 'estrutura', versaoSlug] as const,
 }
