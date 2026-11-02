@@ -70,6 +70,7 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
     ['severidade-critico-texto', 'alert-error', 'comunicado crítico'],
     ['severidade-alerta-texto', 'alert-warning', 'comunicado de alerta'],
     ['ink', 'alert-info', 'faixa informativa'],
+    ['primary-medium', 'alert-info', 'link na faixa informativa'],
     ['ink', 'alert-success', 'faixa de sucesso'],
     ['ink', 'surface-hover', 'bloco realçado'],
     ['ink', 'surface-disabled', 'campo desabilitado'],

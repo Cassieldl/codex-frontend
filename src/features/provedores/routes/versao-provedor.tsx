@@ -2,6 +2,7 @@ import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { AvisosVersao } from '../components/AvisosVersao'
 import { CamposDaVersao } from '../components/CamposDaVersao'
+import { EnvioModeloVersao } from '../components/EnvioModeloVersao'
 import { ErrosConhecidos } from '../components/ErrosConhecidos'
 import {
   EstadoProvedorIndisponivel,
@@ -105,6 +106,12 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
         errosResumo={versaoPagina.errosResumo.itens}
         urlVersaoAbsoluta={urlVersaoAbsoluta}
         campoDestacado={campoDestacado}
+      />
+
+      <EnvioModeloVersao
+        provedorSlug={provedorSlug}
+        versaoSlug={versaoSlug}
+        camposPorGrupo={versaoPagina.camposPorGrupo}
       />
 
       <ErrosConhecidos

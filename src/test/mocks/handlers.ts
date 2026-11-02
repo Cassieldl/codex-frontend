@@ -16,6 +16,14 @@ const API_URL = import.meta.env.VITE_API_URL
 
 export const handlers: HttpHandler[] = [
   http.get(`${API_URL}/comunicados`, () => HttpResponse.json({ data: [] })),
+  // A página da versão sempre consulta o envio modelo. A base responde "sem estrutura", que fica
+  // contido na seção; os testes do envio modelo sobrescrevem.
+  http.get(`${API_URL}/provedores/:provedorSlug/versoes/:versaoSlug/envio-modelo`, () =>
+    HttpResponse.json(
+      { error: { code: 'ESTRUTURA_INDISPONIVEL', message: 'Estrutura indisponível.' } },
+      { status: 404 },
+    ),
+  ),
 ]
 
 /**
