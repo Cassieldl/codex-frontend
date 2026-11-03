@@ -21,6 +21,7 @@ import type {
 } from '../types/artigoAdmin'
 import type { BuscaDeErrosDoArtigo, CamposLayoutDoArtigo } from '../types/referenciasArtigo'
 import { AbasFormulario } from './AbasFormulario'
+import { AjudaDeFormatacao } from './AjudaDeFormatacao'
 import { VinculosDeCamposLayout } from './VinculosDeCamposLayout'
 import { VinculosDeErros } from './VinculosDeErros'
 
@@ -249,14 +250,17 @@ export function ArtigoForm({
             valor: 'editar',
             rotulo: 'Editar',
             conteudo: (
-              <Textarea
-                label="Corpo"
-                required
-                rows={16}
-                hint="Markdown restrito: títulos (##/###), listas, tabelas, links, código. HTML não é interpretado."
-                error={errors.corpo?.message}
-                {...register('corpo')}
-              />
+              <div className="flex flex-col gap-3">
+                <Textarea
+                  label="Corpo"
+                  required
+                  rows={16}
+                  hint="Markdown restrito: títulos (##/###), listas, tabelas, links, código. HTML não é interpretado."
+                  error={errors.corpo?.message}
+                  {...register('corpo')}
+                />
+                <AjudaDeFormatacao />
+              </div>
             ),
           },
           {
@@ -265,7 +269,7 @@ export function ArtigoForm({
             conteudo: corpoAtual.trim() ? (
               // Mesmo renderizador da página pública: um erro de sintaxe de tabela aparece aqui,
               // não só para o leitor depois de publicado.
-              <ConteudoArtigo corpo={corpoAtual} className="flex flex-col gap-3 text-sm text-ink" />
+              <ConteudoArtigo corpo={corpoAtual} />
             ) : (
               <p className="text-xs text-muted italic">
                 Nada escrito ainda: a pré-visualização aparece conforme você escreve.

@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { ConteudoArtigo } from './ConteudoArtigo'
 
@@ -35,10 +36,19 @@ describe('ConteudoArtigo — segurança do renderizador de Markdown (U-4)', () =
     expect((window as unknown as { __xss?: boolean }).__xss).toBeUndefined()
   })
 
-  it('imagem (fora da allowlist) não renderiza', () => {
-    const { container } = render(<ConteudoArtigo corpo="![alt de teste](/x.png)" />)
+  it.each([
+    '/x.png',
+    'https://exemplo.com/imagens/a.png',
+    'data:image/png;base64,AAAA',
+    'javascript:alert(1)',
+    '//exemplo.com/imagens/a.png',
+    '/imagens/../segredo.png',
+    '../../assets/imagens/a.png',
+  ])('imagem com src %s não vira <img> e mostra só o alt', (src) => {
+    const { container } = render(<ConteudoArtigo corpo={`![alt de teste](${src})`} />)
 
     expect(container.querySelector('img')).not.toBeInTheDocument()
+    expect(screen.getByText('alt de teste')).toBeInTheDocument()
   })
 
   it('link externo http(s) ganha target="_blank" e rel="noopener noreferrer"', () => {
@@ -78,5 +88,149 @@ describe('ConteudoArtigo — segurança do renderizador de Markdown (U-4)', () =
     render(<ConteudoArtigo corpo="## Emissão de RPS" />)
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveAttribute('id', 'secao-emissao-de-rps')
+  })
+})
+
+describe('ConteudoArtigo: blocos visuais', () => {
+  it('[!RESUMO] vira cartão rotulado e o marcador some do texto', () => {
+    render(<ConteudoArtigo corpo={'> [!RESUMO]\n> Duas linhas do essencial.'} />)
+
+    const cartao = screen.getByRole('note', { name: 'Resumo rápido' })
+    expect(cartao).toHaveTextContent('Duas linhas do essencial.')
+    expect(cartao).not.toHaveTextContent('[!RESUMO]')
+  })
+
+  it.each([
+    ['DICA', 'Dica'],
+    ['ATENCAO', 'Atenção'],
+    ['IMPORTANTE', 'Importante'],
+  ])('[!%s] vira caixa com rótulo visível "%s"', (marcador, rotulo) => {
+    const { container } = render(<ConteudoArtigo corpo={`> [!${marcador}] Confira o ambiente.`} />)
+
+    expect(screen.getByRole('note', { name: rotulo })).toHaveTextContent('Confira o ambiente.')
+    expect(container.querySelector('blockquote')).not.toBeInTheDocument()
+    expect(container).not.toHaveTextContent(`[!${marcador}]`)
+  })
+
+  it('marcador desconhecido e citação sem marcador continuam blockquote com o texto visível', () => {
+    const { container } = render(
+      <ConteudoArtigo corpo={'> [!XYZ] Texto estranho.\n\nFora.\n\n> Citação comum.'} />,
+    )
+
+    const citacoes = container.querySelectorAll('blockquote')
+    expect(citacoes).toHaveLength(2)
+    expect(citacoes[0]).toHaveTextContent('[!XYZ] Texto estranho.')
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+  })
+
+  it('[!PASSOS] vira cartões numerados, com a imagem dentro do cartão do passo', () => {
+    const corpo = [
+      '> [!PASSOS]',
+      '> 1. Abra o painel.',
+      '>    ![Painel aberto](/imagens/pasta/painel.png "O painel")',
+      '> 2. Salve.',
+      '>    - detalhe da sublista',
+    ].join('\n')
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const passos = container.querySelectorAll('ol > li')
+    expect(passos).toHaveLength(2)
+    expect(passos[0]).toHaveTextContent('1Abra o painel.')
+    expect(passos[0].querySelector('figure img')).toHaveAttribute(
+      'src',
+      '/imagens/pasta/painel.png',
+    )
+    expect(passos[1].querySelector('ul li')).toHaveTextContent('detalhe da sublista')
+    expect(container).not.toHaveTextContent('[!PASSOS]')
+  })
+
+  it('[!DETALHES] vira <details> fechado, com o título no <summary> e a tabela dentro', () => {
+    const corpo = '> [!DETALHES] Tabela completa\n>\n> | A | B |\n> | - | - |\n> | 1 | 2 |'
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const detalhes = container.querySelector('details')
+    expect(detalhes).not.toHaveAttribute('open')
+    expect(detalhes?.querySelector('summary')).toHaveTextContent('Tabela completa')
+    expect(detalhes?.querySelector('table')).toBeInTheDocument()
+  })
+
+  it('bloco ```fluxo vira lista ordenada de etapas, e o texto nunca é interpretado como HTML', () => {
+    const corpo = '```fluxo\nEnvio: transmite o <b>RPS</b>\nRetorno\n```'
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const etapas = screen.getByRole('list', { name: 'Fluxo' }).querySelectorAll(':scope > li')
+    expect(etapas).toHaveLength(2)
+    expect(etapas[0]).toHaveTextContent('Envio')
+    expect(etapas[0]).toHaveTextContent('transmite o <b>RPS</b>')
+    expect(container.querySelector('b')).not.toBeInTheDocument()
+    expect(container.querySelector('pre')).not.toBeInTheDocument()
+  })
+
+  it('outro bloco de código continua <pre>', () => {
+    const { container } = render(<ConteudoArtigo corpo={'```xml\n<Rps/>\n```'} />)
+
+    expect(container.querySelector('pre')).toHaveTextContent('<Rps/>')
+  })
+
+  it('imagem de /imagens/ vira <figure> com img lazy e legenda do título; sem título, do alt', () => {
+    const corpo =
+      '![Tela de login](/imagens/a/login.png "Login do painel")\n\n![Só o alt](/imagens/a/b.png)'
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const figuras = container.querySelectorAll('figure')
+    expect(figuras).toHaveLength(2)
+    expect(figuras[0].parentElement?.tagName).not.toBe('P')
+    expect(figuras[0].querySelector('img')).toHaveAttribute('alt', 'Tela de login')
+    expect(figuras[0].querySelector('img')).toHaveAttribute('loading', 'lazy')
+    expect(figuras[0].querySelector('figcaption')).toHaveTextContent('Login do painel')
+    expect(figuras[1].querySelector('figcaption')).toHaveTextContent('Só o alt')
+  })
+
+  it('o botão da imagem abre o modal; Esc fecha e devolve o foco ao botão', async () => {
+    const usuario = userEvent.setup()
+    render(<ConteudoArtigo corpo={'![Tela de login](/imagens/a/login.png "Login")'} />)
+
+    const botao = screen.getByRole('button', { name: 'Ampliar imagem: Login' })
+    await usuario.click(botao)
+
+    const dialogo = screen.getByRole('dialog', { name: 'Login' })
+    expect(dialogo.querySelector('img')).toHaveAttribute('alt', 'Tela de login')
+
+    await usuario.keyboard('{Escape}')
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(botao).toHaveFocus()
+  })
+
+  it('célula exatamente "Sim" ou "Não" ganha ícone decorativo e mantém o texto', () => {
+    const corpo =
+      '| Campo | Obrigatório |\n| - | - |\n| CNPJ | Sim |\n| CPF | Não |\n| IE | Sim, se houver |'
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const celulas = container.querySelectorAll('td')
+    expect(celulas[1]).toHaveTextContent('Sim')
+    expect(celulas[1].querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(celulas[3]).toHaveTextContent('Não')
+    expect(celulas[3].querySelector('svg')).toBeInTheDocument()
+    expect(celulas[5].querySelector('svg')).not.toBeInTheDocument()
+  })
+})
+
+describe('ConteudoArtigo: nada alarga a página em tela estreita', () => {
+  it('tabela fica numa região rolável, focável e nomeada pelo cabeçalho', () => {
+    render(<ConteudoArtigo corpo={'| Parâmetro | O que é |\n| - | - |\n| Url | Endereço |'} />)
+
+    const regiao = screen.getByRole('region', { name: 'Tabela: Parâmetro, O que é' })
+    expect(regiao).toHaveClass('overflow-x-auto')
+    expect(regiao).toHaveAttribute('tabindex', '0')
+    expect(regiao.querySelector('table')).toBeInTheDocument()
+  })
+
+  it('o corpo encolhe abaixo da largura da tabela e quebra link longo, sem depender de quem usa', () => {
+    const { container } = render(<ConteudoArtigo corpo="[link](https://exemplo.com/a)" />)
+
+    const corpo = container.firstElementChild
+    expect(corpo).toHaveClass('min-w-0')
+    expect(corpo).toHaveClass('[&_a]:[overflow-wrap:anywhere]')
   })
 })

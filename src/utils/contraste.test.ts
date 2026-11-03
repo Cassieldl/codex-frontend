@@ -75,6 +75,12 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
     ['ink', 'surface-hover', 'bloco realçado'],
     ['ink', 'surface-disabled', 'campo desabilitado'],
     ['ink', 'highlight-anchor', 'linha destacada por âncora'],
+    ['success', 'alert-success', 'rótulo da caixa de dica'],
+    ['ink', 'alert-warning', 'corpo da caixa de atenção'],
+    ['ink', 'alert-error', 'corpo da caixa importante'],
+    ['primary-medium', 'alert-success', 'link na caixa de dica'],
+    ['primary-medium', 'alert-warning', 'link na caixa de atenção'],
+    ['primary-medium', 'alert-error', 'link na caixa importante'],
   ]
 
   it.each(TEXTO_SOBRE_FAIXA)('texto `%s` sobre `%s` (%s) atinge 4.5:1', (frente, fundo) => {

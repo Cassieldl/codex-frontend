@@ -152,10 +152,7 @@ export function ArtigoDetalhePage({
                 <SumarioArtigo corpo={artigo.corpo} mostrarTitulo={false} className="mt-3" />
               </details>
 
-              <ConteudoArtigo
-                corpo={artigo.corpo}
-                className="flex flex-col gap-4 text-corpo text-ink/80 [&_a]:text-primary-medium [&_a]:underline [&_code]:font-mono [&_code]:text-sm [&_h2]:text-subtitulo [&_h2]:font-semibold [&_h2]:text-ink [&_h3]:text-card-titulo [&_h3]:font-medium [&_h3]:text-ink [&_li]:list-disc [&_li]:ml-5 [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3 [&_table]:w-full [&_table]:text-sm [&_th]:text-left"
-              />
+              <ConteudoArtigo corpo={artigo.corpo} />
 
               <ReferenciasCruzadas
                 camposLayout={artigo.camposLayoutRelacionados}
