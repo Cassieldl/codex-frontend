@@ -426,3 +426,36 @@ describe('Modal — chaveDoConteudo', () => {
     expect(proximo).toHaveFocus()
   })
 })
+
+function ModaisEmpilhados() {
+  const [externoAberto, setExternoAberto] = useState(true)
+  const [internoAberto, setInternoAberto] = useState(false)
+
+  return (
+    <Modal isOpen={externoAberto} onClose={() => setExternoAberto(false)} title="Editor">
+      <button type="button" onClick={() => setInternoAberto(true)}>
+        Ampliar
+      </button>
+      <Modal isOpen={internoAberto} onClose={() => setInternoAberto(false)} title="Imagem">
+        <button type="button">Dentro da imagem</button>
+      </Modal>
+    </Modal>
+  )
+}
+
+describe('Modal: empilhado sobre outro', () => {
+  it('Esc fecha só o de cima e devolve o foco ao gatilho dentro do de baixo', async () => {
+    const usuario = userEvent.setup()
+    render(<ModaisEmpilhados />)
+
+    const gatilho = screen.getByRole('button', { name: 'Ampliar' })
+    await usuario.click(gatilho)
+    expect(screen.getByRole('dialog', { name: 'Imagem' })).toBeInTheDocument()
+
+    await usuario.keyboard('{Escape}')
+
+    expect(screen.queryByRole('dialog', { name: 'Imagem' })).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Editor' })).toBeInTheDocument()
+    expect(gatilho).toHaveFocus()
+  })
+})

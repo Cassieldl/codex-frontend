@@ -131,6 +131,11 @@ export function Modal(props: ModalProps) {
     }
 
     function aoTeclar(evento: KeyboardEvent) {
+      // Diálogo aberto sobre outro (imagem ampliada no editor): só o de cima responde, senão o Esc
+      // fecharia os dois e levaria junto o que estava sendo editado.
+      const dialogos = document.querySelectorAll('[role="dialog"][aria-modal="true"]')
+      if (dialogNode && dialogos[dialogos.length - 1] !== dialogNode) return
+
       if (evento.key === 'Escape') {
         evento.preventDefault()
         propsRecentesRef.current.onClose()
