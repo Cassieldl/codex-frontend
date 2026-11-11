@@ -41,7 +41,7 @@ export function ChipVersaoLayout({ versao, ativa = false, className }: ChipVersa
         {formatarVersaoLayout(versao.rotulo, { maiuscula: true })}
       </span>
       <span className="text-aux font-semibold tracking-wide uppercase">{versao.estado}</span>
-      <span className="text-aux text-ink/70">
+      <span className="text-aux text-muted">
         {versao.totalCampos} {versao.totalCampos === 1 ? 'campo' : 'campos'}
       </span>
     </Link>

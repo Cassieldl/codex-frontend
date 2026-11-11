@@ -42,12 +42,7 @@ function renderLista(categorias: CategoriaProvedoresHome[]) {
     path: '/provedores/$provedorSlug',
     component: () => null,
   })
-  const rotaVersao = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/provedores/$provedorSlug/$versaoSlug',
-    component: () => null,
-  })
-  const routeTree = rootRoute.addChildren([rotaHome, rotaProvedor, rotaVersao])
+  const routeTree = rootRoute.addChildren([rotaHome, rotaProvedor])
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/'] }),
@@ -67,31 +62,17 @@ describe('ListaProvedoresHome', () => {
     expect(screen.getByRole('heading', { name: 'Nacional' })).toBeInTheDocument()
   })
 
-  it('a coluna é "Última versão", não "Vigente" — versão de provedor não tem vigência', async () => {
+  it('cada provedor é um link só, para a página dele, sem coluna nem link de versão', async () => {
     renderLista([{ categoria: 'Proprio', total: 1, provedores: [ipm] }])
 
-    expect(await screen.findByText('Última versão')).toBeInTheDocument()
-    expect(screen.queryByText('Vigente')).not.toBeInTheDocument()
-  })
-
-  it('liga a versão mais recente e manda as demais para a página do provedor', async () => {
-    renderLista([{ categoria: 'Proprio', total: 1, provedores: [ipm] }])
-
-    expect(await screen.findByRole('link', { name: '2.04' })).toHaveAttribute(
-      'href',
-      '/provedores/ipm/2-04',
-    )
-    expect(screen.getByRole('link', { name: '+1 outra' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: 'IPM Sistemas' })).toHaveAttribute(
       'href',
       '/provedores/ipm',
     )
-  })
-
-  it('não oferece "outras" quando o provedor só tem uma versão', async () => {
-    renderLista([{ categoria: 'Nacional', total: 1, provedores: [nacional] }])
-
-    expect(await screen.findByRole('link', { name: '1.01' })).toBeInTheDocument()
-    expect(screen.queryByText(/outra/)).not.toBeInTheDocument()
+    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.queryByText('Última versão')).not.toBeInTheDocument()
+    expect(screen.queryByText('2.04')).not.toBeInTheDocument()
+    expect(screen.queryByText(/outras?/i)).not.toBeInTheDocument()
   })
 
   it('marca comunicado com ícone rotulado — nunca só por cor, e só em quem tem', async () => {
@@ -117,19 +98,6 @@ describe('ListaProvedoresHome', () => {
     expect(await screen.findByText('Ainda não verificado')).toBeInTheDocument()
     expect(screen.getByText('Verificado em 12/08/2026')).toBeInTheDocument()
   })
-
-  it('provedor publicado sem versão nenhuma não ganha chip de versão', async () => {
-    renderLista([
-      {
-        categoria: 'Proprio',
-        total: 1,
-        provedores: [{ ...ipm, versoes: [], nome: 'Prefeitura de Exemplo' }],
-      },
-    ])
-
-    expect(await screen.findByText('Nenhuma publicada')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: '2.04' })).not.toBeInTheDocument()
-  })
 })
 
 /**
@@ -147,28 +115,6 @@ describe('ListaProvedoresHome — total da categoria', () => {
     renderLista([{ categoria: 'Nacional', total: 1, provedores: [nacional] }])
 
     expect(await screen.findByText('1 provedor')).toBeInTheDocument()
-  })
-})
-
-/**
- * "Outras" é coluna derivada da contagem de versões. Com todo provedor em uma versão só, ela
- * ficava com cabeçalho e nenhuma célula preenchida — um título anunciando dado inexistente.
- */
-describe('ListaProvedoresHome — coluna "Outras"', () => {
-  it('some quando nenhum provedor tem versão além da última', async () => {
-    renderLista([{ categoria: 'Nacional', total: 1, provedores: [nacional] }])
-
-    // Âncora de montagem antes de afirmar ausência: sob `RouterProvider` o container começa
-    // vazio e a asserção passaria sozinha.
-    expect(await screen.findByText('Última versão')).toBeInTheDocument()
-    expect(screen.queryByText('Outras')).not.toBeInTheDocument()
-  })
-
-  it('aparece assim que algum provedor tem mais de uma versão', async () => {
-    renderLista([{ categoria: 'Proprio', total: 1, provedores: [ipm] }])
-
-    expect(await screen.findByText('Outras')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /\+1 outra/ })).toBeInTheDocument()
   })
 })
 

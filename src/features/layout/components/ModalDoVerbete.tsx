@@ -2,18 +2,37 @@ import { ModalDeCampoNavegavel } from '../../../components/ui/ModalDeCampoNavega
 import { useSlugAssentadoDoCampo } from '../hooks/useUsosDoCampoLayout'
 import type { ModalDoVerbeteProps } from '../types/modalDoVerbete'
 import { ConteudoDoVerbete } from './ConteudoDoVerbete'
+import {
+  NOME_DA_REFORMA_TRIBUTARIA,
+  SeloReformaTributaria,
+} from '../../../components/ui/SeloReformaTributaria'
 
 interface SelosDoVerbeteProps {
+  reformaTributaria: boolean
   novo: boolean
   descontinuado: boolean
   versaoRotulo: string
 }
 
-function SelosDoVerbete({ novo, descontinuado, versaoRotulo }: SelosDoVerbeteProps) {
-  if (!novo && !descontinuado) return null
+function SelosDoVerbete({
+  reformaTributaria,
+  novo,
+  descontinuado,
+  versaoRotulo,
+}: SelosDoVerbeteProps) {
+  if (!reformaTributaria && !novo && !descontinuado) return null
 
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2">
+      {reformaTributaria && (
+        <span className="inline-flex items-center gap-2">
+          <SeloReformaTributaria />
+          <span aria-hidden="true" className="text-aux text-muted">
+            {NOME_DA_REFORMA_TRIBUTARIA}
+          </span>
+        </span>
+      )}
+
       {novo && (
         <span className="inline-flex items-center rounded-[var(--radius-pill)] border border-dashed border-primary px-2 py-px text-aux font-semibold tracking-wide text-primary uppercase">
           novo na versão {versaoRotulo}
@@ -22,7 +41,7 @@ function SelosDoVerbete({ novo, descontinuado, versaoRotulo }: SelosDoVerbetePro
 
       {/* Nunca só cor ou opacidade: o texto está sempre presente. */}
       {descontinuado && (
-        <span className="text-aux font-semibold text-ink/70">Descontinuado nesta versão</span>
+        <span className="text-aux font-semibold text-muted">Descontinuado nesta versão</span>
       )}
     </div>
   )
@@ -57,6 +76,7 @@ export function ModalDoVerbete({
       trilha={trilha}
       aposTitulo={
         <SelosDoVerbete
+          reformaTributaria={campo.reformaTributaria}
           novo={campo.novoNestaVersao}
           descontinuado={campo.descontinuadoNestaVersao}
           versaoRotulo={versaoRotulo}

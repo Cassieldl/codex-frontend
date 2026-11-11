@@ -9,14 +9,17 @@ import type {
   CampoVersaoPublico,
   ErroResumoPublico,
   GrupoCampoVersao,
+  NaturezaOperacaoPublica,
 } from '../types/versaoProvedorPagina'
 import {
   campoPassaNoFiltro,
+  contarDaReformaTributaria,
   contarPorEstado,
   filtrarCampos,
+  filtroDeCamposAtivo,
   montarBlocos,
 } from '../utils/blocosDeCampos'
-import type { FiltroDeEstado } from '../utils/blocosDeCampos'
+import type { FiltroDeCampos, FiltroDeEstado } from '../utils/blocosDeCampos'
 import { BlocoDeCampos } from './BlocoDeCampos'
 import { FiltrosDeCampos } from './FiltrosDeCampos'
 import { ModalDoCampo } from './ModalDoCampo'
@@ -28,9 +31,11 @@ export interface CamposDaVersaoProps {
   totalCampos: number
   camposPorGrupo: GrupoCampoVersao[]
   errosResumo: ErroResumoPublico[]
-  urlVersaoAbsoluta: string
+  urlProvedorAbsoluta: string
   /** Slug do campo apontado por `#campo-{slug}`, se houver. */
   campoDestacado?: string | null
+  /** De-para mostrado no modal do campo `natOp`. */
+  naturezasOperacao?: NaturezaOperacaoPublica[]
 }
 
 const CLASSE_DO_BOTAO_DE_TEXTO =
@@ -62,8 +67,9 @@ export function CamposDaVersao({
   totalCampos,
   camposPorGrupo,
   errosResumo,
-  urlVersaoAbsoluta,
+  urlProvedorAbsoluta,
   campoDestacado = null,
+  naturezasOperacao = [],
 }: CamposDaVersaoProps) {
   const tituloId = useId()
   const buscaRef = useRef<HTMLInputElement | null>(null)
@@ -71,23 +77,31 @@ export function CamposDaVersao({
 
   const [filtroEstado, setFiltroEstado] = useState<FiltroDeEstado>('todos')
   const [termo, setTermo] = useState('')
+  const [somenteReformaTributaria, setSomenteReformaTributaria] = useState(false)
+  const filtroAtual: FiltroDeCampos = { estado: filtroEstado, termo, somenteReformaTributaria }
 
   const blocosCompletos = useMemo(() => montarBlocos(camposPorGrupo), [camposPorGrupo])
   const contagens = useMemo(() => contarPorEstado(camposPorGrupo), [camposPorGrupo])
+  const contagemDaReforma = useMemo(
+    () => contarDaReformaTributaria(camposPorGrupo),
+    [camposPorGrupo],
+  )
 
   const blocosFiltrados = useMemo(
-    () => filtrarCampos(blocosCompletos, { estado: filtroEstado, termo }),
-    [blocosCompletos, filtroEstado, termo],
+    () => filtrarCampos(blocosCompletos, { estado: filtroEstado, termo, somenteReformaTributaria }),
+    [blocosCompletos, filtroEstado, termo, somenteReformaTributaria],
   )
 
   const passaNoFiltroAtual = useCallback(
-    (campo: CampoVersaoPublico) => campoPassaNoFiltro(campo, { estado: filtroEstado, termo }),
-    [filtroEstado, termo],
+    (campo: CampoVersaoPublico) =>
+      campoPassaNoFiltro(campo, { estado: filtroEstado, termo, somenteReformaTributaria }),
+    [filtroEstado, termo, somenteReformaTributaria],
   )
 
   const limparFiltros = useCallback(() => {
     setFiltroEstado('todos')
     setTermo('')
+    setSomenteReformaTributaria(false)
   }, [])
 
   const {
@@ -120,18 +134,19 @@ export function CamposDaVersao({
     focoDeReservaRef: buscaRef,
   })
 
-  const filtroAtivo = filtroEstado !== 'todos' || termo.trim() !== ''
+  const filtroAtivo = filtroDeCamposAtivo(filtroAtual)
   const blocosComResultado = blocosFiltrados.filter((bloco) => bloco.totalVisivel > 0)
 
   // Filtrar abre os blocos que passam a ter resultado: o resultado escondido num bloco fechado
   // seria um filtro que parece não achar nada. Limpar o filtro mantém o que já estava aberto.
-  function aplicarFiltro(estado: FiltroDeEstado, novoTermo: string) {
-    setFiltroEstado(estado)
-    setTermo(novoTermo)
+  function aplicarFiltro(novoFiltro: FiltroDeCampos) {
+    setFiltroEstado(novoFiltro.estado)
+    setTermo(novoFiltro.termo)
+    setSomenteReformaTributaria(novoFiltro.somenteReformaTributaria)
 
-    if (estado === 'todos' && novoTermo.trim() === '') return
+    if (!filtroDeCamposAtivo(novoFiltro)) return
 
-    const raizesComResultado = filtrarCampos(blocosCompletos, { estado, termo: novoTermo })
+    const raizesComResultado = filtrarCampos(blocosCompletos, novoFiltro)
       .filter((bloco) => bloco.totalVisivel > 0)
       .map((bloco) => bloco.raiz)
     abrirBlocos(raizesComResultado)
@@ -155,7 +170,7 @@ export function CamposDaVersao({
         </h2>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p aria-live="polite" aria-atomic="true" className="text-sm text-ink/70">
+          <p aria-live="polite" aria-atomic="true" className="text-sm text-muted">
             {fraseExaustividade}
           </p>
           {verificadoEm && <SeloVerificacao data={verificadoEm} />}
@@ -166,10 +181,15 @@ export function CamposDaVersao({
         estado={filtroEstado}
         termo={termo}
         contagens={contagens}
+        somenteReformaTributaria={somenteReformaTributaria}
+        contagemDaReforma={contagemDaReforma}
         filtroAtivo={filtroAtivo}
         buscaRef={buscaRef}
-        onEstadoChange={(estado) => aplicarFiltro(estado, termo)}
-        onTermoChange={(novoTermo) => aplicarFiltro(filtroEstado, novoTermo)}
+        onEstadoChange={(estado) => aplicarFiltro({ ...filtroAtual, estado })}
+        onTermoChange={(novoTermo) => aplicarFiltro({ ...filtroAtual, termo: novoTermo })}
+        onAlternarReformaTributaria={() =>
+          aplicarFiltro({ ...filtroAtual, somenteReformaTributaria: !somenteReformaTributaria })
+        }
         onLimpar={limparFiltros}
         onExpandirTodos={expandirTodos}
         onRecolherTodos={recolherTodos}
@@ -227,7 +247,8 @@ export function CamposDaVersao({
           onFechar={fecharCampo}
           devolverFoco={devolverFoco}
           errosResumo={errosResumo}
-          urlVersaoAbsoluta={urlVersaoAbsoluta}
+          urlProvedorAbsoluta={urlProvedorAbsoluta}
+          naturezasOperacao={naturezasOperacao}
         />
       )}
     </section>

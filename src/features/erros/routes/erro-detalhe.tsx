@@ -37,7 +37,7 @@ const ORIGEM_ROTULO: Record<OrigemErro, string> = {
 }
 
 /**
- * Rodapé por natureza do erro (§7.1): uma versão, nenhuma (geral) ou várias. Sem erro
+ * Rodapé por natureza do erro (§7.1): um provedor, nenhum (geral) ou vários. Sem erro
  * carregado (carregando, falha, 404/410) não há próximo passo a oferecer.
  */
 function montarContextoRodape(
@@ -45,10 +45,16 @@ function montarContextoRodape(
   contextoUnico: { provedorSlug: string; versaoSlug: string } | null,
 ): ContextoRodape {
   if (!erro) return { tipo: 'erro-sem-contexto' }
-  if (contextoUnico) return { tipo: 'erro-com-contexto', ...contextoUnico, codigoErro: erro.codigo }
+  if (contextoUnico) {
+    return {
+      tipo: 'erro-com-contexto',
+      provedorSlug: contextoUnico.provedorSlug,
+      codigoErro: erro.codigo,
+    }
+  }
   if (erro.versoesAplicaveis.length === 0) return { tipo: 'erro-geral', codigoErro: erro.codigo }
 
-  return { tipo: 'erro-varias-versoes', codigoErro: erro.codigo }
+  return { tipo: 'erro-varios-provedores', codigoErro: erro.codigo }
 }
 
 /**
@@ -87,7 +93,7 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
       : null
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
       <main
@@ -151,7 +157,7 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
                 Causa provável
               </h2>
               {/* A causa chega em linhas — a regra da Sefin e, em seguida, onde ela se aplica. */}
-              <p className="whitespace-pre-line text-sm text-ink/80">
+              <p className="whitespace-pre-line text-sm text-ink">
                 {erro.causaProvavel ?? 'Causa provável ainda não documentada.'}
               </p>
             </section>
@@ -159,7 +165,7 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
             {erro.solucaoSugerida && (
               <section
                 aria-labelledby="solucao-sugerida-titulo"
-                className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-primary-light bg-surface-hover p-6"
+                className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-primary-light bg-white p-6"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h2 id="solucao-sugerida-titulo" className="text-titulo font-bold text-ink">

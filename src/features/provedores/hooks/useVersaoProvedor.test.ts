@@ -31,6 +31,7 @@ const versaoPaginaFake = {
   // P4 sempre devolve a coleção, `[]` quando a versão não tem exemplo (C4).
   exemplos: [],
   outrasVersoes: [],
+  naturezasOperacao: [],
 }
 
 function envolverComQueryClient() {

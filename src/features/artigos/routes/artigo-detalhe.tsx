@@ -74,7 +74,7 @@ export function ArtigoDetalhePage({
   const varianteIndisponivel = reservado ? 'reservado-ausente' : 'nao-encontrado'
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
       <main

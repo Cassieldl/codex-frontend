@@ -6,10 +6,7 @@ export const Route = createFileRoute('/provedores/$provedorSlug/')({
   component: ProvedorIndexRoute,
 })
 
-/**
- * `/provedores/{slug}`, nenhuma aba escolhida (§7.6.1). Não faz fetch
- * adicional — reusa a mesma `queryKey` do `route.tsx` pai (já carregada).
- */
+/** Conteúdo de `/provedores/{slug}`. Reusa a `queryKey` do `route.tsx` pai, já carregada. */
 function ProvedorIndexRoute() {
   const { provedorSlug } = Route.useParams()
   const { data: provedor } = useProvedorPorSlug(provedorSlug)

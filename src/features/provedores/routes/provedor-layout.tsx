@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
-import { AbasNavegaveis, type AbaNavegavel } from '../../../components/ui/AbasNavegaveis'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
@@ -11,18 +10,13 @@ import { ComunicadosDoContexto } from '../../comunicados/components/ComunicadosD
 import { AvisosProvedor } from '../components/AvisosProvedor'
 import { EstadoProvedorIndisponivel } from '../components/EstadoProvedorIndisponivel'
 import { ErroProvedorHttp, useProvedorPorSlug } from '../hooks/useProvedorPorSlug'
+import { ID_AREA_AVISOS, useRolarParaAreaDeAvisos } from '../utils/avisoAncora'
 import { caminhoDoProvedor } from '../utils/caminhoDoProvedor'
 
 export interface ProvedorLayoutPageProps {
   provedorSlug: string
   /**
-   * Segmento de versão após `/provedores/{provedorSlug}/` na URL atual, se
-   * houver — usado para marcar a aba ativa e para preservar a versão que o
-   * usuário estava vendo ao corrigir o slug do provedor (§2.3).
-   */
-  versaoSlugAtual: string | undefined
-  /**
-   * Caminho em que a página está sendo servida — montado pela rota a partir
+   * Caminho em que a página está sendo servida, montado pela rota a partir
    * dos parâmetros, nunca da localização do router (ver `provedor-layout-rota.tsx`).
    * Compara-se com o canônico devolvido por P3 para decidir o redirect
    * (PQ-01/F2, `arquitetura.md` §5.F).
@@ -32,15 +26,12 @@ export interface ProvedorLayoutPageProps {
 }
 
 /**
- * Layout compartilhado de `/provedores/{provedorSlug}` e suas sub-rotas
- * (índice de versão e versão aberta). Ganha a comparação de canônico e o
- * redirect, preservando o segmento de versão quando presente (§2.3,
- * `arquitetura.md` §5.F) — trocar o slug do provedor não pode derrubar a
- * aba de versão que o usuário estava vendo.
+ * Moldura de `/provedores/{provedorSlug}`: cabeçalho, comunicados e avisos do provedor, com o
+ * conteúdo da versão publicada no `Outlet`. Também corrige a URL quando o slug do provedor mudou
+ * (`arquitetura.md` §5.F).
  */
 export function ProvedorLayoutPage({
   provedorSlug,
-  versaoSlugAtual,
   caminhoAtual,
   navegar,
 }: ProvedorLayoutPageProps) {
@@ -48,15 +39,21 @@ export function ProvedorLayoutPage({
 
   const erroTipado = error instanceof ErroProvedorHttp ? error : null
 
-  const caminhoCanonico = provedor ? caminhoDoProvedor(provedor.slug, versaoSlugAtual) : null
+  const caminhoCanonico = provedor ? caminhoDoProvedor(provedor.slug) : null
   const correcao = caminhoCanonico ? corrigirUrlCanonica(caminhoAtual, caminhoCanonico) : null
 
   useEffect(() => {
     if (correcao) navegar(correcao)
   }, [correcao, navegar])
 
+  const conteudoPronto = !isLoading && !isError && provedor !== undefined && !correcao
+  useRolarParaAreaDeAvisos(conteudoPronto)
+
+  // A versão publicada é uma só e P3 a entrega primeiro: ela traz os comunicados de escopo versão.
+  const versaoPublicadaSlug = provedor?.versoes[0]?.slug
+
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
       <main
@@ -85,7 +82,7 @@ export function ProvedorLayoutPage({
         {/* Sobra só o que insistir pode resolver: rede, 5xx, erro não classificado. */}
         {isError && !erroTipado && <ErrorState onRetry={() => refetch()} />}
 
-        {!isLoading && !isError && provedor && !correcao && (
+        {conteudoPronto && (
           <>
             <div>
               <p className="text-xs text-muted">
@@ -102,36 +99,20 @@ export function ProvedorLayoutPage({
 
             <ComunicadosDoContexto
               provedorSlugs={[provedorSlug]}
-              versaoSlug={versaoSlugAtual}
+              versaoSlug={versaoPublicadaSlug}
               caminhoAtual={caminhoAtual}
             />
 
-            <AvisosProvedor nomeProvedor={provedor.nome} avisos={provedor.avisos} />
+            <div id={ID_AREA_AVISOS} className="flex flex-col gap-6">
+              <AvisosProvedor nomeProvedor={provedor.nome} avisos={provedor.avisos} />
 
-            {provedor.versoes.length > 0 && (
-              <AbasNavegaveis
-                ariaLabel="Versões do provedor"
-                abas={provedor.versoes.map((versao): AbaNavegavel => ({
-                  rotulo: versao.rotulo,
-                  to: '/provedores/$provedorSlug/$versaoSlug',
-                  params: { provedorSlug, versaoSlug: versao.slug },
-                  ativa: versaoSlugAtual === versao.slug,
-                }))}
-              />
-            )}
-
-            <Outlet />
+              <Outlet />
+            </div>
           </>
         )}
       </main>
 
-      <RodapeContextual
-        contexto={
-          versaoSlugAtual
-            ? { tipo: 'provedor-versao', provedorSlug }
-            : { tipo: 'provedor-sem-versao' }
-        }
-      />
+      <RodapeContextual contexto={{ tipo: 'provedor', provedorSlug }} />
     </div>
   )
 }

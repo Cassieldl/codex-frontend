@@ -9,10 +9,14 @@ export interface FiltrosDeCamposProps {
   termo: string
   /** Contagem da versão inteira: não muda com o termo nem com o chip escolhido. */
   contagens: Record<FiltroDeEstado, number>
+  somenteReformaTributaria: boolean
+  /** Campos da reforma tributária na versão inteira; sem nenhum, o filtro não aparece. */
+  contagemDaReforma: number
   filtroAtivo: boolean
   buscaRef: RefObject<HTMLInputElement | null>
   onEstadoChange: (estado: FiltroDeEstado) => void
   onTermoChange: (termo: string) => void
+  onAlternarReformaTributaria: () => void
   onLimpar: () => void
   onExpandirTodos: () => void
   onRecolherTodos: () => void
@@ -31,9 +35,11 @@ const OPCOES_DE_ESTADO: OpcaoDeEstado[] = [
 ]
 
 const CLASSE_DO_CHIP =
-  'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-border-control bg-white px-3 py-1 text-sm text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1 text-sm hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
 
-const CLASSE_DO_CHIP_PRESSIONADO = 'border-2 border-primary bg-alert-info font-semibold'
+const CLASSE_DO_CHIP_PRESSIONADO = 'border-2 border-primary bg-primary font-semibold text-white'
+
+const CLASSE_DO_CHIP_SOLTO = 'border border-border-control bg-white text-ink'
 
 const CLASSE_DA_ACAO =
   'text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
@@ -46,10 +52,13 @@ export function FiltrosDeCampos({
   estado,
   termo,
   contagens,
+  somenteReformaTributaria,
+  contagemDaReforma,
   filtroAtivo,
   buscaRef,
   onEstadoChange,
   onTermoChange,
+  onAlternarReformaTributaria,
   onLimpar,
   onExpandirTodos,
   onRecolherTodos,
@@ -57,7 +66,7 @@ export function FiltrosDeCampos({
   const buscaId = useId()
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface-hover p-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-border bg-white p-3">
       <div role="group" aria-label="Filtrar por obrigatoriedade" className="flex flex-wrap gap-2">
         {OPCOES_DE_ESTADO.map(({ valor, rotulo }) => {
           const pressionado = estado === valor
@@ -68,7 +77,10 @@ export function FiltrosDeCampos({
               type="button"
               aria-pressed={pressionado}
               onClick={() => onEstadoChange(valor)}
-              className={clsx(CLASSE_DO_CHIP, pressionado && CLASSE_DO_CHIP_PRESSIONADO)}
+              className={clsx(
+                CLASSE_DO_CHIP,
+                pressionado ? CLASSE_DO_CHIP_PRESSIONADO : CLASSE_DO_CHIP_SOLTO,
+              )}
             >
               {pressionado && <Check aria-hidden="true" className="size-3.5 shrink-0" />}
               <span>{rotulo}</span> <b className="tabular-nums">{contagens[valor]}</b>
@@ -76,6 +88,21 @@ export function FiltrosDeCampos({
           )
         })}
       </div>
+
+      {contagemDaReforma > 0 && (
+        <button
+          type="button"
+          aria-pressed={somenteReformaTributaria}
+          onClick={onAlternarReformaTributaria}
+          className={clsx(
+            CLASSE_DO_CHIP,
+            somenteReformaTributaria ? CLASSE_DO_CHIP_PRESSIONADO : CLASSE_DO_CHIP_SOLTO,
+          )}
+        >
+          {somenteReformaTributaria && <Check aria-hidden="true" className="size-3.5 shrink-0" />}
+          <span>Só campos da reforma (RT)</span> <b className="tabular-nums">{contagemDaReforma}</b>
+        </button>
+      )}
 
       <label htmlFor={buscaId} className="sr-only">
         Buscar campo do InvoiCy, tag do provedor ou caminho no XML

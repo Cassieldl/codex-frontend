@@ -12,10 +12,21 @@ export interface LayoutVersaoResumo {
   totalCampos: number
 }
 
+/** O que a vigente mudou em relação à anterior publicada. */
+export interface NovidadesVersaoLayout {
+  versao: LayoutVersaoResumo
+  anterior: LayoutVersaoResumo | null
+  descricao: string | null
+  camposNovos: number
+  camposDescontinuados: number
+}
+
 export interface LayoutIndice {
   vigente: LayoutVersaoResumo | null
   /** Já ordenado por `ordem` DESC pelo backend — o frontend nunca reordena. */
   versoes: LayoutVersaoResumo[]
+  /** `null` sem versão vigente publicada. */
+  novidades: NovidadesVersaoLayout | null
 }
 
 export interface CampoLayoutPublico {
@@ -24,6 +35,8 @@ export interface CampoLayoutPublico {
   caminhoXml: string
   significado: string
   ordem: number
+  /** Campo criado pela reforma tributária (IBS/CBS), como o InvoiCy marca na planilha do layout. */
+  reformaTributaria: boolean
   novoNestaVersao: boolean
   descontinuadoNestaVersao: boolean
   /** "/layout/campos/{slug}" — fonte única do link estável do campo (A3). */
@@ -75,6 +88,7 @@ export interface CampoLayoutVerbete {
   nome: string
   caminhoXml: string
   significado: string
+  reformaTributaria: boolean
   estado: 'Ativo' | 'Descontinuado'
   versaoExibicao: { slug: string; rotulo: string }
   versaoOrigem: { slug: string; rotulo: string }

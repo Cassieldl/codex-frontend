@@ -31,7 +31,7 @@ export function GrupoResultadoLista({ grupo }: GrupoResultadoListaProps) {
       </h2>
 
       <ul className="flex flex-col gap-2">
-        {grupo.itens.map((item) => {
+        {grupo.itens.map((item, indice) => {
           const caminho = caminhoInternoSeguro(item.url)
           // `descricaoCasamento` e `meta` agora vivem no item, não no grupo
           // (P1/I21) — mesma posição visual de antes, um ao lado do outro
@@ -58,14 +58,16 @@ export function GrupoResultadoLista({ grupo }: GrupoResultadoListaProps) {
 
               {legenda && <p className="text-xs text-muted">{legenda}</p>}
 
-              <p className="text-sm text-ink/80 [overflow-wrap:anywhere]">
+              <p className="text-sm text-ink [overflow-wrap:anywhere]">
                 <TrechosDestacados trechos={item.trechos} />
               </p>
             </>
           )
 
           return (
-            <li key={item.url}>
+            // A `url` se repete (aviso do provedor e da versão vão para `#avisos`) e o item não
+            // traz id: a posição desempata.
+            <li key={`${item.tipo}-${indice}-${item.url}`}>
               {caminho ? (
                 <Link
                   to={caminho as unknown as LinkProps['to']}

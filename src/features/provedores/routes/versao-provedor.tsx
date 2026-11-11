@@ -9,9 +9,11 @@ import {
   type VarianteProvedorIndisponivel,
 } from '../components/EstadoProvedorIndisponivel'
 import { ExemplosVersao } from '../components/ExemplosVersao'
+import { NaturezasOperacao } from '../components/NaturezasOperacao'
 import { ErroVersaoProvedorHttp, useVersaoProvedor } from '../hooks/useVersaoProvedor'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
+import { caminhoDoProvedor } from '../utils/caminhoDoProvedor'
 import { useCampoDestacadoPorAncora } from '../utils/destaqueAncora'
 
 export interface VersaoProvedorPageProps {
@@ -32,7 +34,7 @@ const VARIANTE_POR_TIPO_DE_ERRO: Record<string, VarianteProvedorIndisponivel | u
 }
 
 /**
- * `/provedores/{slug}/{versao}` — conteúdo da aba (§7.6.2-§7.6.4).
+ * Conteúdo da versão publicada na página `/provedores/{slug}` (§7.6.2-§7.6.4).
  *
  * Mora aqui, e não no arquivo de rota, pelo mesmo motivo que `provedor-layout`:
  * assim é testável sem a árvore de rotas gerada. Enquanto esteve dentro da
@@ -50,16 +52,12 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
   } = useVersaoProvedor(provedorSlug, versaoSlug)
   const campoDestacado = useCampoDestacadoPorAncora()
 
-  useTituloDaPagina(
-    !isError && versaoPagina
-      ? `${versaoPagina.provedor.nome}, versão ${versaoPagina.versao.rotulo}`
-      : null,
-  )
+  useTituloDaPagina(!isError && versaoPagina ? versaoPagina.provedor.nome : null)
 
   if (isLoading) {
     return (
       <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
-        <span className="sr-only">Carregando versão…</span>
+        <span className="sr-only">Carregando o conteúdo do provedor…</span>
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-48 w-full" />
       </div>
@@ -74,20 +72,20 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
     // chega ao `ErrorState`, que é o único caso em que insistir resolve.
     if (!variante) return <ErrorState onRetry={() => refetch()} />
 
-    return <EstadoProvedorIndisponivel variante={variante} provedorSlug={provedorSlug} />
+    return <EstadoProvedorIndisponivel variante={variante} />
   }
 
   if (!versaoPagina) return null
 
-  const urlVersaoAbsoluta =
+  const urlProvedorAbsoluta =
     typeof window === 'undefined'
       ? ''
-      : `${window.location.origin}/provedores/${provedorSlug}/${versaoSlug}`
+      : `${window.location.origin}${caminhoDoProvedor(provedorSlug)}`
 
   return (
     <div className="flex flex-col gap-8">
       {versaoPagina.versao.introducao && (
-        <p className="text-sm text-ink/80">{versaoPagina.versao.introducao}</p>
+        <p className="text-sm text-ink">{versaoPagina.versao.introducao}</p>
       )}
 
       <p className="text-xs text-muted">
@@ -97,6 +95,11 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
 
       <AvisosVersao avisos={versaoPagina.avisos} />
 
+      <NaturezasOperacao
+        naturezas={versaoPagina.naturezasOperacao}
+        camposPorGrupo={versaoPagina.camposPorGrupo}
+      />
+
       <CamposDaVersao
         provedorNome={versaoPagina.provedor.nome}
         versaoRotulo={versaoPagina.versao.rotulo}
@@ -104,8 +107,9 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
         totalCampos={versaoPagina.totalCampos}
         camposPorGrupo={versaoPagina.camposPorGrupo}
         errosResumo={versaoPagina.errosResumo.itens}
-        urlVersaoAbsoluta={urlVersaoAbsoluta}
+        urlProvedorAbsoluta={urlProvedorAbsoluta}
         campoDestacado={campoDestacado}
+        naturezasOperacao={versaoPagina.naturezasOperacao}
       />
 
       <EnvioModeloVersao
@@ -119,11 +123,7 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
         camposPorGrupo={versaoPagina.camposPorGrupo}
       />
 
-      <ExemplosVersao
-        exemplos={versaoPagina.exemplos}
-        provedorSlug={provedorSlug}
-        versaoSlug={versaoSlug}
-      />
+      <ExemplosVersao exemplos={versaoPagina.exemplos} provedorSlug={provedorSlug} />
     </div>
   )
 }

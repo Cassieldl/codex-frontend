@@ -31,6 +31,7 @@ const DISCRIMINACAO = {
   caminhoXml: '//Servico/Discriminacao',
   significado: 'Discriminação dos serviços realizados.',
   ordem: 148,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   // Diferente de `/layout/campos/{slug}`: se o link for montado à mão, o valor copiado muda.
@@ -43,6 +44,7 @@ const PAI_PRE_SERVICO = {
   caminhoXml: '//Servico/PaiPreServico',
   significado: 'País de prestação do serviço.',
   ordem: 150,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/servico-paipreservico',
@@ -54,6 +56,7 @@ const TOMA_CNPJ = {
   caminhoXml: '//Tomador/TomaCNPJ',
   significado: 'CNPJ do tomador.',
   ordem: 330,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/tomador-tomacnpj',
@@ -65,6 +68,7 @@ const CNPJ_PRESTADOR = {
   caminhoXml: '//Prestador/CNPJ_prest',
   significado: 'CNPJ do prestador.',
   ordem: 44,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/prestador-cnpj-prest',
@@ -174,7 +178,7 @@ async function renderizar() {
   })
   const rotaDoProvedor = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/provedores/$provedorSlug/$versaoSlug',
+    path: '/provedores/$provedorSlug',
     component: PaginaDoProvedorFalsa,
   })
   const router = createRouter({
@@ -282,16 +286,16 @@ describe('DicionarioDaVersao com o modal real — copiar o link do campo', () =>
 })
 
 describe('DicionarioDaVersao com o modal real — "Ver no provedor"', () => {
-  it('o link leva à linha do campo na versão do provedor, com o hash da âncora', async () => {
+  it('o link leva à linha do campo na página do provedor, com o hash da âncora', async () => {
     const usuario = userEvent.setup()
     await renderizar()
 
     await usuario.click(botaoDoCampo('Discriminacao'))
     const link = await screen.findByRole('link', {
-      name: 'Ver no provedor: Discriminacao em ISS.NET 1.01',
+      name: 'Ver no provedor: Discriminacao em ISS.NET',
     })
 
-    expect(link).toHaveAttribute('href', '/provedores/iss-net/1-01#campo-servico-discriminacao')
+    expect(link).toHaveAttribute('href', '/provedores/iss-net#campo-servico-discriminacao')
   })
 
   it('seguir o link fecha o modal e o foco NÃO vai para a linha de mesmo id da página do provedor', async () => {
@@ -300,11 +304,11 @@ describe('DicionarioDaVersao com o modal real — "Ver no provedor"', () => {
 
     await usuario.click(botaoDoCampo('Discriminacao'))
     await usuario.click(
-      await screen.findByRole('link', { name: 'Ver no provedor: Discriminacao em ISS.NET 1.01' }),
+      await screen.findByRole('link', { name: 'Ver no provedor: Discriminacao em ISS.NET' }),
     )
 
     await screen.findByRole('heading', { level: 1, name: 'Página do provedor' })
-    expect(router.state.location.pathname).toBe('/provedores/iss-net/1-01')
+    expect(router.state.location.pathname).toBe('/provedores/iss-net')
     expect(router.state.location.hash).toBe('campo-servico-discriminacao')
     expect(screen.queryByRole('dialog')).toBeNull()
 

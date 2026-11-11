@@ -227,8 +227,7 @@ describe('AbasNavegaveis', () => {
     ])
   })
 
-  // Regressão do consumidor mais antigo — abas de versão de provedor, que navegam
-  // por parâmetro de caminho e não tinham caso próprio aqui. Cobre a montagem do
+  // Abas que navegam por parâmetro de caminho. Cobre a montagem do
   // href a partir de `params` (medido: zerar `params` no componente derruba só este
   // teste). NÃO é detector do `activeOptions={{ exact: true }}`: com params as URLs
   // já diferem, então o casamento exato ou parcial dá o mesmo resultado — quem
@@ -237,20 +236,20 @@ describe('AbasNavegaveis', () => {
     const rootRoute = createRootRoute({ component: Outlet })
     const rotaVersao = createRoute({
       getParentRoute: () => rootRoute,
-      path: '/provedores/$provedorSlug/$versaoSlug',
+      path: '/catalogo/$grupoSlug/$itemSlug',
       component: () => (
         <AbasNavegaveis
           abas={[
             {
               rotulo: 'Versão 4.00',
-              to: '/provedores/$provedorSlug/$versaoSlug',
-              params: { provedorSlug: 'sefaz-sp', versaoSlug: 'v4-00' },
+              to: '/catalogo/$grupoSlug/$itemSlug',
+              params: { grupoSlug: 'sefaz-sp', itemSlug: 'v4-00' },
               ativa: true,
             },
             {
               rotulo: 'Versão 3.10',
-              to: '/provedores/$provedorSlug/$versaoSlug',
-              params: { provedorSlug: 'sefaz-sp', versaoSlug: 'v3-10' },
+              to: '/catalogo/$grupoSlug/$itemSlug',
+              params: { grupoSlug: 'sefaz-sp', itemSlug: 'v3-10' },
               ativa: false,
             },
           ]}
@@ -261,7 +260,7 @@ describe('AbasNavegaveis', () => {
     const routeTree = rootRoute.addChildren([rotaVersao])
     const router = createRouter({
       routeTree,
-      history: createMemoryHistory({ initialEntries: ['/provedores/sefaz-sp/v4-00'] }),
+      history: createMemoryHistory({ initialEntries: ['/catalogo/sefaz-sp/v4-00'] }),
     })
 
     render(<RouterProvider router={router} />)
@@ -269,9 +268,9 @@ describe('AbasNavegaveis', () => {
     const atual = await screen.findByRole('link', { name: 'Versão 4.00' })
     const outra = screen.getByRole('link', { name: 'Versão 3.10' })
 
-    expect(atual).toHaveAttribute('href', '/provedores/sefaz-sp/v4-00')
+    expect(atual).toHaveAttribute('href', '/catalogo/sefaz-sp/v4-00')
     expect(atual).toHaveAttribute('aria-current', 'page')
-    expect(outra).toHaveAttribute('href', '/provedores/sefaz-sp/v3-10')
+    expect(outra).toHaveAttribute('href', '/catalogo/sefaz-sp/v3-10')
     expect(outra).not.toHaveAttribute('aria-current')
   })
 })

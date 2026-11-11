@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { TituloSecao } from '../../../components/ui/TituloSecao'
 import { CardArtigo } from '../../artigos/components/CardArtigo'
 import type { ArtigoRecenteHome } from '../types/home'
 
@@ -22,9 +23,7 @@ export function ArtigosRecentesHome({ artigos }: ArtigosRecentesHomeProps) {
   return (
     <section aria-labelledby="secao-artigos-home" className="flex flex-col gap-2">
       <div className="flex flex-wrap items-baseline justify-between gap-6">
-        <h2 id="secao-artigos-home" className="text-titulo font-extrabold text-ink">
-          Artigos
-        </h2>
+        <TituloSecao id="secao-artigos-home">Artigos</TituloSecao>
         <Link
           to="/artigos"
           search={{ pagina: 1 }}
@@ -35,7 +34,7 @@ export function ArtigosRecentesHome({ artigos }: ArtigosRecentesHomeProps) {
       </div>
 
       {artigos.length > 0 && (
-        <div className="rounded-[var(--radius-card)] border border-line bg-white">
+        <div className="rounded-[var(--radius-card)] border border-line bg-white shadow-card">
           {artigos.map((artigo) => (
             <CardArtigo key={artigo.slug} artigo={artigo} />
           ))}

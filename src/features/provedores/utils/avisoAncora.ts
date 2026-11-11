@@ -57,3 +57,17 @@ export function useAvisoDestacadoPorAncora(avisos: readonly { id: number }[]): n
 
   return avisoDestacado
 }
+
+/** Âncora da área de avisos da página do provedor (`#avisos`), o destino dos avisos na busca. */
+export const ID_AREA_AVISOS = 'avisos'
+
+/**
+ * Rola até a área de avisos quando a URL chega com `#avisos`. O navegador só rola sozinho se o
+ * alvo existe no carregamento do documento, e aqui ele só monta depois que o provedor carregou.
+ */
+export function useRolarParaAreaDeAvisos(conteudoPronto: boolean): void {
+  useEffect(() => {
+    if (!conteudoPronto || window.location.hash !== `#${ID_AREA_AVISOS}`) return
+    document.getElementById(ID_AREA_AVISOS)?.scrollIntoView?.({ block: 'start' })
+  }, [conteudoPronto])
+}

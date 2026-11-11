@@ -23,6 +23,7 @@ function campo(
     nome,
     caminhoXml,
     significado: 'Texto explicativo do campo.',
+    reformaTributaria: false,
     tipo: 'string',
     tamanho: null,
     mascara: null,
@@ -94,7 +95,7 @@ const camposPorGrupo = [
   },
 ]
 
-const SEM_FILTRO = { estado: 'todos', termo: '' } as const
+const SEM_FILTRO = { estado: 'todos', termo: '', somenteReformaTributaria: false } as const
 
 describe('montarBlocos', () => {
   it('ordena os blocos pela primeira aparição, nem alfabética nem inversa', () => {
@@ -223,6 +224,7 @@ describe('sequenciaVisivel', () => {
     const filtrados = filtrarCampos(montarBlocos(camposPorGrupo), {
       estado: 'Obrigatorio',
       termo: '',
+      somenteReformaTributaria: false,
     })
 
     expect(sequenciaVisivel(filtrados).map((item) => item.campo.campoLayoutSlug)).toEqual([
@@ -238,6 +240,7 @@ describe('filtrarCampos', () => {
     const filtrados = filtrarCampos(montarBlocos(camposPorGrupo), {
       estado: 'todos',
       termo: 'basecalculo',
+      somenteReformaTributaria: false,
     })
 
     expect(filtrados.map((bloco) => bloco.raiz)).toEqual(['Servico', 'Tomador', 'Prestador'])
@@ -248,6 +251,7 @@ describe('filtrarCampos', () => {
     const [servico] = filtrarCampos(montarBlocos(camposPorGrupo), {
       estado: 'todos',
       termo: 'basecalculo',
+      somenteReformaTributaria: false,
     })
 
     expect(servico.totalDoBloco).toBe(4)
@@ -258,6 +262,7 @@ describe('filtrarCampos', () => {
     const [servico] = filtrarCampos(montarBlocos(camposPorGrupo), {
       estado: 'todos',
       termo: 'basecalculo',
+      somenteReformaTributaria: false,
     })
 
     expect(servico.subgrupos.map((subgrupo) => subgrupo.chave)).toEqual(['servico-valores-ibscbs'])
@@ -267,10 +272,12 @@ describe('filtrarCampos', () => {
     const [servicoSoIbscbs] = filtrarCampos(montarBlocos(camposPorGrupo), {
       estado: 'todos',
       termo: 'basecalculo',
+      somenteReformaTributaria: false,
     })
     const [servicoSoGerais] = filtrarCampos(montarBlocos(camposPorGrupo), {
       estado: 'todos',
       termo: 'cserv',
+      somenteReformaTributaria: false,
     })
 
     expect(servicoSoIbscbs.subgrupos.map((subgrupo) => subgrupo.titulo)).toEqual([
@@ -283,6 +290,7 @@ describe('filtrarCampos', () => {
     const filtrados = filtrarCampos(montarBlocos(camposPorGrupo), {
       estado: 'Obrigatorio',
       termo: 'ibscbs',
+      somenteReformaTributaria: false,
     })
 
     expect(sequenciaVisivel(filtrados).map((item) => item.campo.campoLayoutSlug)).toEqual([
@@ -299,57 +307,111 @@ describe('filtrarCampos', () => {
 
 describe('campoPassaNoFiltro', () => {
   it('acha pelo nome, sem acento e sem diferenciar maiúscula', () => {
-    expect(campoPassaNoFiltro(campoCodigoServico, { estado: 'todos', termo: 'CODIGO DO' })).toBe(
-      true,
-    )
-    expect(campoPassaNoFiltro(campoAliquotaCbs, { estado: 'todos', termo: 'aliquota da' })).toBe(
-      true,
-    )
+    expect(
+      campoPassaNoFiltro(campoCodigoServico, {
+        estado: 'todos',
+        termo: 'CODIGO DO',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(true)
+    expect(
+      campoPassaNoFiltro(campoAliquotaCbs, {
+        estado: 'todos',
+        termo: 'aliquota da',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(true)
   })
 
   it('acha pelo caminhoXml', () => {
-    expect(campoPassaNoFiltro(campoCnpjTomador, { estado: 'todos', termo: 'tomador/cnpj' })).toBe(
-      true,
-    )
+    expect(
+      campoPassaNoFiltro(campoCnpjTomador, {
+        estado: 'todos',
+        termo: 'tomador/cnpj',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(true)
   })
 
   it('acha pelo destinoXml inteiro, inclusive o segundo destino', () => {
-    expect(campoPassaNoFiltro(campoBaseIbs, { estado: 'todos', termo: 'BASECALCULO' })).toBe(true)
-    expect(campoPassaNoFiltro(campoCodigoServico, { estado: 'todos', termo: 'alt/ctrib' })).toBe(
-      true,
-    )
+    expect(
+      campoPassaNoFiltro(campoBaseIbs, {
+        estado: 'todos',
+        termo: 'BASECALCULO',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(true)
+    expect(
+      campoPassaNoFiltro(campoCodigoServico, {
+        estado: 'todos',
+        termo: 'alt/ctrib',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(true)
   })
 
   it('não acha por texto que só existe no significado', () => {
     expect(
-      campoPassaNoFiltro(campoCodigoServico, { estado: 'todos', termo: 'texto explicativo' }),
+      campoPassaNoFiltro(campoCodigoServico, {
+        estado: 'todos',
+        termo: 'texto explicativo',
+        somenteReformaTributaria: false,
+      }),
     ).toBe(false)
   })
 
   it('campo sem destinoXml não casa com termo de outro campo', () => {
-    expect(campoPassaNoFiltro(campoCnpjTomador, { estado: 'todos', termo: 'basecalculo' })).toBe(
-      false,
-    )
+    expect(
+      campoPassaNoFiltro(campoCnpjTomador, {
+        estado: 'todos',
+        termo: 'basecalculo',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(false)
   })
 
   it('exige o estado quando ele não é "todos"', () => {
-    expect(campoPassaNoFiltro(campoBaseIbs, { estado: 'Opcional', termo: '' })).toBe(false)
-    expect(campoPassaNoFiltro(campoBaseIbs, { estado: 'Obrigatorio', termo: '' })).toBe(true)
+    expect(
+      campoPassaNoFiltro(campoBaseIbs, {
+        estado: 'Opcional',
+        termo: '',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(false)
+    expect(
+      campoPassaNoFiltro(campoBaseIbs, {
+        estado: 'Obrigatorio',
+        termo: '',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(true)
   })
 
   it('exige estado e termo ao mesmo tempo', () => {
-    expect(campoPassaNoFiltro(campoBaseIbs, { estado: 'Opcional', termo: 'basecalculo' })).toBe(
-      false,
-    )
-    expect(campoPassaNoFiltro(campoBaseIbs, { estado: 'Obrigatorio', termo: 'basecalculo' })).toBe(
-      true,
-    )
+    expect(
+      campoPassaNoFiltro(campoBaseIbs, {
+        estado: 'Opcional',
+        termo: 'basecalculo',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(false)
+    expect(
+      campoPassaNoFiltro(campoBaseIbs, {
+        estado: 'Obrigatorio',
+        termo: 'basecalculo',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(true)
   })
 
   it('ignora espaços nas pontas do termo', () => {
-    expect(campoPassaNoFiltro(campoBaseIbs, { estado: 'todos', termo: '  basecalculo  ' })).toBe(
-      true,
-    )
+    expect(
+      campoPassaNoFiltro(campoBaseIbs, {
+        estado: 'todos',
+        termo: '  basecalculo  ',
+        somenteReformaTributaria: false,
+      }),
+    ).toBe(true)
   })
 })
 
@@ -367,6 +429,7 @@ describe('contarPorEstado', () => {
     const filtrados = filtrarCampos(montarBlocos(camposPorGrupo), {
       estado: 'todos',
       termo: 'basecalculo',
+      somenteReformaTributaria: false,
     })
 
     expect(sequenciaVisivel(filtrados)).toHaveLength(1)
@@ -428,5 +491,30 @@ describe('ESTADO_PARA_ETIQUETA', () => {
       Opcional: 'opcional',
       Condicional: 'condicional',
     })
+  })
+})
+
+describe('campoPassaNoFiltro, só campos da reforma tributária', () => {
+  const daReforma = { ...campoBaseIbs, reformaTributaria: true }
+  const soReforma = (termo: string) =>
+    ({ estado: 'todos', termo, somenteReformaTributaria: true }) as const
+
+  it('barra o campo de fora da reforma e aplica o termo ao da reforma', () => {
+    expect(campoPassaNoFiltro(campoCnpjTomador, soReforma(''))).toBe(false)
+    expect(campoPassaNoFiltro(daReforma, soReforma(''))).toBe(true)
+    expect(campoPassaNoFiltro(daReforma, soReforma('basecalculo'))).toBe(true)
+    expect(campoPassaNoFiltro(daReforma, soReforma('zzz-inexistente'))).toBe(false)
+  })
+
+  it('combina com a obrigatoriedade', () => {
+    const outroEstado = daReforma.estadoPreenchimento === 'Obrigatorio' ? 'Opcional' : 'Obrigatorio'
+
+    expect(
+      campoPassaNoFiltro(daReforma, {
+        estado: outroEstado,
+        termo: '',
+        somenteReformaTributaria: true,
+      }),
+    ).toBe(false)
   })
 })

@@ -3,10 +3,15 @@
 // todos os demais enums do projeto (`Proprio`, `Critico`). O rótulo visível
 // "Mudança/Migração" vive só na camada de exibição (`EtiquetaTipoArtigo`).
 
-export type TipoArtigo = 'Conceito' | 'Procedimento' | 'Mudanca'
+export type TipoArtigo = 'Conceito' | 'Procedimento' | 'Mudanca' | 'Configuracao'
 
 /** Ordem de exibição das abas/filtros do índice — nunca alfabética. */
-export const TIPOS_ARTIGO: readonly TipoArtigo[] = ['Conceito', 'Procedimento', 'Mudanca']
+export const TIPOS_ARTIGO: readonly TipoArtigo[] = [
+  'Conceito',
+  'Procedimento',
+  'Mudanca',
+  'Configuracao',
+]
 
 export interface ArtigoListaItem {
   slug: string

@@ -61,13 +61,11 @@ interface ItemDeUsoProps {
 }
 
 function ItemDeUso({ uso, campoSlug, nomeDoCampo }: ItemDeUsoProps) {
-  const versaoDoProvedor = `${uso.provedorNome} ${uso.versaoRotulo}`
-
   return (
     <li className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold text-ink">{versaoDoProvedor}</span>
+          <span className="text-sm font-semibold text-ink">{uso.provedorNome}</span>
           <EtiquetaEstado estado={ESTADO_PARA_ETIQUETA[uso.estadoPreenchimento]} />
         </div>
 
@@ -77,10 +75,10 @@ function ItemDeUso({ uso, campoSlug, nomeDoCampo }: ItemDeUsoProps) {
       </div>
 
       <Link
-        to="/provedores/$provedorSlug/$versaoSlug"
-        params={{ provedorSlug: uso.provedorSlug, versaoSlug: uso.versaoSlug }}
+        to="/provedores/$provedorSlug"
+        params={{ provedorSlug: uso.provedorSlug }}
         hash={construirIdLinhaCampo(campoSlug)}
-        aria-label={`Ver no provedor: ${nomeDoCampo} em ${versaoDoProvedor}`}
+        aria-label={`Ver no provedor: ${nomeDoCampo} em ${uso.provedorNome}`}
         className={CLASSE_DO_LINK}
       >
         Ver no provedor
@@ -91,7 +89,7 @@ function ItemDeUso({ uso, campoSlug, nomeDoCampo }: ItemDeUsoProps) {
 
 /**
  * Onde o campo do layout é usado, por provedor: a tag que o recebe, se o provedor o exige e o
- * atalho para a linha dele na página da versão. Carregando, erro e vazio ficam dentro da seção —
+ * atalho para a linha dele na página do provedor. Carregando, erro e vazio ficam dentro da seção:
  * o resto do modal já está pronto e não depende desta consulta.
  */
 export function UsosDoCampo({ campoSlug, slugAssentado, nomeDoCampo }: UsosDoCampoProps) {

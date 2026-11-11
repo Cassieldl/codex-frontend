@@ -71,7 +71,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
   useTituloDaPagina(tituloDaAbaDoCodigo(codigo, data?.totalCount))
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
       <main
@@ -144,7 +144,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
                         {item.codigo}
                       </span>
                       <span
-                        className="text-xs text-ink/70"
+                        className="text-xs text-muted"
                         aria-label={
                           item.provedorNome
                             ? undefined
@@ -159,7 +159,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
                         {item.provedorNome ?? 'Geral'}
                       </span>
                     </div>
-                    <p className="text-sm text-ink/80">{item.titulo}</p>
+                    <p className="text-sm text-ink">{item.titulo}</p>
                   </>
                 )
 

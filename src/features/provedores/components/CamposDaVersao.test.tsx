@@ -82,6 +82,7 @@ const BASE_DO_CAMPO = {
 const DISCRIMINACAO = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'servico-discriminacao',
+  reformaTributaria: false,
   nome: 'Discriminacao',
   caminhoXml: '//Servico/Discriminacao',
   significado: 'Descrição do serviço prestado.',
@@ -95,6 +96,7 @@ const DISCRIMINACAO = {
 const PAI_PRE_SERVICO = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'servico-paipreservico',
+  reformaTributaria: false,
   nome: 'PaiPreServico',
   caminhoXml: '//Servico/PaiPreServico',
   significado: 'País de prestação do serviço.',
@@ -114,6 +116,7 @@ const PAI_PRE_SERVICO = {
 const VAL_SERVICOS = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'servico-valores-valservicos',
+  reformaTributaria: false,
   nome: 'ValServicos',
   caminhoXml: '//Servico/Valores/ValServicos',
   significado: 'Valor dos serviços.',
@@ -128,6 +131,7 @@ const VAL_SERVICOS = {
 const VAL_PIS = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'servico-valores-valpis',
+  reformaTributaria: false,
   nome: 'ValPIS',
   caminhoXml: '//Servico/Valores/ValPIS',
   significado: 'Valor do PIS.',
@@ -142,6 +146,7 @@ const VAL_PIS = {
 const TOMA_CNPJ = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'tomador-tomacnpj',
+  reformaTributaria: false,
   nome: 'TomaCNPJ',
   caminhoXml: '//Tomador/TomaCNPJ',
   significado: 'CNPJ do tomador.',
@@ -155,6 +160,7 @@ const TOMA_CNPJ = {
 const TOMA_CEP = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'tomador-tomacep',
+  reformaTributaria: false,
   nome: 'TomaCEP',
   caminhoXml: '//Tomador/TomaCEP',
   significado: 'CEP do tomador.',
@@ -168,6 +174,7 @@ const TOMA_CEP = {
 const CNPJ_PRESTADOR = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'prestador-cnpj-prest',
+  reformaTributaria: false,
   nome: 'CNPJ_prest',
   caminhoXml: '//Prestador/CNPJ_prest',
   significado: 'CNPJ do prestador.',
@@ -181,6 +188,7 @@ const CNPJ_PRESTADOR = {
 const INSCRICAO_MUNICIPAL = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'prestador-im',
+  reformaTributaria: false,
   nome: 'IM',
   caminhoXml: '//Prestador/IM',
   significado: 'Inscrição municipal do prestador.',
@@ -220,7 +228,7 @@ function propsDaVersao(sobrescritas: Partial<CamposDaVersaoProps> = {}): CamposD
     totalCampos: 8,
     camposPorGrupo: CAMPOS_POR_GRUPO,
     errosResumo: ERROS_RESUMO,
-    urlVersaoAbsoluta: URL_DA_VERSAO,
+    urlProvedorAbsoluta: URL_DA_VERSAO,
     ...sobrescritas,
   }
 }
@@ -517,7 +525,7 @@ describe('CamposDaVersao — modal do campo', () => {
       nome: 'ValServicos',
     })
     expect(props.errosResumo).toBe(ERROS_RESUMO)
-    expect(props.urlVersaoAbsoluta).toBe(URL_DA_VERSAO)
+    expect(props.urlProvedorAbsoluta).toBe(URL_DA_VERSAO)
   })
 
   it('clicar na linha, fora de botão, também abre o diálogo', () => {
@@ -621,7 +629,7 @@ describe('CamposDaVersao — modal do campo', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'TomaCEP' }))
 
-    expect(ultimasPropsDoModal().urlVersaoAbsoluta).toBe(
+    expect(ultimasPropsDoModal().urlProvedorAbsoluta).toBe(
       'https://codex.migrate.info/provedores/emissor-nacional/0-20',
     )
   })

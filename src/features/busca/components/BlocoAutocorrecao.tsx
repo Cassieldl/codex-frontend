@@ -11,7 +11,7 @@ export function BlocoAutocorrecao({ correcao }: BlocoAutocorrecaoProps) {
   if (!correcao) return null
 
   return (
-    <p className="text-sm text-ink/70">
+    <p className="text-sm text-muted">
       Você buscou <span className="line-through">{correcao.termoOriginal}</span> · Buscamos por{' '}
       <strong className="font-semibold text-ink">{correcao.termoCorrigido}</strong>
     </p>

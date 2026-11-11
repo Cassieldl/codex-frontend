@@ -59,7 +59,7 @@ export function LayoutCampoResolucaoPage({ campoSlug, navegar }: LayoutCampoReso
   useTituloDaPagina(isError ? null : 'Campo do Layout InvoiCy')
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
       <main

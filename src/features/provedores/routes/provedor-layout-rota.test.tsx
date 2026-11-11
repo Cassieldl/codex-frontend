@@ -6,11 +6,13 @@ import { describe, expect, it } from 'vitest'
 import { handlerComunicadosRegistrandoChamadas } from '../../../test/mocks/comunicadosContexto'
 import { server } from '../../../test/mocks/server'
 import {
+  TITULO_DESTINO,
   criarPortao,
   renderComDestinoLento,
   sairDaPaginaEEsperarDestino,
 } from '../../../test/saidaDaPagina'
 import { ProvedorLayoutRota } from './provedor-layout-rota'
+import { redirecionarVersaoParaProvedor } from './redirecionar-versao'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -39,7 +41,7 @@ function handlerProvedor(slugRequisitado: string, provedor: object) {
   )
 }
 
-/** A mesma forma da árvore real: layout do provedor com o índice e a versão aberta dentro dele. */
+/** A mesma forma da árvore real: layout do provedor com o índice e o endereço antigo com versão. */
 function renderRota(entradas: string[], portao = criarPortao()) {
   const utils = renderComDestinoLento({
     entradas,
@@ -58,7 +60,7 @@ function renderRota(entradas: string[], portao = criarPortao()) {
       const rotaVersao = createRoute({
         getParentRoute: () => rotaProvedor,
         path: '$versaoSlug',
-        component: () => null,
+        beforeLoad: redirecionarVersaoParaProvedor,
       })
 
       return [rotaProvedor.addChildren([rotaIndice, rotaVersao])]
@@ -82,7 +84,7 @@ describe('ProvedorLayoutRota — sair da página não é desfeito pela correçã
     })
   })
 
-  it('ao sair de uma versão aberta, a URL termina no destino', async () => {
+  it('ao sair depois de chegar por um endereço antigo com versão, a URL termina no destino', async () => {
     server.use(handlerProvedor('ipm', provedorComSlug('ipm')))
     const { router, portao } = renderRota(['/provedores/ipm/v1'])
     await screen.findByRole('heading', { level: 1, name: 'Provedor ipm' })
@@ -109,27 +111,49 @@ describe('ProvedorLayoutRota — sair da página não é desfeito pela correçã
   })
 })
 
-describe('ProvedorLayoutRota — versão aberta', () => {
-  it('leva a versão que está na URL para a página', async () => {
+describe('ProvedorLayoutRota: endereço antigo com versão', () => {
+  it('vira /provedores/{slug} mantendo a âncora, sem deixar o endereço antigo no histórico', async () => {
+    server.use(handlerProvedor('ipm', provedorComSlug('ipm')))
+    const portao = criarPortao()
+    portao.liberar()
+    const { router } = renderRota(['/layout/8', '/provedores/ipm/v1#avisos'], portao)
+
+    await screen.findByRole('heading', { level: 1, name: 'Provedor ipm' })
+    expect(router.state.location.pathname).toBe('/provedores/ipm')
+    expect(router.state.location.hash).toBe('avisos')
+
+    router.history.back()
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/layout/8'))
+  })
+
+  it('link antigo seguido de dentro do portal também não empilha o endereço com versão', async () => {
+    server.use(handlerProvedor('ipm', provedorComSlug('ipm')))
+    const portao = criarPortao()
+    portao.liberar()
+    const { router } = renderRota(['/layout/8'], portao)
+    await screen.findByRole('heading', { name: TITULO_DESTINO })
+
+    router.history.push('/provedores/ipm/v1#campo-cnpj-tomador')
+
+    await screen.findByRole('heading', { level: 1, name: 'Provedor ipm' })
+    expect(router.state.location.pathname).toBe('/provedores/ipm')
+    expect(router.state.location.hash).toBe('campo-cnpj-tomador')
+
+    router.history.back()
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/layout/8'))
+  })
+
+  it('os comunicados levam a versão publicada, com ou sem versão no endereço', async () => {
     const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([])
     server.use(handlerProvedor('ipm', provedorComSlug('ipm')), handler)
-    renderRota(['/provedores/ipm/v1'])
+    renderRota(['/provedores/ipm/versao-que-nao-existe'])
 
     await screen.findByRole('heading', { level: 1, name: 'Provedor ipm' })
 
     await waitFor(() => expect(chamadas).toHaveLength(1))
     expect(chamadas[0].searchParams.get('versao')).toBe('v1')
-  })
-
-  it('sem versão na URL, a página não recebe versão', async () => {
-    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([])
-    server.use(handlerProvedor('ipm', provedorComSlug('ipm')), handler)
-    renderRota(['/provedores/ipm'])
-
-    await screen.findByRole('heading', { level: 1, name: 'Provedor ipm' })
-
-    await waitFor(() => expect(chamadas).toHaveLength(1))
-    expect(chamadas[0].searchParams.get('versao')).toBeNull()
   })
 })
 
@@ -151,7 +175,7 @@ describe('ProvedorLayoutRota — slug desatualizado', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/layout/8'))
   })
 
-  it('preserva a versão aberta ao corrigir o slug do provedor', async () => {
+  it('endereço antigo com versão e slug desatualizado termina no slug canônico, sem versão', async () => {
     server.use(
       handlerProvedor('slug-antigo', provedorComSlug('slug-novo')),
       handlerProvedor('slug-novo', provedorComSlug('slug-novo')),
@@ -160,6 +184,6 @@ describe('ProvedorLayoutRota — slug desatualizado', () => {
 
     await screen.findByRole('heading', { level: 1, name: 'Provedor slug-novo' })
 
-    expect(router.state.location.pathname).toBe('/provedores/slug-novo/v1')
+    expect(router.state.location.pathname).toBe('/provedores/slug-novo')
   })
 })

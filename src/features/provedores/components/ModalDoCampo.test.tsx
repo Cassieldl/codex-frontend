@@ -20,6 +20,7 @@ import { ModalDoCampo } from './ModalDoCampo'
  */
 const CAMPO_COM_REJEICOES = {
   campoLayoutSlug: 'servico-paipreservico',
+  reformaTributaria: false,
   nome: 'PaiPreServico',
   caminhoXml: '//Servico/PaiPreServico',
   significado:
@@ -60,6 +61,7 @@ const RESUMO_DA_REJEICAO = [
 
 const CAMPO_SEGUINTE = {
   campoLayoutSlug: 'tpsusp',
+  reformaTributaria: false,
   nome: 'tpSusp',
   caminhoXml: '//tpSusp',
   significado:
@@ -102,7 +104,7 @@ function propsBase(sobrescritas: Partial<ModalDoCampoProps> = {}): ModalDoCampoP
     onFechar: vi.fn(),
     devolverFoco: vi.fn(),
     errosResumo: RESUMO_DA_REJEICAO,
-    urlVersaoAbsoluta: URL_DA_VERSAO,
+    urlProvedorAbsoluta: URL_DA_VERSAO,
     ...sobrescritas,
   }
 }
@@ -402,5 +404,35 @@ describe('ModalDoCampo — fechar', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(devolverFoco).toHaveBeenCalledTimes(1)
     expect(focarGatilho).not.toHaveBeenCalled()
+  })
+})
+
+describe('ModalDoCampo — natureza da operação', () => {
+  const NATUREZAS = [
+    {
+      codigoInvoicy: 1,
+      descricao: 'Operação tributável',
+      valorProvedor: '1',
+      observacao: null,
+      aConfirmar: false,
+    },
+  ]
+
+  it('no campo natOp mostra o de-para; nos outros campos, não', async () => {
+    const { trocarProps } = renderizar(
+      propsBase({
+        campo: { ...CAMPO_COM_REJEICOES, nome: 'natOp', caminhoXml: '//natOp' },
+        naturezasOperacao: NATUREZAS,
+      }),
+    )
+
+    const dialogo = await screen.findByRole('dialog', { name: 'natOp' })
+    expect(dialogo).toHaveTextContent('De-para da natureza da operação')
+    expect(screen.getByRole('cell', { name: 'Operação tributável' })).toBeInTheDocument()
+
+    trocarProps({ campo: CAMPO_COM_REJEICOES })
+
+    await screen.findByRole('dialog', { name: 'PaiPreServico' })
+    expect(screen.queryByText('De-para da natureza da operação')).toBeNull()
   })
 })

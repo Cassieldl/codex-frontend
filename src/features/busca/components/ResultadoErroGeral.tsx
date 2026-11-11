@@ -37,5 +37,5 @@ export function ResultadoErroGeral({
   // versões de provedores diferentes, um `· ` órfão abriria a linha (P-09).
   const partes = [provedorNome, versaoTexto].filter((parte): parte is string => Boolean(parte))
 
-  return <span className="text-xs text-ink/70">{partes.join(' · ')}</span>
+  return <span className="text-xs text-muted">{partes.join(' · ')}</span>
 }

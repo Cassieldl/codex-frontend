@@ -30,12 +30,14 @@ import { VinculosDeErros } from './VinculosDeErros'
  * mapa que o índice público usa, para os dois nunca divergirem.
  */
 const TIPO_OPTIONS: SelectOption[] = (
-  ['Conceito', 'Procedimento', 'Mudanca'] satisfies TipoArtigo[]
+  ['Conceito', 'Procedimento', 'Mudanca', 'Configuracao'] satisfies TipoArtigo[]
 ).map((tipo) => ({ value: tipo, label: ROTULO_TIPO_ARTIGO[tipo] }))
 
 const artigoSchema = z.object({
   titulo: z.string().min(1, 'O título é obrigatório.').max(200, 'Máximo de 200 caracteres.'),
-  tipo: z.enum(['Conceito', 'Procedimento', 'Mudanca'] as const, { error: 'Selecione o tipo.' }),
+  tipo: z.enum(['Conceito', 'Procedimento', 'Mudanca', 'Configuracao'] as const, {
+    error: 'Selecione o tipo.',
+  }),
   corpo: z.string().min(1, 'O corpo do artigo é obrigatório.'),
   campoLayoutIds: z.array(z.number()),
   erroIds: z.array(z.number()),

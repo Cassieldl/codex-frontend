@@ -25,7 +25,7 @@ export function HistoricoVersoesLayout({ versoes, versaoAtualSlug }: HistoricoVe
       <h2 id="historico-versoes-titulo" className="text-subtitulo font-semibold text-ink">
         Histórico de versões
       </h2>
-      <p className="text-sm text-ink/70">
+      <p className="text-sm text-muted">
         Toda versão publicada continua acessível: provedores em produção seguem escritos contra
         versões anteriores.
       </p>
@@ -44,7 +44,7 @@ export function HistoricoVersoesLayout({ versoes, versaoAtualSlug }: HistoricoVe
               >
                 {formatarVersaoLayout(versao.rotulo, { maiuscula: true })}
               </span>
-              <span className="text-xs font-medium text-ink/70">{versao.estado}</span>
+              <span className="text-xs font-medium text-muted">{versao.estado}</span>
               <span className="text-xs text-muted tabular-nums">
                 {versao.totalCampos} {versao.totalCampos === 1 ? 'campo' : 'campos'}
               </span>

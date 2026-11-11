@@ -91,19 +91,16 @@ describe('ComunicadosDoContexto', () => {
     expect(corpo).toHaveClass('whitespace-pre-line')
   })
 
-  it('comunicado de versão diz a qual versão se refere e leva a ela pelo `url`', async () => {
+  it('comunicado de versão diz a qual versão se refere e leva ao provedor, sem versão', async () => {
     const { handler } = handlerComunicadosRegistrandoChamadas([COMUNICADO_DE_VERSAO])
     server.use(handler)
 
-    renderBloco({
-      provedorSlugs: ['prefeitura-exemplo'],
-      caminhoAtual: '/provedores/prefeitura-exemplo',
-    })
+    renderBloco({ provedorSlugs: ['prefeitura-exemplo'] })
 
     expect(await screen.findByText('Prefeitura de Exemplo · 2.04')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver versão 2.04' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Ver provedor' })).toHaveAttribute(
       'href',
-      '/provedores/prefeitura-exemplo/2-04',
+      '/provedores/prefeitura-exemplo',
     )
   })
 
@@ -120,8 +117,8 @@ describe('ComunicadosDoContexto', () => {
     })
 
     await screen.findByText('Instabilidade na emissão')
-    expect(screen.queryByRole('link', { name: 'Ver provedor' })).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver versão 2.04' })).toBeInTheDocument()
+    await screen.findByText('Layout 2.04 em homologação')
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
 
   it('na página do erro (sem caminho próprio), o comunicado do provedor leva ao provedor', async () => {
@@ -146,7 +143,7 @@ describe('ComunicadosDoContexto', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
 
-  it('não segue um `url` que não seja caminho interno', async () => {
+  it('ignora a `url` da API: o link sai do slug do provedor, nunca de um endereço externo', async () => {
     const { handler } = handlerComunicadosRegistrandoChamadas([
       { ...COMUNICADO_CRITICO_DO_PROVEDOR, url: 'https://outro-site.example/provedores/x' },
     ])
@@ -154,8 +151,25 @@ describe('ComunicadosDoContexto', () => {
 
     renderBloco({ provedorSlugs: ['prefeitura-exemplo'] })
 
-    await screen.findByText('Instabilidade na emissão')
-    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Ver provedor' })).toHaveAttribute(
+      'href',
+      '/provedores/prefeitura-exemplo',
+    )
+  })
+
+  it('slug do provedor com caracteres de caminho não escapa do segmento', async () => {
+    const { handler } = handlerComunicadosRegistrandoChamadas([
+      {
+        ...COMUNICADO_CRITICO_DO_PROVEDOR,
+        provedor: { nome: 'Slug estranho', slug: 'a/../b?x=1#y' },
+      },
+    ])
+    server.use(handler)
+
+    renderBloco({ provedorSlugs: ['prefeitura-exemplo'] })
+
+    const href = (await screen.findByRole('link', { name: 'Ver provedor' })).getAttribute('href')
+    expect(href).toMatch(/^\/provedores\/[^/?#]+$/)
   })
 
   it('lista vazia não renderiza bloco nenhum', async () => {

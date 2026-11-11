@@ -18,7 +18,7 @@ const API_URL = import.meta.env.VITE_API_URL
 
 const PROVEDOR_SLUG = 'prefeitura-exemplo'
 const VERSAO_SLUG = 'v1'
-const CAMINHO = `/provedores/${PROVEDOR_SLUG}/${VERSAO_SLUG}`
+const CAMINHO = `/provedores/${PROVEDOR_SLUG}`
 
 interface OpcoesRender {
   /**
@@ -119,13 +119,14 @@ describe('VersaoProvedorPage — respostas definitivas', () => {
     expect(screen.queryByText('Esta versão não existe.')).not.toBeInTheDocument()
   })
 
-  it('toda resposta definitiva oferece a saída para as outras versões do provedor', async () => {
+  // A página do provedor é a própria que falhou: voltar para ela seria um laço.
+  it('toda resposta definitiva oferece a saída para a lista de provedores', async () => {
     server.use(handlerStatus(404))
 
     renderPagina()
 
-    const saida = await screen.findByRole('link', { name: 'Ver outras versões deste provedor' })
-    expect(saida).toHaveAttribute('href', `/provedores/${PROVEDOR_SLUG}`)
+    const saida = await screen.findByRole('link', { name: 'Ver todos os provedores' })
+    expect(saida).toHaveAttribute('href', '/provedores?pagina=1')
   })
 })
 
@@ -259,6 +260,7 @@ const RESPOSTA_DA_VERSAO = {
     },
     exemplos: [],
     outrasVersoes: [],
+    naturezasOperacao: [],
   },
   message: null,
 }
@@ -334,16 +336,41 @@ describe('VersaoProvedorPage — versão do Layout InvoiCy', () => {
     expect(frase).toHaveTextContent('Escrita contra o Layout InvoiCy versão 1.0.')
     expect(frase.textContent).not.toMatch(/vers[aã]o\s+vers[aã]o/i)
   })
+
+  it('mostra o de-para da natureza da operação que a API entrega', async () => {
+    server.use(
+      handlerStatus(200, {
+        ...RESPOSTA_DA_VERSAO,
+        data: {
+          ...RESPOSTA_DA_VERSAO.data,
+          naturezasOperacao: [
+            {
+              codigoInvoicy: 9,
+              descricao: 'Exportação de serviço',
+              valorProvedor: '3',
+              observacao: null,
+              aConfirmar: false,
+            },
+          ],
+        },
+      }),
+    )
+
+    renderPagina()
+
+    const secao = await screen.findByRole('region', { name: 'Natureza da operação' })
+    expect(within(secao).getByRole('cell', { name: 'Exportação de serviço' })).toBeInTheDocument()
+  })
 })
 
 describe('VersaoProvedorPage: título da aba', () => {
-  it('nomeia a aba com o provedor e a versão', async () => {
+  it('nomeia a aba só com o provedor, sem a versão', async () => {
     server.use(handlerStatus(200, RESPOSTA_DA_VERSAO))
     Element.prototype.scrollIntoView = vi.fn()
     renderPagina()
 
     await screen.findByRole('heading', { level: 2, name: 'Campos e mapeamento' })
-    expect(document.title).toBe('Prefeitura de Exemplo, versão 0.20 | Codex')
+    expect(document.title).toBe('Prefeitura de Exemplo | Codex')
   })
 
   it('versão inexistente nomeia a aba pelo desfecho', async () => {

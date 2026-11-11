@@ -58,7 +58,7 @@ describe('BlocoLayoutHome', () => {
 
     await screen.findByText(ANCORA)
     expect(screen.queryByRole('heading', { name: 'Layout InvoiCy' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Ver detalhes' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^Ver / })).not.toBeInTheDocument()
   })
 
   it('mostra vigente, prevista e as mudanças', async () => {
@@ -68,7 +68,17 @@ describe('BlocoLayoutHome', () => {
     expect(screen.getByText('Versão 4.12')).toBeInTheDocument()
     expect(screen.getByText('Versão 4.13 prevista')).toBeInTheDocument()
     expect(screen.getByText('6 campos novos · 2 descontinuados')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver detalhes' })).toHaveAttribute('href', '/layout')
+    expect(screen.getByRole('link', { name: 'Ver o que mudou' })).toHaveAttribute(
+      'href',
+      '/layout#novidades',
+    )
+  })
+
+  it('mostra só o resumo da nota: os tópicos do que mudou ficam na página do layout', async () => {
+    renderBloco({ ...layout, descricao: 'InvoiCy 3.3.0.0.\nGrupos novos: Condominio' })
+
+    expect(await screen.findByText('InvoiCy 3.3.0.0.')).toBeInTheDocument()
+    expect(screen.queryByText(/Condominio/)).not.toBeInTheDocument()
   })
 
   /**

@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   COMUNICADO_CRITICO_DO_PROVEDOR,
   COMUNICADO_DE_VERSAO,
@@ -38,9 +38,21 @@ const provedorFake = {
   ],
 }
 
+// A versão publicada é a de `COMUNICADO_DE_VERSAO`, para o comunicado de escopo versão casar.
+const provedorComVersao204 = {
+  ...provedorFake,
+  versoes: [
+    {
+      slug: '2-04',
+      rotulo: '2.04',
+      verificadoEm: '2026-07-01',
+      url: '/provedores/prefeitura-exemplo',
+    },
+  ],
+}
+
 interface OpcoesRenderPagina {
   provedorSlug: string
-  versaoSlugAtual?: string
   caminhoAtual: string
   /**
    * Deixa a política de retentativa do próprio hook valer. O padrão do harness
@@ -53,7 +65,6 @@ interface OpcoesRenderPagina {
 
 function renderPagina({
   provedorSlug,
-  versaoSlugAtual,
   caminhoAtual,
   usarRetentativaDoHook = false,
 }: OpcoesRenderPagina) {
@@ -75,7 +86,6 @@ function renderPagina({
     component: () => (
       <ProvedorLayoutPage
         provedorSlug={provedorSlug}
-        versaoSlugAtual={versaoSlugAtual}
         caminhoAtual={caminhoAtual}
         navegar={navegar}
       />
@@ -130,21 +140,6 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
     // Enquanto redireciona, o conteúdo não aparece no endereço não-canônico
     // (nunca um flash do slug antigo na aba/breadcrumb).
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
-  })
-
-  it('preserva o segmento de versão ao corrigir o slug do provedor', async () => {
-    const provedorComSlugNovo = { ...provedorFake, slug: 'slug-novo' }
-    server.use(handlerProvedor('slug-antigo', provedorComSlugNovo))
-
-    const { navegar } = renderPagina({
-      provedorSlug: 'slug-antigo',
-      versaoSlugAtual: 'v1',
-      caminhoAtual: '/provedores/slug-antigo/v1',
-    })
-
-    await waitFor(() =>
-      expect(navegar).toHaveBeenCalledWith({ href: '/provedores/slug-novo/v1', replace: true }),
-    )
   })
 
   // Mutação-alvo (`analise-frontend.md` §2.9): trocar `replace: true` por
@@ -268,17 +263,17 @@ describe('ProvedorLayoutPage — retentativa só no que pode melhorar', () => {
 })
 
 /**
- * Comunicado do provedor e das versões dele no topo da página — a instabilidade de quem está
- * emitindo não pode existir só na Home. O mesmo layout serve a página do provedor e a da versão:
- * o que muda é o `versao` que vai na consulta.
+ * Comunicado do provedor e da versão publicada dele no topo da página: a instabilidade de quem
+ * está emitindo não pode existir só na Home. A página não tem versão no endereço: a consulta leva
+ * a versão publicada que P3 entregou primeiro.
  */
 describe('ProvedorLayoutPage — comunicados do contexto', () => {
-  it('na página do provedor, consulta só o provedor e mostra a qual versão cada comunicado se refere', async () => {
+  it('consulta o provedor e a versão publicada, e mostra a qual versão cada comunicado se refere', async () => {
     const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([
       COMUNICADO_CRITICO_DO_PROVEDOR,
       COMUNICADO_DE_VERSAO,
     ])
-    server.use(handlerProvedor('prefeitura-exemplo', provedorFake), handler)
+    server.use(handlerProvedor('prefeitura-exemplo', provedorComVersao204), handler)
 
     renderPagina({
       provedorSlug: 'prefeitura-exemplo',
@@ -288,32 +283,46 @@ describe('ProvedorLayoutPage — comunicados do contexto', () => {
     expect(
       await screen.findByRole('heading', { level: 3, name: 'Instabilidade na emissão' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'Layout 2.04 em homologação' }),
+    ).toBeInTheDocument()
     expect(screen.getByText('Prefeitura de Exemplo · 2.04')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver versão 2.04' })).toHaveAttribute(
-      'href',
-      '/provedores/prefeitura-exemplo/2-04',
-    )
-    expect(chamadas).toHaveLength(1)
-    expect(chamadas[0].search).toBe('?provedor=prefeitura-exemplo')
-  })
-
-  it('na página da versão, a consulta leva o provedor e a versão', async () => {
-    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([COMUNICADO_DE_VERSAO])
-    server.use(handlerProvedor('prefeitura-exemplo', provedorFake), handler)
-
-    renderPagina({
-      provedorSlug: 'prefeitura-exemplo',
-      versaoSlugAtual: '2-04',
-      caminhoAtual: '/provedores/prefeitura-exemplo/2-04',
-    })
-
-    await screen.findByRole('heading', { level: 3, name: 'Layout 2.04 em homologação' })
     expect(chamadas).toHaveLength(1)
     expect(chamadas[0].searchParams.get('provedor')).toBe('prefeitura-exemplo')
     expect(chamadas[0].searchParams.get('versao')).toBe('2-04')
   })
 
-  it('o comunicado vem antes dos avisos do provedor e da barra de versões', async () => {
+  // A `url` do comunicado ainda pode vir com versão; o link é montado do slug e, apontando para a
+  // página aberta, nem aparece.
+  it('nenhum comunicado linka para um endereço com versão', async () => {
+    const { handler } = handlerComunicadosRegistrandoChamadas([COMUNICADO_DE_VERSAO])
+    server.use(handlerProvedor('prefeitura-exemplo', provedorComVersao204), handler)
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    await screen.findByRole('heading', { level: 3, name: 'Layout 2.04 em homologação' })
+    expect(screen.queryByRole('link', { name: /Ver versão/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Ver provedor' })).not.toBeInTheDocument()
+  })
+
+  it('provedor sem versão publicada consulta só o provedor', async () => {
+    const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([])
+    server.use(handlerProvedor('prefeitura-exemplo', { ...provedorFake, versoes: [] }), handler)
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    await screen.findByRole('heading', { level: 1, name: 'Prefeitura de Exemplo' })
+    await waitFor(() => expect(chamadas).toHaveLength(1))
+    expect(chamadas[0].search).toBe('?provedor=prefeitura-exemplo')
+  })
+
+  it('o comunicado vem antes dos avisos do provedor, e não há barra de versões', async () => {
     const provedorComAviso = {
       ...provedorFake,
       avisos: [
@@ -338,12 +347,13 @@ describe('ProvedorLayoutPage — comunicados do contexto', () => {
 
     const comunicados = await screen.findByRole('region', { name: 'Comunicados ativos' })
     const avisos = await screen.findByRole('region', { name: 'Avisos do provedor' })
-    const versoes = screen.getByRole('navigation', { name: 'Versões do provedor' })
 
     expect(
       comunicados.compareDocumentPosition(avisos) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
-    expect(avisos.compareDocumentPosition(versoes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(
+      screen.queryByRole('navigation', { name: 'Versões do provedor' }),
+    ).not.toBeInTheDocument()
   })
 
   it('sem comunicado, não sobra bloco vazio', async () => {
@@ -378,7 +388,6 @@ describe('ProvedorLayoutPage — comunicados do contexto', () => {
     expect(await screen.findByRole('status')).toHaveTextContent(
       'Não foi possível verificar os comunicados agora.',
     )
-    expect(screen.getByRole('navigation', { name: 'Versões do provedor' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /tentar novamente/i })).toBeInTheDocument()
   })
 
@@ -393,5 +402,53 @@ describe('ProvedorLayoutPage — comunicados do contexto', () => {
 
     await screen.findByRole('heading', { level: 1, name: 'Este provedor não existe.' })
     expect(chamadas).toHaveLength(0)
+  })
+})
+
+/**
+ * Os avisos da busca levam a `/provedores/{slug}#avisos`. O alvo só monta depois que P3 responde,
+ * então o navegador não rola sozinho: a página rola quando o conteúdo fica pronto.
+ */
+describe('ProvedorLayoutPage: âncora #avisos', () => {
+  // O jsdom não implementa `scrollIntoView`: cada teste instala o seu e este bloco devolve o original.
+  const descritorOriginal = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView')
+
+  afterEach(() => {
+    window.location.hash = ''
+    if (descritorOriginal) {
+      Object.defineProperty(Element.prototype, 'scrollIntoView', descritorOriginal)
+    } else {
+      Reflect.deleteProperty(Element.prototype, 'scrollIntoView')
+    }
+  })
+
+  it('rola até a área de avisos quando a URL chega com #avisos', async () => {
+    const rolar = vi.fn()
+    Element.prototype.scrollIntoView = rolar
+    window.location.hash = '#avisos'
+    server.use(handlerProvedor('prefeitura-exemplo', provedorFake))
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    await screen.findByRole('heading', { level: 1, name: 'Prefeitura de Exemplo' })
+    await waitFor(() => expect(rolar).toHaveBeenCalledTimes(1))
+    expect(rolar.mock.contexts[0]).toBe(document.getElementById('avisos'))
+  })
+
+  it('sem a âncora, não rola', async () => {
+    const rolar = vi.fn()
+    Element.prototype.scrollIntoView = rolar
+    server.use(handlerProvedor('prefeitura-exemplo', provedorFake))
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    await screen.findByRole('heading', { level: 1, name: 'Prefeitura de Exemplo' })
+    expect(rolar).not.toHaveBeenCalled()
   })
 })

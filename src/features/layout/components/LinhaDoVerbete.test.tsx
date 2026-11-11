@@ -11,6 +11,7 @@ const CAMPO_ATIVO_NA_VERSAO = {
   caminhoXml: '//Servico/Valores/ValServicos',
   significado: 'Valor dos serviços.',
   ordem: 160,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/servico-valores-valservicos',

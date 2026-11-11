@@ -32,6 +32,7 @@ const BASE_DO_CAMPO = {
 const DISCRIMINACAO = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'servico-discriminacao',
+  reformaTributaria: false,
   nome: 'Discriminacao',
   caminhoXml: '//Servico/Discriminacao',
   significado: 'Descrição do serviço prestado.',
@@ -45,6 +46,7 @@ const DISCRIMINACAO = {
 const PAI_PRE_SERVICO = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'servico-paipreservico',
+  reformaTributaria: false,
   nome: 'PaiPreServico',
   caminhoXml: '//Servico/PaiPreServico',
   significado: 'País de prestação do serviço.',
@@ -63,6 +65,7 @@ const PAI_PRE_SERVICO = {
 const TOMA_CNPJ = {
   ...BASE_DO_CAMPO,
   campoLayoutSlug: 'tomador-tomacnpj',
+  reformaTributaria: false,
   nome: 'TomaCNPJ',
   caminhoXml: '//Tomador/TomaCNPJ',
   significado: 'CNPJ do tomador.',
@@ -104,7 +107,7 @@ function Hospedeiro() {
       totalCampos={3}
       camposPorGrupo={CAMPOS_POR_GRUPO}
       errosResumo={ERROS_RESUMO}
-      urlVersaoAbsoluta="https://codex.migrate.info/provedores/emissor-nacional/0-20"
+      urlProvedorAbsoluta="https://codex.migrate.info/provedores/emissor-nacional/0-20"
       campoDestacado={campoDestacado}
     />
   )

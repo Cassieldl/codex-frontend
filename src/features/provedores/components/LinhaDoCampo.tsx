@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { memo } from 'react'
 import type { MouseEvent } from 'react'
 import { EtiquetaEstado } from '../../../components/ui/EtiquetaEstado'
+import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
 import type { SecaoInicialDoModal } from '../types/modalDoCampo'
 import type { CampoVersaoPublico } from '../types/versaoProvedorPagina'
 import { ESTADO_PARA_ETIQUETA } from '../utils/blocosDeCampos'
@@ -111,7 +112,10 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
         >
           {campo.nome}
         </button>
-        <EtiquetaEstado estado={ESTADO_PARA_ETIQUETA[campo.estadoPreenchimento]} className="mt-1" />
+        {campo.reformaTributaria && <SeloReformaTributaria className="ml-2" />}
+        <div className="mt-1">
+          <EtiquetaEstado estado={ESTADO_PARA_ETIQUETA[campo.estadoPreenchimento]} />
+        </div>
         <p
           data-resumo-movel=""
           className="mt-1 text-xs text-muted [overflow-wrap:anywhere] min-[860px]:hidden"

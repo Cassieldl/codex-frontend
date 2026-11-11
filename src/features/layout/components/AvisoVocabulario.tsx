@@ -8,9 +8,9 @@ import { Link } from '@tanstack/react-router'
  */
 export function AvisoVocabulario() {
   return (
-    <aside className="flex flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-surface-hover px-4 py-3">
+    <aside className="flex flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-white px-4 py-3">
       <p className="text-sm font-semibold text-ink">Vocabulário, não comportamento.</p>
-      <p className="text-sm text-ink/70">
+      <p className="text-sm text-muted">
         Tipo, tamanho, máscara e obrigatoriedade não são definidos aqui — mudam de provedor para
         provedor e de versão para versão. Por isso o dicionário tem só três colunas.{' '}
         <Link

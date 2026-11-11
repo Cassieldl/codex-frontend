@@ -18,6 +18,7 @@ import {
   interpretarFluxo,
   reconhecerSimNao,
   remarkBlocosDoArtigo,
+  remarkHtmlComoTexto,
 } from './blocosDoArtigo'
 import { gerarAncoraSecao } from './secoesDoArtigo'
 
@@ -52,12 +53,22 @@ const ELEMENTOS_PERMITIDOS = [
   'img',
 ]
 
-const PLUGINS_DO_REMARK = [remarkGfm, remarkBlocosDoArtigo]
+export type VarianteConteudo = 'artigo' | 'aviso'
+
+const PLUGINS_DO_REMARK = {
+  artigo: [remarkGfm, remarkBlocosDoArtigo],
+  aviso: [remarkGfm, remarkBlocosDoArtigo, remarkHtmlComoTexto],
+} satisfies Record<VarianteConteudo, unknown[]>
 
 // Mora aqui, e não em quem usa, para a página pública e o preview do editor ficarem iguais. O
 // `min-w-0` deixa a tabela rolar dentro da própria região em vez de alargar a página.
-const ESTILO_DO_CORPO =
-  'flex min-w-0 flex-col gap-4 text-corpo text-ink/80 [&_a]:text-primary-medium [&_a]:underline [&_a]:[overflow-wrap:anywhere] [&_code]:font-mono [&_code]:text-sm [&_h2]:text-subtitulo [&_h2]:font-semibold [&_h2]:text-ink [&_h3]:text-card-titulo [&_h3]:font-medium [&_h3]:text-ink [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3'
+const ESTILO_COMUM =
+  'flex min-w-0 flex-col text-ink [&_a]:text-primary-medium [&_a]:underline [&_a]:[overflow-wrap:anywhere] [&_code]:font-mono [&_code]:text-sm [&_h2]:text-subtitulo [&_h2]:font-semibold [&_h2]:text-ink [&_h3]:text-card-titulo [&_h3]:font-medium [&_h3]:text-ink [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3'
+
+const ESTILO_POR_VARIANTE: Record<VarianteConteudo, string> = {
+  artigo: 'gap-4 text-corpo',
+  aviso: 'gap-2 text-sm',
+}
 
 /** Concatena o texto de um node React, recursivamente -- usado só para gerar o `id` do heading. */
 function extrairTexto(children: ReactNode): string {
@@ -289,20 +300,22 @@ const COMPONENTES: Components = {
 export interface ConteudoArtigoProps {
   /** Markdown restrito, cru -- nunca HTML (D11/E9). */
   corpo: string
+  /** `aviso` usa texto menor e mostra HTML cru como texto literal, em vez de descartá-lo. */
+  variante?: VarianteConteudo
   className?: string
 }
 
 /**
- * Renderizador de Markdown do corpo de artigo/preview (U-4). HTML bruto
+ * Renderizador de Markdown do corpo de artigo/preview (U-4) e do corpo do aviso. HTML bruto
  * nunca é interpretado (`skipHtml`, sem `rehype-raw`) e só a allowlist acima
  * vira elemento -- o vetor de XSS fecha por configuração, nunca por
  * confiança no editor. Nunca usa `dangerouslySetInnerHTML`.
  */
-export function ConteudoArtigo({ corpo, className }: ConteudoArtigoProps) {
+export function ConteudoArtigo({ corpo, variante = 'artigo', className }: ConteudoArtigoProps) {
   return (
-    <div className={clsx(ESTILO_DO_CORPO, className)}>
+    <div className={clsx(ESTILO_COMUM, ESTILO_POR_VARIANTE[variante], className)}>
       <Markdown
-        remarkPlugins={PLUGINS_DO_REMARK}
+        remarkPlugins={PLUGINS_DO_REMARK[variante]}
         allowedElements={ELEMENTOS_PERMITIDOS}
         unwrapDisallowed={false}
         skipHtml

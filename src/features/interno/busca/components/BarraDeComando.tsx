@@ -238,7 +238,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
             >
               {itens.map((item, indice) => (
                 <LinhaResultadoBuscaInterna
-                  key={`${item.tipo}-${item.url}`}
+                  key={`${item.tipo}-${indice}-${item.url}`}
                   item={item}
                   id={idDaOpcao(indice)}
                   ativo={indice === indiceAtivo}

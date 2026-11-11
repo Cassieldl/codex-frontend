@@ -1,15 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { VersaoProvedorPage } from '../../../features/provedores/routes/versao-provedor'
+import { redirecionarVersaoParaProvedor } from '../../../features/provedores/routes/redirecionar-versao'
 
+// Só mantém vivos os links antigos com versão: redireciona antes de montar qualquer tela.
 export const Route = createFileRoute('/provedores/$provedorSlug/$versaoSlug')({
-  component: VersaoProvedorRoute,
+  beforeLoad: redirecionarVersaoParaProvedor,
 })
-
-// Rota fina — toda a lógica mora em `features/provedores/routes/versao-provedor.tsx`,
-// testável isoladamente sem depender da árvore de rotas gerada (mesmo padrão
-// de `route.tsx` e de `routes/artigos/$artigoSlug.tsx`).
-function VersaoProvedorRoute() {
-  const { provedorSlug, versaoSlug } = Route.useParams()
-
-  return <VersaoProvedorPage provedorSlug={provedorSlug} versaoSlug={versaoSlug} />
-}

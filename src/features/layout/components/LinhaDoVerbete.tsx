@@ -7,6 +7,7 @@ import { construirIdLinhaCampo } from '../../provedores/utils/destaqueAncora'
 import type { FormatoDaEstrutura } from '../types/estruturaLayout'
 import type { CampoLayoutPublico } from '../types/layoutPublico'
 import { LinksVerNaEstrutura } from './LinksVerNaEstrutura'
+import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
 
 export interface LinhaDoVerbeteProps {
   campo: CampoLayoutPublico
@@ -79,6 +80,8 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
           {campo.nome}
         </button>
 
+        {campo.reformaTributaria && <SeloReformaTributaria className="ml-2" />}
+
         {versaoSlug && formatosNaEstrutura && (
           <LinksVerNaEstrutura
             versaoSlug={versaoSlug}
@@ -98,7 +101,7 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
 
         {campo.descontinuadoNestaVersao && (
           // Nunca só estilo: o texto está sempre presente.
-          <span className="mt-1 block text-aux font-semibold text-ink/70">
+          <span className="mt-1 block text-aux font-semibold text-muted">
             Descontinuado nesta versão
           </span>
         )}

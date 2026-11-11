@@ -10,7 +10,7 @@ import {
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
-import { ID_SECAO_VERSOES_APLICAVEIS } from '../../../components/layout/RodapeContextual'
+import { ID_SECAO_PROVEDORES_APLICAVEIS } from '../../../components/layout/RodapeContextual'
 import { montarLinkSuporte } from '../../../utils/linkSuporte'
 import { CONTEUDO_RODAPE_CONSTANTE } from '../../../utils/rodapeConteudoConstante'
 import {
@@ -68,12 +68,12 @@ function renderPagina({ erroSlug, caminhoAtual = `/erros/${erroSlug}` }: OpcoesR
     validateSearch: (search: Record<string, unknown>) => search,
     component: () => null,
   })
-  const rotaVersao = createRoute({
+  const rotaProvedor = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/provedores/$provedorSlug/$versaoSlug',
+    path: '/provedores/$provedorSlug',
     component: () => null,
   })
-  const routeTree = rootRoute.addChildren([rotaErro, rotaArtigo, rotaBusca, rotaVersao])
+  const routeTree = rootRoute.addChildren([rotaErro, rotaArtigo, rotaBusca, rotaProvedor])
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [caminhoAtual] }),
@@ -238,39 +238,39 @@ describe('ErroDetalhePage — rodapé: próximo passo e caminho ao suporte (§7.
     )
   })
 
-  it('erro em várias versões: leva à lista de versões da própria página e oferece o suporte', async () => {
+  it('erro em vários provedores: leva à lista de provedores da própria página e oferece o suporte', async () => {
     const rodape = await renderComErro({
       ...erroBase,
       versoesAplicaveis: [versaoIpm, versaoBetha],
     })
 
-    expect(rodape.getByText(/aparece em mais de uma versão/)).toBeInTheDocument()
-    const proximoPasso = rodape.getByRole('link', { name: 'Ver as versões aplicáveis' })
-    expect(proximoPasso).toHaveAttribute('href', `#${ID_SECAO_VERSOES_APLICAVEIS}`)
+    expect(rodape.getByText(/aparece em mais de um provedor/)).toBeInTheDocument()
+    const proximoPasso = rodape.getByRole('link', { name: 'Ver os provedores aplicáveis' })
+    expect(proximoPasso).toHaveAttribute('href', `#${ID_SECAO_PROVEDORES_APLICAVEIS}`)
     expect(rodape.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
       'href',
       hrefSuporteEsperado,
     )
 
     // O destino do próximo passo existe na página: a seção rotulada pelo título com esse id.
-    const secao = screen.getByRole('region', { name: 'Provedores e versões aplicáveis' })
-    expect(secao).toHaveAttribute('aria-labelledby', ID_SECAO_VERSOES_APLICAVEIS)
-    expect(document.getElementById(ID_SECAO_VERSOES_APLICAVEIS)).toBeInTheDocument()
+    const secao = screen.getByRole('region', { name: 'Provedores aplicáveis' })
+    expect(secao).toHaveAttribute('aria-labelledby', ID_SECAO_PROVEDORES_APLICAVEIS)
+    expect(document.getElementById(ID_SECAO_PROVEDORES_APLICAVEIS)).toBeInTheDocument()
   })
 
-  it('erro em uma única versão: mantém "Ver versão completa" e ganha o caminho ao suporte', async () => {
+  it('erro em um único provedor: leva à página dele, sem versão, e ganha o caminho ao suporte', async () => {
     const rodape = await renderComErro({ ...erroBase, versoesAplicaveis: [versaoIpm] })
 
-    expect(rodape.getByRole('link', { name: 'Ver versão completa' })).toHaveAttribute(
+    expect(rodape.getByRole('link', { name: 'Ver o provedor completo' })).toHaveAttribute(
       'href',
-      '/provedores/ipm/2.04',
+      '/provedores/ipm',
     )
     expect(rodape.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
       'href',
       hrefSuporteEsperado,
     )
     expect(
-      rodape.queryByRole('link', { name: 'Ver as versões aplicáveis' }),
+      rodape.queryByRole('link', { name: 'Ver os provedores aplicáveis' }),
     ).not.toBeInTheDocument()
   })
 

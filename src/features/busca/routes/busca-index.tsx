@@ -98,8 +98,8 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
       : undefined
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <CabecalhoPublico variante="destaque">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
+      <CabecalhoPublico>
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex-1">
             {/* eslint-disable-next-line jsx-a11y/no-autofocus -- a página de busca existe para digitar o termo */}

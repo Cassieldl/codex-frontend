@@ -18,8 +18,6 @@ export interface EstadoProvedorIndisponivelProps {
    * página pública monta de uma vez; insistir não resolve.
    */
   variante: VarianteProvedorIndisponivel
-  /** Slug do provedor, quando há um provedor válido para onde voltar. */
-  provedorSlug?: string
 }
 
 interface ConteudoDaVariante {
@@ -67,34 +65,19 @@ const CONTEUDO: Record<VarianteProvedorIndisponivel, ConteudoDaVariante> = {
  * `404`/`410`/`422` das páginas de provedor e de versão: página que **explica**,
  * nunca o `ErrorState` genérico, que promete que insistir resolve.
  *
- * A saída muda com o caso: havendo provedor válido, volta para as versões dele;
- * senão, para a lista de provedores, que é de onde se chega a qualquer um.
+ * A saída é sempre a lista de provedores, que é de onde se chega a qualquer um: a página do
+ * provedor mostra uma versão só, então não há outra para onde voltar.
  */
-export function EstadoProvedorIndisponivel({
-  variante,
-  provedorSlug,
-}: EstadoProvedorIndisponivelProps) {
-  const ehDeVersao = variante.startsWith('versao-')
-
+export function EstadoProvedorIndisponivel({ variante }: EstadoProvedorIndisponivelProps) {
   return (
     <EstadoIndisponivel {...CONTEUDO[variante]}>
-      {ehDeVersao && provedorSlug ? (
-        <Link
-          to="/provedores/$provedorSlug"
-          params={{ provedorSlug }}
-          className="text-sm font-semibold text-primary-medium hover:underline"
-        >
-          Ver outras versões deste provedor
-        </Link>
-      ) : (
-        <Link
-          to="/provedores"
-          search={{ pagina: 1 }}
-          className="text-sm font-semibold text-primary-medium hover:underline"
-        >
-          Ver todos os provedores
-        </Link>
-      )}
+      <Link
+        to="/provedores"
+        search={{ pagina: 1 }}
+        className="text-sm font-semibold text-primary-medium hover:underline"
+      >
+        Ver todos os provedores
+      </Link>
     </EstadoIndisponivel>
   )
 }

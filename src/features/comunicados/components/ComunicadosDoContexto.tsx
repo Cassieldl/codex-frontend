@@ -1,10 +1,10 @@
-import { Link, type LinkProps } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { EtiquetaSeveridade } from '../../../components/ui/EtiquetaSeveridade'
-import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import type { SeveridadeComunicado } from '../../home/types/home'
 import { formatarDataHora } from '../../home/utils/formatarDatas'
 import { rotuloAlvoComunicado, SEVERIDADE_ETIQUETA } from '../../home/utils/severidadeComunicado'
+import { caminhoDoProvedor } from '../../provedores/utils/caminhoDoProvedor'
 import { useComunicadosDoContexto } from '../hooks/useComunicadosDoContexto'
 import type { ComunicadoContexto, ContextoDeComunicados } from '../types/comunicadoContexto'
 
@@ -31,18 +31,15 @@ function rotuloAlvo(comunicado: ComunicadoContexto): string {
   return comunicado.versao ? `${nomeProvedor} · ${comunicado.versao.rotulo}` : nomeProvedor
 }
 
-function rotuloLink(comunicado: ComunicadoContexto): string {
-  return comunicado.versao ? `Ver versão ${comunicado.versao.rotulo}` : 'Ver provedor'
-}
-
 interface CardComunicadoProps {
   comunicado: ComunicadoContexto
   caminhoAtual: string | undefined
 }
 
 function CardComunicado({ comunicado, caminhoAtual }: CardComunicadoProps) {
-  const caminho = caminhoInternoSeguro(comunicado.url)
-  const mostrarLink = caminho !== undefined && caminho !== caminhoAtual
+  // O link é montado do slug, nunca da `url` da API: a página do provedor não tem versão no endereço.
+  const provedorSlug = comunicado.provedor?.slug
+  const mostrarLink = provedorSlug !== undefined && caminhoDoProvedor(provedorSlug) !== caminhoAtual
 
   return (
     <div
@@ -63,10 +60,11 @@ function CardComunicado({ comunicado, caminhoAtual }: CardComunicadoProps) {
 
       {mostrarLink && (
         <Link
-          to={caminho as unknown as LinkProps['to']}
+          to="/provedores/$provedorSlug"
+          params={{ provedorSlug }}
           className="self-start text-xs font-semibold text-primary-medium hover:underline"
         >
-          {rotuloLink(comunicado)}
+          Ver provedor
         </Link>
       )}
     </div>

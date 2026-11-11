@@ -31,7 +31,7 @@ function LinkDoSumario({
         atual
           ? 'border-accent font-semibold text-ink'
           : nivel === 2
-            ? 'border-transparent text-ink/80'
+            ? 'border-transparent text-ink'
             : 'border-transparent text-muted',
       )}
     >

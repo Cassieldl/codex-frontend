@@ -1,4 +1,8 @@
-import type { CampoVersaoPublico, ErroResumoPublico } from './versaoProvedorPagina'
+import type {
+  CampoVersaoPublico,
+  ErroResumoPublico,
+  NaturezaOperacaoPublica,
+} from './versaoProvedorPagina'
 
 export type SecaoInicialDoModal = 'rejeicoes'
 
@@ -28,6 +32,8 @@ export interface ModalDoCampoProps {
    */
   devolverFoco: () => void
   errosResumo: ErroResumoPublico[]
-  /** "Copiar link do campo" copia `${urlVersaoAbsoluta}#campo-${slug}`. */
-  urlVersaoAbsoluta: string
+  /** "Copiar link do campo" copia `${urlProvedorAbsoluta}#campo-${slug}`. */
+  urlProvedorAbsoluta: string
+  /** De-para mostrado quando o campo é o `natOp`. */
+  naturezasOperacao?: NaturezaOperacaoPublica[]
 }

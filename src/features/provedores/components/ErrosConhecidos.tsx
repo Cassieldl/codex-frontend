@@ -125,7 +125,7 @@ export function ErrosConhecidos({ resumo, camposPorGrupo }: ErrosConhecidosProps
                 {campos.length > 0 && (
                   <p className="mt-1 text-xs text-muted">
                     {campos.length === 1 ? 'Campo' : 'Campos'}:{' '}
-                    <span className="font-mono text-ink/80">
+                    <span className="font-mono text-ink">
                       {campos.map((campo) => campo.nome).join(', ')}
                     </span>
                   </p>

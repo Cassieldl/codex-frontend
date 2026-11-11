@@ -22,6 +22,7 @@ import { ConteudoDoCampo } from './ConteudoDoCampo'
 /** Dois destinos, condição, notas em parágrafos, transformação e três rejeições; sem exemplo. */
 const CAMPO_COM_DOIS_DESTINOS = {
   campoLayoutSlug: 'servico-paipreservico',
+  reformaTributaria: false,
   nome: 'PaiPreServico',
   caminhoXml: '//Servico/PaiPreServico',
   significado:
@@ -89,6 +90,7 @@ const RESUMO_DAS_REJEICOES = [
 /** Um destino só, com exemplo real. */
 const CAMPO_COM_EXEMPLO = {
   campoLayoutSlug: 'servico-valores-valservicos',
+  reformaTributaria: false,
   nome: 'ValServicos',
   caminhoXml: '//Servico/Valores/ValServicos',
   significado:
@@ -110,6 +112,7 @@ const CAMPO_COM_EXEMPLO = {
 /** Tem `dominio`, `condicao` e nenhuma rejeição. */
 const CAMPO_COM_VALORES_ACEITOS = {
   campoLayoutSlug: 'tpsusp',
+  reformaTributaria: false,
   nome: 'tpSusp',
   caminhoXml: '//tpSusp',
   significado:

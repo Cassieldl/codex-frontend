@@ -9,6 +9,8 @@ export interface CampoVersaoPublico {
   nome: string
   caminhoXml: string
   significado: string
+  /** Campo criado pela reforma tributária (IBS/CBS), do vocabulário do layout. */
+  reformaTributaria: boolean
   tipo: string
   tamanho: string | null
   mascara: string | null
@@ -37,6 +39,16 @@ export interface GrupoCampoVersao {
   grupo: string | null
   grupoSlug: string | null
   campos: CampoVersaoPublico[]
+}
+
+/** Uma linha do de-para da natureza da operação. */
+export interface NaturezaOperacaoPublica {
+  codigoInvoicy: number
+  descricao: string
+  valorProvedor: string
+  observacao: string | null
+  /** Conversão ainda não confirmada na fonte. */
+  aConfirmar: boolean
 }
 
 /** Item de `errosResumo.itens` — o link é montado com o `slug`, pela rota do erro. */
@@ -78,5 +90,7 @@ export interface VersaoProvedorPagina {
   errosResumo: { total: number; itens: ErroResumoPublico[] }
   /** Cenários de XML da versão (C4) — **sempre presente**, `[]` quando não há nenhum. */
   exemplos: ExemploPublico[]
+  /** De-para do `natOp` do InvoiCy para o valor no layout do provedor. Sempre presente, `[]` sem tabela. */
+  naturezasOperacao: NaturezaOperacaoPublica[]
   outrasVersoes: { slug: string; rotulo: string }[]
 }

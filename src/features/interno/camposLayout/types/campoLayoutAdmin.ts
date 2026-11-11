@@ -13,6 +13,7 @@ export interface CampoLayoutAdmin {
   significado: string
   grupo: string | null
   ordem: number
+  reformaTributaria: boolean
   estado: EstadoCampoLayout
   versaoLayoutDescontinuadoId: number | null
   publicado: boolean
@@ -27,6 +28,7 @@ export interface CriarCampoLayoutDto {
   significado: string
   grupo?: string
   ordem: number
+  reformaTributaria: boolean
 }
 
 /**
@@ -39,6 +41,7 @@ export interface AtualizarCampoLayoutDto {
   significado: string
   grupo?: string
   ordem: number
+  reformaTributaria: boolean
   estado: EstadoCampoLayout
   versaoLayoutDescontinuadoId?: number
 }

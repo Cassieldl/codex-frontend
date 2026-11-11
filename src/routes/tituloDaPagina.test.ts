@@ -35,14 +35,18 @@ function semComentarios(fonte: string): string {
   return fonte.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
 }
 
-/** Rotas públicas que renderizam página: fora da área interna, sem a raiz e sem layout (`route.tsx`). */
+/**
+ * Rotas públicas que renderizam página: fora da área interna, sem a raiz, sem layout (`route.tsx`)
+ * e sem a rota que só redireciona (não declara `component`, não monta tela nenhuma).
+ */
 function rotasPublicas(): string[] {
   return Object.keys(FONTES_ROTAS).filter(
     (caminho) =>
       !ehTeste(caminho) &&
       !caminho.startsWith('./interno/') &&
       caminho !== './__root.tsx' &&
-      !caminho.endsWith('/route.tsx'),
+      !caminho.endsWith('/route.tsx') &&
+      /\bcomponent\s*:/.test(semComentarios(FONTES_ROTAS[caminho])),
   )
 }
 
@@ -97,7 +101,7 @@ function defineTitulo(rota: string): boolean {
 describe('título da aba nas rotas públicas', () => {
   it('a varredura enxerga as rotas públicas', () => {
     // Sem contar o universo, um glob que parasse de casar deixaria o caso abaixo passar por vazio.
-    expect(rotasPublicas().length).toBeGreaterThanOrEqual(13)
+    expect(rotasPublicas().length).toBeGreaterThanOrEqual(12)
   })
 
   it('a varredura segue a rota até a página em features/', () => {

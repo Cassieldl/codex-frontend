@@ -322,6 +322,7 @@ export function construirCamposLayout(
     caminhoXml: `Nfse/Rps/Campo${indice + 1}`,
     significado: `Significado do campo ${indice + 1}.`,
     ordem: indice + 1,
+    reformaTributaria: false,
     novoNestaVersao: false,
     descontinuadoNestaVersao: false,
     urlCanonica: `/layout/campos/${prefixo}-${indice + 1}`,

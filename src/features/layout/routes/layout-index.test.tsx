@@ -70,6 +70,55 @@ describe('LayoutIndicePage', () => {
     expect(screen.getByText('Anterior')).toBeInTheDocument()
   })
 
+  it('mostra o que a vigente mudou, com a nota em tópicos e a contagem de campos', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso({
+        ...indiceCompleto,
+        novidades: {
+          versao: indiceCompleto.vigente,
+          anterior: indiceCompleto.versoes[2],
+          descricao: 'InvoiCy 3.3.0.0.\nGrupos novos: Condominio\nSaíram: ValServEst',
+          camposNovos: 44,
+          camposDescontinuados: 20,
+        },
+      }),
+    )
+    renderPagina()
+
+    const secao = await screen.findByRole('region', {
+      name: 'O que mudou da versão 4.10 para a 4.12',
+    })
+    expect(secao).toHaveAttribute('id', 'novidades')
+    expect(screen.getByText('44 campos novos · 20 descontinuados')).toBeInTheDocument()
+    expect(screen.getByText('InvoiCy 3.3.0.0.')).toBeInTheDocument()
+    expect(screen.getByText('Grupos novos')).toBeInTheDocument()
+    expect(screen.getByText('ValServEst')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Abrir o dicionário da versão 4.12' })).toHaveAttribute(
+      'href',
+      '/layout/4-12',
+    )
+  })
+
+  it('sem versão anterior publicada, a seção não fala em mudança', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso({
+        ...indiceCompleto,
+        novidades: {
+          versao: indiceCompleto.vigente,
+          anterior: null,
+          descricao: 'Primeira versão do acervo.',
+          camposNovos: 0,
+          camposDescontinuados: 0,
+        },
+      }),
+    )
+    renderPagina()
+
+    expect(await screen.findByRole('region', { name: 'Sobre a versão 4.12' })).toBeInTheDocument()
+    expect(screen.queryByText(/O que mudou/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/campos? novos?/)).not.toBeInTheDocument()
+  })
+
   it('mostra o estado vazio quando não há nenhuma versão publicada', async () => {
     server.use(handlerLayoutIndiceSucesso({ vigente: null, versoes: [] }))
     renderPagina()

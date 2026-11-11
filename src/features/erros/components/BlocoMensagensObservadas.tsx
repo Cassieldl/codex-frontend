@@ -48,7 +48,7 @@ function VarianteMensagem({ texto, numero, codigoErro }: VarianteMensagemProps) 
   return (
     <li
       id={`variante-mensagem-${id}`}
-      className="flex items-start justify-between gap-3 rounded-[var(--radius-card)] border border-border bg-surface-hover p-4"
+      className="flex items-start justify-between gap-3 rounded-[var(--radius-card)] border border-border bg-white p-4"
     >
       <p className="whitespace-pre-wrap text-sm text-ink">{texto}</p>
       <BotaoCopiar

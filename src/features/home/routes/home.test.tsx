@@ -93,12 +93,7 @@ function renderHome(navegarParaBusca = vi.fn(), dadoEmCache?: object) {
     path: '/provedores/$provedorSlug',
     component: () => null,
   })
-  const rotaVersao = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/provedores/$provedorSlug/$versaoSlug',
-    component: () => null,
-  })
-  const routeTree = rootRoute.addChildren([rotaHome, rotaProvedor, rotaVersao])
+  const routeTree = rootRoute.addChildren([rotaHome, rotaProvedor])
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/'] }),

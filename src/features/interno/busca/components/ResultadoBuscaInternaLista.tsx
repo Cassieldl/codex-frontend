@@ -20,8 +20,9 @@ export function ResultadoBuscaInternaLista({ grupos }: ResultadoBuscaInternaList
             {grupo.rotulo} <span className="font-normal text-muted">({grupo.total})</span>
           </h2>
           <ul className="flex flex-col gap-2">
-            {grupo.itens.map((item) => (
-              <LinhaResultadoBuscaInterna key={item.url} item={item} />
+            {/* A `url` se repete entre avisos do mesmo provedor e o item não traz id: a posição desempata. */}
+            {grupo.itens.map((item, indice) => (
+              <LinhaResultadoBuscaInterna key={`${item.tipo}-${indice}-${item.url}`} item={item} />
             ))}
           </ul>
         </section>

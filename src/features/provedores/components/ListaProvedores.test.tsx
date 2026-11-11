@@ -47,28 +47,15 @@ function renderizar(provedores: unknown[]) {
 }
 
 describe('ListaProvedores', () => {
-  it('monta os chips de versão a partir da resposta do servidor', async () => {
+  it('leva direto à página do provedor, sem link de versão', async () => {
     renderizar(RESPOSTA_DO_SERVIDOR)
 
-    expect(await screen.findByRole('link', { name: '2.04' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: 'IPM Sistemas' })).toHaveAttribute(
       'href',
-      '/provedores/ipm-sistemas/2-04',
+      '/provedores/ipm-sistemas',
     )
-    expect(screen.getByRole('link', { name: '1.11' })).toBeInTheDocument()
-  })
-
-  /**
-   * O campo faz parte do contrato, mas a lista é a porta de entrada do portal: se ele sumir da
-   * resposta, o custo aceitável são os chips — nunca a página. Ler `versoes.slice` direto
-   * derrubava a rota inteira com `Cannot read properties of undefined`.
-   */
-  it('sobrevive a um item sem o campo de versões, mantendo o provedor na tela', async () => {
-    const semVersoes = [{ ...RESPOSTA_DO_SERVIDOR[0], versoes: undefined }]
-
-    renderizar(semVersoes)
-
-    expect(await screen.findByRole('link', { name: 'IPM Sistemas' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: '2.04' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('link')).toHaveLength(1)
   })
 })
 

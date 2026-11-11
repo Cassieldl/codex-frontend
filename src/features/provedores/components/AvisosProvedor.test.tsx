@@ -145,11 +145,31 @@ describe('AvisosVersao', () => {
   it('preserva parágrafos e listas do corpo', () => {
     const { container } = render(<AvisosVersao avisos={[avisoDeVersao]} />)
 
-    // `getByText` normaliza o whitespace e não distinguiria um corpo achatado de um preservado:
-    // a asserção é sobre o elemento — as quebras chegaram à tela e o CSS as respeita.
-    const corpo = container.querySelector('#aviso-12 p')
-    expect(corpo).toHaveClass('whitespace-pre-line')
-    expect(corpo?.textContent).toBe(CORPO_EM_PARAGRAFOS)
+    const paragrafos = container.querySelectorAll('#aviso-12 details > div p')
+    const itens = container.querySelectorAll('#aviso-12 ul.list-disc > li')
+    expect([...paragrafos].map((p) => p.textContent)).toEqual([
+      'Primeiro parágrafo.',
+      'Segundo parágrafo:',
+    ])
+    expect([...itens].map((li) => li.textContent)).toEqual(['item um', 'item dois'])
+  })
+
+  it('tag de XML escrita sem crase aparece como texto, não some', () => {
+    const corpo = 'Com <nfse_teste>1</nfse_teste> logo depois de <nfse>, o IPM só valida.'
+    const { container } = render(<AvisosVersao avisos={[{ ...avisoDeVersao, corpo }]} />)
+
+    expect(container.querySelector('#aviso-12 details > div')).toHaveTextContent(corpo)
+    expect(container.querySelector('#aviso-12 nfse_teste')).toBeNull()
+  })
+
+  it('mostra o print do corpo quando o caminho está em /imagens/', () => {
+    const corpo = 'Gere o token no portal.\n\n![Menu Token Web Service](/imagens/rlz/token.jpg)'
+    render(<AvisosVersao avisos={[{ ...avisoDeVersao, corpo }]} />)
+
+    expect(screen.getByRole('img', { name: 'Menu Token Web Service' })).toHaveAttribute(
+      'src',
+      '/imagens/rlz/token.jpg',
+    )
   })
 
   it('mostra a vigência por extenso', () => {

@@ -46,6 +46,7 @@ function campo(
     nome,
     caminhoXml: `//IntermServico/${nome}`,
     significado: `Significado de ${nome}`,
+    reformaTributaria: false,
     tipo: 'Texto',
     tamanho: '14',
     mascara: null,

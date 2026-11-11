@@ -182,3 +182,18 @@ export function remarkBlocosDoArtigo() {
     percorrer(arvore)
   }
 }
+
+function htmlParaTexto(no: NoMarkdown) {
+  if (no.type === 'html') no.type = 'text'
+  no.children?.forEach(htmlParaTexto)
+}
+
+/**
+ * Plugin do remark: HTML cru vira texto literal. Aviso cita tag de XML sem crase (`<nfse_teste>`),
+ * e o `skipHtml` apagaria o nome da tela sem aviso; como texto, o React escapa e a tag aparece.
+ */
+export function remarkHtmlComoTexto() {
+  return (arvore: NoMarkdown) => {
+    htmlParaTexto(arvore)
+  }
+}

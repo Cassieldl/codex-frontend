@@ -84,6 +84,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
           significado: dto.significado,
           grupo: dto.grupo,
           ordem: dto.ordem,
+          reformaTributaria: dto.reformaTributaria,
         },
         {
           onSuccess: () => setModalAberto(null),
@@ -103,6 +104,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
             significado: dto.significado,
             grupo: dto.grupo,
             ordem: dto.ordem,
+            reformaTributaria: dto.reformaTributaria,
             estado: dto.estado ?? 'Ativo',
             versaoLayoutDescontinuadoId: dto.versaoLayoutDescontinuadoId,
           },

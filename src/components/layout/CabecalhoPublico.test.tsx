@@ -142,7 +142,9 @@ describe('CabecalhoPublico — aria-current (casamento parcial de caminho)', () 
   it('o logo não vira "página atual" em toda página só por apontar para a raiz', async () => {
     renderComRotasAninhadas('/layout/v2-01')
 
-    expect(await screen.findByRole('link', { name: 'Codex' })).not.toHaveAttribute('aria-current')
+    expect(
+      await screen.findByRole('link', { name: 'Migrate Codex, página inicial' }),
+    ).not.toHaveAttribute('aria-current')
   })
 
   it('na própria página da seção o item continua marcado — o exact não apaga o certo', async () => {

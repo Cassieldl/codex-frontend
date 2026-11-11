@@ -26,7 +26,7 @@ function GrupoPreview({ grupo }: { grupo: GrupoResultado }) {
       </div>
 
       <ul>
-        {grupo.itens.slice(0, MAX_ITENS_POR_GRUPO).map((item) => {
+        {grupo.itens.slice(0, MAX_ITENS_POR_GRUPO).map((item, indice) => {
           const caminho = caminhoInternoSeguro(item.url)
           const contexto = [item.provedorNome, item.versaoRotulo].filter(Boolean).join(' · ')
 
@@ -38,7 +38,11 @@ function GrupoPreview({ grupo }: { grupo: GrupoResultado }) {
           )
 
           return (
-            <li key={item.url} className="border-t border-line first:border-t-0">
+            // A `url` se repete entre avisos do mesmo provedor e o item não traz id: a posição desempata.
+            <li
+              key={`${item.tipo}-${indice}-${item.url}`}
+              className="border-t border-line first:border-t-0"
+            >
               {caminho ? (
                 <Link
                   to={caminho as unknown as LinkProps['to']}
@@ -108,7 +112,7 @@ export function BuscaHeroComPreview({ aoSubmeter }: BuscaHeroComPreviewProps) {
       />
 
       {painelVisivel && (
-        <div className="absolute inset-x-0 top-14 z-20 max-h-[420px] overflow-y-auto rounded-[var(--radius-card)] border border-line bg-white shadow-panel">
+        <div className="absolute inset-x-0 top-16 z-20 max-h-[420px] overflow-y-auto rounded-[var(--radius-card)] border border-line bg-white shadow-panel">
           {/*
             Na falha, quem é anunciado é o próprio texto visível — sem uma
             segunda linha viva repetindo a frase, e sem contagem alguma. Um

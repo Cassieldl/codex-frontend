@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import { caminhoDoProvedor } from './caminhoDoProvedor'
 
 const PREFIXO_ANCORA_EXEMPLO = 'exemplo-'
 
-/** Constrói o `id` do bloco de um exemplo na página da versão (`#exemplo-{slug}`). */
+/** Constrói o `id` do bloco de um exemplo na página do provedor (`#exemplo-{slug}`). */
 export function construirIdExemplo(exemploSlug: string): string {
   return `${PREFIXO_ANCORA_EXEMPLO}${exemploSlug}`
 }
@@ -17,17 +18,15 @@ export function extrairSlugDoExemploNoHash(hash: string): string | null {
 }
 
 /**
- * Link estável de um exemplo, o valor que o botão "Copiar link" entrega. É o
- * mesmo endereço da versão mais a âncora do cenário — nunca uma rota própria:
- * exemplo não tem página (decisão C4), tem âncora dentro da página da versão.
+ * Link estável de um exemplo, o valor que o botão "Copiar link" entrega: o endereço do provedor
+ * mais a âncora do cenário, nunca uma rota própria, porque exemplo não tem página (decisão C4).
  */
 export function construirLinkExemplo(
   origem: string,
   provedorSlug: string,
-  versaoSlug: string,
   exemploSlug: string,
 ): string {
-  return `${origem}/provedores/${provedorSlug}/${versaoSlug}#${construirIdExemplo(exemploSlug)}`
+  return `${origem}${caminhoDoProvedor(provedorSlug)}#${construirIdExemplo(exemploSlug)}`
 }
 
 /**

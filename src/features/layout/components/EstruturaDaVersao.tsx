@@ -53,7 +53,7 @@ export function EstruturaDaVersao({
         <h2 id={tituloId} className="text-subtitulo font-semibold text-ink">
           Estrutura {rotuloDoFormato}
         </h2>
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-muted">
           O envio completo da {formatarVersaoLayout(versaoRotulo)}, com um valor de exemplo em cada
           tag.
         </p>

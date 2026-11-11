@@ -31,12 +31,12 @@ interface GrupoDeOpcoesProps<T extends string> {
 }
 
 const CLASSE_DA_OPCAO =
-  'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1 text-sm text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1 text-sm hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
 
-const CLASSE_DA_OPCAO_PRESSIONADA = 'border-2 border-primary bg-alert-info font-semibold'
+const CLASSE_DA_OPCAO_PRESSIONADA = 'border-2 border-primary bg-primary font-semibold text-white'
 
 // Borda e fundo só num dos ramos: sem tailwind-merge, duas classes do mesmo tipo brigam.
-const CLASSE_DA_OPCAO_SOLTA = 'border border-border-control bg-white'
+const CLASSE_DA_OPCAO_SOLTA = 'border border-border-control bg-white text-ink'
 
 /** Botões de alternância com `aria-pressed`: a opção escolhida tem borda, fundo e ícone. */
 function GrupoDeOpcoes<T extends string>({
@@ -78,6 +78,14 @@ function GrupoDeOpcoes<T extends string>({
   )
 }
 
+function slugsDaReforma(camposPorGrupo: GrupoCampoVersao[]): ReadonlySet<string> {
+  return new Set(
+    camposPorGrupo.flatMap((grupo) =>
+      grupo.campos.filter((campo) => campo.reformaTributaria).map((campo) => campo.campoLayoutSlug),
+    ),
+  )
+}
+
 function nomesDosCampos(camposPorGrupo: GrupoCampoVersao[]): ReadonlyMap<string, string> {
   return new Map(
     camposPorGrupo.flatMap((grupo) =>
@@ -108,8 +116,12 @@ export function EnvioModeloVersao({
 
   const nomePorSlug = useMemo(() => nomesDosCampos(camposPorGrupo), [camposPorGrupo])
   const destino = useMemo<DestinoNaLinhaDaTabela>(
-    () => ({ tipo: 'linhaDaTabela', camposDaTabela: new Set(nomePorSlug.keys()) }),
-    [nomePorSlug],
+    () => ({
+      tipo: 'linhaDaTabela',
+      camposDaTabela: new Set(nomePorSlug.keys()),
+      camposDaReforma: slugsDaReforma(camposPorGrupo),
+    }),
+    [nomePorSlug, camposPorGrupo],
   )
 
   const indisponivel = error instanceof ErroEnvioModeloIndisponivel
@@ -123,7 +135,7 @@ export function EnvioModeloVersao({
         <h2 id={tituloId} className="text-subtitulo font-semibold text-ink">
           Envio modelo
         </h2>
-        <p className="max-w-[70ch] text-sm text-ink/70">
+        <p className="max-w-[70ch] text-sm text-muted">
           {envio
             ? `Um envio desta versão no Layout InvoiCy ${formatarVersaoLayout(envio.versaoLayoutRotulo)}, com um valor de exemplo em cada tag.`
             : 'Um envio desta versão, com um valor de exemplo em cada tag.'}

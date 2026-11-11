@@ -44,16 +44,16 @@ function renderComRouter(props: CamposRelacionadosProps) {
 }
 
 describe('CamposRelacionados', () => {
-  it('com contexto de provedor/versão, cada campo vira link para a âncora dentro da versão (M10)', async () => {
+  it('com contexto de provedor, cada campo vira link para a âncora na página do provedor (M10)', async () => {
     renderComRouter({
       campos,
-      contexto: { provedorSlug: 'ipm-sistemas', versaoSlug: '2-04' },
+      contexto: { provedorSlug: 'ipm-sistemas' },
     })
 
     // `Link` só monta depois que o `RouterProvider` resolve o match inicial
     // (assíncrono) — condição observável, nunca contagem de ticks (AP-FRONTEND-016).
     const link = await screen.findByRole('link', { name: 'CNPJ do tomador' })
-    expect(link).toHaveAttribute('href', '/provedores/ipm-sistemas/2-04#campo-cnpj-tomador')
+    expect(link).toHaveAttribute('href', '/provedores/ipm-sistemas#campo-cnpj-tomador')
   })
 
   it('sem contexto, cada campo vira link para a resolução pública do campo no layout', async () => {

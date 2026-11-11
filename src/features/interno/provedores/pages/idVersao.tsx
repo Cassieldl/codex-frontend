@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../../../components/ui/Button'
+import { ConteudoArtigo } from '../../../../components/ui/ConteudoArtigo'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { EtiquetaEstado, type EstadoPreenchimento } from '../../../../components/ui/EtiquetaEstado'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
@@ -379,7 +380,7 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
                 />
               </div>
               <h3 className="text-card-titulo font-medium text-ink">{aviso.titulo}</h3>
-              <p className="text-sm whitespace-pre-line text-ink/80">{aviso.corpo}</p>
+              <ConteudoArtigo corpo={aviso.corpo} variante="aviso" />
               <div className="flex gap-2">
                 {permissoes.avisos.atualizar && (
                   <Button variant="secondary" size="sm" onClick={() => setModalAvisoAberto(aviso)}>

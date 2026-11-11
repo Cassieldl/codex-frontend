@@ -5,7 +5,8 @@ import { useBlocosNavegaveis } from '../../../hooks/useBlocosNavegaveis'
 import { agruparEmBlocos, filtrarBlocos } from '../../../utils/blocosDoLayout'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { CampoLayoutPublico, GrupoCamposLayout } from '../types/layoutPublico'
-import { campoPassaNoDicionario } from '../utils/filtroDoDicionario'
+import { campoPassaNoDicionario, filtroDoDicionarioAtivo } from '../utils/filtroDoDicionario'
+import type { FiltroDoDicionario } from '../utils/filtroDoDicionario'
 import { BlocoDoDicionario } from './BlocoDoDicionario'
 import type { AtalhoDaEstruturaNoDicionario } from './BlocoDoDicionario'
 import { FiltrosDoDicionario } from './FiltrosDoDicionario'
@@ -40,7 +41,8 @@ function nomeDoCampo(campo: CampoLayoutPublico): string {
  * lateral e o detalhe de cada campo num modal. O layout é vocabulário, não comportamento: são só
  * nome, caminho e significado; tipo, tamanho e obrigatoriedade são de cada provedor.
  *
- * O filtro é em memória sobre o dicionário inteiro e muda só o texto da contagem.
+ * O filtro (termo e "só campos da reforma") é em memória sobre o dicionário inteiro e muda só o
+ * texto da contagem.
  */
 export function DicionarioDaVersao({
   versaoRotulo,
@@ -55,6 +57,7 @@ export function DicionarioDaVersao({
   const contenedorRef = useRef<HTMLDivElement | null>(null)
 
   const [termo, setTermo] = useState('')
+  const [somenteReformaTributaria, setSomenteReformaTributaria] = useState(false)
 
   const versao = formatarVersaoLayout(versaoRotulo)
 
@@ -76,8 +79,9 @@ export function DicionarioDaVersao({
   )
 
   const passaNoFiltroAtual = useCallback(
-    (campo: CampoLayoutPublico) => campoPassaNoDicionario(campo, termo),
-    [termo],
+    (campo: CampoLayoutPublico) =>
+      campoPassaNoDicionario(campo, { termo, somenteReformaTributaria }),
+    [termo, somenteReformaTributaria],
   )
 
   const blocosFiltrados = useMemo(
@@ -85,7 +89,10 @@ export function DicionarioDaVersao({
     [blocosCompletos, passaNoFiltroAtual],
   )
 
-  const limparFiltros = useCallback(() => setTermo(''), [])
+  const limparFiltros = useCallback(() => {
+    setTermo('')
+    setSomenteReformaTributaria(false)
+  }, [])
 
   const {
     blocosAbertos,
@@ -117,22 +124,31 @@ export function DicionarioDaVersao({
     focoDeReservaRef: buscaRef,
   })
 
-  const filtroAtivo = termo.trim() !== ''
+  const filtroAtivo = filtroDoDicionarioAtivo({ termo, somenteReformaTributaria })
   const blocosComResultado = blocosFiltrados.filter((bloco) => bloco.totalVisivel > 0)
 
-  // Digitar abre os blocos que passam a ter resultado: o resultado escondido num bloco fechado
-  // seria uma busca que parece não achar nada. Limpar o termo mantém o que já estava aberto.
-  function alterarTermo(novoTermo: string) {
-    setTermo(novoTermo)
-    if (novoTermo.trim() === '') return
+  // Filtrar abre os blocos que passam a ter resultado: o resultado escondido num bloco fechado
+  // seria uma busca que parece não achar nada. Desligar o filtro mantém o que já estava aberto.
+  function aplicarFiltro(novoFiltro: FiltroDoDicionario) {
+    setTermo(novoFiltro.termo)
+    setSomenteReformaTributaria(novoFiltro.somenteReformaTributaria)
+    if (!filtroDoDicionarioAtivo(novoFiltro)) return
 
     const raizesComResultado = filtrarBlocos(blocosCompletos, (campo) =>
-      campoPassaNoDicionario(campo, novoTermo),
+      campoPassaNoDicionario(campo, novoFiltro),
     )
       .filter((bloco) => bloco.totalVisivel > 0)
       .map((bloco) => bloco.raiz)
     abrirBlocos(raizesComResultado)
   }
+
+  const termoBuscado = termo.trim()
+  const semResultado =
+    termoBuscado === ''
+      ? `Nenhum campo da ${versao} é da reforma tributária.`
+      : somenteReformaTributaria
+        ? `Nenhum campo da reforma tributária na ${versao} corresponde a “${termoBuscado}”.`
+        : `Nenhum campo da ${versao} corresponde a “${termoBuscado}”.`
 
   const frase = filtroAtivo
     ? `Mostrando ${totalVisivel} de ${totalCampos} campos.`
@@ -144,7 +160,7 @@ export function DicionarioDaVersao({
         <h2 id={tituloId} className="text-subtitulo font-semibold text-ink">
           Dicionário de campos
         </h2>
-        <p aria-live="polite" aria-atomic="true" className="text-sm text-ink/70">
+        <p aria-live="polite" aria-atomic="true" className="text-sm text-muted">
           {frase}
         </p>
       </header>
@@ -152,7 +168,11 @@ export function DicionarioDaVersao({
       <FiltrosDoDicionario
         termo={termo}
         buscaRef={buscaRef}
-        onTermoChange={alterarTermo}
+        somenteReformaTributaria={somenteReformaTributaria}
+        onTermoChange={(novoTermo) => aplicarFiltro({ termo: novoTermo, somenteReformaTributaria })}
+        onAlternarReformaTributaria={() =>
+          aplicarFiltro({ termo, somenteReformaTributaria: !somenteReformaTributaria })
+        }
         onLimpar={limparFiltros}
         onExpandirTodos={expandirTodos}
         onRecolherTodos={recolherTodos}
@@ -162,13 +182,15 @@ export function DicionarioDaVersao({
 
       {totalCampos > 0 && totalVisivel === 0 && (
         <EmptyState
-          message={`Nenhum campo da ${versao} corresponde a “${termo.trim()}”.`}
+          message={semResultado}
           action={
             <div className="flex flex-col items-center gap-3">
-              <p className="max-w-prose text-sm text-ink/70">
-                O nome pode ser o do provedor, não o do layout. A tabela do provedor mostra os dois
-                lados lado a lado.
-              </p>
+              {termoBuscado !== '' && (
+                <p className="max-w-prose text-sm text-muted">
+                  O nome pode ser o do provedor, não o do layout. A tabela do provedor mostra os
+                  dois lados lado a lado.
+                </p>
+              )}
               <button
                 type="button"
                 onClick={limparFiltros}

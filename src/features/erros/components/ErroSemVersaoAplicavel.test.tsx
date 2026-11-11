@@ -40,10 +40,10 @@ describe('ErroSemVersaoAplicavel', () => {
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
     expect(screen.queryByText('—')).not.toBeInTheDocument()
     expect(screen.queryByText(/Aplicável a/i)).not.toBeInTheDocument()
-    expect(screen.queryByText('Provedores e versões aplicáveis')).not.toBeInTheDocument()
+    expect(screen.queryByText('Provedores aplicáveis')).not.toBeInTheDocument()
   })
 
-  it('com versões aplicáveis, renderiza a lista normal com links para a versão do provedor', async () => {
+  it('com versões aplicáveis, lista cada provedor uma vez, com link para a página dele', async () => {
     renderComRouter({
       versoesAplicaveis: [
         {
@@ -58,17 +58,24 @@ describe('ErroSemVersaoAplicavel', () => {
           versaoSlug: '3-01',
           versaoRotulo: '3.01',
         },
+        {
+          provedorSlug: 'ipm-sistemas',
+          provedorNome: 'IPM Sistemas',
+          versaoSlug: '2-03',
+          versaoRotulo: '2.03',
+        },
       ],
     })
 
     // `Link` só monta depois que o `RouterProvider` resolve o match inicial
     // (assíncrono) — condição observável, nunca contagem de ticks (AP-FRONTEND-016).
-    expect(await screen.findByText('Provedores e versões aplicáveis')).toBeInTheDocument()
+    expect(await screen.findByText('Provedores aplicáveis')).toBeInTheDocument()
 
-    const linkIpm = screen.getByRole('link', { name: 'IPM Sistemas · 2.04' })
-    expect(linkIpm).toHaveAttribute('href', '/provedores/ipm-sistemas/2-04')
-
-    const linkBetha = screen.getByRole('link', { name: 'Betha Sistemas · 3.01' })
-    expect(linkBetha).toHaveAttribute('href', '/provedores/betha-sistemas/3-01')
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      '/provedores/ipm-sistemas',
+      '/provedores/betha-sistemas',
+    ])
+    expect(screen.getByRole('link', { name: 'IPM Sistemas' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Betha Sistemas' })).toBeInTheDocument()
   })
 })

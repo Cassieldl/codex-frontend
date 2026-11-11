@@ -3,6 +3,9 @@ import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConte
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
+import { PontoDeMarca } from '../../../components/ui/PontoDeMarca'
+import { Sobrelinha } from '../../../components/ui/Sobrelinha'
+import { TituloSecao } from '../../../components/ui/TituloSecao'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { ArtigosRecentesHome } from '../components/ArtigosRecentesHome'
 import { BlocoLayoutHome } from '../components/BlocoLayoutHome'
@@ -10,7 +13,7 @@ import { BuscaHeroComPreview } from '../components/BuscaHeroComPreview'
 import { FaixaComunicadoCritico } from '../components/FaixaComunicadoCritico'
 import { ListaProvedoresHome } from '../components/ListaProvedoresHome'
 import { ResumoComunicados } from '../components/ResumoComunicados'
-import { SeletorProvedorVersao } from '../components/SeletorProvedorVersao'
+import { SeletorProvedor } from '../components/SeletorProvedor'
 import { SkeletonHome } from '../components/SkeletonHome'
 import { useHome } from '../hooks/useHome'
 
@@ -44,19 +47,21 @@ export function HomePage({ navegarParaBusca }: HomePageProps) {
   const semProvedores = home !== undefined && provedores.length === 0
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       {home && <FaixaComunicadoCritico comunicados={home.comunicados} />}
 
-      <CabecalhoPublico variante="destaque">
-        <div className="flex flex-col gap-1.5">
-          <h1 className="max-w-[34ch] text-titulo font-extrabold leading-tight text-white">
+      <CabecalhoPublico>
+        <div className="flex flex-col gap-3">
+          <Sobrelinha>Portal técnico de integração NFS-e</Sobrelinha>
+          <h1 className="max-w-[30ch] text-titulo font-extrabold leading-tight text-white lg:text-h1">
             Como cada provedor de NFS-e trata cada campo do Layout InvoiCy
+            <PontoDeMarca />
           </h1>
-          <p className="max-w-[88ch] text-sm text-white/90">
+          <p className="max-w-[88ch] text-card-titulo text-white">
             Tipo, tamanho, máscara, obrigatoriedade, destino no XML e erros conhecidos — por
             provedor e por versão.
           </p>
-          <div className="mt-4">
+          <div className="mt-5">
             <BuscaHeroComPreview aoSubmeter={navegarParaBusca} />
           </div>
         </div>
@@ -78,13 +83,11 @@ export function HomePage({ navegarParaBusca }: HomePageProps) {
             <section aria-labelledby="secao-provedores-home" className="flex flex-col gap-4">
               <div className="flex flex-wrap items-end justify-between gap-8">
                 <div className="flex flex-col gap-1">
-                  <h2 id="secao-provedores-home" className="text-titulo font-extrabold text-ink">
-                    Provedores
-                  </h2>
-                  <p className="text-sm text-muted">Cada versão publicada é destino direto.</p>
+                  <TituloSecao id="secao-provedores-home">Provedores</TituloSecao>
+                  <p className="text-sm text-muted">Cada provedor abre direto no conteúdo.</p>
                 </div>
 
-                {provedores.length > 0 && <SeletorProvedorVersao provedores={provedores} />}
+                {provedores.length > 0 && <SeletorProvedor provedores={provedores} />}
               </div>
 
               <ResumoComunicados comunicados={home.comunicados} />

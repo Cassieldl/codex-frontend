@@ -1,71 +1,49 @@
 import { Link } from '@tanstack/react-router'
-import clsx from 'clsx'
 import type { ReactNode } from 'react'
+import { PontosDeLuz } from './PontosDeLuz'
 import { PularParaConteudo } from './PularParaConteudo'
 
 export interface CabecalhoPublicoProps {
-  /**
-   * `destaque` aplica o fundo escuro (`--grad-escuro`) e é usado pelas telas
-   * que embutem o campo de busca dentro do próprio cabeçalho via `children`:
-   * `/busca` (§7.1) e a Home.
-   */
-  variante?: 'padrao' | 'destaque'
+  /** Conteúdo do hero embutido no cabeçalho: campo de busca da Home e de `/busca`. */
   children?: ReactNode
 }
 
 /**
- * Cabeçalho de toda página pública (M31 — dono: FRONT-A; demais unidades
- * importam, não editam). Nav mostra logo (→ `/`), "Provedores"
- * (→ `/provedores`), "Layout InvoiCy" (→ `/layout`, §2.6 — entre Provedores
- * e Artigos, ordem do artboard), "Artigos" (→ `/artigos`) e "Como funciona"
- * (→ `/como-funciona`, §4.1 — sempre presente, mesmo antes de o artigo
- * reservado existir; é navegação, não dado).
- *
- * **`activeOptions={{ exact: true }}` nos quatro links da nav.** Sem isso o
- * `<Link>` marca `aria-current="page"` sozinho por casamento PARCIAL de
- * caminho: em `/layout/{versao}` o item "Layout InvoiCy" ficava "página
- * atual" ao lado do chip da versão, que também é `page` — dois "página atual"
- * na mesma tela, sem erro de tipo e sem nada visível fora do leitor de tela.
- *
- * Marcar a **seção** com `aria-current="true"` (que é o que um menu principal
- * quer dizer) foi considerado e é inviável por prop: o `<Link>` sobrepõe
- * `aria-current` com `"page"` sempre que está ativo — `STATIC_ACTIVE_PROPS` é
- * espalhado DEPOIS das props do chamador e depois de `activeProps`
- * (`@tanstack/react-router/dist/esm/link.js`). Obter `"true"` exigiria
- * calcular a atividade por fora do roteador, que é exatamente a duplicação de
- * fonte de verdade que causou este defeito. Como a nav não tem nenhum estado
- * ativo VISUAL (só `hover:underline`), o `exact` não esconde pista nenhuma de
- * navegação — só remove um anúncio falso.
- *
- * O **logo não recebe a prop**, de propósito: com `to="/"` o casamento parcial
- * nunca dispara, porque o teste de prefixo exige que o caractere seguinte ao
- * destino seja `/` e, para o destino `/`, esse caractere é a primeira letra da
- * rota. Medido por mutação — remover a prop do logo não derrubava teste
- * nenhum, e prop inerte é pior que prop ausente. O invariante continua coberto
- * pelo teste que CONTA os `aria-current` da página.
+ * Item da nav: o indicador de página atual é o sublinhado laranja, onde o laranja só pontua
+ * (5,66:1 sobre o azul-profundo). Vem do `data-status="active"` que o próprio `<Link>` marca.
  */
-export function CabecalhoPublico({ variante = 'padrao', children }: CabecalhoPublicoProps) {
-  const destaque = variante === 'destaque'
+const CLASSE_ITEM_NAV =
+  'relative py-1 text-sm font-semibold text-white after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-pill after:bg-transparent hover:after:bg-white data-[status=active]:after:bg-accent'
 
+/**
+ * Cabeçalho de toda página pública, sempre escuro (`--grad-escuro` com pontos de luz), porque o
+ * logo oficial da Migrate só existe em versão branca. Nav: Provedores, Layout InvoiCy, Artigos e
+ * Como funciona, na ordem do artboard.
+ *
+ * **`activeOptions={{ exact: true }}` nos quatro links da nav.** Sem isso o `<Link>` marca
+ * `aria-current="page"` por casamento PARCIAL de caminho: em `/layout/{versao}` o item "Layout
+ * InvoiCy" ficava "página atual" ao lado do chip da versão, que também é `page`. O `<Link>`
+ * sobrepõe `aria-current` sempre que está ativo, então marcar a seção com `"true"` exigiria
+ * calcular a atividade por fora do roteador. O logo não recebe a prop: com `to="/"` o
+ * casamento parcial nunca dispara.
+ */
+export function CabecalhoPublico({ children }: CabecalhoPublicoProps) {
   return (
-    <header
-      className={clsx(
-        destaque
-          ? 'bg-[image:var(--grad-escuro)] text-white'
-          : 'border-b border-line bg-white text-ink',
-      )}
-    >
+    <header className="relative isolate bg-primary text-white">
+      <PontosDeLuz />
+
       {/* Primeiro elemento focável do documento — depois do logo já não serve para pular nada. */}
       <PularParaConteudo />
 
       {/*
-        `flex-wrap` nos dois níveis: sem ele, a marca e os quatro itens disputam uma linha só e,
-        abaixo de ~640px, a nav invade o logo e o último item some na borda. Quebrar em duas
-        linhas mantém o menu inteiro legível sem introduzir um padrão de navegação novo.
+        `flex-wrap` nos dois níveis: abaixo de ~640px a marca e os quatro itens não cabem numa
+        linha, e quebrar em duas mantém o menu inteiro legível.
       */}
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-4 lg:px-8">
-        <Link to="/" className="text-lg font-extrabold">
-          Codex
+        <Link to="/" aria-label="Migrate Codex, página inicial" className="flex items-center gap-3">
+          <img src="/marca/logo-migrate-branco.svg" alt="Migrate" className="h-7 w-auto" />
+          <span aria-hidden="true" className="h-6 w-px bg-white/40" />
+          <span className="text-lg font-extrabold">Codex</span>
         </Link>
 
         <nav
@@ -76,48 +54,32 @@ export function CabecalhoPublico({ variante = 'padrao', children }: CabecalhoPub
             to="/provedores"
             search={{ pagina: 1 }}
             activeOptions={{ exact: true }}
-            className={clsx(
-              'text-sm font-medium hover:underline',
-              destaque ? 'text-white' : 'text-ink',
-            )}
+            className={CLASSE_ITEM_NAV}
           >
             Provedores
           </Link>
-          <Link
-            to="/layout"
-            activeOptions={{ exact: true }}
-            className={clsx(
-              'text-sm font-medium hover:underline',
-              destaque ? 'text-white' : 'text-ink',
-            )}
-          >
+          <Link to="/layout" activeOptions={{ exact: true }} className={CLASSE_ITEM_NAV}>
             Layout InvoiCy
           </Link>
           <Link
             to="/artigos"
             search={{ pagina: 1 }}
             activeOptions={{ exact: true }}
-            className={clsx(
-              'text-sm font-medium hover:underline',
-              destaque ? 'text-white' : 'text-ink',
-            )}
+            className={CLASSE_ITEM_NAV}
           >
             Artigos
           </Link>
-          <Link
-            to="/como-funciona"
-            activeOptions={{ exact: true }}
-            className={clsx(
-              'text-sm font-medium hover:underline',
-              destaque ? 'text-white' : 'text-ink',
-            )}
-          >
+          <Link to="/como-funciona" activeOptions={{ exact: true }} className={CLASSE_ITEM_NAV}>
             Como funciona
           </Link>
         </nav>
       </div>
 
-      {children && <div className="mx-auto max-w-6xl px-4 pb-8 lg:px-8">{children}</div>}
+      {children && (
+        <div className="mx-auto max-w-6xl border-t border-white/15 px-4 pt-10 pb-12 lg:px-8">
+          {children}
+        </div>
+      )}
     </header>
   )
 }

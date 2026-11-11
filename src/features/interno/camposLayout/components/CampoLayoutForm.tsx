@@ -39,6 +39,7 @@ function criarSchema(modo: 'criar' | 'editar') {
         .number('A ordem precisa ser um número.')
         .int('A ordem precisa ser um número inteiro.')
         .min(0, 'A ordem não pode ser negativa.'),
+      reformaTributaria: z.boolean(),
       estado: z.enum(['Ativo', 'Descontinuado'] as const).optional(),
       versaoLayoutDescontinuadoId: z.string().optional(),
     })
@@ -64,6 +65,7 @@ export interface CampoLayoutFormDto {
   significado: string
   grupo?: string
   ordem: number
+  reformaTributaria: boolean
   estado?: EstadoCampoLayout
   versaoLayoutDescontinuadoId?: number
 }
@@ -86,6 +88,7 @@ function valoresIniciais(dado?: CampoLayoutAdmin): CampoLayoutFormValores {
     significado: dado?.significado ?? '',
     grupo: dado?.grupo ?? '',
     ordem: dado?.ordem ?? 0,
+    reformaTributaria: dado?.reformaTributaria ?? false,
     estado: dado?.estado ?? 'Ativo',
     versaoLayoutDescontinuadoId: dado?.versaoLayoutDescontinuadoId
       ? String(dado.versaoLayoutDescontinuadoId)
@@ -126,6 +129,7 @@ export function CampoLayoutForm({
       significado: valores.significado,
       grupo: valores.grupo || undefined,
       ordem: valores.ordem,
+      reformaTributaria: valores.reformaTributaria,
       estado: modo === 'editar' ? valores.estado : undefined,
       versaoLayoutDescontinuadoId:
         modo === 'editar' &&
@@ -171,6 +175,15 @@ export function CampoLayoutForm({
         error={errors.ordem?.message}
         {...register('ordem', { valueAsNumber: true })}
       />
+
+      <label className="flex items-center gap-2 text-sm text-ink">
+        <input
+          type="checkbox"
+          className="size-4 rounded-[var(--radius-check)]"
+          {...register('reformaTributaria')}
+        />
+        Campo da reforma tributária (selo RT)
+      </label>
 
       {modo === 'editar' && (
         <>

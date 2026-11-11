@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
+import { ConteudoArtigo } from '../../../components/ui/ConteudoArtigo'
 import { EtiquetaSeveridade } from '../../../components/ui/EtiquetaSeveridade'
 import { formatarDataVerificacao } from '../../../utils/formatarDataVerificacao'
 import type { AvisoPublico } from '../types/provedor'
@@ -62,8 +63,7 @@ export function AvisoPublicoItem({ aviso, destacado = false }: AvisoPublicoItemP
           </summary>
 
           <div className="pl-9">
-            {/* O corpo chega em parágrafos (`\n\n`) e listas (`\n- `): sem isto, tudo vira uma linha. */}
-            <p className="mt-2 text-sm whitespace-pre-line text-ink/80">{aviso.corpo}</p>
+            <ConteudoArtigo corpo={aviso.corpo} variante="aviso" className="mt-2" />
 
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
               {temCamposAfetados && (

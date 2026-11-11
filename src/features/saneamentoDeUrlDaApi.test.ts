@@ -74,13 +74,13 @@ function leiturasDeUrl(): LeituraDeUrl[] {
 
 describe('url da API só vira link depois de caminhoInternoSeguro, que fecha javascript: e //host-externo', () => {
   it('a varredura enxerga as leituras de url', () => {
-    // Hoje são 11 leituras: 7 dentro do saneador e 4 como key de lista.
+    // Hoje são 10 leituras: 6 dentro do saneador e 4 como key de lista.
     const leituras = leiturasDeUrl()
 
-    expect(leituras.length).toBeGreaterThanOrEqual(11)
+    expect(leituras.length).toBeGreaterThanOrEqual(10)
     expect(
       leituras.filter((leitura) => leitura.contexto === 'saneada').length,
-    ).toBeGreaterThanOrEqual(7)
+    ).toBeGreaterThanOrEqual(6)
   })
 
   it('toda leitura de url em produção está dentro do saneador ou é só key de lista', () => {

@@ -7,6 +7,7 @@ import { Skeleton } from '../../../components/ui/Skeleton'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { AvisoVocabulario } from '../components/AvisoVocabulario'
 import { ChipVersaoLayout } from '../components/ChipVersaoLayout'
+import { NovidadesDaVigente } from '../components/NovidadesDaVigente'
 import { useLayoutIndice } from '../hooks/useLayoutIndice'
 import { LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
 
@@ -23,7 +24,7 @@ export function LayoutIndicePage() {
   const semVersoes = !!indice && indice.versoes.length === 0 && indice.vigente === null
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
       <main
@@ -33,7 +34,7 @@ export function LayoutIndicePage() {
       >
         <div className="flex flex-col gap-2">
           <h1 className="text-titulo font-bold text-ink">Layout InvoiCy</h1>
-          <p className="max-w-prose text-sm text-ink/70">
+          <p className="max-w-prose text-sm text-muted">
             O layout é o vocabulário comum do InvoiCy: nome, caminho e significado de cada campo que
             você envia. É o que permite escrever a integração uma vez e transmitir para qualquer
             provedor.
@@ -67,7 +68,7 @@ export function LayoutIndicePage() {
             </h2>
 
             {indice.vigente && (
-              <p className="text-sm text-ink/70">
+              <p className="text-sm text-muted">
                 Versão vigente: <strong className="font-semibold">{indice.vigente.rotulo}</strong>.
                 Toda versão publicada continua acessível: provedores em produção seguem escritos
                 contra versões anteriores.
@@ -84,6 +85,10 @@ export function LayoutIndicePage() {
 
             <p className="text-xs text-muted">{LEGENDA_ESTADO_VERSAO}</p>
           </section>
+        )}
+
+        {!isLoading && !isError && indice?.novidades && (
+          <NovidadesDaVigente novidades={indice.novidades} />
         )}
       </main>
 

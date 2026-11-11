@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
 import { rotuloVerificacao } from '../../../utils/formatarDataVerificacao'
 import type { ProvedorListaItem } from '../types/provedor'
 
@@ -7,59 +6,21 @@ export interface ListaProvedoresProps {
   provedores: ProvedorListaItem[]
 }
 
-const MAX_CHIPS_VISIVEIS = 3
 const ROTULO_CATEGORIA: Record<ProvedorListaItem['categoria'], string> = {
   Nacional: 'Nacional',
   Proprio: 'Próprio',
 }
 
 function LinhaProvedor({ provedor }: { provedor: ProvedorListaItem }) {
-  const [expandido, setExpandido] = useState(false)
-
-  // O campo é parte do contrato, mas a lista de provedores é a porta de entrada do portal
-  // público: um campo ausente na resposta pode custar os chips de versão, nunca a página. Ler
-  // direto já derrubou a rota inteira com `Cannot read properties of undefined`.
-  const versoes = provedor.versoes ?? []
-  const chipsVisiveis = expandido ? versoes : versoes.slice(0, MAX_CHIPS_VISIVEIS)
-  const restantes = versoes.length - chipsVisiveis.length
-
   return (
     <li className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border p-4 hover:shadow-hover sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-col gap-1.5">
-        <Link
-          to="/provedores/$provedorSlug"
-          params={{ provedorSlug: provedor.slug }}
-          className="text-card-titulo font-medium text-ink hover:underline"
-        >
-          {provedor.nome}
-        </Link>
-
-        {versoes.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {chipsVisiveis.map((versao) => (
-              <Link
-                key={versao.slug}
-                to="/provedores/$provedorSlug/$versaoSlug"
-                params={{ provedorSlug: provedor.slug, versaoSlug: versao.slug }}
-                className="rounded-[var(--radius-pill)] border border-border px-2 py-0.5 text-xs text-ink hover:shadow-hover"
-              >
-                {versao.rotulo}
-              </Link>
-            ))}
-
-            {restantes > 0 && (
-              <button
-                type="button"
-                onClick={() => setExpandido(true)}
-                aria-label={`Mostrar mais ${restantes} versões de ${provedor.nome}`}
-                className="text-xs font-semibold text-primary-medium hover:underline"
-              >
-                +{restantes}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      <Link
+        to="/provedores/$provedorSlug"
+        params={{ provedorSlug: provedor.slug }}
+        className="text-card-titulo font-medium text-ink hover:underline"
+      >
+        {provedor.nome}
+      </Link>
 
       <span className="shrink-0 text-right text-xs text-muted">
         {rotuloVerificacao(provedor.verificadoEm)}

@@ -4,6 +4,7 @@ import { memo } from 'react'
 import { construirIdLinhaCampo } from '../../provedores/utils/destaqueAncora'
 import type { FormatoDaEstrutura, PresencaDoNo } from '../types/estruturaLayout'
 import type { LinhaDaEstrutura } from '../utils/linhasDaEstrutura'
+import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
 
 export interface LinhaDoTextoDaEstruturaProps {
   indice: number
@@ -20,6 +21,8 @@ export interface LinhaDoTextoDaEstruturaProps {
    * para `#campo-{slug}` na mesma página; `null` fica texto.
    */
   acaoDaTag: AcaoDaTag | null
+  /** Só a página do layout sabe: o destino na tabela do provedor não traz a marca. */
+  daReformaTributaria?: boolean
   /** Precisa ser estável: sem isso o `memo` não evita nenhum render. */
   onAlternarGrupo: (indice: number) => void
   onAbrirTag: (campoSlug: string, indice: number) => void
@@ -58,6 +61,7 @@ export const LinhaDoTextoDaEstrutura = memo(function LinhaDoTextoDaEstrutura({
   idDaAncora,
   destacada,
   acaoDaTag,
+  daReformaTributaria = false,
   onAlternarGrupo,
   onAbrirTag,
 }: LinhaDoTextoDaEstruturaProps) {
@@ -134,6 +138,8 @@ export const LinhaDoTextoDaEstrutura = memo(function LinhaDoTextoDaEstrutura({
           </>
         )}
       </span>
+
+      {daReformaTributaria && <SeloReformaTributaria className="ml-3 self-center" />}
 
       {marcador && (
         <span className={CLASSE_DO_MARCADOR}>

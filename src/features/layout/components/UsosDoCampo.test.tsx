@@ -131,9 +131,9 @@ describe('UsosDoCampo — lista', () => {
 
     const nomesDosLinks = screen.getAllByRole('link').map((link) => link.getAttribute('aria-label'))
     expect(nomesDosLinks).toEqual([
-      'Ver no provedor: Valor dos serviços em ISS.NET 2.04',
-      'Ver no provedor: Valor dos serviços em ABRASF 2.03',
-      'Ver no provedor: Valor dos serviços em Betha 1.00',
+      'Ver no provedor: Valor dos serviços em ISS.NET',
+      'Ver no provedor: Valor dos serviços em ABRASF',
+      'Ver no provedor: Valor dos serviços em Betha',
     ])
   })
 
@@ -167,20 +167,17 @@ describe('UsosDoCampo — lista', () => {
     expect(within(issNet).queryByText('Opcional')).toBeNull()
   })
 
-  it('o link leva à linha do campo na versão do provedor, em rota tipada e na mesma aba', async () => {
+  it('o link leva à linha do campo na página do provedor, sem versão, na mesma aba', async () => {
     server.use(responderUsos(CAMPO, [USO_ISS_NET]))
     renderizar()
 
     await itensDaLista()
 
     const link = screen.getByRole('link', {
-      name: 'Ver no provedor: Valor dos serviços em ISS.NET 2.04',
+      name: 'Ver no provedor: Valor dos serviços em ISS.NET',
     })
 
-    expect(link).toHaveAttribute(
-      'href',
-      '/provedores/iss-net/2-04#campo-servico-valores-valservicos',
-    )
+    expect(link).toHaveAttribute('href', '/provedores/iss-net#campo-servico-valores-valservicos')
     expect(link).not.toHaveAttribute('target')
   })
 
@@ -251,7 +248,7 @@ describe('UsosDoCampo — estados', () => {
 
     await usuario.click(tentarNovamente)
 
-    expect(await within(secao).findByText('ISS.NET 2.04')).toBeInTheDocument()
+    expect(await within(secao).findByText('ISS.NET')).toBeInTheDocument()
     expect(
       within(secao).queryByText('Não foi possível carregar os provedores deste campo.'),
     ).toBeNull()
@@ -288,7 +285,7 @@ describe('UsosDoCampo — troca de campo (R4)', () => {
     const usuario = userEvent.setup()
     renderizar()
 
-    await screen.findByText('ISS.NET 2.04')
+    await screen.findByText('ISS.NET')
 
     await usuario.click(screen.getByRole('button', { name: 'Trocar de campo' }))
 
@@ -297,6 +294,6 @@ describe('UsosDoCampo — troca de campo (R4)', () => {
 
     const secao = await secaoDeUsos()
     expect(within(secao).getByRole('status')).toBeInTheDocument()
-    expect(screen.queryByText('ISS.NET 2.04')).toBeNull()
+    expect(screen.queryByText('ISS.NET')).toBeNull()
   })
 })

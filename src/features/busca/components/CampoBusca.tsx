@@ -30,6 +30,7 @@ export function CampoBusca({
   rotuloOculto = 'Buscar no Codex',
 }: CampoBuscaProps) {
   const inputId = useId()
+  const destaque = variante === 'destaque'
 
   return (
     <form
@@ -44,13 +45,17 @@ export function CampoBusca({
         {rotuloOculto}
       </label>
 
+      {/* O input não desenha contorno próprio: o anel de foco fica na moldura inteira. */}
       <div
         className={clsx(
-          'flex h-11 items-center gap-2 rounded-[var(--radius-input)] border bg-white px-3',
-          variante === 'destaque' ? 'border-transparent' : 'border-border',
+          'flex items-center gap-3 rounded-[var(--radius-input)] border bg-white px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-light',
+          destaque ? 'h-14 border-transparent px-4 shadow-panel' : 'h-11 border-border',
         )}
       >
-        <Search className="size-5 shrink-0 text-muted" aria-hidden="true" />
+        <Search
+          className={clsx('size-5 shrink-0', destaque ? 'text-primary-light' : 'text-muted')}
+          aria-hidden="true"
+        />
         <input
           id={inputId}
           type="search"
@@ -60,8 +65,19 @@ export function CampoBusca({
           autoFocus={autoFocus}
           onChange={(evento) => onValorChange(evento.target.value)}
           placeholder={placeholder}
-          className="h-full w-full border-none bg-transparent text-sm text-ink outline-none placeholder:text-muted"
+          className={clsx(
+            'h-full w-full border-none bg-transparent text-ink outline-none placeholder:text-muted',
+            destaque ? 'text-card-titulo' : 'text-sm',
+          )}
         />
+        {destaque && (
+          <kbd
+            aria-hidden="true"
+            className="hidden shrink-0 rounded-[var(--radius-check)] border border-border-control px-2 py-0.5 font-sans text-xs font-semibold text-muted sm:block"
+          >
+            Enter
+          </kbd>
+        )}
       </div>
     </form>
   )

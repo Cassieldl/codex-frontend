@@ -17,6 +17,7 @@ import {
   useCampoDestacadoPorAncora,
 } from '../../provedores/utils/destaqueAncora'
 import { AvisoVocabulario } from '../components/AvisoVocabulario'
+import { NotaDaVersao } from '../components/NotaDaVersao'
 import { ChipVersaoLayout } from '../components/ChipVersaoLayout'
 import { DicionarioDaVersao } from '../components/DicionarioDaVersao'
 import { EstruturaDaVersao } from '../components/EstruturaDaVersao'
@@ -123,7 +124,7 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
   useTituloDaPagina(pagina ? `Layout InvoiCy ${formatarVersaoLayout(pagina.versao.rotulo)}` : null)
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
       <main
@@ -168,7 +169,7 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
               <h1 className="text-titulo font-bold text-ink">
                 Layout InvoiCy {formatarVersaoLayout(pagina.versao.rotulo)}
               </h1>
-              <p className="text-sm text-ink/70">
+              <p className="text-sm text-muted">
                 {pagina.versao.estado} · {pagina.totalCampos} campos no vocabulário
                 {camposNovos > 0 && ` · ${camposNovos} novos nesta versão`}
               </p>
@@ -197,12 +198,12 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
                 <h2 id="nota-versao-titulo" className="text-subtitulo font-semibold text-ink">
                   Nota da {formatarVersaoLayout(pagina.versao.rotulo)}
                 </h2>
-                <p className="max-w-prose text-sm text-ink/80">{pagina.descricao}</p>
+                <NotaDaVersao descricao={pagina.descricao} />
               </section>
             )}
 
             {pagina.anterior && (
-              <p className="text-sm text-ink/70">
+              <p className="text-sm text-muted">
                 Versão anterior:{' '}
                 <Link
                   to="/layout/$versaoSlug"

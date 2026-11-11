@@ -33,7 +33,7 @@ export function CardArtigo({ artigo, mostrarTipo = true }: CardArtigoProps) {
           </Link>
         </h2>
 
-        {artigo.resumo && <p className="max-w-2xl text-sm text-ink/70">{artigo.resumo}</p>}
+        {artigo.resumo && <p className="max-w-2xl text-sm text-muted">{artigo.resumo}</p>}
       </div>
 
       {artigo.verificadoEm && (

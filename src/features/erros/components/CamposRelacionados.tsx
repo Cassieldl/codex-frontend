@@ -3,15 +3,14 @@ import type { CampoRelacionado } from '../types/erro'
 
 export interface ContextoCampoRelacionado {
   provedorSlug: string
-  versaoSlug: string
 }
 
 export interface CamposRelacionadosProps {
   campos: CampoRelacionado[]
   /**
-   * Provedor/versão únicos aplicáveis a este erro, ou `null` quando não há
-   * esse contexto (inclusive no caso "sem versões" de U9). Com contexto, cada
-   * campo vira link para a âncora do campo dentro daquela versão de provedor;
+   * Provedor único aplicável a este erro, ou `null` quando não há esse
+   * contexto (inclusive no caso "sem versões" de U9). Com contexto, cada
+   * campo vira link para a âncora do campo na página daquele provedor;
    * sem contexto, vira link para a resolução pública do campo no Layout
    * InvoiCy, que leva à versão vigente.
    */
@@ -35,8 +34,8 @@ export function CamposRelacionados({ campos, contexto }: CamposRelacionadosProps
           <li key={campo.slug}>
             {contexto ? (
               <Link
-                to="/provedores/$provedorSlug/$versaoSlug"
-                params={{ provedorSlug: contexto.provedorSlug, versaoSlug: contexto.versaoSlug }}
+                to="/provedores/$provedorSlug"
+                params={{ provedorSlug: contexto.provedorSlug }}
                 hash={`campo-${campo.slug}`}
                 className={CLASSE_DO_LINK}
               >

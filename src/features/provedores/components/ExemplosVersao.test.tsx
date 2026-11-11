@@ -22,7 +22,7 @@ const exemplos: ExemploPublico[] = [
 ]
 
 function renderizar(lista: ExemploPublico[] = exemplos) {
-  return render(<ExemplosVersao exemplos={lista} provedorSlug="ipm" versaoSlug="2-04" />)
+  return render(<ExemplosVersao exemplos={lista} provedorSlug="ipm" />)
 }
 
 // O jsdom não implementa `scrollIntoView`; o componente o chama ao abrir por âncora.
@@ -106,7 +106,7 @@ describe('ExemplosVersao (tela 5)', () => {
     expect(xmlVisivel()).toEqual([exemplos[1].xml])
   })
 
-  it('copia o link com a âncora do cenário, não o endereço nu da versão', async () => {
+  it('copia o link do provedor com a âncora do cenário, sem versão no endereço', async () => {
     const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
     renderizar()
 
@@ -115,7 +115,7 @@ describe('ExemplosVersao (tela 5)', () => {
     )
 
     expect(escreverNaAreaDeTransferencia).toHaveBeenCalledWith(
-      `${window.location.origin}/provedores/ipm/2-04#exemplo-iss-retido`,
+      `${window.location.origin}/provedores/ipm#exemplo-iss-retido`,
     )
   })
 

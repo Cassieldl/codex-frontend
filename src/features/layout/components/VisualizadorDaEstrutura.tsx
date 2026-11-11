@@ -19,6 +19,7 @@ import {
 import { CLASSE_DO_MARCADOR, LinhaDoTextoDaEstrutura } from './LinhaDoTextoDaEstrutura'
 import type { AcaoDaTag } from './LinhaDoTextoDaEstrutura'
 import { ModalDoVerbete } from './ModalDoVerbete'
+import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
 
 /** Página do layout: a tag abre o verbete do campo num modal, e a URL pode apontar uma tag. */
 export interface DestinoNoVerbete {
@@ -38,6 +39,8 @@ export interface DestinoNaLinhaDaTabela {
   tipo: 'linhaDaTabela'
   /** Slugs de campo que têm linha na tabela; os outros ficam como texto. */
   camposDaTabela: ReadonlySet<string>
+  /** Slugs dos campos da reforma tributária, que ganham o selo RT. */
+  camposDaReforma: ReadonlySet<string>
 }
 
 export type DestinoDaTag = DestinoNoVerbete | DestinoNaLinhaDaTabela
@@ -72,6 +75,14 @@ const CLASSE_DA_ACAO =
 function comGrupos(abertos: ReadonlySet<number>, grupos: readonly number[]): ReadonlySet<number> {
   if (grupos.every((grupo) => abertos.has(grupo))) return abertos
   return new Set([...abertos, ...grupos])
+}
+
+function daReformaTributaria(destino: DestinoDaTag, slug: string | null): boolean {
+  if (slug === null) return false
+  if (destino.tipo === 'verbete') {
+    return destino.camposPorSlug.get(slug)?.campo.reformaTributaria === true
+  }
+  return destino.camposDaReforma.has(slug)
 }
 
 function acaoDaTag(destino: DestinoDaTag, slug: string | null): AcaoDaTag | null {
@@ -189,6 +200,7 @@ export function VisualizadorDaEstrutura({
         idDaAncora={ehAncora ? construirIdLinhaEstrutura(slug) : null}
         destacada={indice === linhaDaAncora}
         acaoDaTag={acaoDaTag(destino, slug)}
+        daReformaTributaria={daReformaTributaria(destino, slug)}
         onAlternarGrupo={alternarGrupo}
         onAbrirTag={abrirTag}
       />,
@@ -254,6 +266,8 @@ export function VisualizadorDaEstrutura({
         <span>existe só no envio JSON;</span>
         <span className={CLASSE_DO_MARCADOR}>uma entre as opções</span>
         <span>informe só uma das tags irmãs com esta marca.</span>
+        <SeloReformaTributaria className="ml-3" />
+        <span>campo da reforma tributária.</span>
       </p>
 
       {slugAncora !== null && linhaDaAncora === null && (

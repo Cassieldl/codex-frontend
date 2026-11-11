@@ -11,15 +11,14 @@ import {
 export interface ExemplosVersaoProps {
   exemplos: ExemploPublico[]
   provedorSlug: string
-  versaoSlug: string
 }
 
 /**
- * "Exemplos" da página da versão (tela 5) — acordeão de cenários completos de
+ * "Exemplos" da página do provedor (tela 5): acordeão de cenários completos de
  * emissão, cada um com âncora copiável `#exemplo-{slug}` (C4: exemplo não tem
- * página própria, tem âncora dentro da página da versão).
+ * página própria, tem âncora dentro da página do provedor).
  *
- * Sem `EmptyState`: versão sem exemplo simplesmente não mostra a seção, mesma
+ * Sem `EmptyState`: provedor sem exemplo simplesmente não mostra a seção, mesma
  * regra de `AvisosVersao`/`ErrosConhecidos` — a página já disputa espaço com
  * Avisos, Campos e Erros, e "nenhum exemplo" não é informação de negócio aqui.
  *
@@ -28,7 +27,7 @@ export interface ExemplosVersaoProps {
  * string, sem metadado de quais linhas mudam). Inferir o diff no cliente seria
  * a tela afirmando o que não sabe.
  */
-export function ExemplosVersao({ exemplos, provedorSlug, versaoSlug }: ExemplosVersaoProps) {
+export function ExemplosVersao({ exemplos, provedorSlug }: ExemplosVersaoProps) {
   const idBase = useId()
   const exemploNaAncora = useExemploDestacadoPorAncora()
   const [exemploAberto, setExemploAberto] = useState<string | null>(exemploNaAncora)
@@ -49,7 +48,7 @@ export function ExemplosVersao({ exemplos, provedorSlug, versaoSlug }: ExemplosV
         <h2 id="exemplos-titulo" className="text-subtitulo font-semibold text-ink">
           Exemplos
         </h2>
-        <p className="max-w-[70ch] text-sm text-ink/70">
+        <p className="max-w-[70ch] text-sm text-muted">
           Cenários completos de emissão, com o XML como ele é enviado.
         </p>
       </header>
@@ -70,7 +69,7 @@ export function ExemplosVersao({ exemplos, provedorSlug, versaoSlug }: ExemplosV
                 <div className="min-w-0 flex-1">
                   <h3 className="text-card-titulo font-medium text-ink">{exemplo.nome}</h3>
                   {exemplo.descricao && (
-                    <p className="mt-1 max-w-[88ch] text-sm text-ink/70">{exemplo.descricao}</p>
+                    <p className="mt-1 max-w-[88ch] text-sm text-muted">{exemplo.descricao}</p>
                   )}
                 </div>
 
@@ -78,12 +77,7 @@ export function ExemplosVersao({ exemplos, provedorSlug, versaoSlug }: ExemplosV
                   compacto
                   icone="link"
                   valor={() =>
-                    construirLinkExemplo(
-                      window.location.origin,
-                      provedorSlug,
-                      versaoSlug,
-                      exemplo.slug,
-                    )
+                    construirLinkExemplo(window.location.origin, provedorSlug, exemplo.slug)
                   }
                   rotulo="Copiar link"
                   ariaLabel={`Copiar link do exemplo ${exemplo.nome}`}

@@ -12,10 +12,13 @@ function renderizar(sobrescritas: Partial<FiltrosDeCamposProps> = {}) {
     estado: 'todos',
     termo: '',
     contagens: CONTAGENS,
+    somenteReformaTributaria: false,
+    contagemDaReforma: 0,
     filtroAtivo: false,
     buscaRef: createRef<HTMLInputElement>(),
     onEstadoChange: vi.fn(),
     onTermoChange: vi.fn(),
+    onAlternarReformaTributaria: vi.fn(),
     onLimpar: vi.fn(),
     onExpandirTodos: vi.fn(),
     onRecolherTodos: vi.fn(),
@@ -148,6 +151,26 @@ describe('FiltrosDeCampos', () => {
 
       expect(props.onExpandirTodos).toHaveBeenCalledOnce()
       expect(props.onRecolherTodos).toHaveBeenCalledOnce()
+    })
+  })
+  describe('chip da reforma tributária', () => {
+    const NOME = /Só campos da reforma \(RT\)/
+
+    it('some quando a versão não tem campo da reforma', () => {
+      renderizar({ contagemDaReforma: 0 })
+
+      expect(screen.queryByRole('button', { name: NOME })).not.toBeInTheDocument()
+    })
+
+    it('mostra a contagem, o estado pressionado e avisa ao clicar', () => {
+      const { props } = renderizar({ contagemDaReforma: 7, somenteReformaTributaria: true })
+      const chip = screen.getByRole('button', { name: NOME })
+
+      expect(chip).toHaveTextContent('7')
+      expect(chip).toHaveAttribute('aria-pressed', 'true')
+
+      fireEvent.click(chip)
+      expect(props.onAlternarReformaTributaria).toHaveBeenCalledTimes(1)
     })
   })
 })

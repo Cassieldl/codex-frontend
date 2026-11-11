@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ArrowRightLeft, BookOpen, ListOrdered } from 'lucide-react'
+import { ArrowRightLeft, BookOpen, ListOrdered, SlidersHorizontal } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { TipoArtigo } from '../types/artigo'
 import { ROTULO_TIPO_ARTIGO } from './rotulosTipoArtigo'
@@ -8,6 +8,7 @@ const GLIFO_TIPO_ARTIGO: Record<TipoArtigo, LucideIcon> = {
   Conceito: BookOpen,
   Procedimento: ListOrdered,
   Mudanca: ArrowRightLeft,
+  Configuracao: SlidersHorizontal,
 }
 
 export interface EtiquetaTipoArtigoProps {

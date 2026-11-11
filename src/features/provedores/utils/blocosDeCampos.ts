@@ -21,6 +21,15 @@ export type FiltroDeEstado = 'todos' | EstadoPreenchimentoCampo
 export interface FiltroDeCampos {
   estado: FiltroDeEstado
   termo: string
+  somenteReformaTributaria: boolean
+}
+
+export function filtroDeCamposAtivo({
+  estado,
+  termo,
+  somenteReformaTributaria,
+}: FiltroDeCampos): boolean {
+  return estado !== 'todos' || somenteReformaTributaria || termo.trim() !== ''
 }
 
 export type SubgrupoDeCampos = SubgrupoDoLayout<CampoVersaoPublico>
@@ -56,6 +65,7 @@ export function montarBlocos(camposPorGrupo: GrupoCampoVersao[]): BlocoDeCampos[
 
 export function campoPassaNoFiltro(campo: CampoVersaoPublico, filtro: FiltroDeCampos): boolean {
   if (filtro.estado !== 'todos' && campo.estadoPreenchimento !== filtro.estado) return false
+  if (filtro.somenteReformaTributaria && !campo.reformaTributaria) return false
 
   const termo = normalizarParaBusca(filtro.termo)
   if (termo === '') return true
@@ -79,6 +89,14 @@ export function sequenciaVisivel(blocos: BlocoDeCampos[]): CampoNaSequencia[] {
 }
 
 /** Conta a versão inteira, sem considerar o termo de busca. */
+/** Campos da reforma tributária na versão inteira, sem considerar nenhum filtro. */
+export function contarDaReformaTributaria(camposPorGrupo: GrupoCampoVersao[]): number {
+  return camposPorGrupo.reduce(
+    (soma, grupo) => soma + grupo.campos.filter((campo) => campo.reformaTributaria).length,
+    0,
+  )
+}
+
 export function contarPorEstado(
   camposPorGrupo: GrupoCampoVersao[],
 ): Record<FiltroDeEstado, number> {

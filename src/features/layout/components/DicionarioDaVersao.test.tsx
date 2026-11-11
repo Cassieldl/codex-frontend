@@ -62,6 +62,7 @@ const DISCRIMINACAO = {
   caminhoXml: '//Servico/Discriminacao',
   significado: 'Descrição do serviço prestado.',
   ordem: 148,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/servico-discriminacao-canonico',
@@ -73,6 +74,7 @@ const PAI_PRE_SERVICO = {
   caminhoXml: '//Servico/PaiPreServico',
   significado: 'País de prestação do serviço.',
   ordem: 150,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/servico-paipreservico-canonico',
@@ -84,6 +86,7 @@ const VAL_SERVICOS = {
   caminhoXml: '//Servico/Valores/ValServicos',
   significado: 'Valor dos serviços.',
   ordem: 160,
+  reformaTributaria: false,
   novoNestaVersao: true,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/servico-valores-valservicos-canonico',
@@ -95,6 +98,7 @@ const VAL_PIS = {
   caminhoXml: '//Servico/Valores/ValPIS',
   significado: 'Valor do PIS.',
   ordem: 164,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/servico-valores-valpis-canonico',
@@ -106,6 +110,7 @@ const TOMA_CNPJ = {
   caminhoXml: '//Tomador/TomaCNPJ',
   significado: 'CNPJ do tomador.',
   ordem: 330,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/tomador-tomacnpj-canonico',
@@ -117,6 +122,7 @@ const CNPJ_PRESTADOR = {
   caminhoXml: '//Prestador/CNPJ_prest',
   significado: 'CNPJ do prestador.',
   ordem: 44,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/prestador-cnpj-prest-canonico',
@@ -128,6 +134,7 @@ const INSCRICAO_MUNICIPAL = {
   caminhoXml: '//Prestador/IM',
   significado: 'Bloco removido do vocabulário.',
   ordem: 45,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: true,
   urlCanonica: '/layout/campos/prestador-im-canonico',
@@ -139,6 +146,7 @@ const CAMPO_ZETA = {
   caminhoXml: '//Zeta/ZetaCampo',
   significado: 'Campo de uma raiz sem rótulo cadastrado.',
   ordem: 900,
+  reformaTributaria: false,
   novoNestaVersao: false,
   descontinuadoNestaVersao: false,
   urlCanonica: '/layout/campos/zeta-campo-canonico',
@@ -657,5 +665,54 @@ describe('DicionarioDaVersao — campo apontado por âncora', () => {
     fireEvent.click(screen.getByRole('button', { name: 'IM' }))
     fireEvent.click(screen.getByRole('button', { name: 'Fechar' }))
     expect(limparAncoraDeCampo).not.toHaveBeenCalled()
+  })
+})
+
+describe('DicionarioDaVersao — só campos da reforma tributária', () => {
+  const COM_REFORMA = CAMPOS_POR_GRUPO.map((grupo) => ({
+    ...grupo,
+    campos: grupo.campos.map((campo) =>
+      campo === TOMA_CNPJ || campo === VAL_PIS ? { ...campo, reformaTributaria: true } : campo,
+    ),
+  }))
+
+  function botaoDaReforma() {
+    return screen.getByRole('button', { name: 'Só campos da reforma (RT)' })
+  }
+
+  it('mostra só os campos da reforma, com o selo, e limpar devolve o dicionário inteiro', () => {
+    const { container } = renderizar({ camposPorGrupo: COM_REFORMA })
+
+    fireEvent.click(botaoDaReforma())
+
+    expect(botaoDaReforma()).toHaveAttribute('aria-pressed', 'true')
+    expect(nomesNaOrdemDoDom(container)).toEqual(['ValPIS', 'TomaCNPJ'])
+    expect(screen.getByText('Mostrando 2 de 8 campos.')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-selo-reforma-tributaria]')).toHaveLength(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Limpar filtro' }))
+
+    expect(botaoDaReforma()).toHaveAttribute('aria-pressed', 'false')
+    expect(nomesNaOrdemDoDom(container)).toHaveLength(8)
+  })
+
+  it('o termo continua valendo dentro dos campos da reforma', () => {
+    const { container } = renderizar({ camposPorGrupo: COM_REFORMA })
+
+    fireEvent.click(botaoDaReforma())
+    digitarBusca('toma')
+
+    expect(nomesNaOrdemDoDom(container)).toEqual(['TomaCNPJ'])
+  })
+
+  it('versão sem campo da reforma diz isso, sem a dica de nome do provedor', () => {
+    renderizar()
+
+    fireEvent.click(botaoDaReforma())
+
+    expect(
+      screen.getByText('Nenhum campo da versão 4.13 é da reforma tributária.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/O nome pode ser o do provedor/)).not.toBeInTheDocument()
   })
 })

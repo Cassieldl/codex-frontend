@@ -9,6 +9,7 @@ import { LinhaDoCampo } from './LinhaDoCampo'
  */
 const CAMPO_DOIS_DESTINOS_E_TRES_REJEICOES = {
   campoLayoutSlug: 'servico-paipreservico',
+  reformaTributaria: false,
   nome: 'PaiPreServico',
   caminhoXml: '//Servico/PaiPreServico',
   significado: 'País de prestação do serviço.',
@@ -33,6 +34,7 @@ const CAMPO_DOIS_DESTINOS_E_TRES_REJEICOES = {
 
 const CAMPO_SEM_TAMANHO_SEM_REJEICAO = {
   campoLayoutSlug: 'demis',
+  reformaTributaria: false,
   nome: 'dEmis',
   caminhoXml: '//dEmis',
   significado: 'Data de emissão.',
@@ -53,6 +55,7 @@ const CAMPO_SEM_TAMANHO_SEM_REJEICAO = {
 const CAMPO_SEM_DESTINO_COM_EXEMPLO = {
   ...CAMPO_SEM_TAMANHO_SEM_REJEICAO,
   campoLayoutSlug: 'natop',
+  reformaTributaria: false,
   nome: 'natOp',
   caminhoXml: '//natOp',
   tipo: 'Numérico',
@@ -65,6 +68,7 @@ const CAMPO_SEM_DESTINO_COM_EXEMPLO = {
 const CAMPO_COM_DESTINO_OMITIDO = {
   ...CAMPO_SEM_TAMANHO_SEM_REJEICAO,
   campoLayoutSlug: 'tomador-tomacep',
+  reformaTributaria: false,
   nome: 'TomaCEP',
   caminhoXml: '//Tomador/TomaCEP',
   destinoXml: 'DPS/infDPS/toma/end/endNac/CEP | …',

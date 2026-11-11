@@ -11,6 +11,7 @@ import type { BlocoDeCamposProps } from './BlocoDeCampos'
  */
 const DISCRIMINACAO = {
   campoLayoutSlug: 'servico-discriminacao',
+  reformaTributaria: false,
   nome: 'Discriminacao',
   caminhoXml: '//Servico/Discriminacao',
   significado: 'Descrição do serviço prestado.',
@@ -31,6 +32,7 @@ const DISCRIMINACAO = {
 const CLASSE_TRIBUTARIA_NO_IBSCBS = {
   ...DISCRIMINACAO,
   campoLayoutSlug: 'servico-ibscbs-cclasstrib',
+  reformaTributaria: false,
   nome: 'cClassTrib',
   caminhoXml: '//Servico/IBSCBS/cClassTrib',
   tipo: 'Numérico',
@@ -44,6 +46,7 @@ const CLASSE_TRIBUTARIA_NO_IBSCBS = {
 const CLASSE_TRIBUTARIA_NO_IBS = {
   ...CLASSE_TRIBUTARIA_NO_IBSCBS,
   campoLayoutSlug: 'servico-valores-ibscbs-ibs-cclasstrib',
+  reformaTributaria: false,
   caminhoXml: '//Servico/Valores/IBSCBS/IBS/cClassTrib',
   estadoPreenchimento: 'Opcional' as const,
   destinoXml: 'DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gIBSMun/cClassTrib',

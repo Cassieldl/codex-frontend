@@ -73,6 +73,7 @@ const RESPOSTA_DA_VERSAO = {
     errosResumo: { total: 0, itens: [] },
     exemplos: [],
     outrasVersoes: [],
+    naturezasOperacao: [],
   },
   message: null,
 }
@@ -221,11 +222,11 @@ describe('EnvioModeloVersao: alcance e formato', () => {
     const escolhida = within(secaoDoEnvio()).getByRole('button', { name: /Mínimo/ })
     const solta = within(secaoDoEnvio()).getByRole('button', { name: /Máximo/ })
 
-    expect(escolhida).toHaveClass('bg-alert-info', 'border-2')
+    expect(escolhida).toHaveClass('bg-primary', 'text-white', 'border-2')
     expect(escolhida).not.toHaveClass('bg-white')
     expect(escolhida).not.toHaveClass('border')
     expect(solta).toHaveClass('bg-white', 'border')
-    expect(solta).not.toHaveClass('bg-alert-info')
+    expect(solta).not.toHaveClass('bg-primary')
   })
 
   it('copiar entrega o texto do alcance e do formato à vista', async () => {

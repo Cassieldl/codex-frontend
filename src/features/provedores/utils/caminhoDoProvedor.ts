@@ -1,4 +1,4 @@
-/** `/provedores/{provedor}` ou `/provedores/{provedor}/{versao}` — o mesmo desenho da rota. */
-export function caminhoDoProvedor(provedorSlug: string, versaoSlug?: string): string {
-  return versaoSlug ? `/provedores/${provedorSlug}/${versaoSlug}` : `/provedores/${provedorSlug}`
+/** `/provedores/{provedor}`: o mesmo desenho da rota da página pública do provedor. */
+export function caminhoDoProvedor(provedorSlug: string): string {
+  return `/provedores/${provedorSlug}`
 }
