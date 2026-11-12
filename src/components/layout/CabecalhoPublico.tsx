@@ -1,10 +1,14 @@
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { BuscaDoCabecalho } from '../../features/busca/components/BuscaDoCabecalho'
 import { PontosDeLuz } from './PontosDeLuz'
 import { PularParaConteudo } from './PularParaConteudo'
 
 export interface CabecalhoPublicoProps {
-  /** Conteúdo do hero embutido no cabeçalho: campo de busca da Home e de `/busca`. */
+  /**
+   * Hero embutido no cabeçalho, com o campo de busca grande da Home e de `/busca`. Página que passa
+   * o hero não ganha a busca compacta: seriam dois campos de busca na mesma tela.
+   */
   children?: ReactNode
 }
 
@@ -45,6 +49,13 @@ export function CabecalhoPublico({ children }: CabecalhoPublicoProps) {
           <span aria-hidden="true" className="h-6 w-px bg-white/40" />
           <span className="text-lg font-extrabold">Codex</span>
         </Link>
+
+        {/* Abaixo de `lg` a busca não cabe entre a marca e o menu: desce para uma linha própria. */}
+        {!children && (
+          <div className="order-last w-full lg:order-none lg:w-auto lg:max-w-sm lg:flex-1">
+            <BuscaDoCabecalho />
+          </div>
+        )}
 
         <nav
           aria-label="Navegação principal"

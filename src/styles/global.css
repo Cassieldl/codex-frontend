@@ -95,6 +95,9 @@
    utility) — ficam como custom properties normais, usados via utilities
    arbitrárias: bg-[image:var(--grad-escuro)]. */
 :root {
+  /* Altura da barra de seções presa no topo. A página que usa a barra repassa o valor para
+     `--topo-fixo`, que desce os outros elementos presos (cabeçalho dos blocos de campos). */
+  --altura-barra-secoes: 3.25rem;
   --grad-escuro: linear-gradient(99deg, #074b7f 2.24%, #002f4f 93.71%);
   --grad-secao: linear-gradient(90deg, #002f4f 0%, #074b7f 100%);
   --grad-card-fill: linear-gradient(

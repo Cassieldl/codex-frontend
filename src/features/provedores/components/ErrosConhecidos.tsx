@@ -3,6 +3,7 @@ import { useId, useMemo, useState } from 'react'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import type { ErroResumoPublico, GrupoCampoVersao } from '../types/versaoProvedorPagina'
+import { ID_SECAO_ERROS_CONHECIDOS } from '../utils/secoesDoProvedor'
 import {
   indexarCamposPorErro,
   mensagensQueAcrescentam,
@@ -61,7 +62,7 @@ export function ErrosConhecidos({ resumo, camposPorGrupo }: ErrosConhecidosProps
 
   return (
     <section
-      id="erros-conhecidos"
+      id={ID_SECAO_ERROS_CONHECIDOS}
       aria-labelledby="erros-conhecidos-titulo"
       className="flex scroll-mt-24 flex-col gap-3"
     >

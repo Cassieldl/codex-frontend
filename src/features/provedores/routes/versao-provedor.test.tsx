@@ -301,65 +301,54 @@ describe('VersaoProvedorPage — campos da versão', () => {
   })
 })
 
-describe('VersaoProvedorPage — versão do Layout InvoiCy', () => {
+describe('VersaoProvedorPage: seções da versão', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn()
   })
 
-  function respostaComVersaoDoLayout(versaoLayoutRotulo: string) {
-    return {
-      ...RESPOSTA_DA_VERSAO,
-      data: {
-        ...RESPOSTA_DA_VERSAO.data,
-        versao: { ...RESPOSTA_DA_VERSAO.data.versao, versaoLayoutRotulo },
-      },
-    }
+  const RESPOSTA_COM_NATUREZA = {
+    ...RESPOSTA_DA_VERSAO,
+    data: {
+      ...RESPOSTA_DA_VERSAO.data,
+      naturezasOperacao: [
+        {
+          codigoInvoicy: 9,
+          descricao: 'Exportação de serviço',
+          valorProvedor: '3',
+          observacao: null,
+          aConfirmar: false,
+        },
+      ],
+    },
   }
 
-  it('diz contra qual versão do layout a versão do provedor foi escrita', async () => {
-    server.use(handlerStatus(200, respostaComVersaoDoLayout('1.0')))
-
-    renderPagina()
-
-    expect(
-      await screen.findByText('Escrita contra o Layout InvoiCy versão 1.0.'),
-    ).toBeInTheDocument()
-  })
-
-  // O rótulo vem do cadastro e pode já trazer a palavra: ela não se repete.
-  it('não repete a palavra quando o rótulo do dado já a traz', async () => {
-    server.use(handlerStatus(200, respostaComVersaoDoLayout('Versão 1.0')))
-
-    renderPagina()
-
-    const frase = await screen.findByText(/Escrita contra o Layout InvoiCy/)
-    expect(frase).toHaveTextContent('Escrita contra o Layout InvoiCy versão 1.0.')
-    expect(frase.textContent).not.toMatch(/vers[aã]o\s+vers[aã]o/i)
-  })
-
   it('mostra o de-para da natureza da operação que a API entrega', async () => {
-    server.use(
-      handlerStatus(200, {
-        ...RESPOSTA_DA_VERSAO,
-        data: {
-          ...RESPOSTA_DA_VERSAO.data,
-          naturezasOperacao: [
-            {
-              codigoInvoicy: 9,
-              descricao: 'Exportação de serviço',
-              valorProvedor: '3',
-              observacao: null,
-              aConfirmar: false,
-            },
-          ],
-        },
-      }),
-    )
+    server.use(handlerStatus(200, RESPOSTA_COM_NATUREZA))
 
     renderPagina()
 
     const secao = await screen.findByRole('region', { name: 'Natureza da operação' })
     expect(within(secao).getByRole('cell', { name: 'Exportação de serviço' })).toBeInTheDocument()
+  })
+
+  // Os erros sobem porque são consulta rápida; Campos, a referência longa, vem depois deles.
+  it('ordena erros conhecidos, campos, natureza da operação e envio modelo', async () => {
+    server.use(handlerStatus(200, RESPOSTA_COM_NATUREZA))
+
+    renderPagina()
+
+    await screen.findByRole('region', { name: 'Natureza da operação' })
+    const titulos = screen
+      .getAllByRole('heading', { level: 2 })
+      .map((titulo) => titulo.textContent ?? '')
+      .filter((texto) => /^(Erros conhecidos|Campos|Natureza|Envio modelo)/.test(texto))
+
+    expect(titulos).toEqual([
+      'Erros conhecidos (3)',
+      'Campos e mapeamento',
+      'Natureza da operação',
+      'Envio modelo',
+    ])
   })
 })
 

@@ -27,7 +27,7 @@ export function IndiceDeBlocos({ entradas, onIrParaBloco }: IndiceDeBlocosProps)
   return (
     <nav
       aria-label="Blocos do layout"
-      className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto"
+      className="sticky top-[calc(var(--topo-fixo,0px)_+_1rem)] max-h-[calc(100vh_-_var(--topo-fixo,0px)_-_2rem)] overflow-y-auto"
     >
       <p className="px-2 pb-1 text-aux font-semibold tracking-wide text-muted uppercase">Blocos</p>
 

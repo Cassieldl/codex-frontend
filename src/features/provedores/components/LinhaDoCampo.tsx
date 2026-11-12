@@ -90,7 +90,7 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
       id={construirIdLinhaCampo(slug)}
       onClick={abrirPeloClique}
       className={clsx(
-        'scroll-mt-32 cursor-pointer border-t border-line align-top hover:bg-surface-hover',
+        'scroll-mt-[calc(var(--topo-fixo,0px)_+_8rem)] cursor-pointer border-t border-line align-top hover:bg-surface-hover',
         ativo && 'bg-highlight-anchor',
       )}
     >

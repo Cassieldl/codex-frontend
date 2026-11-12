@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 export const LIMIAR_SECAO_ATUAL_PX = 96
 
 /** Âncora do último título que passou do limiar; `null` antes do primeiro, quando o leitor está na introdução. */
-export function useSecaoAtual(ancoras: string[]): string | null {
+export function useSecaoAtual(ancoras: string[], limiar = LIMIAR_SECAO_ATUAL_PX): string | null {
   const [atual, setAtual] = useState<string | null>(null)
   const chave = ancoras.join('|')
 
@@ -27,8 +27,7 @@ export function useSecaoAtual(ancoras: string[]): string | null {
       }
       for (const ancora of lista) {
         const titulo = document.getElementById(ancora)
-        if (titulo && titulo.getBoundingClientRect().top <= LIMIAR_SECAO_ATUAL_PX)
-          encontrada = ancora
+        if (titulo && titulo.getBoundingClientRect().top <= limiar) encontrada = ancora
       }
       setAtual(encontrada)
     }
@@ -45,7 +44,7 @@ export function useSecaoAtual(ancoras: string[]): string | null {
       window.removeEventListener('resize', agendar)
       if (quadro) cancelAnimationFrame(quadro)
     }
-  }, [chave])
+  }, [chave, limiar])
 
   return atual
 }

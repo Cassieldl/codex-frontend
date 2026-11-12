@@ -14,7 +14,7 @@ import {
   type ContextoRodape,
 } from './RodapeContextual'
 
-// Contextos com ação para rota interna (`erro-com-contexto`/`provedor`)
+// Contextos com ação para rota interna (`erro-com-contexto`/`layout`)
 // usam `<Link>` do TanStack Router — precisam de um `RouterProvider` de
 // verdade, mesmo padrão de `erros-index.test.tsx`.
 function renderComRouter(contexto: ContextoRodape) {
@@ -24,14 +24,7 @@ function renderComRouter(contexto: ContextoRodape) {
     path: '/pagina',
     component: () => <RodapeContextual contexto={contexto} />,
   })
-  // Destino real de alguns próximos passos (contexto `artigos`) — sem a rota
-  // no tree, o `<Link>` não teria para onde apontar.
-  const rotaBusca = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/busca',
-    component: () => null,
-  })
-  const routeTree = rootRoute.addChildren([rota, rotaBusca])
+  const routeTree = rootRoute.addChildren([rota])
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/pagina'] }),
@@ -41,14 +34,18 @@ function renderComRouter(contexto: ContextoRodape) {
 }
 
 describe('RodapeContextual', () => {
-  it('mostra o próximo passo de busca com resultado', () => {
-    render(<RodapeContextual contexto={{ tipo: 'busca-com-resultado' }} />)
+  // A busca mora no cabeçalho: a faixa só ficaria repetindo o que já está na tela.
+  it.each<ContextoRodape>([
+    { tipo: 'home' },
+    { tipo: 'busca-com-resultado' },
+    { tipo: 'provedores' },
+    { tipo: 'artigos' },
+    { tipo: 'provedor', provedorSlug: 'betha' },
+  ])('sem faixa de próximo passo no contexto $tipo', (contexto) => {
+    render(<RodapeContextual contexto={contexto} />)
 
-    expect(
-      screen.getByText(
-        'Não achou exatamente o que precisava? Refine a busca ou filtre por provedor.',
-      ),
-    ).toBeInTheDocument()
+    expect(screen.queryByText('Próximo passo')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
   })
 
   it('mostra o próximo passo de busca sem resultado, com ação de e-mail para o suporte', () => {
@@ -72,10 +69,10 @@ describe('RodapeContextual', () => {
     expect(screen.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
   })
 
-  it('erro-geral: próximo passo é buscar e o suporte leva o código no assunto e no corpo', async () => {
-    renderComRouter({ tipo: 'erro-geral', codigoErro: 'E0042' })
+  it('erro-geral: só o suporte, que leva o código no assunto e no corpo', () => {
+    render(<RodapeContextual contexto={{ tipo: 'erro-geral', codigoErro: 'E0042' }} />)
 
-    expect(await screen.findByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/busca')
+    expect(screen.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
     const suporte = screen.getByRole('link', { name: 'Falar com o suporte' })
     expect(suporte.getAttribute('href')).toContain('mailto:supportbr@migrate.info')
     expect(decodeURIComponent(suporte.getAttribute('href') ?? '')).toContain('erro E0042')
@@ -109,15 +106,6 @@ describe('RodapeContextual', () => {
     expect(await screen.findByRole('link', { name: 'Ver o provedor completo' })).toHaveAttribute(
       'href',
       '/provedores/ipm',
-    )
-  })
-
-  it('monta o link de busca filtrada por provedor na página do provedor', async () => {
-    renderComRouter({ tipo: 'provedor', provedorSlug: 'betha' })
-
-    expect(await screen.findByRole('link', { name: 'Buscar' })).toHaveAttribute(
-      'href',
-      '/busca?provedor=betha',
     )
   })
 
@@ -171,17 +159,6 @@ describe('RodapeContextual', () => {
     expect(link.getAttribute('href')).toContain('Codex')
   })
 
-  it('no contexto de artigos, o próximo passo leva para a busca', async () => {
-    renderComRouter({ tipo: 'artigos' })
-
-    expect(
-      await screen.findByText(
-        'Está com um chamado aberto? Busque pelo código do erro ou pela mensagem.',
-      ),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/busca')
-  })
-
   it('o link de chamado aparece mesmo sem próximo passo', () => {
     render(<RodapeContextual contexto={{ tipo: 'erro-sem-contexto' }} />)
 
@@ -189,12 +166,6 @@ describe('RodapeContextual', () => {
       'href',
       'https://support.migrate.info/tickets',
     )
-  })
-
-  it('na Home, o próximo passo leva para a busca', async () => {
-    renderComRouter({ tipo: 'home' })
-
-    expect(await screen.findByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/busca')
   })
 
   it('todo link externo do rodapé abre em nova aba com rel="noopener noreferrer"', () => {

@@ -66,33 +66,23 @@ function montarAcaoSuporteDeErro(codigoErro?: string): AcaoRodape {
   )
 }
 
+/**
+ * A faixa só aparece onde há um passo diferente do que a tela já oferece. Buscar não conta: o
+ * campo está no cabeçalho de toda página pública.
+ */
 function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
   switch (contexto.tipo) {
     case 'home':
-      return {
-        mensagem: 'Tem um chamado com código de erro ou mensagem da prefeitura? Comece pela busca.',
-        acao: { rotulo: 'Buscar', href: '/busca' },
-      }
     case 'busca-com-resultado':
-      return {
-        mensagem: 'Não achou exatamente o que precisava? Refine a busca ou filtre por provedor.',
-      }
+    case 'provedores':
+    case 'artigos':
+    case 'provedor':
+    case 'erro-sem-contexto':
+      return null
     case 'busca-sem-resultado':
       return {
         mensagem: 'Buscou e não achou? Fale com o suporte levando o termo.',
         acao: montarAcaoSuporte('Codex · busca sem resultado'),
-      }
-    case 'provedores':
-      return { mensagem: 'Já sabe o nome? Abra direto o provedor.' }
-    case 'artigos':
-      return {
-        mensagem: 'Está com um chamado aberto? Busque pelo código do erro ou pela mensagem.',
-        acao: { rotulo: 'Buscar', href: '/busca' },
-      }
-    case 'provedor':
-      return {
-        mensagem: 'Encontrou uma rejeição neste provedor? Busque pelo código ou pela mensagem.',
-        acao: { rotulo: 'Buscar', href: `/busca?provedor=${contexto.provedorSlug}` },
       }
     case 'erro-com-contexto':
       return {
@@ -102,9 +92,8 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
       }
     case 'erro-geral':
       return {
-        mensagem: 'Não é esse o erro que você recebeu? Busque pelo código ou pela mensagem.',
-        acao: { rotulo: 'Buscar', href: '/busca' },
-        acaoSecundaria: montarAcaoSuporteDeErro(contexto.codigoErro),
+        mensagem: 'Seguiu a orientação e o erro continua? Fale com o suporte levando o código.',
+        acao: montarAcaoSuporteDeErro(contexto.codigoErro),
       }
     case 'erro-varios-provedores':
       return {
@@ -115,8 +104,6 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
         },
         acaoSecundaria: montarAcaoSuporteDeErro(contexto.codigoErro),
       }
-    case 'erro-sem-contexto':
-      return null
     case 'layout':
       return {
         mensagem: 'Sabe o campo — falta saber como o seu provedor trata ele.',

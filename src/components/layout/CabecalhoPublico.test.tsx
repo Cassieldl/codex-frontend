@@ -212,3 +212,37 @@ describe('CabecalhoPublico — cabimento em telas estreitas', () => {
     expect(nav.parentElement?.className).toContain('flex-wrap')
   })
 })
+
+describe('CabecalhoPublico: busca compacta', () => {
+  it('toda página sem hero tem a busca no cabeçalho', async () => {
+    renderComRouter()
+
+    expect(await screen.findByRole('searchbox', { name: 'Buscar no Codex' })).toHaveAttribute(
+      'aria-keyshortcuts',
+      '/',
+    )
+  })
+
+  // Home e `/busca` passam o hero com o campo grande: um segundo campo seria a mesma busca duas vezes.
+  it('com hero, o cabeçalho não repete a busca', async () => {
+    const rootRoute = createRootRoute({ component: Outlet })
+    const rota = createRoute({
+      getParentRoute: () => rootRoute,
+      path: '/',
+      component: () => (
+        <CabecalhoPublico>
+          <p>Hero da página</p>
+        </CabecalhoPublico>
+      ),
+    })
+    const router = createRouter({
+      routeTree: rootRoute.addChildren([rota]),
+      history: createMemoryHistory({ initialEntries: ['/'] }),
+    })
+
+    render(<RouterProvider router={router} />)
+
+    await screen.findByText('Hero da página')
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+  })
+})

@@ -7,6 +7,7 @@ import {
   construirLinkExemplo,
   useExemploDestacadoPorAncora,
 } from '../utils/exemploAncora'
+import { ID_SECAO_EXEMPLOS } from '../utils/secoesDoProvedor'
 
 export interface ExemplosVersaoProps {
   exemplos: ExemploPublico[]
@@ -43,7 +44,11 @@ export function ExemplosVersao({ exemplos, provedorSlug }: ExemplosVersaoProps) 
   if (exemplos.length === 0) return null
 
   return (
-    <section aria-labelledby="exemplos-titulo" className="flex flex-col gap-3">
+    <section
+      id={ID_SECAO_EXEMPLOS}
+      aria-labelledby="exemplos-titulo"
+      className="flex scroll-mt-24 flex-col gap-3"
+    >
       <header className="flex flex-col gap-1">
         <h2 id="exemplos-titulo" className="text-subtitulo font-semibold text-ink">
           Exemplos

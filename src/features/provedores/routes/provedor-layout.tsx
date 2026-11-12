@@ -3,15 +3,21 @@ import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
+import { BarraDeSecoes } from '../../../components/ui/BarraDeSecoes'
+import { BlocoRecolhivel } from '../../../components/ui/BlocoRecolhivel'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
 import { ComunicadosDoContexto } from '../../comunicados/components/ComunicadosDoContexto'
 import { AvisosProvedor } from '../components/AvisosProvedor'
 import { EstadoProvedorIndisponivel } from '../components/EstadoProvedorIndisponivel'
+import { FatosDoProvedor } from '../components/FatosDoProvedor'
 import { ErroProvedorHttp, useProvedorPorSlug } from '../hooks/useProvedorPorSlug'
+import { useVersaoProvedor } from '../hooks/useVersaoProvedor'
+import type { ProvedorDetalhe } from '../types/provedor'
 import { ID_AREA_AVISOS, useRolarParaAreaDeAvisos } from '../utils/avisoAncora'
 import { caminhoDoProvedor } from '../utils/caminhoDoProvedor'
+import { montarSecoesDoProvedor } from '../utils/secoesDoProvedor'
 
 export interface ProvedorLayoutPageProps {
   provedorSlug: string
@@ -23,6 +29,68 @@ export interface ProvedorLayoutPageProps {
    */
   caminhoAtual: string
   navegar: (opcoes: NavegacaoCanonica) => void
+}
+
+interface ConteudoDoProvedorProps {
+  provedor: ProvedorDetalhe
+  provedorSlug: string
+  caminhoAtual: string
+}
+
+/**
+ * Topo da página, barra de seções e avisos do provedor. A versão publicada é uma só e P3 a entrega
+ * primeiro. O conteúdo dela vem pela mesma chave de consulta do `Outlet`, então a moldura lê o que
+ * a página da versão já buscou, sem requisição a mais.
+ */
+function ConteudoDoProvedor({ provedor, provedorSlug, caminhoAtual }: ConteudoDoProvedorProps) {
+  const versaoPublicada = provedor.versoes[0]
+  const { data: versaoPagina } = useVersaoProvedor(provedorSlug, versaoPublicada?.slug ?? '')
+
+  const secoes = versaoPagina ? montarSecoesDoProvedor(provedor.avisos.length, versaoPagina) : []
+  const introducao = versaoPagina?.versao.introducao
+
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        <div>
+          <p className="text-xs text-muted">
+            <Link to="/provedores" search={{ pagina: 1 }} className="hover:underline">
+              Provedores
+            </Link>{' '}
+            / {provedor.nome}
+          </p>
+          <h1 className="text-titulo font-bold text-ink">{provedor.nome}</h1>
+        </div>
+
+        <FatosDoProvedor
+          categoria={provedor.categoria}
+          versaoRotulo={versaoPublicada?.rotulo}
+          verificadoEm={versaoPublicada?.verificadoEm}
+          versaoLayoutRotulo={versaoPagina?.versao.versaoLayoutRotulo}
+        />
+
+        {introducao && (
+          <BlocoRecolhivel titulo="Detalhes da fonte">
+            <p className="text-sm text-ink">{introducao}</p>
+          </BlocoRecolhivel>
+        )}
+      </div>
+
+      <ComunicadosDoContexto
+        provedorSlugs={[provedorSlug]}
+        versaoSlug={versaoPublicada?.slug}
+        caminhoAtual={caminhoAtual}
+      />
+
+      <BarraDeSecoes secoes={secoes} rotuloAria="Seções do provedor" />
+
+      <div id={ID_AREA_AVISOS} className="flex scroll-mt-24 flex-col gap-6">
+        <AvisosProvedor nomeProvedor={provedor.nome} avisos={provedor.avisos} />
+
+        <Outlet />
+      </div>
+    </>
+  )
 }
 
 /**
@@ -49,17 +117,15 @@ export function ProvedorLayoutPage({
   const conteudoPronto = !isLoading && !isError && provedor !== undefined && !correcao
   useRolarParaAreaDeAvisos(conteudoPronto)
 
-  // A versão publicada é uma só e P3 a entrega primeiro: ela traz os comunicados de escopo versão.
-  const versaoPublicadaSlug = provedor?.versoes[0]?.slug
-
   return (
     <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
+      {/* `--topo-fixo` desce os elementos presos da tabela de campos para baixo da barra de seções. */}
       <main
         id={ID_CONTEUDO_PRINCIPAL}
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 [--topo-fixo:var(--altura-barra-secoes)] lg:px-8"
       >
         {(isLoading || correcao) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
@@ -83,32 +149,11 @@ export function ProvedorLayoutPage({
         {isError && !erroTipado && <ErrorState onRetry={() => refetch()} />}
 
         {conteudoPronto && (
-          <>
-            <div>
-              <p className="text-xs text-muted">
-                <Link to="/provedores" search={{ pagina: 1 }} className="hover:underline">
-                  Provedores
-                </Link>{' '}
-                / {provedor.nome}
-              </p>
-              <h1 className="text-titulo font-bold text-ink">{provedor.nome}</h1>
-              <p className="text-sm text-muted">
-                {provedor.categoria === 'Nacional' ? 'Nacional' : 'Próprio'}
-              </p>
-            </div>
-
-            <ComunicadosDoContexto
-              provedorSlugs={[provedorSlug]}
-              versaoSlug={versaoPublicadaSlug}
-              caminhoAtual={caminhoAtual}
-            />
-
-            <div id={ID_AREA_AVISOS} className="flex flex-col gap-6">
-              <AvisosProvedor nomeProvedor={provedor.nome} avisos={provedor.avisos} />
-
-              <Outlet />
-            </div>
-          </>
+          <ConteudoDoProvedor
+            provedor={provedor}
+            provedorSlug={provedorSlug}
+            caminhoAtual={caminhoAtual}
+          />
         )}
       </main>
 

@@ -7,7 +7,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -16,6 +16,7 @@ import {
   COMUNICADO_GLOBAL,
   handlerComunicadosRegistrandoChamadas,
 } from '../../../test/mocks/comunicadosContexto'
+import { handlerLayoutIndiceSucesso } from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
 import { ProvedorLayoutPage } from './provedor-layout'
 
@@ -450,5 +451,59 @@ describe('ProvedorLayoutPage: âncora #avisos', () => {
 
     await screen.findByRole('heading', { level: 1, name: 'Prefeitura de Exemplo' })
     expect(rolar).not.toHaveBeenCalled()
+  })
+})
+
+// JSON literal do conteúdo da versão, só com o que a moldura lê.
+const versaoEscritaNoLayout8 = {
+  provedor: {
+    slug: 'prefeitura-exemplo',
+    nome: 'Prefeitura de Exemplo',
+    categoria: 'Nacional',
+    identificadorInvoicy: 'EXEMPLO',
+  },
+  versao: {
+    slug: 'v1',
+    rotulo: 'Versão 1',
+    verificadoEm: '2026-07-01',
+    introducao: 'Lote de DPS síncrono do provedor, manual v1.01.',
+    versaoLayoutRotulo: '8',
+  },
+  camposPorGrupo: [],
+  totalCampos: 0,
+  avisos: [],
+  errosResumo: { total: 0, itens: [] },
+  exemplos: [],
+  naturezasOperacao: [],
+  outrasVersoes: [],
+}
+
+describe('ProvedorLayoutPage: fatos abaixo do nome', () => {
+  it('mostra os fatos em chips, alerta o layout que não é o vigente e recolhe a fonte', async () => {
+    server.use(
+      handlerProvedor('prefeitura-exemplo', provedorFake),
+      http.get(`${API_URL}/provedores/prefeitura-exemplo/versoes/v1`, () =>
+        HttpResponse.json({ data: versaoEscritaNoLayout8, message: null }),
+      ),
+      handlerLayoutIndiceSucesso({
+        vigente: { slug: 'v9', rotulo: '9', estado: 'Vigente', ordem: 9, totalCampos: 10 },
+      }),
+    )
+
+    renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+    })
+
+    await screen.findByText('Layout InvoiCy 8, vigente é a 9')
+    const fatos = screen.getByRole('list', { name: 'Resumo do provedor' })
+    expect(
+      within(fatos)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Nacional', 'Versão 1', 'Layout InvoiCy 8, vigente é a 9', 'Verificado 01/07/2026'])
+
+    expect(screen.getByText('Detalhes da fonte').closest('details')).not.toHaveAttribute('open')
+    expect(screen.queryByText(/Escrita contra/)).not.toBeInTheDocument()
   })
 })

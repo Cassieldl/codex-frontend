@@ -15,6 +15,7 @@ import { ALCANCES_DO_ENVIO_MODELO, ROTULO_DO_ALCANCE } from '../types/envioModel
 import type { AlcanceDoEnvioModelo } from '../types/envioModelo'
 import type { GrupoCampoVersao } from '../types/versaoProvedorPagina'
 import { construirIdLinhaCampo } from '../utils/destaqueAncora'
+import { ID_SECAO_ENVIO_MODELO } from '../utils/secoesDoProvedor'
 
 export interface EnvioModeloVersaoProps {
   provedorSlug: string
@@ -130,7 +131,11 @@ export function EnvioModeloVersao({
   const camposSemPosicao = !isLoading && !error ? (envio?.camposSemPosicao ?? []) : []
 
   return (
-    <section aria-labelledby={tituloId} className="flex flex-col gap-4">
+    <section
+      id={ID_SECAO_ENVIO_MODELO}
+      aria-labelledby={tituloId}
+      className="flex scroll-mt-24 flex-col gap-4"
+    >
       <header className="flex flex-col gap-1">
         <h2 id={tituloId} className="text-subtitulo font-semibold text-ink">
           Envio modelo

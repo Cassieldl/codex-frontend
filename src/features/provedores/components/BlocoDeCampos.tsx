@@ -66,7 +66,7 @@ function RotulosDasColunas() {
     <div
       aria-hidden="true"
       style={{ gridTemplateColumns: GRID_DOS_ROTULOS }}
-      className="sticky top-12 z-[9] hidden h-8 items-center border-t border-b border-line bg-white min-[860px]:grid"
+      className="sticky top-[calc(var(--topo-fixo,0px)_+_3rem)] z-[9] hidden h-8 items-center border-t border-b border-line bg-white min-[860px]:grid"
     >
       {COLUNAS.map(({ chave, rotulo }) => (
         <span key={chave} className={CLASSE_DA_CELULA_DE_ROTULO}>
@@ -99,9 +99,9 @@ export function BlocoDeCampos({
       id={`bloco-${bloco.raiz}`}
       open={aberto}
       onToggle={(evento) => onAlternar(bloco.raiz, evento.currentTarget.open)}
-      className="group mb-3 scroll-mt-4 rounded-[var(--radius-card)] border border-border bg-white"
+      className="group mb-3 scroll-mt-[calc(var(--topo-fixo,0px)_+_1rem)] rounded-[var(--radius-card)] border border-border bg-white"
     >
-      <summary className="sticky top-0 z-10 flex h-12 cursor-pointer list-none items-center gap-3 rounded-[var(--radius-card)] bg-surface-hover px-4 hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light group-open:rounded-b-none [&::-webkit-details-marker]:hidden">
+      <summary className="sticky top-[var(--topo-fixo,0px)] z-10 flex h-12 cursor-pointer list-none items-center gap-3 rounded-[var(--radius-card)] bg-surface-hover px-4 hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light group-open:rounded-b-none [&::-webkit-details-marker]:hidden">
         <h3 className="text-card-titulo font-medium text-ink">{bloco.rotulo}</h3>
         <span className="min-w-0 truncate text-xs text-muted tabular-nums">
           {descreverMeta(bloco, filtrando)}
@@ -118,10 +118,10 @@ export function BlocoDeCampos({
         <div
           key={subgrupo.chave}
           id={subgrupo.grupoSlug ? `grupo-${subgrupo.grupoSlug}` : undefined}
-          className="scroll-mt-28"
+          className="scroll-mt-[calc(var(--topo-fixo,0px)_+_7rem)]"
         >
           {subgrupo.titulo && (
-            <h4 className="sticky top-12 z-[8] flex h-8 items-center border-t border-line bg-white px-4 text-xs font-semibold tracking-wide text-muted uppercase min-[860px]:top-20">
+            <h4 className="sticky top-[calc(var(--topo-fixo,0px)_+_3rem)] z-[8] flex h-8 items-center border-t border-line bg-white px-4 text-xs font-semibold tracking-wide text-muted uppercase min-[860px]:top-[calc(var(--topo-fixo,0px)_+_5rem)]">
               {subgrupo.titulo}
             </h4>
           )}

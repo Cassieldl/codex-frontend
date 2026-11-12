@@ -12,7 +12,6 @@ import { ExemplosVersao } from '../components/ExemplosVersao'
 import { NaturezasOperacao } from '../components/NaturezasOperacao'
 import { ErroVersaoProvedorHttp, useVersaoProvedor } from '../hooks/useVersaoProvedor'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
-import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { caminhoDoProvedor } from '../utils/caminhoDoProvedor'
 import { useCampoDestacadoPorAncora } from '../utils/destaqueAncora'
 
@@ -82,21 +81,14 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
       ? ''
       : `${window.location.origin}${caminhoDoProvedor(provedorSlug)}`
 
+  // Ordem da página: o que se consulta rápido primeiro, a referência longa (Campos) depois. A
+  // introdução e a versão do layout ficam no topo da moldura, junto do nome do provedor.
   return (
     <div className="flex flex-col gap-8">
-      {versaoPagina.versao.introducao && (
-        <p className="text-sm text-ink">{versaoPagina.versao.introducao}</p>
-      )}
-
-      <p className="text-xs text-muted">
-        Escrita contra o Layout InvoiCy{' '}
-        {formatarVersaoLayout(versaoPagina.versao.versaoLayoutRotulo)}.
-      </p>
-
       <AvisosVersao avisos={versaoPagina.avisos} />
 
-      <NaturezasOperacao
-        naturezas={versaoPagina.naturezasOperacao}
+      <ErrosConhecidos
+        resumo={versaoPagina.errosResumo}
         camposPorGrupo={versaoPagina.camposPorGrupo}
       />
 
@@ -112,14 +104,14 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
         naturezasOperacao={versaoPagina.naturezasOperacao}
       />
 
-      <EnvioModeloVersao
-        provedorSlug={provedorSlug}
-        versaoSlug={versaoSlug}
+      <NaturezasOperacao
+        naturezas={versaoPagina.naturezasOperacao}
         camposPorGrupo={versaoPagina.camposPorGrupo}
       />
 
-      <ErrosConhecidos
-        resumo={versaoPagina.errosResumo}
+      <EnvioModeloVersao
+        provedorSlug={provedorSlug}
+        versaoSlug={versaoSlug}
         camposPorGrupo={versaoPagina.camposPorGrupo}
       />
 

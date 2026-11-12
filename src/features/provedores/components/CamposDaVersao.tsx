@@ -20,6 +20,7 @@ import {
   montarBlocos,
 } from '../utils/blocosDeCampos'
 import type { FiltroDeCampos, FiltroDeEstado } from '../utils/blocosDeCampos'
+import { ID_SECAO_CAMPOS } from '../utils/secoesDoProvedor'
 import { BlocoDeCampos } from './BlocoDeCampos'
 import { FiltrosDeCampos } from './FiltrosDeCampos'
 import { ModalDoCampo } from './ModalDoCampo'
@@ -163,7 +164,11 @@ export function CamposDaVersao({
   )
 
   return (
-    <section aria-labelledby={tituloId} className="flex flex-col gap-4">
+    <section
+      id={ID_SECAO_CAMPOS}
+      aria-labelledby={tituloId}
+      className="flex scroll-mt-24 flex-col gap-4"
+    >
       <header className="flex flex-col gap-2">
         <h2 id={tituloId} className="text-subtitulo font-semibold text-ink">
           Campos e mapeamento

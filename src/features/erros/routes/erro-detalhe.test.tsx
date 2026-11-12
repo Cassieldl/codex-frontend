@@ -227,11 +227,12 @@ describe('ErroDetalhePage — rodapé: próximo passo e caminho ao suporte (§7.
     'Codex · erro E0117',
   )}&body=${encodeURIComponent('Código do erro: E0117')}`
 
-  it('erro geral: oferece buscar e o caminho ao suporte com o código do erro', async () => {
+  // Buscar já está no cabeçalho: o rodapé do erro geral fica só com o suporte.
+  it('erro geral: oferece só o caminho ao suporte, com o código do erro', async () => {
     const rodape = await renderComErro({ ...erroBase, versoesAplicaveis: [] })
 
-    expect(rodape.getByText(/Não é esse o erro que você recebeu/)).toBeInTheDocument()
-    expect(rodape.getByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/busca')
+    expect(rodape.getByText(/Fale com o suporte levando o código/)).toBeInTheDocument()
+    expect(rodape.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
     expect(rodape.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
       'href',
       hrefSuporteEsperado,
