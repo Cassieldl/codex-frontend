@@ -7,7 +7,7 @@ describe('ResultadoErroGeral', () => {
     render(<ResultadoErroGeral provedorNome={null} versaoRotulo={null} versoes={null} />)
 
     const selo = screen.getByText('Geral')
-    expect(selo).toHaveAttribute('aria-label', 'Geral — este erro não é específico de um provedor')
+    expect(selo).toHaveAttribute('aria-label', 'Geral: este erro não é específico de um provedor')
   })
 
   it('nunca renderiza um travessão nem célula vazia no lugar do selo', () => {

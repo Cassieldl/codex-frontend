@@ -1,17 +1,16 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
-import { useId, useMemo, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import { EmptyState } from '../../../components/ui/EmptyState'
+import { Pagination } from '../../../components/ui/Pagination'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
+import { resolverMensagemDoErro } from '../../erros/utils/mensagemDoErro'
 import type { ErroResumoPublico, GrupoCampoVersao } from '../types/versaoProvedorPagina'
+import { ordenarErrosPorCodigo } from '../utils/ordenarErrosPorCodigo'
 import { ID_SECAO_ERROS_CONHECIDOS } from '../utils/secoesDoProvedor'
-import {
-  indexarCamposPorErro,
-  mensagensQueAcrescentam,
-  normalizar,
-} from './camposDosErrosConhecidos'
+import { indexarCamposPorErro, normalizar } from './camposDosErrosConhecidos'
 
-/** Quantos erros aparecem de cada vez — a versão do Emissor Nacional tem mais de 450, e a busca acha o resto. */
-export const ERROS_POR_VEZ = 10
+/** Erros por página: o padrão de paginação do projeto. */
+export const ERROS_POR_PAGINA = 25
 
 export interface ErrosConhecidosProps {
   resumo: { total: number; itens: ErroResumoPublico[] }
@@ -19,27 +18,69 @@ export interface ErrosConhecidosProps {
   camposPorGrupo: GrupoCampoVersao[]
 }
 
+interface CampoDoErro {
+  nome: string
+}
+
+function ConteudoDoErro({ erro, campos }: { erro: ErroResumoPublico; campos: CampoDoErro[] }) {
+  // Título cortado em "…" vira a mensagem inteira, e ela não se repete embaixo.
+  const { principal, outras: mensagens } = resolverMensagemDoErro(erro)
+
+  return (
+    <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-3">
+      <span className="font-mono text-sm font-semibold text-ink">{erro.codigo}</span>
+      <div className="min-w-0">
+        <p className="text-sm text-ink [overflow-wrap:anywhere]">{principal}</p>
+        {mensagens.length > 0 && (
+          <ul className="mt-1 flex flex-col gap-0.5 border-l-2 border-accent pl-3">
+            {mensagens.map((mensagem) => (
+              <li
+                key={mensagem}
+                className="font-mono text-xs leading-5 text-muted [overflow-wrap:anywhere]"
+              >
+                {mensagem}
+              </li>
+            ))}
+          </ul>
+        )}
+        {campos.length > 0 && (
+          <p className="mt-1 text-xs text-muted">
+            {campos.length === 1 ? 'Campo' : 'Campos'}:{' '}
+            <span className="font-mono text-ink">
+              {campos.map((campo) => campo.nome).join(', ')}
+            </span>
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 /**
- * "Erros conhecidos" da versão. Uma linha por erro (código e título), com o campo relacionado e a
- * mensagem observada só quando ela diz algo além do título. A busca filtra por código, texto ou
- * campo; a lista mostra {@link ERROS_POR_VEZ} de cada vez.
+ * "Erros conhecidos" da versão, em ordem crescente de código. O código tem coluna própria, porque
+ * quem chega aqui costuma ter um código na mão. A mensagem observada aparece só quando diz algo
+ * além do título. A busca filtra por código, texto ou campo, e volta para a página 1.
  *
- * O caminho montado com `erro.slug` (que vem da API) passa por `caminhoInternoSeguro` antes de virar
- * sink de navegação; se não passar, o item renderiza só o texto, sem link.
+ * A lista inteira já vem na página da versão, então a paginação é local. O caminho montado com
+ * `erro.slug` passa por `caminhoInternoSeguro` antes de virar sink de navegação; se não passar,
+ * o item renderiza só o texto, sem link.
  */
 export function ErrosConhecidos({ resumo, camposPorGrupo }: ErrosConhecidosProps) {
   const buscaId = useId()
+  const secaoRef = useRef<HTMLElement | null>(null)
   const [termo, setTermo] = useState('')
-  const [quantidade, setQuantidade] = useState(ERROS_POR_VEZ)
+  const [pagina, setPagina] = useState(1)
+  const [errosPorPagina, setErrosPorPagina] = useState(ERROS_POR_PAGINA)
 
   const camposPorErro = useMemo(() => indexarCamposPorErro(camposPorGrupo), [camposPorGrupo])
+  const ordenados = useMemo(() => ordenarErrosPorCodigo(resumo.itens), [resumo.itens])
 
   const termoNormalizado = normalizar(termo.trim())
   const filtrados = useMemo(
     () =>
-      resumo.itens.filter((erro) => {
-        const campos = camposPorErro.get(erro.slug) ?? []
+      ordenados.filter((erro) => {
         if (!termoNormalizado) return true
+        const campos = camposPorErro.get(erro.slug) ?? []
         return [
           erro.codigo,
           erro.titulo,
@@ -47,21 +88,35 @@ export function ErrosConhecidos({ resumo, camposPorGrupo }: ErrosConhecidosProps
           ...campos.map((campo) => campo.nome),
         ].some((texto) => normalizar(texto).includes(termoNormalizado))
       }),
-    [resumo.itens, camposPorErro, termoNormalizado],
+    [ordenados, camposPorErro, termoNormalizado],
   )
 
   if (resumo.itens.length === 0) return null
 
-  const visiveis = filtrados.slice(0, quantidade)
-  const restantes = filtrados.length - visiveis.length
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / errosPorPagina))
+  const paginaAtual = Math.min(pagina, totalPaginas)
+  const inicio = (paginaAtual - 1) * errosPorPagina
+  const visiveis = filtrados.slice(inicio, inicio + errosPorPagina)
 
   function buscar(valor: string) {
     setTermo(valor)
-    setQuantidade(ERROS_POR_VEZ)
+    setPagina(1)
+  }
+
+  function irParaPagina(novaPagina: number) {
+    setPagina(novaPagina)
+    // O jsdom não implementa `scrollIntoView`; o navegador sempre tem.
+    secaoRef.current?.scrollIntoView?.({ block: 'start' })
+  }
+
+  function mudarErrosPorPagina(quantidade: number) {
+    setErrosPorPagina(quantidade)
+    setPagina(1)
   }
 
   return (
     <section
+      ref={secaoRef}
       id={ID_SECAO_ERROS_CONHECIDOS}
       aria-labelledby="erros-conhecidos-titulo"
       className="flex scroll-mt-24 flex-col gap-3"
@@ -101,37 +156,8 @@ export function ErrosConhecidos({ resumo, camposPorGrupo }: ErrosConhecidosProps
         <ul className="flex flex-col divide-y divide-line border-y border-line">
           {visiveis.map((erro) => {
             const caminho = caminhoInternoSeguro(`/erros/${erro.slug}`)
-            const campos = camposPorErro.get(erro.slug) ?? []
-            const mensagens = mensagensQueAcrescentam(erro)
             const conteudo = (
-              <>
-                <p className="text-sm text-ink [overflow-wrap:anywhere]">
-                  <span className="mr-2 font-mono text-xs font-semibold text-muted">
-                    {erro.codigo}
-                  </span>
-                  {erro.titulo}
-                </p>
-                {mensagens.length > 0 && (
-                  <ul className="mt-1 flex flex-col gap-0.5 border-l-2 border-accent pl-3">
-                    {mensagens.map((mensagem) => (
-                      <li
-                        key={mensagem}
-                        className="font-mono text-xs leading-5 text-muted [overflow-wrap:anywhere]"
-                      >
-                        {mensagem}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {campos.length > 0 && (
-                  <p className="mt-1 text-xs text-muted">
-                    {campos.length === 1 ? 'Campo' : 'Campos'}:{' '}
-                    <span className="font-mono text-ink">
-                      {campos.map((campo) => campo.nome).join(', ')}
-                    </span>
-                  </p>
-                )}
-              </>
+              <ConteudoDoErro erro={erro} campos={camposPorErro.get(erro.slug) ?? []} />
             )
 
             return (
@@ -153,20 +179,15 @@ export function ErrosConhecidos({ resumo, camposPorGrupo }: ErrosConhecidosProps
       )}
 
       {filtrados.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span className="text-muted">
-            Mostrando {visiveis.length} de {filtrados.length}
-          </span>
-          {restantes > 0 && (
-            <button
-              type="button"
-              onClick={() => setQuantidade((atual) => atual + ERROS_POR_VEZ)}
-              className="font-semibold text-primary-medium hover:underline"
-            >
-              Mostrar mais {Math.min(ERROS_POR_VEZ, restantes)}
-            </button>
-          )}
-        </div>
+        <Pagination
+          ariaLabel="Páginas de erros conhecidos"
+          page={paginaAtual}
+          pageSize={errosPorPagina}
+          totalCount={filtrados.length}
+          totalPages={totalPaginas}
+          onPageChange={irParaPagina}
+          onPageSizeChange={mudarErrosPorPagina}
+        />
       )}
     </section>
   )

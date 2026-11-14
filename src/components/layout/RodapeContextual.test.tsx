@@ -98,6 +98,24 @@ describe('RodapeContextual', () => {
     expect(screen.getAllByRole('link', { name: 'Falar com o suporte' })).toHaveLength(1)
   })
 
+  it('erro-com-contexto: só fala em "corrigir o campo" quando o erro tem campo relacionado', async () => {
+    const comCampo = renderComRouter({
+      tipo: 'erro-com-contexto',
+      provedorSlug: 'ipm',
+      temCampoRelacionado: true,
+    })
+    expect(
+      await screen.findByText('Corrigiu este campo? Confira o resto do provedor.'),
+    ).toBeInTheDocument()
+    comCampo.unmount()
+
+    renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm', temCampoRelacionado: false })
+    expect(
+      await screen.findByText('Resolveu este erro? Confira o resto do provedor.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Corrigiu este campo/)).not.toBeInTheDocument()
+  })
+
   it('monta o link de "ver o provedor completo" sem versão no endereço', async () => {
     renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm' })
 

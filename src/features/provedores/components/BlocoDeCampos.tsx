@@ -9,6 +9,8 @@ export interface BlocoDeCamposProps {
   /** Há filtro ativo: a meta mostra "v de n campos". */
   filtrando: boolean
   slugAtivo: string | null
+  /** A versão tem algum exemplo: sem nenhum, a coluna Exemplo sai da tabela inteira. */
+  mostrarExemplo?: boolean
   /** Sincroniza o estado com o `<details>`: o navegador também abre o bloco (Ctrl+F, fragmento). */
   onAlternar: (raiz: string, aberto: boolean) => void
   onAbrirCampo: (campoLayoutSlug: string, secao?: SecaoInicialDoModal) => void
@@ -36,11 +38,13 @@ const COLUNAS: ColunaDoBloco[] = [
   { chave: 'rejeicoes', rotulo: 'Rejeições registradas', largura: '4.25rem', soNoDesktop: false },
 ]
 
+const COLUNAS_SEM_EXEMPLO = COLUNAS.filter(({ chave }) => chave !== 'exemplo')
+
 const COLUNA_SEM_LARGURA_NO_GRID = 'minmax(0, 1fr)'
 
-const GRID_DOS_ROTULOS = COLUNAS.map(({ largura }) => largura ?? COLUNA_SEM_LARGURA_NO_GRID).join(
-  ' ',
-)
+function montarGridDosRotulos(colunas: ColunaDoBloco[]): string {
+  return colunas.map(({ largura }) => largura ?? COLUNA_SEM_LARGURA_NO_GRID).join(' ')
+}
 
 const CLASSE_DA_CELULA_DE_ROTULO = 'px-3 text-xs font-medium text-muted'
 
@@ -61,14 +65,14 @@ function descreverTrilha(rotulo: string, subgrupo: SubgrupoDeCampos): string {
   return subgrupo.titulo ? `${rotulo} › ${subgrupo.titulo}` : rotulo
 }
 
-function RotulosDasColunas() {
+function RotulosDasColunas({ colunas }: { colunas: ColunaDoBloco[] }) {
   return (
     <div
       aria-hidden="true"
-      style={{ gridTemplateColumns: GRID_DOS_ROTULOS }}
+      style={{ gridTemplateColumns: montarGridDosRotulos(colunas) }}
       className="sticky top-[calc(var(--topo-fixo,0px)_+_3rem)] z-[9] hidden h-8 items-center border-t border-b border-line bg-white min-[860px]:grid"
     >
-      {COLUNAS.map(({ chave, rotulo }) => (
+      {colunas.map(({ chave, rotulo }) => (
         <span key={chave} className={CLASSE_DA_CELULA_DE_ROTULO}>
           {chave === 'rejeicoes' ? (
             <TriangleAlert aria-hidden="true" className="ml-auto size-3.5" />
@@ -91,9 +95,12 @@ export function BlocoDeCampos({
   aberto,
   filtrando,
   slugAtivo,
+  mostrarExemplo = true,
   onAlternar,
   onAbrirCampo,
 }: BlocoDeCamposProps) {
+  const colunas = mostrarExemplo ? COLUNAS : COLUNAS_SEM_EXEMPLO
+
   return (
     <details
       id={`bloco-${bloco.raiz}`}
@@ -112,7 +119,7 @@ export function BlocoDeCampos({
         />
       </summary>
 
-      <RotulosDasColunas />
+      <RotulosDasColunas colunas={colunas} />
 
       {bloco.subgrupos.map((subgrupo) => (
         <div
@@ -131,7 +138,7 @@ export function BlocoDeCampos({
               Campos de {descreverTrilha(bloco.rotulo, subgrupo)}
             </caption>
             <colgroup>
-              {COLUNAS.map(({ chave, largura, soNoDesktop }) => (
+              {colunas.map(({ chave, largura, soNoDesktop }) => (
                 <col
                   key={chave}
                   style={largura ? { width: largura } : undefined}
@@ -141,7 +148,7 @@ export function BlocoDeCampos({
             </colgroup>
             <thead className="sr-only">
               <tr>
-                {COLUNAS.map(({ chave, rotulo, soNoDesktop }) => (
+                {colunas.map(({ chave, rotulo, soNoDesktop }) => (
                   <th
                     key={chave}
                     scope="col"
@@ -158,6 +165,7 @@ export function BlocoDeCampos({
                   key={campo.campoLayoutSlug}
                   campo={campo}
                   ativo={campo.campoLayoutSlug === slugAtivo}
+                  mostrarExemplo={mostrarExemplo}
                   onAbrir={onAbrirCampo}
                 />
               ))}

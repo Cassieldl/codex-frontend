@@ -1,20 +1,21 @@
 import clsx from 'clsx'
 import { memo } from 'react'
 import type { MouseEvent } from 'react'
-import { EtiquetaEstado } from '../../../components/ui/EtiquetaEstado'
 import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
 import type { SecaoInicialDoModal } from '../types/modalDoCampo'
 import type { CampoVersaoPublico } from '../types/versaoProvedorPagina'
-import { ESTADO_PARA_ETIQUETA } from '../utils/blocosDeCampos'
 import { construirIdLinhaCampo } from '../utils/destaqueAncora'
 import { separarDestinos } from '../utils/destinosXml'
 import type { DestinoDoCampo } from '../utils/destinosXml'
 import { IndicadorErrosDoCampo } from './IndicadorErrosDoCampo'
+import { MarcadorObrigatoriedade } from './MarcadorObrigatoriedade'
 
 export interface LinhaDoCampoProps {
   campo: CampoVersaoPublico
   /** Último campo aberto: recebe o destaque e o `aria-current`. */
   ativo: boolean
+  /** A versão tem algum exemplo: sem nenhum, a coluna Exemplo não existe. */
+  mostrarExemplo?: boolean
   /** Precisa ser estável (`useCallback`): sem isso o `memo` não evita nenhum render. */
   onAbrir: (campoLayoutSlug: string, secao?: SecaoInicialDoModal) => void
 }
@@ -36,13 +37,9 @@ function descreverResumoMovel(campo: CampoVersaoPublico): string {
 }
 
 function DestinosDoCampo({ destinos }: { destinos: DestinoDoCampo[] }) {
+  // Célula vazia na tela; o leitor de tela ouve o motivo.
   if (destinos.length === 0) {
-    return (
-      <>
-        <span aria-hidden="true">—</span>
-        <span className="sr-only">sem destino no XML do provedor</span>
-      </>
-    )
+    return <span className="sr-only">sem destino no XML do provedor</span>
   }
 
   return (
@@ -69,12 +66,13 @@ function DestinosDoCampo({ destinos }: { destinos: DestinoDoCampo[] }) {
 
 /**
  * Linha de um campo na lista do bloco. O caminho de teclado é o botão do nome; o `onClick` da
- * linha é só conveniência de mouse e ignora cliques que nascem em botão ou link — senão o contador
+ * linha é só conveniência de mouse e ignora cliques que nascem em botão ou link, senão o contador
  * de rejeições abriria o detalhe duas vezes, uma delas sem a seção.
  */
 export const LinhaDoCampo = memo(function LinhaDoCampo({
   campo,
   ativo,
+  mostrarExemplo = true,
   onAbrir,
 }: LinhaDoCampoProps) {
   const slug = campo.campoLayoutSlug
@@ -101,24 +99,24 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
           ativo ? 'border-l-accent' : 'border-l-transparent',
         )}
       >
-        <button
-          type="button"
-          data-botao-do-campo=""
-          aria-haspopup="dialog"
-          aria-current={ativo ? 'true' : undefined}
-          title={campo.caminhoXml}
-          onClick={() => onAbrir(slug)}
-          className={CLASSE_DO_NOME}
-        >
-          {campo.nome}
-        </button>
-        {campo.reformaTributaria && <SeloReformaTributaria className="ml-2" />}
-        <div className="mt-1">
-          <EtiquetaEstado estado={ESTADO_PARA_ETIQUETA[campo.estadoPreenchimento]} />
+        <div className="flex items-center gap-2">
+          <MarcadorObrigatoriedade estado={campo.estadoPreenchimento} />
+          <button
+            type="button"
+            data-botao-do-campo=""
+            aria-haspopup="dialog"
+            aria-current={ativo ? 'true' : undefined}
+            title={campo.caminhoXml}
+            onClick={() => onAbrir(slug)}
+            className={CLASSE_DO_NOME}
+          >
+            {campo.nome}
+          </button>
+          {campo.reformaTributaria && <SeloReformaTributaria />}
         </div>
         <p
           data-resumo-movel=""
-          className="mt-1 text-xs text-muted [overflow-wrap:anywhere] min-[860px]:hidden"
+          className="mt-1 pl-[1.125rem] text-xs text-muted [overflow-wrap:anywhere] min-[860px]:hidden"
         >
           {descreverResumoMovel(campo)}
         </p>
@@ -136,28 +134,21 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
         data-coluna="tamanho"
         className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2 font-mono text-xs text-ink')}
       >
-        {campo.tamanho ? (
-          campo.tamanho
-        ) : (
-          <>
-            <span aria-hidden="true">—</span>
-            <span className="sr-only">não informado</span>
-          </>
-        )}
+        {campo.tamanho}
       </td>
 
-      <td data-coluna="exemplo" className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2')}>
-        {campo.exemplo ? (
-          <span
-            className="line-clamp-2 font-mono text-xs text-ink [overflow-wrap:anywhere]"
-            title={campo.exemplo}
-          >
-            {campo.exemplo}
-          </span>
-        ) : (
-          <span className="text-xs text-muted italic">sem exemplo</span>
-        )}
-      </td>
+      {mostrarExemplo && (
+        <td data-coluna="exemplo" className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2')}>
+          {campo.exemplo && (
+            <span
+              className="line-clamp-2 font-mono text-xs text-ink [overflow-wrap:anywhere]"
+              title={campo.exemplo}
+            >
+              {campo.exemplo}
+            </span>
+          )}
+        </td>
+      )}
 
       <td data-coluna="rejeicoes" className="px-3 py-2 text-right">
         <IndicadorErrosDoCampo

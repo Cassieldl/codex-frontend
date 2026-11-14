@@ -18,11 +18,13 @@ import {
   filtrarCampos,
   filtroDeCamposAtivo,
   montarBlocos,
+  versaoTemExemplo,
 } from '../utils/blocosDeCampos'
 import type { FiltroDeCampos, FiltroDeEstado } from '../utils/blocosDeCampos'
 import { ID_SECAO_CAMPOS } from '../utils/secoesDoProvedor'
 import { BlocoDeCampos } from './BlocoDeCampos'
 import { FiltrosDeCampos } from './FiltrosDeCampos'
+import { LegendaDeObrigatoriedade } from './MarcadorObrigatoriedade'
 import { ModalDoCampo } from './ModalDoCampo'
 
 export interface CamposDaVersaoProps {
@@ -87,6 +89,7 @@ export function CamposDaVersao({
     () => contarDaReformaTributaria(camposPorGrupo),
     [camposPorGrupo],
   )
+  const mostrarExemplo = useMemo(() => versaoTemExemplo(camposPorGrupo), [camposPorGrupo])
 
   const blocosFiltrados = useMemo(
     () => filtrarCampos(blocosCompletos, { estado: filtroEstado, termo, somenteReformaTributaria }),
@@ -223,6 +226,9 @@ export function CamposDaVersao({
           </aside>
 
           <div ref={contenedorRef} className="min-w-0 flex-1">
+            <div className="mb-2 px-1">
+              <LegendaDeObrigatoriedade mostrarReformaTributaria={contagemDaReforma > 0} />
+            </div>
             {blocosComResultado.map((bloco) => (
               <BlocoDeCampos
                 key={bloco.raiz}
@@ -230,6 +236,7 @@ export function CamposDaVersao({
                 aberto={blocosAbertos.has(bloco.raiz)}
                 filtrando={filtroAtivo}
                 slugAtivo={slugAtivo}
+                mostrarExemplo={mostrarExemplo}
                 onAlternar={alternarBloco}
                 onAbrirCampo={abrirCampo}
               />

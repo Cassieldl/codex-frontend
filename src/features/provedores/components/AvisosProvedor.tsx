@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import type { AvisoPublico } from '../types/provedor'
 import { useAvisoDestacadoPorAncora } from '../utils/avisoAncora'
+import { ordenarAvisosPorGravidade } from '../utils/resumoDoAviso'
 import { AvisoPublicoItem } from './AvisoPublicoItem'
 
 export interface AvisosProvedorProps {
@@ -8,14 +10,14 @@ export interface AvisosProvedorProps {
 }
 
 /**
- * Seção "Avisos do provedor" (U8) — renderizada pelo `route.tsx` pai,
- * **sempre visível** acima da barra de abas, independente de qual versão
- * está selecionada. Distinta de "Avisos desta versão" (`AvisosVersao`) por
- * rótulo de seção e posição — a severidade usa a mesma paleta nos dois
- * escopos, de propósito (§3.3b/§7.6.1): quem distingue não é a cor.
+ * Seção "Avisos do provedor" (U8), renderizada pelo `route.tsx` pai e sempre visível, qualquer
+ * que seja a versão. Distinta de "Avisos desta versão" (`AvisosVersao`) por rótulo de seção e
+ * posição: a severidade usa a mesma paleta nos dois escopos, de propósito (§3.3b/§7.6.1). Ordem
+ * por gravidade: crítico, atenção, informação.
  */
 export function AvisosProvedor({ nomeProvedor, avisos }: AvisosProvedorProps) {
   const avisoDestacado = useAvisoDestacadoPorAncora(avisos)
+  const avisosPorGravidade = useMemo(() => ordenarAvisosPorGravidade(avisos), [avisos])
 
   if (avisos.length === 0) return null
 
@@ -29,7 +31,7 @@ export function AvisosProvedor({ nomeProvedor, avisos }: AvisosProvedorProps) {
       </header>
 
       <ul className="flex flex-col gap-2">
-        {avisos.map((aviso) => (
+        {avisosPorGravidade.map((aviso) => (
           <AvisoPublicoItem key={aviso.id} aviso={aviso} destacado={aviso.id === avisoDestacado} />
         ))}
       </ul>

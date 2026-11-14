@@ -9,6 +9,7 @@ import {
   filtrarCampos,
   montarBlocos,
   sequenciaVisivel,
+  versaoTemExemplo,
 } from './blocosDeCampos'
 
 function campo(
@@ -516,5 +517,32 @@ describe('campoPassaNoFiltro, só campos da reforma tributária', () => {
         somenteReformaTributaria: true,
       }),
     ).toBe(false)
+  })
+})
+
+describe('versaoTemExemplo', () => {
+  it('sem exemplo em nenhum campo, a coluna sai', () => {
+    expect(versaoTemExemplo(camposPorGrupo)).toBe(false)
+  })
+
+  it('um campo com exemplo em qualquer grupo basta para a coluna ficar', () => {
+    const comUmExemplo = [
+      ...camposPorGrupo,
+      {
+        grupo: 'Rps',
+        grupoSlug: 'rps',
+        campos: [{ ...campoCnpjTomador, exemplo: '12345678000199' }],
+      },
+    ]
+
+    expect(versaoTemExemplo(comUmExemplo)).toBe(true)
+  })
+
+  it('exemplo só com espaço conta como vazio', () => {
+    const comEspaco = [
+      { grupo: 'Rps', grupoSlug: 'rps', campos: [{ ...campoCnpjTomador, exemplo: '  ' }] },
+    ]
+
+    expect(versaoTemExemplo(comEspaco)).toBe(false)
   })
 })

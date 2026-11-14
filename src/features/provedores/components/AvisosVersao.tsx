@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import type { AvisoPublico } from '../types/provedor'
 import { useAvisoDestacadoPorAncora } from '../utils/avisoAncora'
+import { ordenarAvisosPorGravidade } from '../utils/resumoDoAviso'
 import { AvisoPublicoItem } from './AvisoPublicoItem'
 
 export interface AvisosVersaoProps {
@@ -7,13 +9,13 @@ export interface AvisosVersaoProps {
 }
 
 /**
- * Seção "Avisos desta versão" — renderizada dentro do conteúdo da aba
- * (`$versaoSlug.tsx`), distinta de "Avisos do provedor" (`AvisosProvedor`,
- * sempre visível no `route.tsx` pai) por rótulo de seção e posição (U8,
- * §7.6.3). A API já ordena por severidade (Crítico no topo).
+ * Seção "Avisos desta versão", renderizada dentro do conteúdo da aba (`$versaoSlug.tsx`) e
+ * distinta de "Avisos do provedor" (`AvisosProvedor`) por rótulo de seção e posição (U8, §7.6.3).
+ * Ordem por gravidade: crítico, atenção, informação.
  */
 export function AvisosVersao({ avisos }: AvisosVersaoProps) {
   const avisoDestacado = useAvisoDestacadoPorAncora(avisos)
+  const avisosPorGravidade = useMemo(() => ordenarAvisosPorGravidade(avisos), [avisos])
 
   if (avisos.length === 0) return null
 
@@ -24,7 +26,7 @@ export function AvisosVersao({ avisos }: AvisosVersaoProps) {
       </h2>
 
       <ul className="flex flex-col gap-2">
-        {avisos.map((aviso) => (
+        {avisosPorGravidade.map((aviso) => (
           <AvisoPublicoItem key={aviso.id} aviso={aviso} destacado={aviso.id === avisoDestacado} />
         ))}
       </ul>

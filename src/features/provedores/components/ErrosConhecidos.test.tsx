@@ -146,6 +146,30 @@ describe('ErrosConhecidos — cada erro', () => {
     expect(screen.getByText(ERRO_SEM_CAMPO.titulo).closest('a')).not.toHaveTextContent('Campo')
   })
 
+  it('título cortado em "…" vira a mensagem inteira, que não se repete embaixo', async () => {
+    const mensagemInteira =
+      'Não é permitido informar alíquota quando não há indicação de retenção do ISSQN (tpRetISSQN = 1) para o prestador de serviço ME/EPP (opSimpNac = 3) na data de competência informada na DPS.'
+    renderizar(
+      {},
+      {
+        total: 1,
+        itens: [
+          {
+            codigo: 'E0625',
+            titulo:
+              'Não é permitido informar alíquota quando não há indicação de retenção do ISSQN (tpRetISSQN = 1) para o prestador de serviço ME/EPP (opSimpNac = 3) na data de…',
+            slug: 'e0625-nao-e-permitido',
+            variantes: [mensagemInteira],
+          },
+        ],
+      },
+    )
+
+    expect(await screen.findByText(mensagemInteira)).toBeInTheDocument()
+    expect(screen.getAllByText(/Não é permitido informar alíquota/)).toHaveLength(1)
+    expect(screen.queryByText(/na data de…/)).not.toBeInTheDocument()
+  })
+
   // O prefixo fixo `/erros/` já mantém o destino na mesma origem; o que este caso prova é o ramo
   // de texto quando o saneador recusa o slug (caractere de controle).
   it('slug recusado pelo saneador vira texto, sem link', async () => {
@@ -191,29 +215,49 @@ describe('ErrosConhecidos — busca', () => {
   })
 })
 
-describe('ErrosConhecidos — quantidade', () => {
-  const QUINZE = {
-    total: 15,
-    itens: Array.from({ length: 15 }, (_, indice) => ({
-      codigo: `E${String(indice).padStart(4, '0')}`,
-      titulo: `Erro número ${indice}`,
-      slug: `e${indice}-erro`,
-      variantes: [],
-    })),
+describe('ErrosConhecidos: ordem e paginação', () => {
+  // Fora de ordem de propósito, e com códigos de tamanhos diferentes: E2 tem de vir antes de E10.
+  const SESSENTA = {
+    total: 60,
+    itens: Array.from({ length: 60 }, (_, indice) => {
+      const numero = 60 - indice
+      return {
+        codigo: `E${numero}`,
+        titulo: `Erro número ${numero}`,
+        slug: `e${numero}-erro`,
+        variantes: [],
+      }
+    }),
   }
 
-  // Literais, não a constante: 10 é decisão de produto, e o teste tem de cair se ela mudar.
-  it('mostra 10 de cada vez, com o total à vista', async () => {
-    renderizar({}, QUINZE)
-    await screen.findByText('Erro número 0')
+  function codigosNaTela() {
+    return itensDaLista().map((item) => item.textContent?.match(/^E\d+/)?.[0])
+  }
 
-    expect(itensDaLista()).toHaveLength(10)
-    expect(screen.getByText('Mostrando 10 de 15')).toBeInTheDocument()
+  // Literais, não a constante: 25 é decisão de produto, e o teste tem de cair se ela mudar.
+  it('abre em ordem crescente de código, 25 por página, com o total à vista', async () => {
+    renderizar({}, SESSENTA)
+    await screen.findByText('Erro número 1')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Mostrar mais 5' }))
+    expect(codigosNaTela().slice(0, 3)).toEqual(['E1', 'E2', 'E3'])
+    expect(itensDaLista()).toHaveLength(25)
+    expect(screen.getByText('60 registros')).toBeInTheDocument()
 
-    expect(itensDaLista()).toHaveLength(15)
-    expect(screen.queryByRole('button', { name: /Mostrar mais/ })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Página 3' }))
+
+    expect(codigosNaTela()).toEqual(Array.from({ length: 10 }, (_, indice) => `E${51 + indice}`))
+  })
+
+  it('filtrar volta para a página 1', async () => {
+    renderizar({}, SESSENTA)
+    await screen.findByText('Erro número 1')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Página 2' }))
+    // O termo casa com todos: sem voltar para a 1, a lista ficaria na página 2.
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'numero' } })
+
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page')
+    expect(codigosNaTela()[0]).toBe('E1')
   })
 })
 

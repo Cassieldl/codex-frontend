@@ -22,7 +22,13 @@ export type ContextoRodape =
   /** Índice de artigos (tela 7) e página do artigo (telas 8/9) — §2.2/§3.5. */
   | { tipo: 'artigos' }
   | { tipo: 'provedor'; provedorSlug: string }
-  | { tipo: 'erro-com-contexto'; provedorSlug: string; codigoErro?: string }
+  | {
+      tipo: 'erro-com-contexto'
+      provedorSlug: string
+      codigoErro?: string
+      /** O erro aponta campo do layout: só então o texto fala em "corrigir o campo". */
+      temCampoRelacionado?: boolean
+    }
   /** Erro geral (U9): vale para qualquer integração, não há provedor para apontar. */
   | { tipo: 'erro-geral'; codigoErro?: string }
   /** Erro que se aplica a mais de um provedor, o caso mais consultado (§7.1). */
@@ -86,7 +92,9 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
       }
     case 'erro-com-contexto':
       return {
-        mensagem: 'Corrigiu este campo? Confira o resto do provedor.',
+        mensagem: contexto.temCampoRelacionado
+          ? 'Corrigiu este campo? Confira o resto do provedor.'
+          : 'Resolveu este erro? Confira o resto do provedor.',
         acao: { rotulo: 'Ver o provedor completo', href: `/provedores/${contexto.provedorSlug}` },
         acaoSecundaria: montarAcaoSuporteDeErro(contexto.codigoErro),
       }

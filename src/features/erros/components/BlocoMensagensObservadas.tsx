@@ -1,19 +1,29 @@
 import { useId } from 'react'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
+import { resolverMensagemDoErro } from '../utils/mensagemDoErro'
 
 export interface BlocoMensagensObservadasProps {
   variantes: string[]
   codigoErro: string
+  /** A mensagem do cabeçalho: a variante igual a ela não se repete aqui. */
+  titulo: string
 }
 
 /**
- * "Mensagens observadas" (§7.2) — o caminho crítico do produto: é por essas
- * variantes que a busca encontra o erro, e é nelas que o leitor se reconhece
- * ("é essa a mensagem que eu recebi"). Cada variante tem peso visual de
- * citação e seu próprio botão de copiar, com `aria-label` específico
- * (nunca "Copiar" genérico) e `id` único por item (AP-FRONTEND-003).
+ * "Mensagens observadas" (§7.2): é por essas variantes que a busca encontra o erro, e é nelas que
+ * o leitor se reconhece ("é essa a mensagem que eu recebi"). A variante que já está no
+ * cabeçalho sai, inclusive a inteira do título cortado; sem nenhuma outra, a seção não aparece.
+ * Cada variante tem o próprio Copiar, com `aria-label` específico e `id` único (AP-FRONTEND-003).
  */
-export function BlocoMensagensObservadas({ variantes, codigoErro }: BlocoMensagensObservadasProps) {
+export function BlocoMensagensObservadas({
+  variantes,
+  codigoErro,
+  titulo,
+}: BlocoMensagensObservadasProps) {
+  const outrasMensagens = resolverMensagemDoErro({ titulo, variantes }).outras
+
+  if (outrasMensagens.length === 0) return null
+
   return (
     <section aria-labelledby="mensagens-observadas-titulo" className="flex flex-col gap-3">
       <h2 id="mensagens-observadas-titulo" className="text-subtitulo font-semibold text-ink">
@@ -21,10 +31,10 @@ export function BlocoMensagensObservadas({ variantes, codigoErro }: BlocoMensage
       </h2>
 
       <ul className="flex flex-col gap-2">
-        {variantes.map((texto, indice) => (
+        {outrasMensagens.map((texto, indice) => (
           <VarianteMensagem
-            // A ordem das variantes é estável (vem do backend) — o índice
-            // compõe a chave junto com o texto só como desempate defensivo.
+            // A ordem das variantes é estável (vem do backend); o índice compõe a chave junto
+            // com o texto só como desempate defensivo.
             key={`${indice}-${texto}`}
             texto={texto}
             numero={indice + 1}

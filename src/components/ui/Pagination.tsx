@@ -8,6 +8,8 @@ export interface PaginationProps {
   totalCount: number
   totalPages: number
   pageSizeOptions?: number[]
+  /** Nome da navegação: com mais de uma paginação na tela, cada uma diz do que é. */
+  ariaLabel?: string
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
 }
@@ -46,6 +48,7 @@ export function Pagination({
   totalCount,
   totalPages,
   pageSizeOptions = PAGE_SIZE_OPTIONS_PADRAO,
+  ariaLabel = 'Paginação',
   onPageChange,
   onPageSizeChange,
 }: PaginationProps) {
@@ -55,7 +58,7 @@ export function Pagination({
   const naUltimaPagina = page >= totalPages
 
   return (
-    <nav aria-label="Paginação" className="flex flex-wrap items-center justify-between gap-3 py-2">
+    <nav aria-label={ariaLabel} className="flex flex-wrap items-center justify-between gap-3 py-2">
       <div className="flex items-center gap-2 text-xs text-muted">
         <label htmlFor={seletorId}>Itens por página</label>
         <select

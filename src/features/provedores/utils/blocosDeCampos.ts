@@ -88,7 +88,6 @@ export function sequenciaVisivel(blocos: BlocoDeCampos[]): CampoNaSequencia[] {
   return sequenciaDosBlocos(blocos)
 }
 
-/** Conta a versão inteira, sem considerar o termo de busca. */
 /** Campos da reforma tributária na versão inteira, sem considerar nenhum filtro. */
 export function contarDaReformaTributaria(camposPorGrupo: GrupoCampoVersao[]): number {
   return camposPorGrupo.reduce(
@@ -97,6 +96,17 @@ export function contarDaReformaTributaria(camposPorGrupo: GrupoCampoVersao[]): n
   )
 }
 
+/**
+ * Algum campo da versão traz exemplo. Olha a versão inteira, não o filtro: a coluna não pode
+ * aparecer e sumir enquanto a pessoa digita.
+ */
+export function versaoTemExemplo(camposPorGrupo: GrupoCampoVersao[]): boolean {
+  return camposPorGrupo.some((grupo) =>
+    grupo.campos.some((campo) => (campo.exemplo ?? '').trim() !== ''),
+  )
+}
+
+/** Conta a versão inteira, sem considerar o termo de busca. */
 export function contarPorEstado(
   camposPorGrupo: GrupoCampoVersao[],
 ): Record<FiltroDeEstado, number> {

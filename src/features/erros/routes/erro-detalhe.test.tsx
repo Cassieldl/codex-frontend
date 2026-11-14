@@ -142,6 +142,71 @@ describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
   })
 })
 
+describe('ErroDetalhePage: o que decide o caso vem primeiro', () => {
+  const erroComSolucao = {
+    ...erroBase,
+    titulo: 'Usuário não está autorizado a utilizar esse serviço.',
+    variantes: ['Usuário não está autorizado a utilizar esse serviço'],
+    solucaoSugerida: 'Pedir liberação à Nota Control.',
+    versoesAplicaveis: [
+      { provedorSlug: 'issnet', provedorNome: 'ISS.NET', versaoSlug: '1-01', versaoRotulo: '1.01' },
+    ],
+  }
+
+  function servir(erro: { slug: string }) {
+    server.use(
+      http.get(`${API_URL}/erros/${erro.slug}`, () =>
+        HttpResponse.json({ data: erro, message: null }),
+      ),
+    )
+  }
+
+  it('a solução vem logo depois do cabeçalho, com o provedor em chip e a mensagem uma vez', async () => {
+    servir(erroComSolucao)
+    renderPagina({ erroSlug: erroComSolucao.slug })
+
+    const solucao = await screen.findByRole('region', { name: 'Solução sugerida' })
+    const main = screen.getByRole('main')
+
+    expect(main.querySelector('header')?.nextElementSibling).toBe(solucao)
+    expect(within(main).getByRole('link', { name: 'ISS.NET 1.01' })).toHaveAttribute(
+      'href',
+      '/provedores/issnet',
+    )
+    expect(within(main).getAllByText(/Usuário não está autorizado/)).toHaveLength(1)
+    expect(screen.queryByRole('heading', { name: 'Mensagens observadas' })).not.toBeInTheDocument()
+  })
+
+  it('a solução é título de seção, menor que o código', async () => {
+    servir(erroComSolucao)
+    renderPagina({ erroSlug: erroComSolucao.slug })
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'Solução sugerida' })).toHaveClass(
+      'text-subtitulo',
+    )
+    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('text-titulo')
+  })
+
+  it('sem causa provável, a seção some em vez de dizer que não há', async () => {
+    servir(erroComSolucao)
+    renderPagina({ erroSlug: erroComSolucao.slug })
+
+    await screen.findByRole('heading', { level: 1, name: 'E0117' })
+    expect(screen.queryByRole('heading', { name: 'Causa provável' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/ainda não documentada/)).not.toBeInTheDocument()
+  })
+
+  it('sem campo relacionado, o rodapé não fala em corrigir campo', async () => {
+    servir(erroComSolucao)
+    renderPagina({ erroSlug: erroComSolucao.slug })
+
+    const rodape = within(await screen.findByRole('contentinfo'))
+    expect(
+      await rodape.findByText('Resolveu este erro? Confira o resto do provedor.'),
+    ).toBeInTheDocument()
+  })
+})
+
 describe('ErroDetalhePage — causa provável', () => {
   it('preserva a quebra entre a regra da Sefin e o lugar onde ela se aplica', async () => {
     // Formato da carga do Emissor Nacional: regra numa linha, caminho na seguinte.
@@ -404,8 +469,9 @@ describe('ErroDetalhePage — comunicados do contexto', () => {
   })
 
   it('a falha do endpoint de comunicados não derruba a página do erro', async () => {
+    const erroComCausa = { ...erroBase, causaProvavel: 'Causa.' }
     server.use(
-      servirErro(erroBase),
+      servirErro(erroComCausa),
       http.get(`${API_URL}/comunicados`, () => new HttpResponse(null, { status: 500 })),
     )
 

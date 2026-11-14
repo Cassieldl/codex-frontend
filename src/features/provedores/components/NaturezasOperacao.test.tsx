@@ -28,25 +28,30 @@ const NATUREZAS: NaturezaOperacaoPublica[] = [
 ]
 
 describe('NaturezasOperacao', () => {
-  it('mostra uma linha por código, na ordem recebida, com o valor no layout do provedor', () => {
+  it('mostra uma linha por código, na ordem recebida, como conversão do InvoiCy para o provedor', () => {
     render(<NaturezasOperacao naturezas={NATUREZAS} camposPorGrupo={[]} />)
 
     expect(screen.getByRole('heading', { name: 'Natureza da operação' })).toBeInTheDocument()
-    expect(
-      screen.getByRole('columnheader', { name: 'Valor no layout do provedor' }),
-    ).toBeInTheDocument()
+    expect(screen.getAllByRole('columnheader')).toHaveLength(2)
 
     const linhas = screen.getAllByRole('row').slice(1)
     expect(linhas.map((linha) => within(linha).getAllByRole('cell')[0].textContent)).toEqual([
-      '7',
-      '4',
-      '16',
+      '7→ vira 1',
+      '4→ vira 5',
+      '16→ vira 14',
     ])
-    expect(
-      within(linhas[1]).getByText('Este provedor não recebe o tipo de imunidade.'),
-    ).toBeInTheDocument()
-    expect(within(linhas[2]).getByText('A confirmar')).toBeInTheDocument()
-    expect(within(linhas[0]).queryByText('A confirmar')).toBeNull()
+  })
+
+  it('a observação vira nota embaixo da descrição, só na linha que tem', () => {
+    render(<NaturezasOperacao naturezas={NATUREZAS} camposPorGrupo={[]} />)
+
+    const linhas = screen.getAllByRole('row').slice(1)
+    const notas = linhas.map((linha) => linha.querySelector('[data-nota-natureza]'))
+
+    expect(notas[0]).toBeNull()
+    expect(notas[1]).toHaveTextContent('Este provedor não recebe o tipo de imunidade.')
+    expect(notas[2]).toHaveTextContent('A confirmar')
+    expect(within(linhas[1]).getAllByRole('cell')[1]).toContainElement(notas[1] as HTMLElement)
   })
 
   it('não aparece quando a versão não tem tabela', () => {

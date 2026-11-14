@@ -4,13 +4,15 @@ export interface ResultadoErroGeralProps {
   versoes: string[] | null
 }
 
-const ARIA_LABEL_GERAL = 'Geral — este erro não é específico de um provedor'
+const ARIA_LABEL_GERAL = 'Geral: este erro não é específico de um provedor'
+
+const CLASSE_DO_CHIP =
+  'inline-flex max-w-[45%] shrink-0 items-center rounded-[var(--radius-pill)] border px-2.5 py-0.5 text-xs [overflow-wrap:anywhere]'
 
 /**
- * Resultado de erro sem provedor/versão aplicável (U9) — erro `InvoiCy`/`Schema`
- * geral. Mostra o selo "Geral" com `aria-label` explicativo. **Nunca** um
- * travessão nem espaço em branco, que sugeririam dado ausente por engano em
- * vez de "geral por natureza".
+ * Chip de contexto do erro no resultado da busca: o provedor e a versão, que é o que separa dois
+ * erros com o mesmo código. Erro sem provedor nem versão (U9) mostra o selo "Geral", nunca um
+ * espaço em branco, que sugeriria dado ausente por engano em vez de "geral por natureza".
  */
 export function ResultadoErroGeral({
   provedorNome,
@@ -24,7 +26,7 @@ export function ResultadoErroGeral({
       <span
         aria-label={ARIA_LABEL_GERAL}
         title="Este erro não é específico de um provedor"
-        className="inline-flex items-center rounded-[var(--radius-pill)] border border-border px-2 py-0.5 text-xs font-medium text-muted"
+        className={`${CLASSE_DO_CHIP} border-border font-medium text-muted`}
       >
         Geral
       </span>
@@ -33,9 +35,15 @@ export function ResultadoErroGeral({
 
   const versaoTexto = versaoRotulo ?? versoes?.join(', ') ?? null
 
-  // O separador só existe entre duas partes presentes: com provedor ausente e
-  // versões de provedores diferentes, um `· ` órfão abriria a linha (P-09).
+  // O separador só existe entre duas partes presentes: com provedor ausente e versões de
+  // provedores diferentes, um `· ` órfão abriria o chip (P-09).
   const partes = [provedorNome, versaoTexto].filter((parte): parte is string => Boolean(parte))
 
-  return <span className="text-xs text-muted">{partes.join(' · ')}</span>
+  return (
+    <span
+      className={`${CLASSE_DO_CHIP} border-primary-light bg-white font-semibold text-primary-medium`}
+    >
+      {partes.join(' · ')}
+    </span>
+  )
 }

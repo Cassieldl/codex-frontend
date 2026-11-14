@@ -18,6 +18,7 @@ describe('BlocoMensagensObservadas', () => {
     render(
       <BlocoMensagensObservadas
         codigoErro="E0117"
+        titulo="CNPJ do tomador inválido"
         variantes={['CNPJ inválido para o tomador informado.', 'Documento do tomador inválido.']}
       />,
     )
@@ -33,7 +34,11 @@ describe('BlocoMensagensObservadas', () => {
 
   it('cada item tem um id de DOM único (AP-FRONTEND-003)', () => {
     const { container } = render(
-      <BlocoMensagensObservadas codigoErro="E0117" variantes={['Mensagem A', 'Mensagem B']} />,
+      <BlocoMensagensObservadas
+        codigoErro="E0117"
+        titulo="CNPJ do tomador inválido"
+        variantes={['Mensagem A', 'Mensagem B']}
+      />,
     )
 
     const ids = Array.from(container.querySelectorAll('li')).map((item) => item.id)
@@ -45,6 +50,7 @@ describe('BlocoMensagensObservadas', () => {
     render(
       <BlocoMensagensObservadas
         codigoErro="E0117"
+        titulo="CNPJ do tomador inválido"
         variantes={['CNPJ inválido para o tomador informado.']}
       />,
     )
@@ -56,5 +62,35 @@ describe('BlocoMensagensObservadas', () => {
     expect(escreverNaAreaDeTransferencia).toHaveBeenCalledWith(
       'CNPJ inválido para o tomador informado.',
     )
+  })
+})
+
+describe('BlocoMensagensObservadas: a mensagem do cabeçalho não se repete', () => {
+  it('tira a variante igual ao título e mantém as que dizem outra coisa', () => {
+    render(
+      <BlocoMensagensObservadas
+        codigoErro="E0157"
+        titulo="Usuário não tem autorização para solicitar o serviço."
+        variantes={[
+          'Usuário não tem autorização para solicitar o serviço',
+          'Contribuinte sem liberação na prefeitura.',
+        ]}
+      />,
+    )
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(1)
+    expect(screen.getByText('Contribuinte sem liberação na prefeitura.')).toBeInTheDocument()
+  })
+
+  it('sem variante além do título, a seção não aparece', () => {
+    const { container } = render(
+      <BlocoMensagensObservadas
+        codigoErro="E0157"
+        titulo="Usuário não tem autorização para solicitar o serviço."
+        variantes={['Usuário não tem autorização para solicitar o serviço.']}
+      />,
+    )
+
+    expect(container).toBeEmptyDOMElement()
   })
 })

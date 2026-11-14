@@ -23,7 +23,9 @@ export function indexarCamposPorErro(grupos: GrupoCampoVersao[]): Map<string, Ca
 }
 
 /** A mensagem observada só acrescenta quando difere do título; na maioria dos erros, é a mesma. */
-export function mensagensQueAcrescentam(erro: ErroResumoPublico): string[] {
+export function mensagensQueAcrescentam(
+  erro: Pick<ErroResumoPublico, 'titulo' | 'variantes'>,
+): string[] {
   const titulo = normalizar(erro.titulo).replace(/\.$/, '').trim()
   return erro.variantes.filter(
     (mensagem) => normalizar(mensagem).replace(/\.$/, '').trim() !== titulo,

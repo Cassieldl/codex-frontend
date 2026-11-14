@@ -249,15 +249,68 @@ describe('AvisoPublicoItem — recolhido até ser aberto', () => {
     expect(detalhesDo(container, 12).open).toBe(true)
   })
 
-  it('o corpo fica fora do título, e clicar no título abre o aviso', () => {
+  it('fechado, mostra só a primeira frase do corpo; aberto, a frase sai e o corpo inteiro aparece', () => {
+    const aviso: AvisoPublico = {
+      ...avisoDeProvedor,
+      corpo: 'Peça a faixa **antes** da primeira nota. Sem ela, o retorno é E157.',
+    }
     const { container } = render(
-      <AvisosProvedor nomeProvedor="Prefeitura de Exemplo" avisos={[avisoDeProvedor]} />,
+      <AvisosProvedor nomeProvedor="Prefeitura de Exemplo" avisos={[aviso]} />,
     )
     const resumo = detalhesDo(container, 7).querySelector('summary')!
 
-    expect(resumo).not.toHaveTextContent(avisoDeProvedor.corpo)
+    expect(resumo).toHaveTextContent('Peça a faixa antes da primeira nota.')
+    expect(resumo).not.toHaveTextContent('Sem ela')
     fireEvent.click(resumo)
     expect(detalhesDo(container, 7).open).toBe(true)
+    // O jsdom não dispara o `toggle` sozinho; o navegador dispara.
+    fireEvent(detalhesDo(container, 7), new Event('toggle'))
+    expect(resumo.querySelector('[data-primeira-frase]')).toBeNull()
+  })
+
+  it('o link de cada aviso fica na ordem do Tab mesmo fechado, e aparece com o foco dentro do aviso', () => {
+    render(<AvisosProvedor nomeProvedor="Prefeitura de Exemplo" avisos={[avisoDeProvedor]} />)
+
+    const botao = screen.getByRole('button', {
+      name: `Copiar link do aviso ${avisoDeProvedor.titulo}`,
+    })
+
+    expect(botao).not.toHaveAttribute('tabindex', '-1')
+    expect(botao).toHaveClass('opacity-0', 'group-focus-within/aviso:opacity-100')
+  })
+
+  it('aberto, o link do aviso fica sempre visível', () => {
+    render(<AvisosVersao avisos={[avisoDeVersao]} />)
+
+    expect(
+      screen.getByRole('button', { name: `Copiar link do aviso ${avisoDeVersao.titulo}` }),
+    ).toHaveClass('opacity-100')
+  })
+
+  it('ordena por gravidade: crítico, atenção e informação, mesmo que a API mande em outra ordem', () => {
+    const informativo: AvisoPublico = {
+      ...avisoDeProvedor,
+      id: 1,
+      severidade: 'Informativo',
+      titulo: 'Campos em confirmação',
+    }
+    const critico: AvisoPublico = {
+      ...avisoDeProvedor,
+      id: 2,
+      severidade: 'Critico',
+      titulo: 'Liberação',
+    }
+
+    render(
+      <AvisosProvedor
+        nomeProvedor="Prefeitura de Exemplo"
+        avisos={[informativo, avisoDeProvedor, critico]}
+      />,
+    )
+
+    expect(
+      screen.getAllByRole('heading', { level: 3 }).map((titulo) => titulo.textContent),
+    ).toEqual(['Liberação', avisoDeProvedor.titulo, 'Campos em confirmação'])
   })
 
   it('o aviso apontado pela âncora abre, mesmo não sendo crítico', () => {

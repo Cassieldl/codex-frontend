@@ -304,6 +304,25 @@ describe('BlocoDeCampos — colunas', () => {
       false,
     ])
   })
+
+  it('sem exemplo na versão, a coluna Exemplo sai do colgroup, do cabeçalho, dos rótulos e das linhas', () => {
+    const { detalhes } = renderizarBloco({ mostrarExemplo: false })
+    const tabela = detalhes.querySelector('table')!
+    const rotulos = detalhes.querySelector('div[aria-hidden="true"]')!
+
+    expect(tabela.querySelectorAll('col')).toHaveLength(5)
+    expect(Array.from(tabela.querySelectorAll('thead th')).map((th) => th.textContent)).toEqual([
+      'Campo InvoiCy',
+      'Tag do provedor',
+      'Tipo',
+      'Tamanho',
+      'Rejeições registradas',
+    ])
+    expect(rotulos.getAttribute('style')).toContain(
+      'grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 6rem 5rem 4.25rem',
+    )
+    expect(tabela.querySelectorAll('tbody tr:first-child > td')).toHaveLength(5)
+  })
 })
 
 describe('BlocoDeCampos — linhas', () => {

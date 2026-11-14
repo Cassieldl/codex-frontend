@@ -43,8 +43,10 @@ export interface ResultadoItem {
   provedorNome: string | null
   versaoRotulo: string | null
   versoes: string[] | null
-  /** Ex.: "casou com o código E-124". */
+  /** Ex.: "casou com o código E-124". Termo de quem construiu a busca: a busca pública não mostra. */
   descricaoCasamento: string
+  /** Primeira linha da solução, só para erro; `null` nos outros tipos e no erro sem solução. */
+  solucaoResumo: string | null
   /** Sempre `true` na busca pública; na interna, revela o rascunho. */
   publicado: boolean
   meta: MetaResultado | null

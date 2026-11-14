@@ -180,7 +180,12 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
             ) : (
               <div className="flex flex-col gap-8">
                 {resultado.grupos.map((grupo) => (
-                  <GrupoResultadoLista key={grupo.tipo} grupo={grupo} />
+                  // A chave inclui o termo e o filtro: busca nova volta cada grupo para a página 1.
+                  <GrupoResultadoLista
+                    key={`${termoComDebounce}|${provedor ?? ''}|${grupo.tipo}`}
+                    grupo={grupo}
+                    parametros={{ q: termoComDebounce, provedor }}
+                  />
                 ))}
               </div>
             )}

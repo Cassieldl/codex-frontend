@@ -116,24 +116,48 @@ describe('LinhaDoCampo — células', () => {
     )
   })
 
-  it('tamanho ausente mostra "—" com texto para leitor de tela', () => {
-    const { celula } = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO)
+  it('a obrigatoriedade é um marcador na linha do nome, com o nome por extenso para leitor e dica', () => {
+    const { celula } = renderizarLinha(CAMPO_DOIS_DESTINOS_E_TRES_REJEICOES)
 
-    expect(celula('tamanho').textContent).toBe('—não informado')
-    expect(within(celula('tamanho')).getByText('não informado')).toHaveClass('sr-only')
+    const marcador = celula('campo').querySelector('[data-obrigatoriedade]')!
+    const botao = within(celula('campo')).getByRole('button', { name: 'PaiPreServico' })
+
+    expect(marcador).toHaveAttribute('title', 'Condicional')
+    expect(within(marcador as HTMLElement).getByText('Condicional')).toHaveClass('sr-only')
+    expect(marcador.parentElement).toBe(botao.parentElement)
   })
 
-  it('destino ausente mostra "—" com texto para leitor de tela, sem nome de tag', () => {
+  it('tamanho e exemplo ausentes deixam a célula vazia, sem traço nem "sem exemplo"', () => {
+    const { celula } = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO)
+
+    expect(celula('tamanho').textContent).toBe('')
+    expect(celula('exemplo').textContent).toBe('')
+  })
+
+  it('destino ausente fica vazio na tela, com o motivo só para leitor de tela', () => {
     const { celula } = renderizarLinha(CAMPO_SEM_DESTINO_COM_EXEMPLO)
 
-    expect(celula('tag').textContent).toBe('—sem destino no XML do provedor')
+    expect(celula('tag').textContent).toBe('sem destino no XML do provedor')
+    expect(within(celula('tag')).getByText('sem destino no XML do provedor')).toHaveClass('sr-only')
     expect(celula('tag').querySelector('[title]')).toBeNull()
   })
 
-  it('exemplo ausente mostra "sem exemplo"', () => {
-    const { celula } = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO)
+  it('sem exemplo na versão, a linha não tem a célula de exemplo', () => {
+    render(
+      <table>
+        <tbody>
+          <LinhaDoCampo
+            campo={CAMPO_SEM_TAMANHO_SEM_REJEICAO}
+            ativo={false}
+            mostrarExemplo={false}
+            onAbrir={vi.fn()}
+          />
+        </tbody>
+      </table>,
+    )
 
-    expect(celula('exemplo')).toHaveTextContent('sem exemplo')
+    expect(document.querySelector('[data-coluna="exemplo"]')).toBeNull()
+    expect(document.querySelectorAll('td')).toHaveLength(5)
   })
 
   it('o exemplo preenchido traz o valor inteiro como dica', () => {
