@@ -17,10 +17,14 @@ const layout: LayoutResumoHome = {
   descricao: 'Novo grupo de retenções e dois campos de intermediário descontinuados.',
   camposNovos: 6,
   camposDescontinuados: 2,
+  normaOrigem: null,
+  homologacaoDesde: null,
+  liberadaNoInvoicyEm: null,
+  obrigatoriaEm: null,
 }
 
 /**
- * Âncora de montagem — `RouterProvider` monta de forma assíncrona, e afirmar
+ * Âncora de montagem, `RouterProvider` monta de forma assíncrona, e afirmar
  * `container` vazio logo depois de `render` passa mesmo com a seção
  * renderizando. Ausência só vale depois de esperar por isto.
  */
@@ -85,11 +89,11 @@ describe('BlocoLayoutHome', () => {
    * Detector do DEFEITO-01. O contrato não tem data de publicação de versão de layout (B-6), e a
    * fixture acima é o shape REAL do servidor. Antes desta correção o tipo declarava
    * `publicadaEm` como obrigatório, o componente o formatava e `parseISO(undefined)` derrubava a
-   * Home inteira — com a suíte verde, porque as fixtures escreviam o campo à mão.
+   * Home inteira, com a suíte verde, porque as fixtures escreviam o campo à mão.
    *
    * A asserção é de ausência do rótulo: se alguém voltar a prometer a data, este teste cai.
    */
-  it('não promete data de publicação — o contrato não tem esse campo', async () => {
+  it('não promete data de publicação, o contrato não tem esse campo', async () => {
     renderBloco(layout)
 
     await screen.findByRole('heading', { name: 'Layout InvoiCy' })
@@ -115,6 +119,26 @@ describe('BlocoLayoutHome', () => {
     renderBloco({ ...layout, camposNovos: 1, camposDescontinuados: 1 })
 
     expect(await screen.findByText('1 campo novo · 1 descontinuado')).toBeInTheDocument()
+  })
+
+  it('mostra a origem e a data em que a vigente fica obrigatória', async () => {
+    renderBloco({ ...layout, normaOrigem: 'NT 009 v1.01', obrigatoriaEm: '2026-12-01' })
+
+    await screen.findByRole('heading', { name: 'Layout InvoiCy' })
+    expect(screen.getByText('Origem').nextElementSibling).toHaveTextContent('NT 009 v1.01')
+    expect(screen.getByText('Obrigatória em produção em').nextElementSibling).toHaveTextContent(
+      '01/12/2026',
+    )
+  })
+
+  // Resposta de um backend que ainda não manda os marcos: a seção sobe sem eles.
+  it('sem os marcos no contrato, não mostra origem nem prazo e não quebra', async () => {
+    const { normaOrigem: _norma, obrigatoriaEm: _obrigatoria, ...semMarcos } = layout
+    renderBloco(semMarcos as LayoutResumoHome)
+
+    expect(await screen.findByText('Versão 4.12')).toBeInTheDocument()
+    expect(screen.queryByText('Origem')).not.toBeInTheDocument()
+    expect(screen.queryByText('Obrigatória em produção em')).not.toBeInTheDocument()
   })
 
   it('omite a prevista quando não há próxima versão anunciada', async () => {

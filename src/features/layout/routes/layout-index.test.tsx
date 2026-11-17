@@ -7,10 +7,13 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
-import { handlerLayoutIndiceSucesso } from '../../../test/mocks/handlers'
+import {
+  handlerLayoutIndiceSucesso,
+  handlerLayoutVersaoSucesso,
+} from '../../../test/mocks/handlers'
 import { server } from '../../../test/mocks/server'
 import { LayoutIndicePage } from './layout-index'
 
@@ -89,7 +92,8 @@ describe('LayoutIndicePage', () => {
       name: 'O que mudou da versão 4.10 para a 4.12',
     })
     expect(secao).toHaveAttribute('id', 'novidades')
-    expect(screen.getByText('44 campos novos · 20 descontinuados')).toBeInTheDocument()
+    expect(secao.querySelector('[data-contador="novos"]')).toHaveTextContent('44novos')
+    expect(secao.querySelector('[data-contador="descontinuados"]')).toHaveTextContent('20saíram')
     expect(screen.getByText('InvoiCy 3.3.0.0.')).toBeInTheDocument()
     expect(screen.getByText('Grupos novos')).toBeInTheDocument()
     expect(screen.getByText('ValServEst')).toBeInTheDocument()
@@ -97,6 +101,77 @@ describe('LayoutIndicePage', () => {
       'href',
       '/layout/4-12',
     )
+  })
+
+  it('com mudanças estruturadas, agrupa em antes e depois, com contadores que batem com a lista', async () => {
+    const vigente = {
+      ...indiceCompleto.vigente,
+      normaOrigem: 'NT 009 v1.01',
+      mudancas: [
+        { tipo: 'saiu', antes: 'ValServEst', depois: null, descricao: null },
+        { tipo: 'renomeado', antes: 'nDI', depois: 'nroDUIMP', descricao: 'Número da DUIMP.' },
+        { tipo: 'grupoNovo', antes: null, depois: 'Condominio', descricao: null },
+        { tipo: 'mudouDeLugar', antes: 'tpOper/...', depois: 'RPSSubs/...', descricao: null },
+      ],
+    }
+    server.use(
+      handlerLayoutIndiceSucesso({
+        ...indiceCompleto,
+        vigente,
+        novidades: {
+          versao: vigente,
+          anterior: indiceCompleto.versoes[2],
+          descricao: 'InvoiCy 3.3.0.0.\nGrupos novos: Condominio',
+          camposNovos: 44,
+          camposDescontinuados: 20,
+        },
+      }),
+      handlerLayoutVersaoSucesso('4-12', {
+        camposPorGrupo: [
+          {
+            grupo: 'Valores',
+            grupoSlug: 'valores',
+            campos: [
+              { slug: 'numero-duimp', nome: 'nroDUIMP', caminhoXml: '//Servico/Valores/nroDUIMP' },
+            ],
+          },
+        ],
+      }),
+    )
+    renderPagina()
+
+    const secao = await screen.findByRole('region', {
+      name: 'O que mudou da versão 4.10 para a 4.12',
+    })
+    // A origem fica só na linha do tempo, acima do card.
+    expect(secao.querySelector('[data-origem-da-versao]')).toBeNull()
+    expect(screen.getAllByText('NT 009 v1.01')).toHaveLength(1)
+    expect(secao.querySelector('[data-contador="novos"]')).toHaveTextContent('1novo· 44 campos')
+    expect(secao.querySelector('[data-contador="descontinuados"]')).toHaveTextContent(
+      '1saiu· 20 campos',
+    )
+    expect(await within(secao).findByRole('link', { name: 'nroDUIMP' })).toHaveAttribute(
+      'href',
+      '/layout/campos/numero-duimp',
+    )
+    expect(secao.querySelector('[data-contador="mudaramDeLugar"]')).toHaveTextContent(
+      '1mudou de lugar',
+    )
+    expect(secao.querySelector('[data-contador="renomeados"]')).toHaveTextContent('1renomeado')
+
+    const grupos = [...secao.querySelectorAll('[data-grupo-de-mudancas]')]
+    expect(grupos.map((grupo) => grupo.querySelector('h3')?.firstChild?.textContent)).toEqual([
+      'Grupos novos',
+      'Mudaram de lugar',
+      'Renomeados',
+      'Saíram',
+    ])
+    expect(secao.querySelector('[data-mudanca="renomeado"]')).toHaveTextContent(
+      'nDI passou a ser nroDUIMPNúmero da DUIMP.',
+    )
+    // Os tópicos repetiriam a lista: da nota fica só o resumo.
+    expect(within(secao).getByText('InvoiCy 3.3.0.0.')).toBeInTheDocument()
+    expect(secao.querySelector('dl')).toBeNull()
   })
 
   it('sem versão anterior publicada, a seção não fala em mudança', async () => {
@@ -129,7 +204,7 @@ describe('LayoutIndicePage', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('erro nunca é lido como vazio — mostra alerta com repetição, não o estado vazio', async () => {
+  it('erro nunca é lido como vazio, mostra alerta com repetição, não o estado vazio', async () => {
     server.use(http.get(`${API_URL}/layout`, () => HttpResponse.json({}, { status: 500 })))
     renderPagina()
 
@@ -149,18 +224,44 @@ describe('LayoutIndicePage', () => {
     renderPagina()
 
     expect(await screen.findByText('Carregando as versões do Layout InvoiCy…')).toBeInTheDocument()
-    // E o carregamento some quando o conteúdo chega — nunca fica preso.
+    // E o carregamento some quando o conteúdo chega, nunca fica preso.
     expect(
-      await screen.findByText('Versão do layout — escolha para ver o dicionário'),
+      await screen.findByText('Versão do layout: escolha para ver o dicionário'),
     ).toBeInTheDocument()
     expect(screen.queryByText('Carregando as versões do Layout InvoiCy…')).not.toBeInTheDocument()
   })
 
-  it('afirma em texto fixo que o layout é vocabulário, não comportamento', async () => {
+  it('diz em uma linha que tipo e obrigatoriedade ficam no provedor', async () => {
     server.use(handlerLayoutIndiceSucesso(indiceCompleto))
     renderPagina()
 
-    expect(await screen.findByText('Vocabulário, não comportamento.')).toBeInTheDocument()
+    expect(
+      await screen.findByText(/Tipo e obrigatoriedade estão em cada provedor./),
+    ).toBeInTheDocument()
+  })
+
+  it('mostra de qual norma a vigente veio e quando fica obrigatória', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso({
+        ...indiceCompleto,
+        vigente: {
+          ...indiceCompleto.vigente,
+          normaOrigem: 'NT 009 v1.01',
+          homologacaoDesde: null,
+          liberadaNoInvoicyEm: null,
+          obrigatoriaEm: '2026-12-01',
+        },
+      }),
+    )
+    renderPagina()
+
+    const marcos = await screen.findByRole('region', { name: 'Origem e prazos da versão 4.12' })
+    expect(within(marcos).getByText('NT 009 v1.01')).toBeInTheDocument()
+    expect(within(marcos).getByText('Obrigatória em produção')).toBeInTheDocument()
+    expect(within(marcos).getByText('01/12/2026')).toBeInTheDocument()
+    // Marco sem data some sozinho.
+    expect(within(marcos).queryByText('Homologação')).not.toBeInTheDocument()
+    expect(within(marcos).queryByText('Liberada no InvoiCy')).not.toBeInTheDocument()
   })
 })
 

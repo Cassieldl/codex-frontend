@@ -7,12 +7,12 @@ import { Skeleton } from '../../../components/ui/Skeleton'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { AvisoVocabulario } from '../components/AvisoVocabulario'
 import { ChipVersaoLayout } from '../components/ChipVersaoLayout'
+import { MarcosDaVersao } from '../components/MarcosDaVersao'
 import { NovidadesDaVigente } from '../components/NovidadesDaVigente'
 import { useLayoutIndice } from '../hooks/useLayoutIndice'
-import { LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
 
 /**
- * `/layout` (tela 6, índice) — a porta de entrada do Layout InvoiCy: escolher
+ * `/layout` (tela 6, índice): a porta de entrada do Layout InvoiCy. Escolher
  * a versão para abrir o dicionário. O dicionário em si vive em
  * `/layout/{versaoSlug}`, porque cada versão é uma URL própria e copiável.
  */
@@ -64,7 +64,7 @@ export function LayoutIndicePage() {
         {!isLoading && !isError && indice && !semVersoes && (
           <section aria-labelledby="versoes-layout-titulo" className="flex flex-col gap-3">
             <h2 id="versoes-layout-titulo" className="text-subtitulo font-semibold text-ink">
-              Versão do layout — escolha para ver o dicionário
+              Versão do layout: escolha para ver o dicionário
             </h2>
 
             {indice.vigente && (
@@ -83,7 +83,9 @@ export function LayoutIndicePage() {
               ))}
             </ul>
 
-            <p className="text-xs text-muted">{LEGENDA_ESTADO_VERSAO}</p>
+            {indice.vigente && (
+              <MarcosDaVersao versaoRotulo={indice.vigente.rotulo} marcos={indice.vigente} />
+            )}
           </section>
         )}
 

@@ -62,6 +62,17 @@ function comRaiz(raizes: ReadonlySet<string>, raiz: string): ReadonlySet<string>
   return new Set([...raizes, raiz])
 }
 
+/** Quem tem o foco na chegada pela âncora, se for um elemento fora da lista de campos. */
+function origemDaChegada(
+  slug: string,
+  contenedor: HTMLElement | null,
+): { slug: string; elemento: HTMLElement } | null {
+  const ativo = document.activeElement
+  if (!(ativo instanceof HTMLElement) || ativo === document.body) return null
+  if (contenedor?.contains(ativo)) return null
+  return { slug, elemento: ativo }
+}
+
 function raizesComCampoVisivel<TCampo>(blocos: BlocoDoLayout<TCampo>[]): string[] {
   return blocos.filter((bloco) => bloco.totalVisivel > 0).map((bloco) => bloco.raiz)
 }
@@ -98,6 +109,8 @@ export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
   // Slug do campo no modal neste instante: o foco volta a ele, não ao campo que abriu o modal.
   const campoAtualRef = useRef<string | null>(null)
   const campoRoladoRef = useRef<string | null>(null)
+  // Link fora da lista que abriu o modal pela âncora (chip do "O que mudou"): o foco volta a ele.
+  const origemDaAncoraRef = useRef<{ slug: string; elemento: HTMLElement } | null>(null)
 
   const abrirCampo = useCallback((slug: string, secao?: TSecao) => {
     campoAtualRef.current = slug
@@ -122,10 +135,18 @@ export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
   // O alvo é procurado dentro da lista e só se ela ainda estiver na página: ao seguir um link para
   // outra tela o modal fecha no desmonte, e um id igual na página de destino não pode ganhar o foco.
   const devolverFoco = useCallback(() => {
+    const origem = origemDaAncoraRef.current
+    origemDaAncoraRef.current = null
+
     const contenedor = contenedorRef.current
     if (!contenedor || !contenedor.isConnected) return
 
     const slug = campoAtualRef.current
+    if (origem && origem.slug === slug && origem.elemento.isConnected) {
+      origem.elemento.focus()
+      return
+    }
+
     const linha = slug
       ? contenedor.querySelector<HTMLElement>(`[id="${construirIdLinhaCampo(slug)}"]`)
       : null
@@ -183,6 +204,7 @@ export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
     if (!destino) return
 
     campoRoladoRef.current = campoDestacado
+    origemDaAncoraRef.current = origemDaChegada(campoDestacado, contenedorRef.current)
 
     if (!passaNoFiltroAtual(destino.campo)) limparFiltros()
     setBlocosAbertos((abertos) => comRaiz(abertos, destino.raiz))

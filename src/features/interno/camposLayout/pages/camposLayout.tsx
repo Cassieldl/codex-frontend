@@ -51,24 +51,23 @@ export function CamposLayoutPage() {
     setErroServidor(null)
 
     if (modalAberto === 'novo') {
-      criarVersaoLayout.mutate(
-        { rotulo: dto.rotulo, descricao: dto.descricao },
-        {
-          onSuccess: () => setModalAberto(null),
-          onError: (erro) => setErroServidor(mensagemDeErroDeEscrita(erro)),
-        },
-      )
+      // A versão nasce `Prevista`: a criação não leva estado.
+      const { estado: _estado, ...dadosDaCriacao } = dto
+      criarVersaoLayout.mutate(dadosDaCriacao, {
+        onSuccess: () => setModalAberto(null),
+        onError: (erro) => setErroServidor(mensagemDeErroDeEscrita(erro)),
+      })
       return
     }
 
     if (modalAberto) {
-      // `estado` é a transição de I15c — o backend aceita o campo no
+      // `estado` é a transição de I15c: o backend aceita o campo no
       // `AtualizarVersaoLayoutDto` e responde 422 quando a transição é
       // inválida (erro exibido no próprio modal, sem limpar o formulário).
       atualizarVersaoLayout.mutate(
         {
           id: modalAberto.id,
-          dto: { rotulo: dto.rotulo, descricao: dto.descricao, estado: dto.estado },
+          dto,
           etag: envioDaEdicao.etag,
         },
         {

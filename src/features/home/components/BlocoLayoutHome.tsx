@@ -5,6 +5,7 @@ import { TituloSecao } from '../../../components/ui/TituloSecao'
 import { descreverMudancasDoLayout, ID_NOVIDADES_DO_LAYOUT } from '../../../utils/mudancasDoLayout'
 import { lerNotaDaVersaoLayout } from '../../../utils/notaDaVersaoLayout'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
+import { formatarDataDoMarco } from '../../layout/utils/marcosDaVersao'
 import type { LayoutResumoHome } from '../types/home'
 
 export interface BlocoLayoutHomeProps {
@@ -14,7 +15,7 @@ export interface BlocoLayoutHomeProps {
 /**
  * Resumo do Layout InvoiCy na Home.
  *
- * `layout: null` faz a seção inteira sumir — nunca um "Layout ainda não
+ * `layout: null` faz a seção inteira sumir, nunca um "Layout ainda não
  * publicado" que pareça falha. Vocabulário comum sem versão publicada é uma
  * etapa normal do acervo, não um erro a anunciar.
  */
@@ -24,14 +25,16 @@ export function BlocoLayoutHome({ layout }: BlocoLayoutHomeProps) {
   const mudancas = descreverMudancasDoLayout(layout.camposNovos, layout.camposDescontinuados)
   // Só o resumo: os tópicos do que mudou ficam na página do layout.
   const { resumo } = lerNotaDaVersaoLayout(layout.descricao)
+  // Origem e prazo descrevem a vigente: sem ela, não há o que mostrar.
+  const normaOrigem = layout.vigente ? layout.normaOrigem?.trim() || null : null
+  const obrigatoriaEm = layout.vigente ? formatarDataDoMarco(layout.obrigatoriaEm) : null
 
   return (
     <section aria-labelledby="secao-layout-home" className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <TituloSecao id="secao-layout-home">Layout InvoiCy</TituloSecao>
         <p className="max-w-3xl text-sm text-muted">
-          O vocabulário comum: nome, caminho e significado de cada campo. Tipo, tamanho, máscara e
-          obrigatoriedade são definidos por provedor.
+          Nome e significado de cada campo do InvoiCy; o preenchimento fica em cada provedor.
         </p>
       </div>
 
@@ -41,12 +44,29 @@ export function BlocoLayoutHome({ layout }: BlocoLayoutHomeProps) {
 
           {layout.vigente ? (
             // Sem data de publicação: o contrato não a tem (B-6), e o artboard a pedia.
-            // Mesma decisão que a tela 6 tomou — a versão vigente se identifica pelo rótulo.
+            // Mesma decisão que a tela 6 tomou: a versão vigente se identifica pelo rótulo.
             <span className="text-h1 leading-tight font-extrabold">
               {formatarVersaoLayout(layout.vigente.rotulo, { maiuscula: true })}
             </span>
           ) : (
             <span className="text-card-titulo font-semibold">Nenhuma versão vigente</span>
+          )}
+
+          {(normaOrigem || obrigatoriaEm) && (
+            <dl className="flex flex-col gap-0.5 text-sm">
+              {normaOrigem && (
+                <div className="flex gap-1.5">
+                  <dt>Origem</dt>
+                  <dd className="font-semibold">{normaOrigem}</dd>
+                </div>
+              )}
+              {obrigatoriaEm && (
+                <div className="flex gap-1.5">
+                  <dt>Obrigatória em produção em</dt>
+                  <dd className="font-semibold tabular-nums">{obrigatoriaEm}</dd>
+                </div>
+              )}
+            </dl>
           )}
 
           {layout.prevista && (

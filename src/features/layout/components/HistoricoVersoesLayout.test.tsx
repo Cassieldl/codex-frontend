@@ -10,6 +10,14 @@ import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { HistoricoVersoesLayout, type HistoricoVersoesLayoutProps } from './HistoricoVersoesLayout'
 
+const SEM_MARCOS_NEM_MUDANCAS = {
+  normaOrigem: null,
+  homologacaoDesde: null,
+  liberadaNoInvoicyEm: null,
+  obrigatoriaEm: null,
+  mudancas: [],
+}
+
 const VERSOES = [
   { slug: '4-13', rotulo: '4.13', estado: 'Prevista', ordem: 3, totalCampos: 560 },
   { slug: '4-12', rotulo: '4.12', estado: 'Vigente', ordem: 2, totalCampos: 545 },
@@ -73,13 +81,27 @@ describe('HistoricoVersoesLayout', () => {
   it('não repete a palavra quando o rótulo do dado já a traz', async () => {
     renderHistorico({
       versoes: [
-        { slug: '4-12', rotulo: 'Versão 4.12', estado: 'Vigente', ordem: 1, totalCampos: 1 },
+        {
+          slug: '4-12',
+          rotulo: 'Versão 4.12',
+          estado: 'Vigente',
+          ordem: 1,
+          totalCampos: 1,
+          ...SEM_MARCOS_NEM_MUDANCAS,
+        },
       ],
     })
 
     const item = await screen.findByRole('listitem')
     expect(item.textContent).toMatch(/^Versão 4\.12/)
     expect(item.textContent).not.toMatch(/vers[aã]o\s+vers[aã]o/i)
+  })
+
+  it('não explica estado por borda: não há legenda de bordas', async () => {
+    renderHistorico({ versoes: VERSOES, versaoAtualSlug: '4-12' })
+
+    await screen.findAllByRole('listitem')
+    expect(screen.queryByText(/Borda cheia/)).not.toBeInTheDocument()
   })
 
   it('não renderiza nada sem versões', async () => {

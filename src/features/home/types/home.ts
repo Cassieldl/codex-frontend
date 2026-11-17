@@ -1,6 +1,7 @@
 // Espelha `arquitetura.md` §4.1 (P9).
 
 import type { TipoArtigo } from '../../artigos/types/artigo'
+import type { MarcosDaVersaoLayout } from '../../layout/types/layoutPublico'
 
 export type CategoriaProvedorHome = 'Nacional' | 'Proprio'
 export type SeveridadeComunicado = 'Critico' | 'Alerta' | 'Informativo'
@@ -12,9 +13,9 @@ export interface ComunicadoVigenteHome {
   severidade: SeveridadeComunicado
   abrangencia: AbrangenciaComunicado
   expiraEm: string
-  /** `null` só quando `abrangencia === 'Global'` — nunca por vazamento de rascunho (§5.D.2). */
+  /** `null` só quando `abrangencia === 'Global'`, nunca por vazamento de rascunho (§5.D.2). */
   provedorNome: string | null
-  /** "/provedores/{slug}[/{versao}]"; `null` em `Global` (PQ-15 — chip global é texto, sem link). */
+  /** "/provedores/{slug}[/{versao}]"; `null` em `Global` (PQ-15: chip global é texto, sem link). */
   url: string | null
 }
 
@@ -36,10 +37,11 @@ export interface CategoriaProvedoresHome {
   provedores: ProvedorHomeDto[]
 }
 
-export interface LayoutResumoHome {
+/** A origem e os marcos descrevem a versão vigente, no mesmo nível do resumo. */
+export interface LayoutResumoHome extends MarcosDaVersaoLayout {
   // SEM `publicadaEm`: a decisão B-6 removeu o campo do contrato e `VersaoResumoMinimaDto` do
   // backend tem exatamente `slug` e `rotulo`. Não existe coluna de data de publicação em
-  // `versoeslayout` — exibir `criadoem` sob esse rótulo seria a tela afirmando o que não é verdade.
+  // `versoeslayout`: exibir `criadoem` sob esse rótulo seria a tela afirmando o que não é verdade.
   vigente: { slug: string; rotulo: string } | null
   prevista: { slug: string; rotulo: string } | null
   descricao: string | null
@@ -47,7 +49,7 @@ export interface LayoutResumoHome {
   camposDescontinuados: number
 }
 
-/** Mesmo shape de `ArtigoListaItem` (P7) — nunca um gêmeo divergente (arquitetura §4.1). */
+/** Mesmo shape de `ArtigoListaItem` (P7), nunca um gêmeo divergente (arquitetura §4.1). */
 export interface ArtigoRecenteHome {
   slug: string
   tipo: TipoArtigo

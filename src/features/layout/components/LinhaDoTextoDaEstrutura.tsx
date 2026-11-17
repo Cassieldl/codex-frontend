@@ -48,8 +48,11 @@ const MARCADOR_DE_ESCOLHA = {
   explicacao: ': informe só uma das tags irmãs com esta marca',
 }
 
-export const CLASSE_DO_MARCADOR =
-  'ml-3 inline-flex shrink-0 items-center self-center rounded-[var(--radius-pill)] border border-border-control px-2 font-sans text-aux font-semibold tracking-wide text-ink uppercase'
+/** Etiqueta do marcador sem posição: a legenda usa a mesma, fora da linha do texto. */
+export const CLASSE_DA_ETIQUETA_DE_MARCADOR =
+  'inline-flex shrink-0 items-center rounded-[var(--radius-pill)] border border-border-control px-2 font-sans text-aux font-semibold tracking-wide text-ink uppercase'
+
+export const CLASSE_DO_MARCADOR = `ml-3 self-center ${CLASSE_DA_ETIQUETA_DE_MARCADOR}`
 
 /** Uma linha do texto da estrutura: número, controle do grupo, texto e marcadores. */
 export const LinhaDoTextoDaEstrutura = memo(function LinhaDoTextoDaEstrutura({

@@ -40,6 +40,14 @@ const VERSAO_VIGENTE = {
 
 type ItemDaListaJson = typeof VERSAO_VIGENTE
 
+// O PUT substitui os quatro marcos: vão sempre, e a versão sem marco manda null.
+const MARCOS_VAZIOS = {
+  normaOrigem: null,
+  homologacaoDesde: null,
+  liberadaNoInvoicyEm: null,
+  obrigatoriaEm: null,
+}
+
 interface EscritaRecebida {
   metodo: string
   url: string
@@ -329,6 +337,7 @@ describe('CamposLayoutPage: edição', () => {
           rotulo: 'Layout 8.01',
           descricao: 'Versão em uso pelo InvoiCy.',
           estado: 'Vigente',
+          ...MARCOS_VAZIOS,
         },
       },
     ])
@@ -370,7 +379,12 @@ describe('CamposLayoutPage: edição', () => {
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
     await waitFor(() => expect(escritas).toHaveLength(1))
-    expect(escritas[0].corpo).toEqual({ rotulo: 'Layout 8.00', descricao: '', estado: 'Vigente' })
+    expect(escritas[0].corpo).toEqual({
+      rotulo: 'Layout 8.00',
+      descricao: '',
+      estado: 'Vigente',
+      ...MARCOS_VAZIOS,
+    })
   })
 })
 

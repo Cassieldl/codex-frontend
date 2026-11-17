@@ -4,12 +4,42 @@ import type { EstadoPreenchimentoCampo } from '../../provedores/types/versaoProv
 
 export type EstadoVersaoLayout = 'Prevista' | 'Vigente' | 'Anterior'
 
-export interface LayoutVersaoResumo {
+/** Origem normativa e marcos de uma versão do layout; datas em `yyyy-MM-dd`, sem horário. */
+export interface MarcosDaVersaoLayout {
+  /** Nota técnica de onde a versão veio, ex.: "NT 009 v1.01". */
+  normaOrigem: string | null
+  homologacaoDesde: string | null
+  liberadaNoInvoicyEm: string | null
+  obrigatoriaEm: string | null
+}
+
+export const TIPOS_DE_MUDANCA = [
+  'grupoNovo',
+  'campoNovo',
+  'mudouDeLugar',
+  'renomeado',
+  'saiu',
+  'alterado',
+] as const
+
+export type TipoDeMudanca = (typeof TIPOS_DE_MUDANCA)[number]
+
+/** Uma mudança da versão em relação à anterior; `antes` e `depois` são nome ou caminho da tag. */
+export interface MudancaDaVersaoLayout {
+  tipo: TipoDeMudanca
+  antes: string | null
+  depois: string | null
+  descricao: string | null
+}
+
+export interface LayoutVersaoResumo extends MarcosDaVersaoLayout {
   slug: string
   rotulo: string
   estado: EstadoVersaoLayout
   ordem: number
   totalCampos: number
+  /** Vazia quando a versão não tem mudanças estruturadas: a tela cai para a nota em texto. */
+  mudancas: MudancaDaVersaoLayout[]
 }
 
 /** O que a vigente mudou em relação à anterior publicada. */
@@ -23,7 +53,7 @@ export interface NovidadesVersaoLayout {
 
 export interface LayoutIndice {
   vigente: LayoutVersaoResumo | null
-  /** Já ordenado por `ordem` DESC pelo backend — o frontend nunca reordena. */
+  /** Já ordenado por `ordem` DESC pelo backend; o frontend nunca reordena. */
   versoes: LayoutVersaoResumo[]
   /** `null` sem versão vigente publicada. */
   novidades: NovidadesVersaoLayout | null
@@ -39,7 +69,7 @@ export interface CampoLayoutPublico {
   reformaTributaria: boolean
   novoNestaVersao: boolean
   descontinuadoNestaVersao: boolean
-  /** "/layout/campos/{slug}" — fonte única do link estável do campo (A3). */
+  /** "/layout/campos/{slug}": fonte única do link estável do campo (A3). */
   urlCanonica: string
 }
 
@@ -51,7 +81,7 @@ export interface GrupoCamposLayout {
 
 export interface LayoutVersaoPagina {
   // `descricao` é IRMÃ de `versao`, não aninhada: o `LayoutVersaoDto` do backend tem as duas no
-  // mesmo nível, e `LayoutVersaoResumoDto` não carrega o campo — ele é reusado em `anterior`,
+  // mesmo nível, e `LayoutVersaoResumoDto` não carrega o campo: ele é reusado em `anterior`,
   // `versaoExibicao`, `versaoOrigem` e no índice, onde uma nota de versão não faria sentido.
   versao: LayoutVersaoResumo
   descricao: string | null

@@ -7,7 +7,12 @@ import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
 import { Select, type SelectOption } from '../../../../components/ui/Select'
 import { Textarea } from '../../../../components/ui/Textarea'
-import type { EstadoVersaoLayout, VersaoLayoutAdmin } from '../types/versaoLayoutAdmin'
+import type {
+  EstadoVersaoLayout,
+  MarcosDaVersaoLayoutAdmin,
+  MarcosDaVersaoLayoutEnvio,
+  VersaoLayoutAdmin,
+} from '../types/versaoLayoutAdmin'
 
 // Os três estados são exatamente o enum `EstadoVersaoLayout` do backend
 // (I15c aceita a transição; 422 quando ela é inválida). O rótulo é o próprio
@@ -20,17 +25,37 @@ const ESTADO_OPTIONS: SelectOption[] = [
 
 const ESTADO_PADRAO: EstadoVersaoLayout = 'Prevista'
 
+// O `<input type="date">` entrega `yyyy-MM-dd` ou vazio.
+const dataOpcional = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida.')
+  .optional()
+  .or(z.literal(''))
+
 // `estado` só existe na edição: `CriarVersaoLayoutDto` (I15b) não aceita o
-// campo — versão nasce sempre `Prevista` por conta do backend.
+// campo, porque a versão nasce sempre `Prevista` por conta do backend.
 const versaoLayoutSchema = z.object({
   rotulo: z.string().min(1, 'O rótulo é obrigatório.').max(80, 'Máximo de 80 caracteres.'),
   descricao: z.string().max(2000, 'Máximo de 2000 caracteres.').optional().or(z.literal('')),
   estado: z.enum(['Prevista', 'Vigente', 'Anterior'] as const).optional(),
+  normaOrigem: z.string().max(60, 'Máximo de 60 caracteres.').optional().or(z.literal('')),
+  homologacaoDesde: dataOpcional,
+  liberadaNoInvoicyEm: dataOpcional,
+  obrigatoriaEm: dataOpcional,
 })
 
 type VersaoLayoutFormValores = z.infer<typeof versaoLayoutSchema>
 
-export interface VersaoLayoutFormDto {
+type CampoDeMarco = keyof MarcosDaVersaoLayoutAdmin
+
+const CAMPOS_DE_MARCO: CampoDeMarco[] = [
+  'normaOrigem',
+  'homologacaoDesde',
+  'liberadaNoInvoicyEm',
+  'obrigatoriaEm',
+]
+
+export interface VersaoLayoutFormDto extends MarcosDaVersaoLayoutEnvio {
   rotulo: string
   descricao?: string
   estado?: EstadoVersaoLayout
@@ -68,6 +93,10 @@ export function VersaoLayoutForm({
       rotulo: initialData?.rotulo ?? '',
       descricao: initialData?.descricao ?? '',
       estado: initialData?.estado ?? ESTADO_PADRAO,
+      normaOrigem: initialData?.normaOrigem ?? '',
+      homologacaoDesde: initialData?.homologacaoDesde ?? '',
+      liberadaNoInvoicyEm: initialData?.liberadaNoInvoicyEm ?? '',
+      obrigatoriaEm: initialData?.obrigatoriaEm ?? '',
     },
   })
 
@@ -79,11 +108,26 @@ export function VersaoLayoutForm({
     return modo === 'editar' && initialData?.descricao ? '' : undefined
   }
 
+  // Na edição o PUT substitui os quatro marcos: vão sempre, e `null` apaga. Na criação, o vazio
+  // não vai.
+  function marcosParaEnvio(valores: VersaoLayoutFormValores): MarcosDaVersaoLayoutEnvio {
+    const marcos: MarcosDaVersaoLayoutEnvio = {}
+
+    for (const campo of CAMPOS_DE_MARCO) {
+      const valor = valores[campo]?.trim()
+      if (valor) marcos[campo] = valor
+      else if (modo === 'editar') marcos[campo] = null
+    }
+
+    return marcos
+  }
+
   function aoSubmeter(valores: VersaoLayoutFormValores) {
     onSubmit({
       rotulo: valores.rotulo,
       descricao: descricaoParaEnvio(valores.descricao),
       estado: modo === 'editar' ? valores.estado : undefined,
+      ...marcosParaEnvio(valores),
     })
   }
 
@@ -103,6 +147,39 @@ export function VersaoLayoutForm({
         error={errors.descricao?.message}
         {...register('descricao')}
       />
+
+      <Input
+        label="Norma de origem"
+        placeholder="NT 009 v1.01"
+        hint="Nota técnica de onde a versão veio."
+        error={errors.normaOrigem?.message}
+        {...register('normaOrigem')}
+      />
+
+      {/* Rótulo de duas linhas ao lado de um de uma empurrava só parte dos inputs: alinha pelo pé. */}
+      <div className="grid gap-5 sm:grid-cols-3 sm:items-end">
+        <Input
+          label="Homologação desde"
+          type="date"
+          className="w-full"
+          error={errors.homologacaoDesde?.message}
+          {...register('homologacaoDesde')}
+        />
+        <Input
+          label="Liberada no InvoiCy em"
+          type="date"
+          className="w-full"
+          error={errors.liberadaNoInvoicyEm?.message}
+          {...register('liberadaNoInvoicyEm')}
+        />
+        <Input
+          label="Obrigatória em"
+          type="date"
+          className="w-full"
+          error={errors.obrigatoriaEm?.message}
+          {...register('obrigatoriaEm')}
+        />
+      </div>
 
       {modo === 'editar' && (
         <Select

@@ -2,11 +2,15 @@ import { lerNotaDaVersaoLayout } from '../../../utils/notaDaVersaoLayout'
 
 export interface NotaDaVersaoProps {
   descricao: string | null
+  /** Só o resumo: os tópicos ficam de fora quando a tela já lista as mudanças uma a uma. */
+  somenteResumo?: boolean
 }
 
 /** Nota de uma versão do Layout InvoiCy: o resumo e, quando a nota traz, um tópico por linha. */
-export function NotaDaVersao({ descricao }: NotaDaVersaoProps) {
-  const { resumo, topicos } = lerNotaDaVersaoLayout(descricao)
+export function NotaDaVersao({ descricao, somenteResumo = false }: NotaDaVersaoProps) {
+  const nota = lerNotaDaVersaoLayout(descricao)
+  const resumo = nota.resumo
+  const topicos = somenteResumo ? [] : nota.topicos
   if (!resumo && topicos.length === 0) return null
 
   return (

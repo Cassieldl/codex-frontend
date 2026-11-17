@@ -2,20 +2,19 @@ import { Link } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { LayoutVersaoResumo } from '../types/layoutPublico'
-import { BORDA_POR_ESTADO_VERSAO, LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
+import { BORDA_DO_CHIP_DE_VERSAO } from '../utils/estadoVersaoLayout'
 
 export interface HistoricoVersoesLayoutProps {
-  /** Já ordenado por `ordem` DESC pelo backend — nunca reordenado aqui. */
+  /** Já ordenado por `ordem` DESC pelo backend, nunca reordenado aqui. */
   versoes: LayoutVersaoResumo[]
   /** Versão aberta no momento, quando o histórico aparece dentro de uma. */
   versaoAtualSlug?: string
 }
 
 /**
- * Histórico de versões — lista compacta com a MESMA gramática de forma dos
- * chips (borda cheia/tracejada/fio fino + rótulo por extenso). Toda versão
- * publicada continua acessível: provedores em produção seguem escritos contra
- * versões anteriores.
+ * Histórico de versões: lista compacta com o estado escrito por extenso, como
+ * nos chips. Toda versão publicada continua acessível: provedores em produção
+ * seguem escritos contra versões anteriores.
  */
 export function HistoricoVersoesLayout({ versoes, versaoAtualSlug }: HistoricoVersoesLayoutProps) {
   if (versoes.length === 0) return null
@@ -39,7 +38,7 @@ export function HistoricoVersoesLayout({ versoes, versaoAtualSlug }: HistoricoVe
               <span
                 className={clsx(
                   'inline-flex min-w-[96px] items-center justify-center rounded-[var(--radius-pill)] px-2.5 py-0.5 font-mono text-sm font-bold text-ink tabular-nums',
-                  BORDA_POR_ESTADO_VERSAO[versao.estado],
+                  BORDA_DO_CHIP_DE_VERSAO,
                 )}
               >
                 {formatarVersaoLayout(versao.rotulo, { maiuscula: true })}
@@ -66,8 +65,6 @@ export function HistoricoVersoesLayout({ versoes, versaoAtualSlug }: HistoricoVe
           )
         })}
       </ul>
-
-      <p className="text-xs text-muted">{LEGENDA_ESTADO_VERSAO}</p>
     </section>
   )
 }

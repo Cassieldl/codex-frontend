@@ -15,6 +15,7 @@ function criarItem(sobrescritas: Partial<ResultadoItem>): ResultadoItem {
     versaoRotulo: null,
     versoes: null,
     descricaoCasamento: '',
+    campoCasado: 'mensagem',
     solucaoResumo: null,
     publicado: true,
     meta: null,

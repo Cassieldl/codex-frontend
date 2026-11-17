@@ -1,7 +1,10 @@
-import { Download } from 'lucide-react'
+import { ChevronsDownUp, ChevronsUpDown, Download } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
+import { LegendaDeMarcas } from '../../../components/ui/LegendaDeMarcas'
+import type { ItemDaLegendaDeMarcas } from '../../../components/ui/LegendaDeMarcas'
+import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
 import type { VizinhoDeCampo } from '../../../types/vizinhoDeCampo'
 import { baixarArquivoDeTexto } from '../../../utils/baixarArquivoDeTexto'
 import type { CampoNaSequencia } from '../../../utils/blocosDoLayout'
@@ -11,15 +14,15 @@ import { ROTULO_DO_FORMATO } from '../types/estruturaLayout'
 import type { FormatoDaEstrutura, NoEstrutura } from '../types/estruturaLayout'
 import type { CampoLayoutPublico } from '../types/layoutPublico'
 import type { FormatosDoCampo } from '../utils/formatosDoCampoNaEstrutura'
+import type { LinhaDaEstrutura } from '../utils/linhasDaEstrutura'
 import {
   gruposAbertosPorPadrao,
   montarLinhasDaEstrutura,
   textoDaLinha,
 } from '../utils/linhasDaEstrutura'
-import { CLASSE_DO_MARCADOR, LinhaDoTextoDaEstrutura } from './LinhaDoTextoDaEstrutura'
+import { CLASSE_DA_ETIQUETA_DE_MARCADOR, LinhaDoTextoDaEstrutura } from './LinhaDoTextoDaEstrutura'
 import type { AcaoDaTag } from './LinhaDoTextoDaEstrutura'
 import { ModalDoVerbete } from './ModalDoVerbete'
-import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
 
 /** Página do layout: a tag abre o verbete do campo num modal, e a URL pode apontar uma tag. */
 export interface DestinoNoVerbete {
@@ -62,15 +65,95 @@ const EXTENSAO: Record<FormatoDaEstrutura, { extensao: string; mime: string }> =
   json: { extensao: 'json', mime: 'application/json' },
 }
 
-const LEGENDA_DA_TAG: Record<DestinoDaTag['tipo'], string> = {
-  verbete: 'Tags sublinhadas abrem o verbete do campo.',
-  linhaDaTabela: 'Tags sublinhadas levam ao campo na tabela desta versão.',
+const LEGENDA_DO_SUBLINHADO: Record<DestinoDaTag['tipo'], string> = {
+  verbete: 'abre o verbete do campo',
+  linhaDaTabela: 'leva ao campo na tabela desta versão',
 }
 
 const SEM_CAMPOS: ReadonlyMap<string, CampoNaSequencia<CampoLayoutPublico>> = new Map()
 
-const CLASSE_DA_ACAO =
-  'text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+// Mesma caixa do botão de copiar: a barra inteira tem uma altura e um alinhamento só.
+const CLASSE_DO_BOTAO_DA_BARRA =
+  'inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-white px-2.5 text-xs font-medium text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+
+interface MarcasDoTexto {
+  soXml: boolean
+  soJson: boolean
+  escolha: boolean
+  reforma: boolean
+  tagClicavel: boolean
+}
+
+function marcasDoTexto(linhas: readonly LinhaDaEstrutura[], destino: DestinoDaTag): MarcasDoTexto {
+  const marcas: MarcasDoTexto = {
+    soXml: false,
+    soJson: false,
+    escolha: false,
+    reforma: false,
+    tagClicavel: false,
+  }
+
+  for (const { no } of linhas) {
+    if (!no) continue
+    if (no.formato === 'soXml') marcas.soXml = true
+    if (no.formato === 'soJson') marcas.soJson = true
+    if (no.escolha) marcas.escolha = true
+    if (daReformaTributaria(destino, no.campoSlug)) marcas.reforma = true
+    if (acaoDaTag(destino, no.campoSlug) !== null) marcas.tagClicavel = true
+  }
+
+  return marcas
+}
+
+/** Só as marcas que aparecem neste texto entram na legenda, no desenho da tabela de campos. */
+function itensDaLegenda(
+  marcas: MarcasDoTexto,
+  destino: DestinoDaTag['tipo'],
+): ItemDaLegendaDeMarcas[] {
+  const itens: ItemDaLegendaDeMarcas[] = []
+
+  if (marcas.soXml) {
+    itens.push({
+      chave: 'soXml',
+      marca: <span className={CLASSE_DA_ETIQUETA_DE_MARCADOR}>só SOAP</span>,
+      significado: 'só no envio XML',
+    })
+  }
+  if (marcas.soJson) {
+    itens.push({
+      chave: 'soJson',
+      marca: <span className={CLASSE_DA_ETIQUETA_DE_MARCADOR}>só REST</span>,
+      significado: 'só no envio JSON',
+    })
+  }
+  if (marcas.escolha) {
+    itens.push({
+      chave: 'escolha',
+      marca: <span className={CLASSE_DA_ETIQUETA_DE_MARCADOR}>uma entre as opções</span>,
+      significado: 'informe só uma das tags com esta marca',
+    })
+  }
+  if (marcas.reforma) {
+    itens.push({
+      chave: 'reforma',
+      marca: <SeloReformaTributaria />,
+      significado: 'campo da reforma tributária (IBS/CBS)',
+    })
+  }
+  if (marcas.tagClicavel) {
+    itens.push({
+      chave: 'tag',
+      marca: (
+        <span className="font-mono font-semibold text-primary-medium underline decoration-dotted underline-offset-2">
+          sublinhado
+        </span>
+      ),
+      significado: LEGENDA_DO_SUBLINHADO[destino],
+    })
+  }
+
+  return itens
+}
 
 function comGrupos(abertos: ReadonlySet<number>, grupos: readonly number[]): ReadonlySet<number> {
   if (grupos.every((grupo) => abertos.has(grupo))) return abertos
@@ -113,6 +196,7 @@ export function VisualizadorDaEstrutura({
   const slugAncora = comVerbete ? destino.slugAncora : null
 
   const { linhas, ancoras } = useMemo(() => montarLinhasDaEstrutura(raiz, formato), [raiz, formato])
+  const marcas = useMemo(() => marcasDoTexto(linhas, destino), [linhas, destino])
 
   const [abertos, setAbertos] = useState<ReadonlySet<number>>(() => gruposAbertosPorPadrao(linhas))
   const [slugAberto, setSlugAberto] = useState<string | null>(null)
@@ -176,6 +260,12 @@ export function VisualizadorDaEstrutura({
     setAvisoDoDownload(`Arquivo ${nomeDoArquivo} gerado.`)
   }
 
+  function expandirTudo() {
+    setAbertos(
+      new Set(linhas.flatMap((linha, indice) => (linha.fimDoGrupo !== null ? [indice] : []))),
+    )
+  }
+
   const linhaDaAncora = slugAncora === null ? null : (ancoras.get(slugAncora)?.linha ?? null)
   const nomeDaAncora =
     slugAncora === null ? null : (camposPorSlug.get(slugAncora)?.campo.nome ?? slugAncora)
@@ -220,55 +310,34 @@ export function VisualizadorDaEstrutura({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <button
-          type="button"
-          onClick={() =>
-            setAbertos(
-              new Set(
-                linhas.flatMap((linha, indice) => (linha.fimDoGrupo !== null ? [indice] : [])),
-              ),
-            )
-          }
-          className={CLASSE_DA_ACAO}
-        >
+      <LegendaDeMarcas itens={itensDaLegenda(marcas, destino.tipo)} />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" onClick={expandirTudo} className={CLASSE_DO_BOTAO_DA_BARRA}>
+          <ChevronsUpDown aria-hidden="true" className="size-3.5" />
           Expandir tudo
         </button>
-        <button type="button" onClick={() => setAbertos(new Set())} className={CLASSE_DA_ACAO}>
+        <button
+          type="button"
+          onClick={() => setAbertos(new Set())}
+          className={CLASSE_DO_BOTAO_DA_BARRA}
+        >
+          <ChevronsDownUp aria-hidden="true" className="size-3.5" />
           Recolher tudo
         </button>
-
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <BotaoCopiar
-            valor={textoCompleto}
-            rotulo={`Copiar ${extensao.toUpperCase()}`}
-            ariaLabel={rotuloDaCopia}
-          />
-          <button
-            type="button"
-            onClick={baixar}
-            className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-white px-2.5 text-xs font-medium text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
-          >
-            <Download aria-hidden="true" className="size-3.5" />
-            Baixar .{extensao}
-          </button>
-          <span role="status" aria-live="polite" className="sr-only">
-            {avisoDoDownload}
-          </span>
-        </div>
+        <BotaoCopiar
+          valor={textoCompleto}
+          rotulo={`Copiar ${extensao.toUpperCase()}`}
+          ariaLabel={rotuloDaCopia}
+        />
+        <button type="button" onClick={baixar} className={CLASSE_DO_BOTAO_DA_BARRA}>
+          <Download aria-hidden="true" className="size-3.5" />
+          Baixar .{extensao}
+        </button>
+        <span role="status" aria-live="polite" className="sr-only">
+          {avisoDoDownload}
+        </span>
       </div>
-
-      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
-        <span>{LEGENDA_DA_TAG[destino.tipo]}</span>
-        <span className={CLASSE_DO_MARCADOR}>só SOAP</span>
-        <span>existe só no envio XML;</span>
-        <span className={CLASSE_DO_MARCADOR}>só REST</span>
-        <span>existe só no envio JSON;</span>
-        <span className={CLASSE_DO_MARCADOR}>uma entre as opções</span>
-        <span>informe só uma das tags irmãs com esta marca.</span>
-        <SeloReformaTributaria className="ml-3" />
-        <span>campo da reforma tributária.</span>
-      </p>
 
       {slugAncora !== null && linhaDaAncora === null && (
         <p
@@ -285,7 +354,8 @@ export function VisualizadorDaEstrutura({
         aria-label={rotuloDaRegiao}
         // Região rolável na horizontal precisa ser alcançável pelo teclado.
         tabIndex={0}
-        className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-white py-3 font-mono text-[13px] leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+        // `relative` prende o `sr-only` absoluto dos marcadores dentro da rolagem: sem ele, estoura a página.
+        className="relative overflow-x-auto rounded-[var(--radius-card)] border border-border bg-white py-3 font-mono text-[13px] leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
       >
         {visiveis}
       </div>

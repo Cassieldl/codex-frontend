@@ -8,6 +8,7 @@ import {
   createRouter,
 } from '@tanstack/react-router'
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { delay, http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
@@ -115,7 +116,7 @@ function renderPagina(
 let rolagem: Mock<Element['scrollIntoView']>
 
 beforeEach(() => {
-  // jsdom não implementa rolagem — sem o duplo, a âncora derrubaria a página.
+  // jsdom não implementa rolagem, sem o duplo, a âncora derrubaria a página.
   rolagem = vi.fn<Element['scrollIntoView']>()
   Element.prototype.scrollIntoView = rolagem
 })
@@ -135,12 +136,133 @@ describe('LayoutVersaoPage', () => {
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
       'Layout InvoiCy versão 4.12',
     )
-    expect(screen.getByText('Número do RPS')).toBeInTheDocument()
-    expect(screen.getByText('Valor do serviço')).toBeInTheDocument()
+    const dicionario = within(screen.getByRole('tabpanel'))
+    expect(dicionario.getByText('Número do RPS')).toBeInTheDocument()
+    expect(dicionario.getByText('Valor do serviço')).toBeInTheDocument()
     expect(screen.getByText('Ajustes de retenção e de responsável pelo ISS.')).toBeInTheDocument()
   })
 
-  it('escreve "versão" uma vez só: trilha, título, nota e link da versão anterior', async () => {
+  it('o que mudou fica recolhido com os contadores, e cada campo novo leva ao verbete', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      handlerLayoutVersaoSucesso('4-12', paginaFake),
+    )
+    renderPagina()
+
+    const titulo = await screen.findByRole('heading', {
+      name: 'O que mudou da versão 4.10 para a 4.12',
+    })
+    const mudancas = titulo.closest('details')!
+    expect(mudancas).not.toHaveAttribute('open')
+    expect(mudancas.querySelector('[data-contador="novos"]')).toHaveTextContent('1novo')
+    expect(mudancas.querySelector('[data-contador="descontinuados"]')).toBeNull()
+    expect(within(mudancas).getByRole('link', { name: 'Valor do serviço' })).toHaveAttribute(
+      'href',
+      '#campo-valor-do-servico',
+    )
+  })
+
+  it('o chip abre o verbete na própria página; ao fechar, o foco volta ao chip e a lista segue aberta', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      handlerLayoutVersaoSucesso('4-12', paginaFake),
+    )
+    const usuario = userEvent.setup()
+    renderPagina()
+
+    const titulo = await screen.findByRole('heading', {
+      name: 'O que mudou da versão 4.10 para a 4.12',
+    })
+    const mudancas = titulo.closest('details')!
+    await usuario.click(within(mudancas).getByText('O que mudou da versão 4.10 para a 4.12'))
+    const chip = within(mudancas).getByRole('link', { name: 'Valor do serviço' })
+    chip.focus()
+    await usuario.keyboard('{Enter}')
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    await usuario.keyboard('{Escape}')
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(mudancas).toHaveAttribute('open')
+    expect(chip).toHaveFocus()
+  })
+
+  it('com mudanças estruturadas, o campo que o dicionário tem leva ao verbete, sem adivinhar', async () => {
+    const paginaComMudancas = {
+      ...paginaFake,
+      versao: {
+        ...paginaFake.versao,
+        mudancas: [
+          { tipo: 'renomeado', antes: 'VlrServ', depois: 'ValorServicos', descricao: null },
+          { tipo: 'mudouDeLugar', antes: 'tpOper/...', depois: 'RPSSubs/...', descricao: null },
+          { tipo: 'campoNovo', antes: null, depois: 'Desconhecido', descricao: null },
+        ],
+      },
+    }
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      handlerLayoutVersaoSucesso('4-12', paginaComMudancas),
+    )
+    renderPagina()
+
+    const titulo = await screen.findByRole('heading', {
+      name: 'O que mudou da versão 4.10 para a 4.12',
+    })
+    const mudancas = titulo.closest('details')!
+    expect(within(mudancas).getByRole('link', { name: 'ValorServicos' })).toHaveAttribute(
+      'href',
+      '#campo-valor-do-servico',
+    )
+    // Caminho resumido e tag fora do dicionário ficam texto.
+    expect(within(mudancas).queryByRole('link', { name: 'RPSSubs/...' })).toBeNull()
+    expect(within(mudancas).queryByRole('link', { name: 'Desconhecido' })).toBeNull()
+    // Com a lista estruturada, os chips do texto antigo saem.
+    expect(within(mudancas).queryByRole('link', { name: 'Valor do serviço' })).toBeNull()
+  })
+
+  it('mostra a origem e os prazos da versão, com hoje entre os marcos', async () => {
+    const paginaComMarcos = {
+      ...paginaFake,
+      versao: {
+        ...paginaFake.versao,
+        normaOrigem: 'NT 009 v1.01',
+        homologacaoDesde: '2000-10-01',
+        liberadaNoInvoicyEm: '2000-10-22',
+        obrigatoriaEm: '2999-12-01',
+      },
+    }
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      handlerLayoutVersaoSucesso('4-12', paginaComMarcos),
+    )
+    renderPagina()
+
+    const marcos = await screen.findByRole('region', { name: 'Origem e prazos da versão 4.12' })
+    expect(within(marcos).getByText('NT 009 v1.01')).toBeInTheDocument()
+    const prazos = within(marcos).getByRole('list', { name: 'Prazos da versão 4.12' })
+    const entradas = within(prazos)
+      .getAllByRole('listitem')
+      .map((item) => item.textContent)
+    expect(entradas).toEqual([
+      'Homologaçãoout/2000',
+      'Liberada no InvoiCy22/10/2000',
+      expect.stringMatching(/^Hoje/),
+      'Obrigatória em produção01/12/2999',
+    ])
+  })
+
+  it('sem origem nem datas, o bloco de prazos não aparece', async () => {
+    server.use(
+      handlerLayoutIndiceSucesso(indiceFake),
+      handlerLayoutVersaoSucesso('4-12', paginaFake),
+    )
+    renderPagina()
+
+    await screen.findByRole('heading', { level: 1 })
+    expect(screen.queryByRole('region', { name: /Origem e prazos/ })).not.toBeInTheDocument()
+  })
+
+  it('escreve "versão" uma vez só: trilha, título, mudanças e link da versão anterior', async () => {
     server.use(
       handlerLayoutIndiceSucesso(indiceFake),
       handlerLayoutVersaoSucesso('4-12', paginaFake),
@@ -153,7 +275,9 @@ describe('LayoutVersaoPage', () => {
     expect(principal.getByRole('heading', { level: 1 })).toHaveTextContent(
       'Layout InvoiCy versão 4.12',
     )
-    expect(principal.getByRole('heading', { name: 'Nota da versão 4.12' })).toBeInTheDocument()
+    expect(
+      principal.getByRole('heading', { name: 'O que mudou da versão 4.10 para a 4.12' }),
+    ).toBeInTheDocument()
     expect(
       principal.getByRole('link', { name: 'ver o dicionário da versão 4.10' }),
     ).toHaveAttribute('href', '/layout/4-10')
@@ -178,7 +302,9 @@ describe('LayoutVersaoPage', () => {
     expect(principal.getByRole('heading', { level: 1 })).toHaveTextContent(
       'Layout InvoiCy versão 4.12',
     )
-    expect(principal.getByRole('heading', { name: 'Nota da versão 4.12' })).toBeInTheDocument()
+    expect(
+      principal.getByRole('heading', { name: 'O que mudou da versão 4.10 para a 4.12' }),
+    ).toBeInTheDocument()
     expect(
       principal.getByRole('link', { name: 'ver o dicionário da versão 4.10' }),
     ).toBeInTheDocument()
@@ -186,7 +312,7 @@ describe('LayoutVersaoPage', () => {
     expect(screen.getByRole('main').textContent).not.toMatch(/vers[aã]o\s+vers[aã]o/i)
   })
 
-  it('marca como atual apenas a versão aberta — nunca duas ao mesmo tempo', async () => {
+  it('marca como atual apenas a versão aberta, nunca duas ao mesmo tempo', async () => {
     server.use(
       handlerLayoutIndiceSucesso(indiceFake),
       handlerLayoutVersaoSucesso('4-12', paginaFake),
@@ -259,7 +385,7 @@ describe('LayoutVersaoPage', () => {
     expect(screen.queryByRole('button', { name: 'Tentar novamente' })).not.toBeInTheDocument()
   })
 
-  it('404 diz que a versão não existe — desfecho distinto do 410', async () => {
+  it('404 diz que a versão não existe, desfecho distinto do 410', async () => {
     server.use(
       handlerLayoutIndiceSucesso(indiceFake),
       http.get(`${API_URL}/layout/versoes/4-12`, () =>
@@ -318,7 +444,7 @@ describe('LayoutVersaoPage', () => {
 
     expect(await screen.findByText('Número do RPS')).toBeInTheDocument()
     expect(
-      screen.queryByText('Versão do layout — escolha para ver o dicionário'),
+      screen.queryByText('Versão do layout: escolha para ver o dicionário'),
     ).not.toBeInTheDocument()
   })
 

@@ -1,7 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { ArchiveX, CircleHelp, Layers } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
@@ -13,6 +13,8 @@ import { agruparEmBlocos, sequenciaDosBlocos } from '../../../utils/blocosDoLayo
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { AbasFormulario } from '../../interno/artigos/components/AbasFormulario'
 import {
+  construirIdLinhaCampo,
+  construirIdLinhaEstrutura,
   extrairSlugDaEstruturaDoHash,
   useCampoDestacadoPorAncora,
 } from '../../provedores/utils/destaqueAncora'
@@ -22,13 +24,14 @@ import { ChipVersaoLayout } from '../components/ChipVersaoLayout'
 import { DicionarioDaVersao } from '../components/DicionarioDaVersao'
 import { EstruturaDaVersao } from '../components/EstruturaDaVersao'
 import { HistoricoVersoesLayout } from '../components/HistoricoVersoesLayout'
+import { MarcosDaVersao } from '../components/MarcosDaVersao'
+import { MudancasDaVersao } from '../components/MudancasDaVersao'
 import { ErroEstruturaIndisponivel, useEstruturaLayout } from '../hooks/useEstruturaLayout'
 import { useLayoutIndice } from '../hooks/useLayoutIndice'
 import { ErroLayoutVersaoHttp, useLayoutVersao } from '../hooks/useLayoutVersao'
 import type { TipoErroLayoutVersao } from '../hooks/useLayoutVersao'
 import { VISOES_DO_LAYOUT } from '../types/estruturaLayout'
 import type { FormatoDaEstrutura, VisaoDoLayout } from '../types/estruturaLayout'
-import { LEGENDA_ESTADO_VERSAO } from '../utils/estadoVersaoLayout'
 import { criarFormatosDoCampo } from '../utils/formatosDoCampoNaEstrutura'
 
 export interface LayoutVersaoPageProps {
@@ -73,9 +76,9 @@ const ESTADO_POR_TIPO_DE_ERRO: Record<
 }
 
 /**
- * `/layout/{versaoSlug}` (tela 6) — o dicionário denso de uma versão do Layout
+ * `/layout/{versaoSlug}` (tela 6): o dicionário denso de uma versão do Layout
  * InvoiCy. O índice de versões (P10) é consultado à parte só para o seletor e
- * para o histórico: se ele falhar, o dicionário continua de pé — a falha do
+ * para o histórico: se ele falhar, o dicionário continua de pé. A falha do
  * acessório nunca derruba o conteúdo principal.
  */
 export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVersaoPageProps) {
@@ -88,6 +91,12 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
   const consultaDaEstrutura = useEstruturaLayout(versaoSlug, formatoAberto !== null)
   const hash = useLocation({ select: (local) => local.hash })
   const slugAncoraDaEstrutura = formatoAberto ? extrairSlugDaEstruturaDoHash(hash) : null
+  // O "O que mudou" leva ao campo na aba aberta, sem sair da página.
+  const ancoraDoCampo = useCallback(
+    (slug: string) =>
+      `#${formatoAberto ? construirIdLinhaEstrutura(slug) : construirIdLinhaCampo(slug)}`,
+    [formatoAberto],
+  )
 
   const estruturaIndisponivel = consultaDaEstrutura.error instanceof ErroEstruturaIndisponivel
   const formatosDoCampo = useMemo(
@@ -175,12 +184,14 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
               </p>
             </div>
 
+            <MarcosDaVersao versaoRotulo={pagina.versao.rotulo} marcos={pagina.versao} />
+
             <AvisoVocabulario />
 
             {indice && indice.versoes.length > 0 && (
               <section aria-labelledby="seletor-versao-titulo" className="flex flex-col gap-3">
                 <h2 id="seletor-versao-titulo" className="text-card-titulo font-medium text-ink">
-                  Versão do layout — escolha para ver o dicionário
+                  Versão do layout: escolha para ver o dicionário
                 </h2>
                 <ul className="flex flex-wrap gap-3">
                   {indice.versoes.map((versao) => (
@@ -189,11 +200,20 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
                     </li>
                   ))}
                 </ul>
-                <p className="text-xs text-muted">{LEGENDA_ESTADO_VERSAO}</p>
               </section>
             )}
 
-            {pagina.descricao && (
+            {pagina.anterior && (
+              <MudancasDaVersao
+                versao={pagina.versao}
+                anterior={pagina.anterior}
+                descricao={pagina.descricao}
+                camposPorGrupo={pagina.camposPorGrupo}
+                ancoraDoCampo={ancoraDoCampo}
+              />
+            )}
+
+            {!pagina.anterior && pagina.descricao && (
               <section aria-labelledby="nota-versao-titulo" className="flex flex-col gap-2">
                 <h2 id="nota-versao-titulo" className="text-subtitulo font-semibold text-ink">
                   Nota da {formatarVersaoLayout(pagina.versao.rotulo)}
