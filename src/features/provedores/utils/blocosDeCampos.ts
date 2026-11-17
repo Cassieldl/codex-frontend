@@ -88,6 +88,14 @@ export function sequenciaVisivel(blocos: BlocoDeCampos[]): CampoNaSequencia[] {
   return sequenciaDosBlocos(blocos)
 }
 
+/** Campos com ao menos uma rejeição registrada na versão inteira, sem considerar nenhum filtro. */
+export function contarComRejeicao(camposPorGrupo: GrupoCampoVersao[]): number {
+  return camposPorGrupo.reduce(
+    (soma, grupo) => soma + grupo.campos.filter((campo) => campo.errosConhecidos.length > 0).length,
+    0,
+  )
+}
+
 /** Campos da reforma tributária na versão inteira, sem considerar nenhum filtro. */
 export function contarDaReformaTributaria(camposPorGrupo: GrupoCampoVersao[]): number {
   return camposPorGrupo.reduce(

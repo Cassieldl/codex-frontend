@@ -1,82 +1,41 @@
 import clsx from 'clsx'
-import { Check } from 'lucide-react'
 import { useId, useMemo, useState } from 'react'
+import { CLASSE_DA_CAIXA_DE_FILTROS } from '../../../components/ui/classesDosFiltros'
 import { EmptyState } from '../../../components/ui/EmptyState'
+import { EscolhaEmChips } from '../../../components/ui/EscolhaEmChips'
 import { ErrorState } from '../../../components/ui/ErrorState'
+import { Select } from '../../../components/ui/Select'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { rotuloParaNomeDeArquivo } from '../../../utils/baixarArquivoDeTexto'
-import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { VisualizadorDaEstrutura } from '../../layout/components/VisualizadorDaEstrutura'
 import type { DestinoNaLinhaDaTabela } from '../../layout/components/VisualizadorDaEstrutura'
 import { FORMATOS_DA_ESTRUTURA, ROTULO_DO_FORMATO } from '../../layout/types/estruturaLayout'
 import type { FormatoDaEstrutura } from '../../layout/types/estruturaLayout'
 import { ErroEnvioModeloIndisponivel, useEnvioModelo } from '../hooks/useEnvioModelo'
-import { ALCANCES_DO_ENVIO_MODELO, ROTULO_DO_ALCANCE } from '../types/envioModelo'
-import type { AlcanceDoEnvioModelo } from '../types/envioModelo'
+import {
+  ALCANCES_DO_ENVIO_MODELO,
+  CENARIO_PADRAO,
+  ehCenarioDoEnvioModelo,
+  ROTULO_DO_ALCANCE,
+  ROTULO_DO_CENARIO,
+} from '../types/envioModelo'
+import type { AlcanceDoEnvioModelo, CenarioDoEnvioModelo } from '../types/envioModelo'
 import type { GrupoCampoVersao } from '../types/versaoProvedorPagina'
+import { cenariosParaEscolha, mesmosCenarios } from '../utils/cenariosDoEnvioModelo'
 import { construirIdLinhaCampo } from '../utils/destaqueAncora'
 import { ID_SECAO_ENVIO_MODELO } from '../utils/secoesDoProvedor'
 
 export interface EnvioModeloVersaoProps {
   provedorSlug: string
   versaoSlug: string
+  provedorNome: string
+  versaoRotulo: string
   camposPorGrupo: GrupoCampoVersao[]
 }
 
-interface GrupoDeOpcoesProps<T extends string> {
-  rotulo: string
-  opcoes: readonly T[]
-  rotuloDaOpcao: Record<T, string>
-  selecionada: T
-  onSelecionar: (opcao: T) => void
-}
-
-const CLASSE_DA_OPCAO =
-  'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1 text-sm hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
-
-const CLASSE_DA_OPCAO_PRESSIONADA = 'border-2 border-primary bg-primary font-semibold text-white'
-
-// Borda e fundo só num dos ramos: sem tailwind-merge, duas classes do mesmo tipo brigam.
-const CLASSE_DA_OPCAO_SOLTA = 'border border-border-control bg-white text-ink'
-
-/** Botões de alternância com `aria-pressed`: a opção escolhida tem borda, fundo e ícone. */
-function GrupoDeOpcoes<T extends string>({
-  rotulo,
-  opcoes,
-  rotuloDaOpcao,
-  selecionada,
-  onSelecionar,
-}: GrupoDeOpcoesProps<T>) {
-  const rotuloId = useId()
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span id={rotuloId} className="text-xs font-medium text-muted">
-        {rotulo}
-      </span>
-      <div role="group" aria-labelledby={rotuloId} className="flex flex-wrap gap-2">
-        {opcoes.map((opcao) => {
-          const pressionada = opcao === selecionada
-
-          return (
-            <button
-              key={opcao}
-              type="button"
-              aria-pressed={pressionada}
-              onClick={() => onSelecionar(opcao)}
-              className={clsx(
-                CLASSE_DA_OPCAO,
-                pressionada ? CLASSE_DA_OPCAO_PRESSIONADA : CLASSE_DA_OPCAO_SOLTA,
-              )}
-            >
-              {pressionada && <Check aria-hidden="true" className="size-3.5 shrink-0" />}
-              {rotuloDaOpcao[opcao]}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
+const NOME_CURTO_DO_FORMATO: Record<FormatoDaEstrutura, string> = {
+  xml: 'XML',
+  json: 'JSON',
 }
 
 function slugsDaReforma(camposPorGrupo: GrupoCampoVersao[]): ReadonlySet<string> {
@@ -97,23 +56,39 @@ function nomesDosCampos(camposPorGrupo: GrupoCampoVersao[]): ReadonlyMap<string,
 
 /**
  * "Envio modelo" da página da versão: o envio mínimo ou máximo em XML ou JSON, com cada tag de
- * campo levando à linha dele na tabela acima. A falha fica dentro da seção.
+ * campo levando à linha dele na tabela acima. O cenário só aparece quando a versão aceita mais
+ * de um. A falha fica dentro da seção.
  */
 export function EnvioModeloVersao({
   provedorSlug,
   versaoSlug,
+  provedorNome,
+  versaoRotulo,
   camposPorGrupo,
 }: EnvioModeloVersaoProps) {
   const tituloId = useId()
   const [alcance, setAlcance] = useState<AlcanceDoEnvioModelo>('minimo')
   const [formato, setFormato] = useState<FormatoDaEstrutura>('xml')
+  const [cenario, setCenario] = useState<CenarioDoEnvioModelo>(CENARIO_PADRAO)
+  // Cada versão monta a seção de novo (key na rota), então o estado não vaza entre versões.
+  // A lista sobrevive à troca de alcance e cenário: sem ela o seletor sumiria a cada nova busca,
+  // e um erro no cenário estrangeiro prenderia a pessoa nele.
+  const [cenariosDisponiveis, setCenariosDisponiveis] = useState<CenarioDoEnvioModelo[]>([
+    CENARIO_PADRAO,
+  ])
 
   const {
     data: envio,
     isLoading,
     error,
     refetch,
-  } = useEnvioModelo(provedorSlug, versaoSlug, alcance)
+  } = useEnvioModelo(provedorSlug, versaoSlug, alcance, cenario)
+
+  if (envio) {
+    const recebidos = cenariosParaEscolha(envio.cenariosDisponiveis ?? [])
+    if (!mesmosCenarios(recebidos, cenariosDisponiveis)) setCenariosDisponiveis(recebidos)
+    if (!recebidos.includes(cenario)) setCenario(CENARIO_PADRAO)
+  }
 
   const nomePorSlug = useMemo(() => nomesDosCampos(camposPorGrupo), [camposPorGrupo])
   const destino = useMemo<DestinoNaLinhaDaTabela>(
@@ -127,7 +102,9 @@ export function EnvioModeloVersao({
 
   const indisponivel = error instanceof ErroEnvioModeloIndisponivel
   const raiz = !isLoading && !error ? envio?.[formato] : undefined
-  const rotuloDoEnvio = `envio modelo ${ROTULO_DO_ALCANCE[alcance].toLowerCase()} em ${ROTULO_DO_FORMATO[formato]}`
+  const comCenarios = cenariosDisponiveis.length > 1
+  const rotuloDoCenario = comCenarios ? `, ${ROTULO_DO_CENARIO[cenario].toLowerCase()},` : ''
+  const rotuloDoEnvio = `envio modelo ${ROTULO_DO_ALCANCE[alcance].toLowerCase()}${rotuloDoCenario} em ${ROTULO_DO_FORMATO[formato]}`
   const camposSemPosicao = !isLoading && !error ? (envio?.camposSemPosicao ?? []) : []
 
   return (
@@ -141,9 +118,8 @@ export function EnvioModeloVersao({
           Envio modelo
         </h2>
         <p className="max-w-[70ch] text-sm text-muted">
-          {envio
-            ? `Um envio desta versão no Layout InvoiCy ${formatarVersaoLayout(envio.versaoLayoutRotulo)}, com um valor de exemplo em cada tag.`
-            : 'Um envio desta versão, com um valor de exemplo em cada tag.'}
+          {NOME_CURTO_DO_FORMATO[formato]} de exemplo do {provedorNome} {versaoRotulo}, preenchido
+          com valores fictícios.
         </p>
         <p className="max-w-[70ch] text-xs text-muted">
           O mínimo traz só o que o esquema do provedor obriga. A prefeitura pode exigir outros
@@ -152,15 +128,31 @@ export function EnvioModeloVersao({
       </header>
 
       {!indisponivel && (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <GrupoDeOpcoes
+        <div
+          className={clsx('flex flex-wrap items-end gap-x-6 gap-y-3', CLASSE_DA_CAIXA_DE_FILTROS)}
+        >
+          {comCenarios && (
+            <Select
+              label="Cenário"
+              options={cenariosDisponiveis.map((opcao) => ({
+                value: opcao,
+                label: ROTULO_DO_CENARIO[opcao],
+              }))}
+              value={cenario}
+              onValueChange={(valor) => {
+                if (ehCenarioDoEnvioModelo(valor)) setCenario(valor)
+              }}
+              className="w-full sm:w-60"
+            />
+          )}
+          <EscolhaEmChips
             rotulo="Alcance"
             opcoes={ALCANCES_DO_ENVIO_MODELO}
             rotuloDaOpcao={ROTULO_DO_ALCANCE}
             selecionada={alcance}
             onSelecionar={setAlcance}
           />
-          <GrupoDeOpcoes
+          <EscolhaEmChips
             rotulo="Formato"
             opcoes={FORMATOS_DA_ESTRUTURA}
             rotuloDaOpcao={ROTULO_DO_FORMATO}
@@ -217,11 +209,11 @@ export function EnvioModeloVersao({
 
       {raiz && raiz.filhos.length > 0 && (
         <VisualizadorDaEstrutura
-          key={`${alcance}-${formato}`}
+          key={`${alcance}-${cenario}-${formato}`}
           raiz={raiz}
           formato={formato}
           destino={destino}
-          nomeBaseDoArquivo={`envio-modelo-${provedorSlug}-${rotuloParaNomeDeArquivo(versaoSlug)}-${alcance}`}
+          nomeBaseDoArquivo={`envio-modelo-${provedorSlug}-${rotuloParaNomeDeArquivo(versaoSlug)}-${alcance}${cenario === CENARIO_PADRAO ? '' : `-${cenario}`}`}
           rotuloDaRegiao={`Texto do ${rotuloDoEnvio}`}
           rotuloDaCopia={`Copiar o ${rotuloDoEnvio}`}
         />

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { apiPublico } from '../../../services/api'
 import { devoRetentar } from '../../../utils/retentativaDeQuery'
-import type { AlcanceDoEnvioModelo, EnvioModelo } from '../types/envioModelo'
+import type { AlcanceDoEnvioModelo, CenarioDoEnvioModelo, EnvioModelo } from '../types/envioModelo'
 import { provedoresKeys } from './provedoresKeys'
 
 interface EnvelopeEnvioModelo {
@@ -50,21 +50,22 @@ function classificarErro(error: unknown): ErroEnvioModeloIndisponivel | null {
 const DEZ_MINUTOS_MS = 1000 * 60 * 10
 
 /**
- * `GET /provedores/{provedorSlug}/versoes/{versaoSlug}/envio-modelo?alcance=`. Cada alcance tem
- * a sua entrada de cache: voltar ao alcance já visto não busca de novo.
+ * `GET /provedores/{provedorSlug}/versoes/{versaoSlug}/envio-modelo?alcance=&cenario=`.
+ * Cada alcance e cenário tem a sua entrada de cache: voltar ao já visto não busca de novo.
  */
 export function useEnvioModelo(
   provedorSlug: string,
   versaoSlug: string,
   alcance: AlcanceDoEnvioModelo,
+  cenario: CenarioDoEnvioModelo,
 ) {
   return useQuery({
-    queryKey: provedoresKeys.envioModelo(provedorSlug, versaoSlug, alcance),
+    queryKey: provedoresKeys.envioModelo(provedorSlug, versaoSlug, alcance, cenario),
     queryFn: async () => {
       try {
         const { data } = await apiPublico.get<EnvelopeEnvioModelo>(
           `/provedores/${provedorSlug}/versoes/${versaoSlug}/envio-modelo`,
-          { params: { alcance } },
+          { params: { alcance, cenario } },
         )
         return data.data
       } catch (error) {

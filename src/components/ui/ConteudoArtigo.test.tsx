@@ -112,6 +112,97 @@ describe('ConteudoArtigo: blocos visuais', () => {
     expect(container).not.toHaveTextContent(`[!${marcador}]`)
   })
 
+  it.each([
+    ['DICA', 'informacao'],
+    ['IMPORTANTE', 'alerta'],
+    ['ATENCAO', 'erro'],
+    ['SUCESSO', 'sucesso'],
+  ])('[!%s] vira o alerta Migrate do tipo %s', (marcador, tipo) => {
+    const { container } = render(<ConteudoArtigo corpo={`> [!${marcador}]\n> Corpo do alerta.`} />)
+
+    expect(container.querySelector(`[data-alerta="${tipo}"]`)).toHaveTextContent('Corpo do alerta.')
+  })
+
+  it('texto na linha do marcador vira título quando há corpo depois; sozinho, continua corpo', () => {
+    render(
+      <ConteudoArtigo
+        corpo={'> [!DICA] Erro novo?\n> Veja o comunicado.\n\n> [!SUCESSO] Tudo certo.'}
+      />,
+    )
+
+    const comTitulo = screen.getByRole('note', { name: 'Erro novo?' })
+    expect(comTitulo).toHaveTextContent('Veja o comunicado.')
+    expect(screen.getByRole('note', { name: 'Sucesso' })).toHaveTextContent('Tudo certo.')
+  })
+
+  it('[!CARTOES] vira grade de cartões; o link da ação cobre o cartão inteiro', () => {
+    const corpo = [
+      '> [!CARTOES]',
+      '> - **Código do erro** | Cole como veio. | [Ex.: E157](/busca?q=E157)',
+      '> - **Provedor** | Tudo o que está documentado.',
+    ].join('\n')
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const cartoes = container.querySelectorAll('ul > li')
+    expect(cartoes).toHaveLength(2)
+    const link = screen.getByRole('link', { name: 'Ex.: E157' })
+    expect(cartoes[0]).toContainElement(link)
+    expect(link).toHaveAttribute('href', '/busca?q=E157')
+    expect(cartoes[1].querySelector('a')).not.toBeInTheDocument()
+    expect(cartoes[1]).toHaveTextContent('Provedor')
+    expect(container).not.toHaveTextContent('|')
+  })
+
+  it('[!COMPARATIVO] vira duas colunas, cada uma com título e lista', () => {
+    const corpo = [
+      '> [!COMPARATIVO]',
+      '> **Aviso**',
+      '> - Regra em vigor.',
+      '>',
+      '> **Comunicado**',
+      '> - Situação temporária.',
+      '> - Tem data para sair.',
+    ].join('\n')
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const colunas = container.querySelectorAll('[data-bloco="comparativo"] > ul > li')
+    expect(colunas).toHaveLength(2)
+    expect(colunas[0].querySelector('p')).toHaveTextContent('Aviso')
+    expect(colunas[1].querySelectorAll('li')).toHaveLength(2)
+  })
+
+  it('[!CHECKLIST] marca cada item com o ícone de confirmação', () => {
+    const { container } = render(
+      <ConteudoArtigo corpo={'> [!CHECKLIST]\n> - Erro não documentado.\n> - Não resolveu.'} />,
+    )
+
+    const itens = container.querySelectorAll('[data-bloco="checklist"] li')
+    expect(itens).toHaveLength(2)
+    expect(itens[0].querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it.each([
+    ['cartão sem a barra', '> [!CARTOES]\n> - **Título** sem separador'],
+    ['cartão com texto no lugar do link', '> [!CARTOES]\n> - **Título** | texto | sem link'],
+    ['comparativo com uma coluna só', '> [!COMPARATIVO]\n> **Aviso**\n> - Regra.'],
+    ['checklist sem lista', '> [!CHECKLIST]\n> Só um parágrafo.'],
+  ])('%s cai para citação comum com o marcador visível', (_caso, corpo) => {
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    expect(container.querySelector('blockquote')).toHaveTextContent('[!')
+    expect(container.querySelector('[data-bloco]')).not.toBeInTheDocument()
+  })
+
+  it('passo com ênfase no meio da frase fica num parágrafo só', () => {
+    const { container } = render(
+      <ConteudoArtigo corpo={'> [!PASSOS]\n> 1. Abra *Painel → Webhooks → Novo*.'} />,
+    )
+
+    const paragrafos = container.querySelectorAll('ol > li p')
+    expect(paragrafos).toHaveLength(1)
+    expect(paragrafos[0]).toHaveTextContent('Abra Painel → Webhooks → Novo.')
+  })
+
   it('marcador desconhecido e citação sem marcador continuam blockquote com o texto visível', () => {
     const { container } = render(
       <ConteudoArtigo corpo={'> [!XYZ] Texto estranho.\n\nFora.\n\n> Citação comum.'} />,
@@ -135,7 +226,7 @@ describe('ConteudoArtigo: blocos visuais', () => {
 
     const passos = container.querySelectorAll('ol > li')
     expect(passos).toHaveLength(2)
-    expect(passos[0]).toHaveTextContent('1Abra o painel.')
+    expect(passos[0]).toHaveTextContent(/^1\s*Abra o painel\./)
     expect(passos[0].querySelector('figure img')).toHaveAttribute(
       'src',
       '/imagens/pasta/painel.png',
@@ -232,5 +323,61 @@ describe('ConteudoArtigo: nada alarga a página em tela estreita', () => {
     const corpo = container.firstElementChild
     expect(corpo).toHaveClass('min-w-0')
     expect(corpo).toHaveClass('[&_a]:[overflow-wrap:anywhere]')
+  })
+})
+
+describe('ConteudoArtigo: a fonte vai para o rodapé', () => {
+  it('citação "Fonte:" no topo sai do início e fecha o corpo, com o link preservado', () => {
+    const corpo =
+      '> Fonte: [Webhook - Configurações](https://exemplo.com/webhook) (12/08/2026).\n\n## Resumo\n\nO Webhook avisa o ERP.'
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const corpoRenderizado = container.firstElementChild!
+    expect(corpoRenderizado.firstElementChild).toHaveTextContent('Resumo')
+    const rodape = corpoRenderizado.lastElementChild!
+    expect(rodape.tagName).toBe('FOOTER')
+    expect(rodape).toHaveTextContent('Fonte: Webhook - Configurações (12/08/2026).')
+    expect(screen.getByRole('link', { name: 'Webhook - Configurações' })).toHaveAttribute(
+      'href',
+      'https://exemplo.com/webhook',
+    )
+  })
+
+  it('parágrafo "Fontes:" no meio também vai para o rodapé, junto da citação', () => {
+    const corpo =
+      '> Fonte: página A.\n\nTexto do meio.\n\nFontes: observações do padrão.\n\n## Fim\n\nÚltimo.'
+    const { container } = render(<ConteudoArtigo corpo={corpo} />)
+
+    const rodapes = container.querySelectorAll('footer')
+    expect(rodapes).toHaveLength(1)
+    expect(rodapes[0].querySelectorAll('p')).toHaveLength(2)
+    expect(container.firstElementChild!.lastElementChild).toBe(rodapes[0])
+  })
+
+  it('citação comum e caixa [!DICA] não viram fonte', () => {
+    const { container } = render(
+      <ConteudoArtigo
+        corpo={'> Citação sobre a fonte da regra.\n\n> [!DICA] Fonte: veja abaixo.'}
+      />,
+    )
+
+    expect(container.querySelector('footer')).not.toBeInTheDocument()
+  })
+})
+
+describe('ConteudoArtigo: tabela de rótulos legível', () => {
+  it('primeira coluna de rótulos curtos não quebra linha', () => {
+    const corpo =
+      '| Notificação | Quando dispara |\n| - | - |\n| **Evento e Documento Inutilizado** | Mudança entre status finais. |'
+    render(<ConteudoArtigo corpo={corpo} />)
+
+    expect(screen.getByRole('table')).toHaveClass('[&_td:first-child]:whitespace-nowrap')
+  })
+
+  it('primeira coluna com texto longo continua quebrando', () => {
+    const longo = 'Um rótulo bem comprido que descreve a situação em detalhe'
+    render(<ConteudoArtigo corpo={`| Situação | Ação |\n| - | - |\n| ${longo} | Corrigir. |`} />)
+
+    expect(screen.getByRole('table')).not.toHaveClass('[&_td:first-child]:whitespace-nowrap')
   })
 })

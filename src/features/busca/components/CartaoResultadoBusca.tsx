@@ -2,7 +2,7 @@ import { Link, type LinkProps } from '@tanstack/react-router'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import type { ResultadoItem } from '../types/resultadoBusca'
 import { formatarMetaResultado } from '../utils/formatarMetaResultado'
-import { resolverTituloDoCartao, trechosQueAcrescentam } from '../utils/trechoAcrescenta'
+import { trechosDoCartao } from '../utils/trechoAcrescenta'
 import { ResultadoErroGeral } from './ResultadoErroGeral'
 import { TrechosDestacados } from './TrechosDestacados'
 
@@ -16,18 +16,7 @@ function ConteudoDoCartao({ item }: CartaoResultadoBuscaProps) {
   const ehErro = item.tipo === 'erro'
   const codigo = ehErro ? item.chave : null
   const meta = formatarMetaResultado(item.meta)
-  // O que o cartão mostra além do título: do trecho, só entra o que ainda não está aqui.
-  const outrosTextosVisiveis = [
-    codigo,
-    ehErro ? item.solucaoResumo : null,
-    ehErro ? item.provedorNome : null,
-    ehErro ? item.versaoRotulo : null,
-  ]
-  const titulo = resolverTituloDoCartao(item.titulo, codigo, item.trechos, outrosTextosVisiveis)
-  const trechosNovos = trechosQueAcrescentam(titulo.trechos, [
-    titulo.titulo.map((parte) => parte.texto).join(''),
-    ...outrosTextosVisiveis,
-  ])
+  const trechos = trechosDoCartao(item)
 
   return (
     <div className="flex items-start gap-3">
@@ -38,10 +27,11 @@ function ConteudoDoCartao({ item }: CartaoResultadoBuscaProps) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex items-start justify-between gap-2">
+        {/* Em tela estreita o chip do provedor desce: ao lado, o título vira coluna de duas palavras. */}
+        <div className="flex flex-col items-start gap-1 sm:flex-row sm:justify-between sm:gap-2">
           {/* Título de erro pode ser um caminho XML sem espaço: sem a quebra, estoura 390 px. */}
           <span className="min-w-0 text-card-titulo font-medium text-ink [overflow-wrap:anywhere]">
-            {titulo.veioDoTrecho ? <TrechosDestacados trechos={titulo.titulo} /> : item.titulo}
+            {item.titulo}
           </span>
           {ehErro && (
             <ResultadoErroGeral
@@ -52,9 +42,9 @@ function ConteudoDoCartao({ item }: CartaoResultadoBuscaProps) {
           )}
         </div>
 
-        {trechosNovos.length > 0 && (
+        {trechos.length > 0 && (
           <p className="text-sm text-ink [overflow-wrap:anywhere]">
-            <TrechosDestacados trechos={trechosNovos} />
+            <TrechosDestacados trechos={trechos} />
           </p>
         )}
 
@@ -72,7 +62,7 @@ function ConteudoDoCartao({ item }: CartaoResultadoBuscaProps) {
 }
 
 /**
- * Um resultado da busca pública. No erro, o código abre o cartão e o provedor fica ao lado do
+ * Um resultado da busca pública. No erro, o código abre o cartão e o provedor fica junto do
  * título: o mesmo código existe em provedores diferentes, e é isso que decide qual abrir. A
  * primeira linha da solução já vem no cartão.
  *

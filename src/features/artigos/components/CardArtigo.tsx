@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
+import { ehTextoDeFonte } from '../../../components/ui/blocosDoArtigo'
 import type { ArtigoListaItem } from '../types/artigo'
 import { EtiquetaTipoArtigo } from './EtiquetaTipoArtigo'
 
@@ -14,7 +15,7 @@ export interface CardArtigoProps {
 
 /**
  * Item do índice de artigos (tela 7). O título manda, o resumo respira e o
- * selo de verificação fica subordinado — artigo não tem prazo nem vigência: a
+ * selo de verificação fica subordinado: artigo não tem prazo nem vigência: a
  * única data da tela é a verificação.
  */
 export function CardArtigo({ artigo, mostrarTipo = true }: CardArtigoProps) {
@@ -33,7 +34,10 @@ export function CardArtigo({ artigo, mostrarTipo = true }: CardArtigoProps) {
           </Link>
         </h2>
 
-        {artigo.resumo && <p className="max-w-2xl text-sm text-muted">{artigo.resumo}</p>}
+        {/* Resumo que é só a citação da fonte não diz do que o artigo trata: fica só o título. */}
+        {artigo.resumo && !ehTextoDeFonte(artigo.resumo) && (
+          <p className="max-w-2xl text-sm text-muted">{artigo.resumo}</p>
+        )}
       </div>
 
       {artigo.verificadoEm && (

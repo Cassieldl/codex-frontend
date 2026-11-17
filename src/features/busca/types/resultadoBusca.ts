@@ -33,6 +33,9 @@ export interface CorrecaoBusca {
   tokens: TokenCorrecao[]
 }
 
+/** Parte do erro onde o termo casou. O cartão já mostra código, mensagem e solução. */
+export type CampoCasado = 'codigo' | 'mensagem' | 'causa' | 'solucao' | 'outro'
+
 export interface ResultadoItem {
   tipo: string
   rotulo: string
@@ -45,6 +48,8 @@ export interface ResultadoItem {
   versoes: string[] | null
   /** Ex.: "casou com o código E-124". Termo de quem construiu a busca: a busca pública não mostra. */
   descricaoCasamento: string
+  /** Parte do erro onde o termo casou; `null` nos outros tipos. Vem sempre no JSON. */
+  campoCasado: CampoCasado | null
   /** Primeira linha da solução, só para erro; `null` nos outros tipos e no erro sem solução. */
   solucaoResumo: string | null
   /** Sempre `true` na busca pública; na interna, revela o rascunho. */

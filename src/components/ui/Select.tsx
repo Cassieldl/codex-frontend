@@ -98,6 +98,13 @@ export function Select({
           })
         }
         break
+      case 'Home':
+      case 'End':
+        // Com a lista fechada, Home e End ficam com o navegador.
+        if (!aberto || options.length === 0) break
+        evento.preventDefault()
+        setIndiceAtivo(evento.key === 'Home' ? 0 : options.length - 1)
+        break
       case 'Enter':
       case ' ':
         evento.preventDefault()

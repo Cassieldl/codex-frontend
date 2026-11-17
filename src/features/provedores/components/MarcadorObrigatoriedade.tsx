@@ -1,21 +1,13 @@
 import clsx from 'clsx'
-import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
 import type { EstadoPreenchimentoCampo } from '../types/versaoProvedorPagina'
-
-const ROTULO_DA_OBRIGATORIEDADE: Record<EstadoPreenchimentoCampo, string> = {
-  Obrigatorio: 'Obrigatório',
-  Condicional: 'Condicional',
-  Opcional: 'Opcional',
-}
-
-const ORDEM_DA_LEGENDA: EstadoPreenchimentoCampo[] = ['Obrigatorio', 'Condicional', 'Opcional']
+import { ROTULO_DA_OBRIGATORIEDADE } from '../utils/obrigatoriedade'
 
 export interface MarcadorObrigatoriedadeProps {
   estado: EstadoPreenchimentoCampo
   className?: string
 }
 
-function FormaDoMarcador({ estado }: { estado: EstadoPreenchimentoCampo }) {
+export function FormaDoMarcador({ estado }: { estado: EstadoPreenchimentoCampo }) {
   return (
     <svg viewBox="0 0 10 10" aria-hidden="true" className="size-full text-primary-medium">
       {estado === 'Obrigatorio' ? (
@@ -46,39 +38,5 @@ export function MarcadorObrigatoriedade({ estado, className }: MarcadorObrigator
       <FormaDoMarcador estado={estado} />
       <span className="sr-only">{rotulo}</span>
     </span>
-  )
-}
-
-export interface LegendaDeObrigatoriedadeProps {
-  /** A versão tem campo da reforma tributária: a legenda explica o selo também. */
-  mostrarReformaTributaria: boolean
-}
-
-/** Legenda única dos marcadores, no topo da tabela de campos. */
-export function LegendaDeObrigatoriedade({
-  mostrarReformaTributaria,
-}: LegendaDeObrigatoriedadeProps) {
-  return (
-    <div
-      role="group"
-      aria-label="Legenda da tabela de campos"
-      className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted"
-    >
-      <span className="font-medium">Legenda:</span>
-      {ORDEM_DA_LEGENDA.map((estado) => (
-        <span key={estado} className="inline-flex items-center gap-1.5">
-          <span aria-hidden="true" className="inline-flex size-2.5">
-            <FormaDoMarcador estado={estado} />
-          </span>
-          {ROTULO_DA_OBRIGATORIEDADE[estado].toLowerCase()}
-        </span>
-      ))}
-      {mostrarReformaTributaria && (
-        <span className="inline-flex items-center gap-1.5">
-          <SeloReformaTributaria />
-          <span aria-hidden="true">reforma tributária</span>
-        </span>
-      )}
-    </div>
   )
 }

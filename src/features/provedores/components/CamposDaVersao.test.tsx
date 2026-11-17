@@ -274,7 +274,7 @@ beforeEach(() => {
   propsDoModal.length = 0
 })
 
-describe('CamposDaVersao — afirmação de exaustividade e selo', () => {
+describe('CamposDaVersao: afirmação de exaustividade e selo', () => {
   it('sem filtro, afirma a exaustividade da versão inteira, numa região que se anuncia sozinha', () => {
     renderizar()
 
@@ -291,7 +291,7 @@ describe('CamposDaVersao — afirmação de exaustividade e selo', () => {
 
     expect(
       screen.getByText(
-        'Mostrando 2 de 8 campos — a exaustividade vale para os 8 campos desta versão, não para este filtro.',
+        'Mostrando 2 de 8 campos. A exaustividade vale para os 8 campos desta versão, não para este filtro.',
       ),
     ).toBeInTheDocument()
     expect(screen.queryByText(FRASE_SEM_FILTRO)).toBeNull()
@@ -316,7 +316,7 @@ describe('CamposDaVersao — afirmação de exaustividade e selo', () => {
   })
 })
 
-describe('CamposDaVersao — filtros', () => {
+describe('CamposDaVersao: filtros', () => {
   it('os chips mostram a contagem da versão inteira e só um está pressionado', () => {
     renderizar()
     const grupo = screen.getByRole('group', { name: 'Filtrar por obrigatoriedade' })
@@ -409,7 +409,7 @@ describe('CamposDaVersao — filtros', () => {
   })
 })
 
-describe('CamposDaVersao — blocos', () => {
+describe('CamposDaVersao: blocos', () => {
   it('lista os blocos na ordem da primeira aparição, só o primeiro aberto', () => {
     const { container } = renderizar()
 
@@ -501,7 +501,7 @@ describe('CamposDaVersao — blocos', () => {
   })
 })
 
-describe('CamposDaVersao — modal do campo', () => {
+describe('CamposDaVersao: modal do campo', () => {
   it('clicar no nome abre o diálogo com o nome do campo e entrega ao modal a posição na ordem do DOM', () => {
     renderizar()
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -635,7 +635,7 @@ describe('CamposDaVersao — modal do campo', () => {
   })
 })
 
-describe('CamposDaVersao — campo ativo', () => {
+describe('CamposDaVersao: campo ativo', () => {
   function linhasAtivas() {
     return document.querySelectorAll('[aria-current="true"]')
   }
@@ -678,7 +678,7 @@ describe('CamposDaVersao — campo ativo', () => {
   })
 })
 
-describe('CamposDaVersao — campo apontado por âncora', () => {
+describe('CamposDaVersao: campo apontado por âncora', () => {
   it('abre o bloco, rola até a linha uma vez, abre o modal e marca a linha', () => {
     const { container } = renderizar({ campoDestacado: 'tomador-tomacep' })
 
@@ -778,7 +778,7 @@ describe('CamposDaVersao — campo apontado por âncora', () => {
   })
 })
 
-describe('CamposDaVersao — teclado e leitor de tela', () => {
+describe('CamposDaVersao: teclado e leitor de tela', () => {
   it('o botão do nome é alcançável por Tab e abre o diálogo com Enter', async () => {
     const usuario = userEvent.setup()
     renderizar()
@@ -794,5 +794,41 @@ describe('CamposDaVersao — teclado e leitor de tela', () => {
     renderizar()
 
     expect(screen.getByRole('region', { name: 'Campos e mapeamento' })).toBeInTheDocument()
+  })
+})
+
+describe('CamposDaVersao: legenda da tabela', () => {
+  it('explica por escrito cada marca, com quantos campos têm rejeição registrada', () => {
+    renderizar()
+
+    const legenda = screen.getByRole('list', { name: 'Legenda:' })
+    expect(
+      within(legenda)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual([
+      'obrigatório',
+      'condicional',
+      'opcional',
+      'ncampo com rejeição registrada nesta versão, n é a quantidade (2 campos)',
+    ])
+  })
+
+  it('com campo da reforma tributária, a legenda explica o selo RT', () => {
+    renderizar({
+      camposPorGrupo: [
+        {
+          grupo: 'Servico',
+          grupoSlug: 'servico',
+          campos: [{ ...DISCRIMINACAO, reformaTributaria: true }],
+        },
+      ],
+      totalCampos: 1,
+    })
+
+    const legenda = screen.getByRole('list', { name: 'Legenda:' })
+    expect(within(legenda).getByText('campo da reforma tributária (IBS/CBS)')).toBeInTheDocument()
+    // Sem campo com rejeição, a marca do triângulo não entra.
+    expect(within(legenda).queryByText(/rejeição registrada/)).not.toBeInTheDocument()
   })
 })

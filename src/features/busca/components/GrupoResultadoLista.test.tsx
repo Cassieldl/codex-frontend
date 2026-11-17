@@ -31,6 +31,7 @@ function criarItem(sobrescritas: Partial<ResultadoItem> = {}): ResultadoItem {
     versaoRotulo: '1.01',
     versoes: null,
     descricaoCasamento: 'casou com o código E157',
+    campoCasado: 'codigo',
     solucaoResumo: SOLUCAO_E157_ISSNET,
     publicado: true,
     meta: null,
@@ -65,6 +66,7 @@ function itensNumerados(quantidade: number, inicio = 0) {
       versaoRotulo: '2.04',
       versoes: null,
       descricaoCasamento: 'casou com o termo pesquisado',
+      campoCasado: 'mensagem' as const,
       solucaoResumo: null,
       publicado: true,
       meta: null,
@@ -121,10 +123,11 @@ describe('GrupoResultadoLista: cartão de erro', () => {
     expect(cartao.textContent?.match(/E157/g)).toHaveLength(1)
   })
 
-  it('o trecho que acrescenta algo fica, com o termo destacado', async () => {
+  it('o termo casado na causa traz o trecho, com o termo destacado', async () => {
     renderComRouter(
       criarGrupo([
         criarItem({
+          campoCasado: 'causa',
           trechos: [
             { texto: 'Informe a ', destacado: false },
             { texto: 'alíquota', destacado: true },
@@ -138,10 +141,11 @@ describe('GrupoResultadoLista: cartão de erro', () => {
     expect(within(cartao).getByText('alíquota').tagName).toBe('MARK')
   })
 
-  it('título cortado em "…": a frase do trecho vira o título, com o termo destacado, e não se repete', async () => {
+  it('título cortado em "…" e termo casado na mensagem: a mensagem aparece uma vez, sem trecho', async () => {
     renderComRouter(
       criarGrupo([
         criarItem({
+          campoCasado: 'mensagem',
           chave: 'E0621',
           titulo:
             'É obrigatório informar alíquota quando há indicação de retenção do ISSQN (tpRetISSQN = 2 ou 3) para o prestador de serviço ME/EPP (opSimpNac = 3) na data de…',
@@ -161,8 +165,7 @@ describe('GrupoResultadoLista: cartão de erro', () => {
 
     const cartao = await screen.findByRole('link')
     expect(cartao.textContent?.match(/É obrigatório informar/g)).toHaveLength(1)
-    expect(cartao).toHaveTextContent('na DPS, com apuração…')
-    expect(within(cartao).getByText('alíquota').tagName).toBe('MARK')
+    expect(cartao).not.toHaveTextContent('com apuração')
   })
 
   it('o cabeçalho do grupo tem só o rótulo e o total', async () => {
@@ -179,21 +182,29 @@ describe('GrupoResultadoLista: cartão de erro', () => {
 describe('GrupoResultadoLista: texto longo sem espaço no celular', () => {
   const caminhoXml = 'NFSe/infNFSe/DPS/infDPS/prest/regTrib/regEspTrib'
 
-  it('o título quebra onde precisar e encolhe ao lado do provedor', async () => {
+  it('o título quebra onde precisar e, no celular, o provedor fica na linha de baixo', async () => {
     renderComRouter(
       criarGrupo([
         criarItem({ titulo: caminhoXml, provedorNome: 'Emissor Nacional', versaoRotulo: '0.20' }),
       ]),
     )
 
-    const classes = (await screen.findByText(caminhoXml)).className.split(/\s+/)
+    const titulo = await screen.findByText(caminhoXml)
+    const classes = titulo.className.split(/\s+/)
+    const linhaDoTitulo = titulo.parentElement?.className.split(/\s+/)
 
     expect(classes).toContain('min-w-0')
     expect(classes).toContain('[overflow-wrap:anywhere]')
+    expect(linhaDoTitulo).toContain('flex-col')
+    expect(linhaDoTitulo).toContain('sm:flex-row')
   })
 
   it('o trecho também quebra, e a quebra fica só nos textos longos, nunca no cartão inteiro', async () => {
-    renderComRouter(criarGrupo([criarItem({ trechos: [{ texto: caminhoXml, destacado: false }] })]))
+    renderComRouter(
+      criarGrupo([
+        criarItem({ campoCasado: 'outro', trechos: [{ texto: caminhoXml, destacado: false }] }),
+      ]),
+    )
 
     const trecho = await screen.findByText(caminhoXml)
     expect(trecho.className.split(/\s+/)).toContain('[overflow-wrap:anywhere]')

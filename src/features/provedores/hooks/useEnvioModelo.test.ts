@@ -16,9 +16,12 @@ function envolverComQueryClient() {
 }
 
 function renderizarHook() {
-  return renderHook(() => useEnvioModelo('prefeitura-exemplo', 'v1', 'maximo'), {
-    wrapper: envolverComQueryClient(),
-  })
+  return renderHook(
+    () => useEnvioModelo('prefeitura-exemplo', 'v1', 'maximo', 'tomador-estrangeiro'),
+    {
+      wrapper: envolverComQueryClient(),
+    },
+  )
 }
 
 function respostaDe404(corpo: Record<string, unknown>) {
@@ -26,14 +29,19 @@ function respostaDe404(corpo: Record<string, unknown>) {
 }
 
 describe('useEnvioModelo', () => {
-  it('pede o alcance na query string e devolve o envio do envelope', async () => {
+  it('pede o alcance e o cenário na query string e devolve o envio do envelope', async () => {
     let alcancePedido: string | null = null
+    let cenarioPedido: string | null = null
     server.use(
       http.get(URL_DO_ENVIO, ({ request }) => {
-        alcancePedido = new URL(request.url).searchParams.get('alcance')
+        const busca = new URL(request.url).searchParams
+        alcancePedido = busca.get('alcance')
+        cenarioPedido = busca.get('cenario')
         return HttpResponse.json({
           data: {
             alcance: 'maximo',
+            cenario: 'tomador-estrangeiro',
+            cenariosDisponiveis: ['nacional', 'tomador-estrangeiro'],
             versaoLayoutRotulo: '8',
             xml: { nome: 'Envio', filhos: [] },
             json: { nome: 'Documento', filhos: [] },
@@ -48,6 +56,7 @@ describe('useEnvioModelo', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(alcancePedido).toBe('maximo')
+    expect(cenarioPedido).toBe('tomador-estrangeiro')
     expect(result.current.data?.camposSemPosicao).toEqual(['servico-codigo-cnae'])
   })
 

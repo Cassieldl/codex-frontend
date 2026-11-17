@@ -22,7 +22,7 @@ export interface VersaoProvedorPageProps {
 
 /**
  * Cada tipo que o hook classifica tem destino próprio. Mapa em vez de cadeia de
- * `if`: o tipo que não estiver aqui não some em silêncio no ramo genérico — é a
+ * `if`: o tipo que não estiver aqui não some em silêncio no ramo genérico, é a
  * consulta que a guarda estrutural lê para saber que todos foram tratados.
  */
 const VARIANTE_POR_TIPO_DE_ERRO: Record<string, VarianteProvedorIndisponivel | undefined> = {
@@ -37,7 +37,7 @@ const VARIANTE_POR_TIPO_DE_ERRO: Record<string, VarianteProvedorIndisponivel | u
  *
  * Mora aqui, e não no arquivo de rota, pelo mesmo motivo que `provedor-layout`:
  * assim é testável sem a árvore de rotas gerada. Enquanto esteve dentro da
- * rota, ficou sem teste nenhum — e foi onde dois tipos de erro classificados
+ * rota, ficou sem teste nenhum, e foi onde dois tipos de erro classificados
  * (`nao_encontrado`, `limite_excedido`) passaram a cair no estado genérico sem
  * que nada acusasse.
  */
@@ -67,7 +67,7 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
     const erroTipado = error instanceof ErroVersaoProvedorHttp ? error : null
     const variante = VARIANTE_POR_TIPO_DE_ERRO[erroTipado?.tipo ?? '']
 
-    // Só o erro que nenhuma variante cobre — rede, 5xx, não classificado —
+    // Só o erro que nenhuma variante cobre (rede, 5xx, não classificado):
     // chega ao `ErrorState`, que é o único caso em que insistir resolve.
     if (!variante) return <ErrorState onRetry={() => refetch()} />
 
@@ -110,8 +110,11 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
       />
 
       <EnvioModeloVersao
+        key={`${provedorSlug}/${versaoSlug}`}
         provedorSlug={provedorSlug}
         versaoSlug={versaoSlug}
+        provedorNome={versaoPagina.provedor.nome}
+        versaoRotulo={versaoPagina.versao.rotulo}
         camposPorGrupo={versaoPagina.camposPorGrupo}
       />
 

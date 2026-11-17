@@ -1,69 +1,90 @@
-import { Info } from 'lucide-react'
-import { TableCell, TableHeader, TableRoot, TableRow } from '../../../components/ui/Table'
+import { AlertaMigrate } from '../../../components/ui/AlertaMigrate'
 import type { NaturezaOperacaoPublica } from '../types/versaoProvedorPagina'
 
 export interface TabelaNaturezasOperacaoProps {
   naturezas: NaturezaOperacaoPublica[]
 }
 
-function NotaDaNatureza({ natureza }: { natureza: NaturezaOperacaoPublica }) {
+/** Código em destaque, no mesmo desenho da tag do provedor na tabela de campos. */
+export const CLASSE_DO_CODIGO =
+  'inline-flex min-w-8 items-center justify-center rounded-[var(--radius-pill)] border border-border-control bg-white px-2 py-px font-mono text-[13px] font-semibold text-ink tabular-nums'
+
+const CLASSE_DO_ROTULO_DA_COLUNA = 'h-8 px-3 text-left text-xs font-medium text-muted'
+
+function NotasDaNatureza({ natureza }: { natureza: NaturezaOperacaoPublica }) {
   if (!natureza.observacao && !natureza.aConfirmar) return null
 
   return (
-    <p data-nota-natureza="" className="mt-0.5 flex items-start gap-1.5 text-muted">
-      <Info aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
-      <span>
-        {natureza.aConfirmar && (
-          <span className="mr-2 inline-block rounded-full border border-border px-2 text-xs font-semibold text-ink">
-            A confirmar
-          </span>
-        )}
-        {natureza.observacao}
-      </span>
-    </p>
+    <div data-nota-natureza="" className="flex flex-col gap-1.5">
+      {natureza.observacao && (
+        <AlertaMigrate tipo="informacao" titulo="Observação" compacto>
+          <p>{natureza.observacao}</p>
+        </AlertaMigrate>
+      )}
+      {natureza.aConfirmar && (
+        <AlertaMigrate tipo="alerta" titulo="A confirmar" compacto>
+          <p>Conversão ainda não confirmada na fonte do provedor.</p>
+        </AlertaMigrate>
+      )}
+    </div>
   )
 }
 
 /**
- * O de-para do `natOp` como conversão: "código no InvoiCy → valor do provedor", com a descrição
- * ao lado. A observação vira nota embaixo da descrição, só na linha que tem.
+ * O de-para do `natOp` no desenho da tabela de campos: o código que a pessoa envia, o valor que o
+ * provedor recebe e o significado. Observação e pendência viram alerta numa linha própria, que no
+ * celular ocupa a largura toda e a partir de `sm` alinha com o significado: dentro da terceira
+ * coluna, a observação ficava com duas palavras por linha em 390 px.
  */
 export function TabelaNaturezasOperacao({ naturezas }: TabelaNaturezasOperacaoProps) {
   return (
-    <TableRoot rotulo="De-para da natureza da operação">
-      <TableHeader>
-        <tr className="h-9">
-          <TableCell header className="w-40 text-left">
-            <span aria-hidden="true">InvoiCy → Provedor</span>
-            <span className="sr-only">Código no InvoiCy e valor no layout do provedor</span>
-          </TableCell>
-          <TableCell header className="text-left">
-            Descrição
-          </TableCell>
-        </tr>
-      </TableHeader>
-      <tbody>
+    <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-white">
+      <table className="w-full border-collapse text-left">
+        <caption className="sr-only">De-para da natureza da operação</caption>
+        <colgroup>
+          <col className="w-20 sm:w-28" />
+          <col className="w-20 sm:w-28" />
+          <col />
+        </colgroup>
+        <thead className="border-b border-line bg-white">
+          <tr>
+            <th scope="col" className={CLASSE_DO_ROTULO_DA_COLUNA}>
+              Você envia
+            </th>
+            <th scope="col" className={CLASSE_DO_ROTULO_DA_COLUNA}>
+              Provedor recebe
+            </th>
+            <th scope="col" className={CLASSE_DO_ROTULO_DA_COLUNA}>
+              Significado
+            </th>
+          </tr>
+        </thead>
         {naturezas.map((natureza) => (
-          <TableRow key={natureza.codigoInvoicy} className="align-top">
-            <TableCell className="font-mono">
-              <span className="inline-grid grid-cols-[2.5rem_1.25rem_minmax(2.5rem,auto)] items-baseline">
-                <span data-codigo-invoicy="" className="text-right font-semibold">
+          <tbody key={natureza.codigoInvoicy} className="border-t border-line first:border-t-0">
+            <tr className="align-top">
+              <td className="px-3 py-2">
+                <span data-codigo-invoicy="" className={CLASSE_DO_CODIGO}>
                   {natureza.codigoInvoicy}
                 </span>
-                <span aria-hidden="true" className="text-center text-muted">
-                  →
+              </td>
+              <td className="px-3 py-2">
+                <span data-valor-provedor="" className={CLASSE_DO_CODIGO}>
+                  {natureza.valorProvedor}
                 </span>
-                <span className="sr-only"> vira </span>
-                <span data-valor-provedor="">{natureza.valorProvedor}</span>
-              </span>
-            </TableCell>
-            <TableCell>
-              {natureza.descricao}
-              <NotaDaNatureza natureza={natureza} />
-            </TableCell>
-          </TableRow>
+              </td>
+              <td className="px-3 py-2 text-sm text-ink">{natureza.descricao}</td>
+            </tr>
+            {(natureza.observacao || natureza.aConfirmar) && (
+              <tr>
+                {/* sm:pl = as duas colunas de código (w-28 cada) mais o recuo da célula. */}
+                <td colSpan={3} className="px-3 pb-2 sm:pl-[calc(14rem+0.75rem)]">
+                  <NotasDaNatureza natureza={natureza} />
+                </td>
+              </tr>
+            )}
+          </tbody>
         ))}
-      </tbody>
-    </TableRoot>
+      </table>
+    </div>
   )
 }

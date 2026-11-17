@@ -1,4 +1,4 @@
-import type { TrechoResultado } from '../types/resultadoBusca'
+import type { CampoCasado, ResultadoItem, TrechoResultado } from '../types/resultadoBusca'
 import { limparMarcacaoDosTrechos } from './limparMarcacaoDeTrecho'
 
 const DIACRITICOS = /[̀-ͯ]/g
@@ -9,11 +9,10 @@ const FIM_DE_FRASE = /(?<=[.!?])\s+/
 
 const TERMINA_FRASE = /[.!?]$/
 
-const RETICENCIAS_NO_FIM = /\s*(?:…|\.\.\.)$/
-
 const ESPACO_ENTRE_FRASES: TrechoResultado = { texto: ' ', destacado: false }
 
-const RETICENCIAS: TrechoResultado = { texto: '…', destacado: false }
+/** No erro, o cartão já mostra código, mensagem e solução: o trecho só entra fora deles. */
+const CAMPOS_QUE_O_CARTAO_NAO_MOSTRA: ReadonlySet<CampoCasado> = new Set(['causa', 'outro'])
 
 /** Texto conhecido mais curto que isto não serve para reconhecer repetição: casaria por acaso. */
 const MINIMO_PARA_RECONHECER_REPETICAO = 20
@@ -71,18 +70,6 @@ function aparar(frase: readonly TrechoResultado[]): TrechoResultado[] {
     .filter((parte) => parte.texto !== '')
 }
 
-/** Tira o código do erro da frente da frase: o indexador começa o texto por ele. */
-function semCodigoNaFrente(frase: readonly TrechoResultado[], codigo: string | null) {
-  const aparada = aparar(frase)
-  const primeira = aparada[0]
-  if (!codigo || !primeira?.texto.startsWith(codigo)) return aparada
-
-  const resto = primeira.texto.slice(codigo.length)
-  if (resto !== '' && !/^\s/.test(resto)) return aparada
-
-  return aparar([{ ...primeira, texto: resto }, ...aparada.slice(1)])
-}
-
 function juntarFrases(frases: readonly TrechoResultado[][]): TrechoResultado[] {
   return frases.flatMap((frase, indice) => (indice === 0 ? frase : [ESPACO_ENTRE_FRASES, ...frase]))
 }
@@ -96,74 +83,6 @@ function repeteComRotulo(frase: string, conhecido: string): boolean {
 
   const sobra = fraseComBordas.replace(conhecidoComBordas, ' ').trim()
   return sobra === '' || sobra.split(' ').length <= MAXIMO_DE_PALAVRAS_DO_ROTULO
-}
-
-export interface TituloDoCartao {
-  /** O título em fragmentos, com o destaque do termo quando veio do trecho. */
-  titulo: TrechoResultado[]
-  /** O trecho sem a frase que virou título. */
-  trechos: TrechoResultado[]
-  /** O título saiu do trecho: já vem sem marcação e com o destaque. */
-  veioDoTrecho: boolean
-}
-
-/** A frase vira título com a mesma inicial do título: o trecho pode começar no meio da regra. */
-function comInicialDoTitulo(frase: TrechoResultado[], titulo: string): TrechoResultado[] {
-  const [primeira, ...resto] = frase
-  if (!primeira) return frase
-  return [{ ...primeira, texto: titulo.charAt(0) + primeira.texto.slice(1) }, ...resto]
-}
-
-/**
- * Se uma frase do trecho (sem o código na frente) começa pelo texto do título e vai além dele, ela
- * é a mesma mensagem mais completa: entra no lugar do título, com o termo destacado, e sai do
- * trecho. Vale para o título cortado em "…" e para o inteiro seguido de uma condição ("... deve
- * ser informado se ..."). No título inteiro, a continuação precisa trazer palavra que o cartão
- * ainda não mostra (`outrosTextosVisiveis`, como a solução): senão é só a mensagem repetida
- * colada nela mesma. Se o servidor também cortou a frase, a reticência fica no fim.
- */
-export function resolverTituloDoCartao(
-  titulo: string,
-  codigo: string | null,
-  trechos: readonly TrechoResultado[],
-  outrosTextosVisiveis: readonly (string | null)[] = [],
-): TituloDoCartao {
-  const semAlteracao = {
-    titulo: [{ texto: titulo, destacado: false }],
-    trechos: [...trechos],
-    veioDoTrecho: false,
-  }
-  const tituloCortado = RETICENCIAS_NO_FIM.test(titulo)
-  const inicioDoTitulo = formaComparavel(titulo.replace(RETICENCIAS_NO_FIM, ''))
-  if (inicioDoTitulo.length < MINIMO_PARA_RECONHECER_REPETICAO) return semAlteracao
-
-  // Título inteiro só é trocado por frase mais longa: a igual a ele já sai do trecho sozinha.
-  const prefixo = tituloCortado ? inicioDoTitulo : `${inicioDoTitulo} `
-
-  const frases = dividirEmFrases(limparMarcacaoDosTrechos(trechos)).map((frase) =>
-    semCodigoNaFrente(frase, codigo),
-  )
-  const conhecidas = new Set(
-    [titulo, ...outrosTextosVisiveis].flatMap((texto) => (texto ? palavrasDe(texto) : [])),
-  )
-  const palavrasDoTitulo = inicioDoTitulo.split(' ').length
-
-  const indice = frases.findIndex((frase) => {
-    const palavras = palavrasDe(textoDa(frase))
-    if (!palavras.join(' ').startsWith(prefixo)) return false
-    if (tituloCortado) return true
-    return palavras.slice(palavrasDoTitulo).some((palavra) => !conhecidas.has(palavra))
-  })
-  if (indice < 0) return semAlteracao
-
-  const fraseDoTitulo = comInicialDoTitulo(frases[indice], titulo)
-  const cortadaPeloServidor = !TERMINA_FRASE.test(textoDa(fraseDoTitulo))
-
-  return {
-    titulo: cortadaPeloServidor ? [...fraseDoTitulo, RETICENCIAS] : fraseDoTitulo,
-    trechos: juntarFrases(frases.filter((_, posicao) => posicao !== indice)),
-    veioDoTrecho: true,
-  }
 }
 
 /**
@@ -206,4 +125,37 @@ export function trechosQueAcrescentam(
   })
 
   return juntarFrases(mantidas)
+}
+
+export type ItemDoCartao = Pick<
+  ResultadoItem,
+  | 'tipo'
+  | 'titulo'
+  | 'chave'
+  | 'solucaoResumo'
+  | 'provedorNome'
+  | 'versaoRotulo'
+  | 'campoCasado'
+  | 'trechos'
+>
+
+/**
+ * O trecho que o cartão mostra. No erro, a decisão vem do campo onde o termo casou: código,
+ * mensagem e solução já estão no cartão, então o trecho só entra quando casou na causa ou em
+ * outro texto. Sem o campo, o erro fica sem trecho, porque repetir a mensagem é o defeito.
+ */
+export function trechosDoCartao(item: ItemDoCartao): TrechoResultado[] {
+  if (item.tipo !== 'erro') return trechosQueAcrescentam(item.trechos, [item.titulo])
+
+  const casouForaDoCartao =
+    item.campoCasado != null && CAMPOS_QUE_O_CARTAO_NAO_MOSTRA.has(item.campoCasado)
+  if (!casouForaDoCartao) return []
+
+  return trechosQueAcrescentam(item.trechos, [
+    item.titulo,
+    item.chave,
+    item.solucaoResumo,
+    item.provedorNome,
+    item.versaoRotulo,
+  ])
 }

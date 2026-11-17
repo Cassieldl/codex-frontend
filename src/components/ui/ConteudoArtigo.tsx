@@ -1,10 +1,13 @@
 import clsx from 'clsx'
+import { ArrowRight, CircleCheck } from 'lucide-react'
 import type { AnchorHTMLAttributes, ComponentProps, HTMLAttributes, ReactNode } from 'react'
 import { Children, isValidElement } from 'react'
 import Markdown from 'react-markdown'
 import type { Components, ExtraProps } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { caminhoInternoSeguro } from '../../utils/caminhoInternoSeguro'
+import { AlertaMigrate } from './AlertaMigrate'
+import type { TipoAlerta } from './AlertaMigrate'
 import { BlocoRecolhivel } from './BlocoRecolhivel'
 import { CaixaDestaque } from './CaixaDestaque'
 import { FluxoDeEtapas } from './FluxoDeEtapas'
@@ -14,12 +17,14 @@ import { TableRoot } from './Table'
 import { ValorSimNao } from './ValorSimNao'
 import {
   caminhoDeImagemSeguro,
-  ehTipoDeCaixa,
+  ehAlertaDoArtigo,
   interpretarFluxo,
   reconhecerSimNao,
   remarkBlocosDoArtigo,
+  remarkFonteNoRodape,
   remarkHtmlComoTexto,
 } from './blocosDoArtigo'
+import type { TipoDeAlertaDoArtigo } from './blocosDoArtigo'
 import { gerarAncoraSecao } from './secoesDoArtigo'
 
 /**
@@ -56,14 +61,14 @@ const ELEMENTOS_PERMITIDOS = [
 export type VarianteConteudo = 'artigo' | 'aviso'
 
 const PLUGINS_DO_REMARK = {
-  artigo: [remarkGfm, remarkBlocosDoArtigo],
+  artigo: [remarkGfm, remarkBlocosDoArtigo, remarkFonteNoRodape],
   aviso: [remarkGfm, remarkBlocosDoArtigo, remarkHtmlComoTexto],
 } satisfies Record<VarianteConteudo, unknown[]>
 
 // Mora aqui, e não em quem usa, para a página pública e o preview do editor ficarem iguais. O
 // `min-w-0` deixa a tabela rolar dentro da própria região em vez de alargar a página.
 const ESTILO_COMUM =
-  'flex min-w-0 flex-col text-ink [&_a]:text-primary-medium [&_a]:underline [&_a]:[overflow-wrap:anywhere] [&_code]:font-mono [&_code]:text-sm [&_h2]:text-subtitulo [&_h2]:font-semibold [&_h2]:text-ink [&_h3]:text-card-titulo [&_h3]:font-medium [&_h3]:text-ink [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3'
+  'flex min-w-0 flex-col text-ink [&_a]:text-primary-medium [&_a]:underline [&_a]:[overflow-wrap:anywhere] [&_code]:font-mono [&_code]:text-sm [&_h2]:scroll-mt-6 [&_h2]:text-subtitulo [&_h2]:font-semibold [&_h2]:text-ink [&_h3]:scroll-mt-6 [&_h3]:text-card-titulo [&_h3]:font-medium [&_h3]:text-ink [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3'
 
 const ESTILO_POR_VARIANTE: Record<VarianteConteudo, string> = {
   artigo: 'gap-4 text-corpo',
@@ -143,11 +148,32 @@ function LinkDoCorpo({
   return <>{children}</>
 }
 
+const ALERTA_POR_BLOCO: Record<TipoDeAlertaDoArtigo, { tipo: TipoAlerta; rotulo: string }> = {
+  dica: { tipo: 'informacao', rotulo: 'Dica' },
+  importante: { tipo: 'alerta', rotulo: 'Importante' },
+  atencao: { tipo: 'erro', rotulo: 'Atenção' },
+  sucesso: { tipo: 'sucesso', rotulo: 'Sucesso' },
+}
+
 /** O tipo vem do marcador `[!TIPO]`, anotado por `remarkBlocosDoArtigo`; sem ele, citação comum. */
 function CitacaoDoCorpo({ children, node, ...props }: ComponentProps<'blockquote'> & ExtraProps) {
   const tipo = node?.properties.dataBloco
 
-  if (ehTipoDeCaixa(tipo)) return <CaixaDestaque tipo={tipo}>{children}</CaixaDestaque>
+  if (ehAlertaDoArtigo(tipo)) {
+    const { tipo: tipoAlerta, rotulo } = ALERTA_POR_BLOCO[tipo]
+    const titulo = node?.properties.dataTitulo
+    return (
+      <AlertaMigrate tipo={tipoAlerta} titulo={typeof titulo === 'string' ? titulo : rotulo}>
+        {children}
+      </AlertaMigrate>
+    )
+  }
+
+  if (tipo === 'resumo') return <CaixaDestaque>{children}</CaixaDestaque>
+
+  if (tipo === 'cartoes' || tipo === 'comparativo' || tipo === 'checklist') {
+    return <div data-bloco={tipo}>{children}</div>
+  }
 
   if (tipo === 'detalhes') {
     const titulo = node?.properties.dataTitulo
@@ -159,6 +185,14 @@ function CitacaoDoCorpo({ children, node, ...props }: ComponentProps<'blockquote
   }
 
   if (tipo === 'passos') return <div className="flex flex-col gap-3">{children}</div>
+
+  if (tipo === 'fonte') {
+    return (
+      <footer className="mt-4 flex flex-col gap-1 border-t border-line pt-4 text-sm text-muted">
+        {children}
+      </footer>
+    )
+  }
 
   return (
     <blockquote className="border-l-4 border-line pl-4" {...props}>
@@ -177,23 +211,56 @@ function ListaNumerada({ children, node, start, ...props }: ComponentProps<'ol'>
   )
 }
 
-function ListaComMarcadores({
-  children,
-  node: _node,
-  ...props
-}: ComponentProps<'ul'> & ExtraProps) {
-  return (
-    <ul className="ml-5 flex list-disc flex-col gap-1" {...props}>
-      {children}
-    </ul>
-  )
+const CLASSE_POR_TIPO_DE_LISTA: Record<string, string> = {
+  cartoes: 'grid list-none grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3',
+  comparativo: 'grid list-none grid-cols-1 gap-4 md:grid-cols-2',
+  checklist: 'flex list-none flex-col gap-2',
 }
+
+function ListaComMarcadores({ children, node }: ComponentProps<'ul'> & ExtraProps) {
+  const tipo = node?.properties.dataTipoLista
+  const classe = typeof tipo === 'string' ? CLASSE_POR_TIPO_DE_LISTA[tipo] : undefined
+
+  return <ul className={classe ?? 'ml-5 flex list-disc flex-col gap-1'}>{children}</ul>
+}
+
+// O link da ação se estica sobre o cartão inteiro: um só alvo de clique, sem link dentro de link.
+const CLASSE_DO_CARTAO =
+  'relative flex flex-col gap-2 rounded-[var(--radius-card)] border border-line bg-white p-5 transition-shadow has-[a]:hover:shadow-hover has-[a:focus-visible]:shadow-hover'
 
 function ItemDeLista({ children, node, ...props }: ComponentProps<'li'> & ExtraProps) {
   const numero = node?.properties.dataNumeroPasso
   if (typeof numero === 'number') return <CartaoDePasso numero={numero}>{children}</CartaoDePasso>
 
+  const tipo = node?.properties.dataTipoItem
+  if (tipo === 'cartao') return <li className={CLASSE_DO_CARTAO}>{children}</li>
+
+  if (tipo === 'coluna') {
+    return (
+      <li className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line border-t-4 border-t-primary-light bg-white p-5">
+        {children}
+      </li>
+    )
+  }
+
+  if (tipo === 'checklist') {
+    return (
+      <li className="flex items-start gap-2">
+        <CircleCheck className="mt-0.5 size-5 shrink-0 text-success" aria-hidden="true" />
+        <div className="min-w-0 flex-1">{children}</div>
+      </li>
+    )
+  }
+
   return <li {...props}>{children}</li>
+}
+
+const CLASSE_POR_PARTE: Record<string, string> = {
+  tituloCartao: 'text-card-titulo font-semibold text-primary',
+  textoCartao: 'text-sm text-muted',
+  tituloColuna: 'text-card-titulo font-semibold text-primary',
+  acaoCartao:
+    "mt-auto inline-flex items-center gap-1 pt-1 text-sm font-semibold [&_a]:no-underline! [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:rounded-[var(--radius-card)] [&_a]:after:content-['']",
 }
 
 /** Parágrafo com imagem vira `<div>`: `<figure>` dentro de `<p>` é HTML inválido. */
@@ -202,6 +269,18 @@ function Paragrafo({ children, node, ...props }: ComponentProps<'p'> & ExtraProp
     (filho) => filho.type === 'element' && filho.tagName === 'img',
   )
   if (temImagem) return <div>{children}</div>
+
+  const parte = node?.properties.dataParte
+  if (typeof parte === 'string' && CLASSE_POR_PARTE[parte]) {
+    return (
+      <p className={CLASSE_POR_PARTE[parte]}>
+        {children}
+        {parte === 'acaoCartao' && (
+          <ArrowRight className="size-4 shrink-0 text-primary-medium" aria-hidden="true" />
+        )}
+      </p>
+    )
+  }
 
   return <p {...props}>{children}</p>
 }
@@ -249,21 +328,48 @@ function rotuloDaTabela(tabela: NoDoHtml | undefined): string {
   return nomes.length > 0 ? `Tabela: ${nomes.join(', ')}` : 'Tabela'
 }
 
-/** Tabela larga rola dentro da própria região, alcançável por teclado; a página nunca rola de lado. */
+// Rótulo até este tamanho cabe numa linha ao lado da descrição em 1440 px.
+const LIMITE_DO_ROTULO_CURTO = 36
+
+/** Primeira coluna de rótulos curtos não quebra: "Atualização de Status" lido em duas linhas some na tabela. */
+function primeiraColunaCurta(tabela: NoDoHtml | undefined): boolean {
+  if (!tabela) return false
+
+  const linhas = ['thead', 'tbody']
+    .flatMap((secao) => elementosFilhos(tabela, secao))
+    .flatMap((secao) => elementosFilhos(secao, 'tr'))
+  const rotulos = linhas
+    .map((linha) => linha.children.find((filho): filho is NoDoHtml => filho.type === 'element'))
+    .map((celula) => (celula ? textoDoNo(celula).trim() : ''))
+
+  return rotulos.length > 0 && rotulos.every((rotulo) => rotulo.length <= LIMITE_DO_ROTULO_CURTO)
+}
+
+/**
+ * Tabela larga rola dentro da própria região, alcançável por teclado; a página nunca rola de lado.
+ * A largura mínima faz o celular rolar a tabela em vez de espremer a descrição numa coluna estreita.
+ */
 function TabelaDoCorpo({ children, node }: ComponentProps<'table'> & ExtraProps) {
   return (
-    <TableRoot rotulo={rotuloDaTabela(node)} className="text-sm text-ink">
+    <TableRoot
+      rotulo={rotuloDaTabela(node)}
+      className={clsx(
+        'min-w-[32rem] bg-white text-sm leading-relaxed text-ink',
+        primeiraColunaCurta(node) &&
+          '[&_td:first-child]:whitespace-nowrap [&_th:first-child]:whitespace-nowrap',
+      )}
+    >
       {children}
     </TableRoot>
   )
 }
 
-const CLASSE_DA_CELULA = 'px-3 py-2 text-left align-top'
+const CLASSE_DA_CELULA = 'px-4 py-3 text-left align-top'
 
 function CabecalhoDaTabela({ children, node: _node, ...props }: ComponentProps<'th'> & ExtraProps) {
   return (
     <th
-      className={`${CLASSE_DA_CELULA} border-b border-border bg-surface-hover font-semibold`}
+      className={`${CLASSE_DA_CELULA} border-b border-border bg-surface-hover font-semibold text-primary`}
       {...props}
     >
       {children}

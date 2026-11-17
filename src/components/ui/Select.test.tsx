@@ -372,6 +372,19 @@ describe('Select — opção ativa anunciada (P-13, padrão APG)', () => {
     expect(opcaoAnunciadaComoAtiva(combobox)).toHaveAccessibleName('Próprio')
   })
 
+  it('Home e End levam o anúncio à primeira e à última opção', async () => {
+    const usuario = userEvent.setup()
+    renderizarSelect({ value: 'regional' })
+
+    const combobox = screen.getByRole('combobox')
+    combobox.focus()
+    await usuario.keyboard('{ArrowDown}{End}')
+    expect(opcaoAnunciadaComoAtiva(combobox)).toHaveAccessibleName('Próprio')
+
+    await usuario.keyboard('{Home}')
+    expect(opcaoAnunciadaComoAtiva(combobox)).toHaveAccessibleName('Nacional')
+  })
+
   it('o mouse sobre uma opção também move o anúncio (teclado e mouse não divergem)', async () => {
     const usuario = userEvent.setup()
     renderizarSelect()

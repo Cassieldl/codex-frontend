@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { GrupoCampoVersao } from '../types/versaoProvedorPagina'
 import {
-  descreverTagDeDestino,
   destinoDaNaturezaOperacao,
   ehCampoNaturezaOperacao,
+  separarTagDeDestino,
 } from './naturezaOperacao'
 
 function grupoCom(campos: { caminhoXml: string; destinoXml: string | null }[]): GrupoCampoVersao[] {
@@ -40,10 +40,14 @@ describe('naturezaOperacao', () => {
   })
 
   it('descreve o destino como tag e grupo pai', () => {
-    expect(descreverTagDeDestino('DPS/infDPS/valores/trib/tribMun/tribISSQN')).toBe(
-      'tribISSQN (grupo tribMun)',
-    )
-    expect(descreverTagDeDestino('situacao_tributaria')).toBe('situacao_tributaria')
+    expect(separarTagDeDestino('DPS/infDPS/valores/trib/tribMun/tribISSQN')).toEqual({
+      tag: 'tribISSQN',
+      grupo: 'tribMun',
+    })
+    expect(separarTagDeDestino('situacao_tributaria')).toEqual({
+      tag: 'situacao_tributaria',
+      grupo: null,
+    })
   })
 
   it('acha o destino no campo natOp da versão, ou null quando ele não tem destino', () => {
@@ -51,7 +55,7 @@ describe('naturezaOperacao', () => {
       { caminhoXml: '//tpSusp', destinoXml: 'DPS/tribMun/tpSusp' },
       { caminhoXml: '//natOp', destinoXml: 'DPS/infDPS/valores/trib/tribMun/tribISSQN' },
     ])
-    expect(destinoDaNaturezaOperacao(comDestino)).toBe('tribISSQN (grupo tribMun)')
+    expect(destinoDaNaturezaOperacao(comDestino)).toEqual({ tag: 'tribISSQN', grupo: 'tribMun' })
     expect(
       destinoDaNaturezaOperacao(grupoCom([{ caminhoXml: '//natOp', destinoXml: null }])),
     ).toBeNull()

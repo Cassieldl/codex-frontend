@@ -190,43 +190,116 @@ describe('EnvioModeloVersao: alcance e formato', () => {
     })
     expect(within(xmlMinimo).queryByText(/Observacao/)).not.toBeInTheDocument()
     expect(within(secaoDoEnvio()).getByText(/A prefeitura pode exigir outros campos/)).toBeVisible()
-    expect(within(secaoDoEnvio()).getByRole('button', { name: /Mínimo/ })).toHaveAttribute(
-      'aria-pressed',
+    expect(within(secaoDoEnvio()).getByRole('radio', { name: 'Mínimo' })).toHaveAttribute(
+      'aria-checked',
       'true',
     )
 
-    await usuario.click(within(secaoDoEnvio()).getByRole('button', { name: /JSON \(REST\)/ }))
+    await usuario.click(within(secaoDoEnvio()).getByRole('radio', { name: 'JSON (REST)' }))
     expect(
       screen.getByRole('region', { name: 'Texto do envio modelo mínimo em JSON (REST)' }),
     ).toBeInTheDocument()
     expect(buscas).toEqual({ minimo: 1, maximo: 0 })
 
-    await usuario.click(within(secaoDoEnvio()).getByRole('button', { name: /Máximo/ }))
+    await usuario.click(within(secaoDoEnvio()).getByRole('radio', { name: 'Máximo' }))
     const jsonMaximo = await screen.findByRole('region', {
       name: 'Texto do envio modelo máximo em JSON (REST)',
     })
     expect(within(jsonMaximo).getByText(/Observacao/)).toBeInTheDocument()
 
-    await usuario.click(within(secaoDoEnvio()).getByRole('button', { name: /Mínimo/ }))
+    await usuario.click(within(secaoDoEnvio()).getByRole('radio', { name: 'Mínimo' }))
     expect(
       screen.getByRole('region', { name: 'Texto do envio modelo mínimo em JSON (REST)' }),
     ).toBeInTheDocument()
     expect(buscas).toEqual({ minimo: 1, maximo: 1 })
   })
 
-  it('a opção escolhida tem fundo próprio, sem o branco nem a borda fina da solta', async () => {
+  it('alcance e formato são grupos de rádio: as setas trocam a escolha e o foco', async () => {
+    const usuario = userEvent.setup()
     server.use(handlerDoEnvio().handler)
     renderPagina()
 
     await screen.findByRole('region', { name: 'Texto do envio modelo mínimo em XML (SOAP)' })
-    const escolhida = within(secaoDoEnvio()).getByRole('button', { name: /Mínimo/ })
-    const solta = within(secaoDoEnvio()).getByRole('button', { name: /Máximo/ })
+    const alcance = within(secaoDoEnvio()).getByRole('radiogroup', { name: 'Alcance' })
+    const minimo = within(alcance).getByRole('radio', { name: 'Mínimo' })
+    const maximo = within(alcance).getByRole('radio', { name: 'Máximo' })
 
-    expect(escolhida).toHaveClass('bg-primary', 'text-white', 'border-2')
-    expect(escolhida).not.toHaveClass('bg-white')
-    expect(escolhida).not.toHaveClass('border')
-    expect(solta).toHaveClass('bg-white', 'border')
-    expect(solta).not.toHaveClass('bg-primary')
+    // Só a opção marcada entra no Tab.
+    expect(minimo).toHaveAttribute('tabindex', '0')
+    expect(maximo).toHaveAttribute('tabindex', '-1')
+    expect(minimo).toHaveClass('bg-primary', 'text-white')
+    expect(maximo).not.toHaveClass('bg-primary')
+
+    minimo.focus()
+    await usuario.keyboard('{ArrowRight}')
+
+    expect(maximo).toHaveAttribute('aria-checked', 'true')
+    expect(maximo).toHaveFocus()
+    expect(
+      await screen.findByRole('region', { name: 'Texto do envio modelo máximo em XML (SOAP)' }),
+    ).toBeInTheDocument()
+
+    // Volta na ponta, como o rádio nativo.
+    await usuario.keyboard('{ArrowRight}')
+    expect(minimo).toHaveAttribute('aria-checked', 'true')
+    expect(minimo).toHaveFocus()
+  })
+
+  it('abre dizendo o formato, o provedor e a versão, com valores fictícios', async () => {
+    const usuario = userEvent.setup()
+    server.use(handlerDoEnvio().handler)
+    renderPagina()
+
+    await screen.findByRole('region', { name: 'Texto do envio modelo mínimo em XML (SOAP)' })
+    expect(
+      within(secaoDoEnvio()).getByText(
+        'XML de exemplo do Prefeitura de Exemplo 2.04, preenchido com valores fictícios.',
+      ),
+    ).toBeInTheDocument()
+
+    await usuario.click(within(secaoDoEnvio()).getByRole('radio', { name: 'JSON (REST)' }))
+    expect(within(secaoDoEnvio()).getByText(/^JSON de exemplo do/)).toBeInTheDocument()
+  })
+
+  it('expandir, recolher, copiar e baixar ficam numa barra só, nessa ordem', async () => {
+    server.use(handlerDoEnvio().handler)
+    renderPagina()
+
+    await screen.findByRole('region', { name: 'Texto do envio modelo mínimo em XML (SOAP)' })
+    const expandir = within(secaoDoEnvio()).getByRole('button', { name: 'Expandir tudo' })
+    const barra = expandir.parentElement!
+
+    expect(
+      within(barra)
+        .getAllByRole('button')
+        .map((botao) => botao.textContent),
+    ).toEqual(['Expandir tudo', 'Recolher tudo', 'Copiar XML', 'Baixar .xml'])
+  })
+
+  it('a legenda segue o desenho da tabela de campos e só explica as marcas do texto', async () => {
+    const envio = envioModelo('minimo')
+    const xml = {
+      ...envio.xml,
+      filhos: [...envio.xml.filhos, no('CodigoSoap', { formato: 'soXml', escolha: true })],
+    }
+    server.use(
+      http.get(URL_DO_ENVIO, () => HttpResponse.json({ data: { ...envio, xml }, message: null })),
+    )
+    renderPagina()
+
+    await screen.findByRole('region', { name: 'Texto do envio modelo mínimo em XML (SOAP)' })
+    const legenda = within(secaoDoEnvio()).getByRole('list', { name: 'Legenda:' })
+
+    // O que a tela mostra e o leitor lê: a marca fica com aria-hidden, o significado não.
+    expect(
+      within(legenda)
+        .getAllByRole('listitem')
+        .map((item) => item.querySelector(':scope > span:not([aria-hidden])')?.textContent),
+    ).toEqual([
+      'só no envio XML',
+      'informe só uma das tags com esta marca',
+      'leva ao campo na tabela desta versão',
+    ])
   })
 
   it('copiar entrega o texto do alcance e do formato à vista', async () => {
@@ -236,7 +309,7 @@ describe('EnvioModeloVersao: alcance e formato', () => {
     renderPagina()
 
     await screen.findByRole('region', { name: 'Texto do envio modelo mínimo em XML (SOAP)' })
-    await usuario.click(within(secaoDoEnvio()).getByRole('button', { name: /Máximo/ }))
+    await usuario.click(within(secaoDoEnvio()).getByRole('radio', { name: 'Máximo' }))
     await screen.findByRole('region', { name: 'Texto do envio modelo máximo em XML (SOAP)' })
 
     await usuario.click(
@@ -254,6 +327,76 @@ describe('EnvioModeloVersao: alcance e formato', () => {
         '',
       ].join('\n'),
     )
+  })
+})
+
+/** Responde com os cenários pedidos e guarda o cenário de cada busca. */
+function handlerComCenarios(cenariosDisponiveis: string[]) {
+  const cenariosPedidos: (string | null)[] = []
+  const handler = http.get(URL_DO_ENVIO, ({ request }) => {
+    const busca = new URL(request.url).searchParams
+    const alcance = busca.get('alcance') === 'maximo' ? 'maximo' : 'minimo'
+    const cenario = busca.get('cenario')
+    cenariosPedidos.push(cenario)
+    return HttpResponse.json({
+      data: { ...envioModelo(alcance), cenario, cenariosDisponiveis },
+      message: null,
+    })
+  })
+  return { handler, cenariosPedidos }
+}
+
+describe('EnvioModeloVersao: cenário do tomador', () => {
+  it('com tomador estrangeiro disponível, o cenário vira opção e entra na busca', async () => {
+    const usuario = userEvent.setup()
+    const { handler, cenariosPedidos } = handlerComCenarios([
+      'construcao-civil',
+      'nacional',
+      'tomador-estrangeiro',
+    ])
+    server.use(handler)
+    renderPagina()
+
+    const cenario = await within(
+      await screen.findByRole('region', { name: 'Envio modelo' }),
+    ).findByRole('combobox', { name: 'Cenário' })
+    expect(cenario).toHaveTextContent('Tomador nacional')
+
+    await usuario.click(cenario)
+    // Só os cenários que a versão aceita viram opção, na ordem da tela.
+    expect(screen.getAllByRole('option').map((opcao) => opcao.textContent)).toEqual([
+      'Tomador nacional',
+      'Tomador estrangeiro',
+      'Construção civil',
+    ])
+    await usuario.click(screen.getByRole('option', { name: 'Tomador estrangeiro' }))
+
+    expect(
+      await screen.findByRole('region', {
+        name: 'Texto do envio modelo mínimo, tomador estrangeiro, em XML (SOAP)',
+      }),
+    ).toBeInTheDocument()
+    expect(cenariosPedidos).toEqual(['nacional', 'tomador-estrangeiro'])
+
+    // Com o formato escolhido antes, a troca de alcance mantém cenário e formato.
+    await usuario.click(within(secaoDoEnvio()).getByRole('radio', { name: 'JSON (REST)' }))
+    await usuario.click(within(secaoDoEnvio()).getByRole('radio', { name: 'Máximo' }))
+    expect(within(secaoDoEnvio()).getByRole('combobox', { name: 'Cenário' })).toHaveTextContent(
+      'Tomador estrangeiro',
+    )
+    expect(
+      await screen.findByRole('region', {
+        name: 'Texto do envio modelo máximo, tomador estrangeiro, em JSON (REST)',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('só com o cenário nacional, o seletor de cenário não aparece', async () => {
+    server.use(handlerComCenarios(['nacional']).handler)
+    renderPagina()
+
+    await screen.findByRole('region', { name: 'Texto do envio modelo mínimo em XML (SOAP)' })
+    expect(within(secaoDoEnvio()).queryByRole('combobox', { name: 'Cenário' })).toBeNull()
   })
 })
 
@@ -375,7 +518,7 @@ describe('EnvioModeloVersao: estados', () => {
       await within(secao).findByText('Envio modelo indisponível para esta versão.'),
     ).toBeInTheDocument()
     expect(within(secao).queryByRole('button', { name: /tentar novamente/i })).toBeNull()
-    expect(within(secao).queryByRole('group')).toBeNull()
+    expect(within(secao).queryByRole('radiogroup')).toBeNull()
     expect(screen.getByRole('heading', { level: 2, name: 'Campos e mapeamento' })).toBeVisible()
     expect(tentativas).toBe(1)
   })

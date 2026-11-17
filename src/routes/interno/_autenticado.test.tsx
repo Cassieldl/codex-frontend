@@ -6,7 +6,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, renderHook, screen, within } from '@testing-library/react'
+import { render, renderHook, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -27,6 +27,8 @@ const { LoginIndisponivelErro } =
 const { navegacaoDoNavegador } = await import('../../auth/sessaoExpirada')
 
 const API_URL = import.meta.env.VITE_API_URL
+
+const ESPERA_DO_LAYOUT_NA_SUITE = 10_000
 
 type ContextoBeforeLoad = Parameters<NonNullable<typeof Route.options.beforeLoad>>[0]
 
@@ -149,8 +151,15 @@ describe('menu da área interna', () => {
 
     renderizarAreaInterna('/interno/provedores/5/versoes/7')
 
-    const menu = await screen.findByRole('navigation', { name: 'Navegação da área interna' })
-    await screen.findByText('Conteúdo da tela')
+    // Na suíte completa, montar o layout real demora mais que o padrão: a espera é pela sessão.
+    const espera = { timeout: ESPERA_DO_LAYOUT_NA_SUITE }
+    await waitFor(() => expect(screen.queryByText(/Verificando sua sessão/)).toBeNull(), espera)
+    const menu = await screen.findByRole(
+      'navigation',
+      { name: 'Navegação da área interna' },
+      espera,
+    )
+    await screen.findByText('Conteúdo da tela', undefined, espera)
 
     const marcados = menu.querySelectorAll('[aria-current="page"]')
     expect(marcados).toHaveLength(1)

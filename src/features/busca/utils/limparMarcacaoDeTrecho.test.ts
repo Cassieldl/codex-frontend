@@ -21,7 +21,7 @@ describe('limparMarcacaoDosTrechos', () => {
 
   /**
    * O `#` só é marcação quando vem seguido de espaço. Sem esta fronteira, a limpeza comeria
-   * conteúdo que a pessoa escreveu — e num portal cujo assunto é código de erro, `#` colado a
+   * conteúdo que a pessoa escreveu, e num portal cujo assunto é código de erro, `#` colado a
    * número é texto legítimo.
    */
   it('não mexe no # colado a número, que é conteúdo e não marcação', () => {
@@ -74,7 +74,7 @@ describe('limparMarcacaoDosTrechos', () => {
   /**
    * O caso real do negrito: o termo buscado cai DENTRO de um `**...**`, o servidor corta ali
    * para marcar o destaque, e cada fragmento fica com metade da marcação. A regra de par não
-   * alcança isso — foi o teste do componente que expôs.
+   * alcança isso: foi o teste do componente que expôs.
    */
   it('remove os asteriscos quando a ênfase fica partida entre fragmentos', () => {
     const saida = textoFinal([
@@ -105,5 +105,25 @@ describe('limparMarcacaoDosTrechos', () => {
 
   it('devolve lista vazia sem quebrar', () => {
     expect(limparMarcacaoDosTrechos([])).toEqual([])
+  })
+
+  /** Trecho do artigo "Como funciona": o termo casou no texto e na URL do link. */
+  it('tira o marcador do [!CARTOES], as barras e o link partido, mantendo o destaque', () => {
+    const saida = limparMarcacaoDosTrechos([
+      trecho('> [!CARTOES]\n> - **Código do erro** | Cole como veio. | [Ex.: '),
+      trecho('E157', true),
+      trecho('](/busca?q='),
+      trecho('E157', true),
+      trecho(')\n> - **Provedor** | Tudo o que está documentado.'),
+    ])
+
+    expect(saida.map((t) => t.texto).join('')).toBe(
+      'Código do erro. Cole como veio. Ex.: E157 Provedor. Tudo o que está documentado.',
+    )
+    expect(saida.filter((t) => t.destacado).map((t) => t.texto)).toEqual(['E157'])
+  })
+
+  it('preserva o operador || de quem escreveu código', () => {
+    expect(textoFinal([trecho('tpRetISSQN = 2 || 3')])).toBe('tpRetISSQN = 2 || 3')
   })
 })

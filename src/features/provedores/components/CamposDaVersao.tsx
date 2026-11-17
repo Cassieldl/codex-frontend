@@ -13,6 +13,7 @@ import type {
 } from '../types/versaoProvedorPagina'
 import {
   campoPassaNoFiltro,
+  contarComRejeicao,
   contarDaReformaTributaria,
   contarPorEstado,
   filtrarCampos,
@@ -24,7 +25,7 @@ import type { FiltroDeCampos, FiltroDeEstado } from '../utils/blocosDeCampos'
 import { ID_SECAO_CAMPOS } from '../utils/secoesDoProvedor'
 import { BlocoDeCampos } from './BlocoDeCampos'
 import { FiltrosDeCampos } from './FiltrosDeCampos'
-import { LegendaDeObrigatoriedade } from './MarcadorObrigatoriedade'
+import { LegendaDaTabelaDeCampos } from './LegendaDaTabelaDeCampos'
 import { ModalDoCampo } from './ModalDoCampo'
 
 export interface CamposDaVersaoProps {
@@ -89,6 +90,7 @@ export function CamposDaVersao({
     () => contarDaReformaTributaria(camposPorGrupo),
     [camposPorGrupo],
   )
+  const camposComRejeicao = useMemo(() => contarComRejeicao(camposPorGrupo), [camposPorGrupo])
   const mostrarExemplo = useMemo(() => versaoTemExemplo(camposPorGrupo), [camposPorGrupo])
 
   const blocosFiltrados = useMemo(
@@ -157,7 +159,7 @@ export function CamposDaVersao({
   }
 
   const fraseExaustividade = filtroAtivo
-    ? `Mostrando ${totalVisivel} de ${totalCampos} campos — a exaustividade vale para os ${totalCampos} campos desta versão, não para este filtro.`
+    ? `Mostrando ${totalVisivel} de ${totalCampos} campos. A exaustividade vale para os ${totalCampos} campos desta versão, não para este filtro.`
     : `Esta tabela é exaustiva: o que não está aqui não se aplica a ${provedorNome} ${versaoRotulo}.`
 
   const botaoLimparFiltros = (
@@ -227,7 +229,10 @@ export function CamposDaVersao({
 
           <div ref={contenedorRef} className="min-w-0 flex-1">
             <div className="mb-2 px-1">
-              <LegendaDeObrigatoriedade mostrarReformaTributaria={contagemDaReforma > 0} />
+              <LegendaDaTabelaDeCampos
+                camposComRejeicao={camposComRejeicao}
+                mostrarReformaTributaria={contagemDaReforma > 0}
+              />
             </div>
             {blocosComResultado.map((bloco) => (
               <BlocoDeCampos

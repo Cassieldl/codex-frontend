@@ -111,6 +111,17 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
     )
   })
 
+  it.each([
+    ['primary-light', 'alert-info'],
+    ['success', 'alert-success'],
+    ['severidade-alerta-texto', 'alert-warning'],
+    ['error', 'alert-error'],
+  ])('o ícone `%s` do alerta sobre `%s` atinge 3:1', (icone, fundo) => {
+    expect(calcularContraste(token(icone), token(fundo))).toBeGreaterThanOrEqual(
+      CONTRASTE_MINIMO.naoTextual,
+    )
+  })
+
   it('o indicador de aba ativa atinge 3:1', () => {
     expect(calcularContraste(token('accent-hover'), token('white'))).toBeGreaterThanOrEqual(
       CONTRASTE_MINIMO.naoTextual,

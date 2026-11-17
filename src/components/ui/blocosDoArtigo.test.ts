@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   caminhoDeImagemSeguro,
   detectarMarcador,
+  ehTextoDeFonte,
   interpretarFluxo,
   reconhecerSimNao,
 } from './blocosDoArtigo'
@@ -14,6 +15,10 @@ describe('detectarMarcador', () => {
     ['[!IMPORTANTE]', 'importante'],
     ['[!PASSOS]', 'passos'],
     ['[!DETALHES] Tabela completa', 'detalhes'],
+    ['[!SUCESSO]', 'sucesso'],
+    ['[!CARTOES]', 'cartoes'],
+    ['[!COMPARATIVO]', 'comparativo'],
+    ['[!CHECKLIST]', 'checklist'],
   ])('reconhece %s', (texto, tipo) => {
     expect(detectarMarcador(texto)?.tipo).toBe(tipo)
   })
@@ -88,4 +93,20 @@ describe('reconhecerSimNao', () => {
   it.each(['sim', 'Sim.', 'Não se aplica', ''])('%s não é Sim/Não exato', (texto) => {
     expect(reconhecerSimNao(texto)).toBeNull()
   })
+})
+
+describe('ehTextoDeFonte', () => {
+  it.each(['Fonte: Webhook - Configurações (12/08/2026).', 'Fontes: A e B', ' fonte : x'])(
+    'reconhece %s',
+    (texto) => {
+      expect(ehTextoDeFonte(texto)).toBe(true)
+    },
+  )
+
+  it.each(['O Webhook avisa o ERP.', 'Fontenele: nome', 'Veja a Fonte: abaixo', '', null])(
+    'ignora %s',
+    (texto) => {
+      expect(ehTextoDeFonte(texto)).toBe(false)
+    },
+  )
 })

@@ -10,6 +10,20 @@ export interface SumarioArtigoProps {
   className?: string
 }
 
+const ESTILO_POR_NIVEL: Record<2 | 3, { base: string; atual: string; comum: string }> = {
+  2: {
+    base: 'pl-3 text-sm font-semibold',
+    atual: 'border-accent text-primary-medium',
+    comum: 'border-transparent text-ink',
+  },
+  // O `-ml-px` põe a barra da seção atual em cima do fio vertical dos subtópicos.
+  3: {
+    base: '-ml-px pl-3 text-xs',
+    atual: 'border-accent font-semibold text-ink',
+    comum: 'border-transparent text-muted',
+  },
+}
+
 function LinkDoSumario({
   item,
   atual,
@@ -19,30 +33,28 @@ function LinkDoSumario({
   atual: boolean
   nivel: 2 | 3
 }) {
+  const estilo = ESTILO_POR_NIVEL[nivel]
+
   return (
     <a
       href={`#${item.ancora}`}
+      title={item.titulo}
       aria-current={atual ? 'location' : undefined}
       className={clsx(
-        // A barra de 2 px cobre a linha-guia da lista (`-ml-px`): a seção atual fica marcada na
-        // própria guia, com o acento laranja de estado ativo.
-        '-ml-px block border-l-2 py-1 leading-snug hover:underline',
-        nivel === 2 ? 'pl-3 text-sm' : 'pl-6 text-xs',
-        atual
-          ? 'border-accent font-semibold text-ink'
-          : nivel === 2
-            ? 'border-transparent text-ink'
-            : 'border-transparent text-muted',
+        'block border-l-2 py-1 leading-snug hover:underline',
+        estilo.base,
+        atual ? estilo.atual : estilo.comum,
       )}
     >
-      {item.titulo}
+      {/* Corte só visual: o leitor de tela continua lendo o título inteiro. */}
+      <span className="line-clamp-2">{item.titulo}</span>
     </a>
   )
 }
 
 /**
- * Sumário lateral do artigo: tópicos (h2) e subtópicos (h3) numa lista aninhada, sobre uma
- * linha-guia. O subtópico fica mais recuado, menor e mais claro; a seção em leitura é marcada.
+ * Sumário lateral do artigo. Cada tópico (h2) abre um grupo em negrito; os subtópicos (h3) ficam
+ * recuados sobre um fio vertical, menores e mais claros. A seção em leitura ganha a barra laranja.
  */
 export function SumarioArtigo({ corpo, mostrarTitulo = true, className }: SumarioArtigoProps) {
   const itens = extrairSecoesDoCorpo(corpo)
@@ -55,7 +67,7 @@ export function SumarioArtigo({ corpo, mostrarTitulo = true, className }: Sumari
       {mostrarTitulo && (
         <p className="text-xs font-semibold tracking-wide text-muted uppercase">Nesta página</p>
       )}
-      <ul className={clsx('flex flex-col border-l border-line', mostrarTitulo && 'mt-3')}>
+      <ul className={clsx('flex flex-col gap-2', mostrarTitulo && 'mt-3')}>
         {agruparSecoes(itens).map((topico) => (
           <li key={topico.ancora}>
             <LinkDoSumario
@@ -64,7 +76,7 @@ export function SumarioArtigo({ corpo, mostrarTitulo = true, className }: Sumari
               atual={topico.ancora === secaoAtual}
             />
             {topico.subtopicos.length > 0 && (
-              <ul>
+              <ul className="mt-1 ml-3 flex flex-col border-l border-line">
                 {topico.subtopicos.map((subtopico) => (
                   <li key={subtopico.ancora}>
                     <LinkDoSumario

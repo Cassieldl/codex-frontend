@@ -74,6 +74,13 @@ describe('CardArtigo', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('resumo que é só a citação da fonte não aparece', async () => {
+    renderCard({ ...artigo, resumo: 'Fonte: Webhook - Configurações (12/08/2026).' })
+
+    await screen.findByRole('heading', { level: 2 })
+    expect(screen.queryByText(/^Fonte:/)).not.toBeInTheDocument()
+  })
+
   it('esconde o tipo quando a lista já está filtrada por ele', async () => {
     renderCard(artigo, false)
 

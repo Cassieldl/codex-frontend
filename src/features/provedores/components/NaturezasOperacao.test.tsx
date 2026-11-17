@@ -27,31 +27,91 @@ const NATUREZAS: NaturezaOperacaoPublica[] = [
   },
 ]
 
+/** Linhas com os códigos; a observação vem numa linha própria logo abaixo. */
+function linhasDosCodigos(): HTMLElement[] {
+  return screen.getAllByRole('row').filter((linha) => linha.querySelector('[data-codigo-invoicy]'))
+}
+
 describe('NaturezasOperacao', () => {
-  it('mostra uma linha por código, na ordem recebida, como conversão do InvoiCy para o provedor', () => {
+  it('mostra uma linha por código, na ordem recebida, com o que a pessoa envia e o que o provedor recebe', () => {
     render(<NaturezasOperacao naturezas={NATUREZAS} camposPorGrupo={[]} />)
 
     expect(screen.getByRole('heading', { name: 'Natureza da operação' })).toBeInTheDocument()
-    expect(screen.getAllByRole('columnheader')).toHaveLength(2)
+    expect(screen.getAllByRole('columnheader').map((coluna) => coluna.textContent)).toEqual([
+      'Você envia',
+      'Provedor recebe',
+      'Significado',
+    ])
 
-    const linhas = screen.getAllByRole('row').slice(1)
-    expect(linhas.map((linha) => within(linha).getAllByRole('cell')[0].textContent)).toEqual([
-      '7→ vira 1',
-      '4→ vira 5',
-      '16→ vira 14',
+    const linhas = linhasDosCodigos()
+    expect(
+      linhas.map((linha) =>
+        within(linha)
+          .getAllByRole('cell')
+          .slice(0, 2)
+          .map((celula) => celula.textContent),
+      ),
+    ).toEqual([
+      ['7', '1'],
+      ['4', '5'],
+      ['16', '14'],
     ])
   })
 
-  it('a observação vira nota embaixo da descrição, só na linha que tem', () => {
+  it('abre com a tag do provedor que recebe o natOp', () => {
+    const camposPorGrupo = [
+      {
+        grupo: null,
+        grupoSlug: null,
+        campos: [
+          {
+            campoLayoutSlug: 'natureza-da-operacao',
+            reformaTributaria: false,
+            nome: 'natOp',
+            caminhoXml: '//natOp',
+            significado: '',
+            tipo: 'Numérico',
+            tamanho: null,
+            mascara: null,
+            dominio: null,
+            estadoPreenchimento: 'Obrigatorio' as const,
+            condicao: null,
+            exemplo: null,
+            notaPreenchimento: null,
+            destinoXml: 'DPS/infDPS/valores/trib/tribMun/tribISSQN',
+            notaTransformacao: null,
+            ordem: 1,
+            errosConhecidos: [],
+          },
+        ],
+      },
+    ]
+    const { container } = render(
+      <NaturezasOperacao naturezas={NATUREZAS} camposPorGrupo={camposPorGrupo} />,
+    )
+
+    expect(container.querySelector('[data-abertura-natureza]')).toHaveTextContent(
+      'Envie em natOp o provedor recebe em tribISSQN (grupo tribMun)',
+    )
+  })
+
+  it('a observação e a pendência viram alerta na largura toda, só na linha que tem', () => {
     render(<NaturezasOperacao naturezas={NATUREZAS} camposPorGrupo={[]} />)
 
-    const linhas = screen.getAllByRole('row').slice(1)
-    const notas = linhas.map((linha) => linha.querySelector('[data-nota-natureza]'))
+    const linhas = linhasDosCodigos()
+    const notas = linhas.map((linha) =>
+      linha.closest('tbody')?.querySelector('[data-nota-natureza]'),
+    )
 
     expect(notas[0]).toBeNull()
-    expect(notas[1]).toHaveTextContent('Este provedor não recebe o tipo de imunidade.')
-    expect(notas[2]).toHaveTextContent('A confirmar')
-    expect(within(linhas[1]).getAllByRole('cell')[1]).toContainElement(notas[1] as HTMLElement)
+    // Cada alerta tem o rótulo escrito, sem depender do ícone nem da cor.
+    expect(
+      within(notas[1] as HTMLElement).getByRole('note', { name: 'Observação' }),
+    ).toHaveTextContent('Este provedor não recebe o tipo de imunidade.')
+    expect(
+      within(notas[2] as HTMLElement).getByRole('note', { name: 'A confirmar' }),
+    ).toHaveTextContent('Conversão ainda não confirmada na fonte do provedor.')
+    expect((notas[1] as HTMLElement).closest('td')).toHaveAttribute('colspan', '3')
   })
 
   it('não aparece quando a versão não tem tabela', () => {

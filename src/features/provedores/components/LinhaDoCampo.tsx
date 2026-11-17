@@ -99,8 +99,9 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
           ativo ? 'border-l-accent' : 'border-l-transparent',
         )}
       >
-        <div className="flex items-center gap-2">
-          <MarcadorObrigatoriedade estado={campo.estadoPreenchimento} />
+        {/* Linha de base comum: o selo RT acompanha o texto do nome, e o marcador fica centrado. */}
+        <div className="flex items-baseline gap-2">
+          <MarcadorObrigatoriedade estado={campo.estadoPreenchimento} className="self-center" />
           <button
             type="button"
             data-botao-do-campo=""

@@ -2,6 +2,12 @@ import clsx from 'clsx'
 import { Check } from 'lucide-react'
 import { useId } from 'react'
 import type { RefObject } from 'react'
+import {
+  CLASSE_DA_CAIXA_DE_FILTROS,
+  CLASSE_DO_CHIP,
+  CLASSE_DO_CHIP_PRESSIONADO,
+  CLASSE_DO_CHIP_SOLTO,
+} from '../../../components/ui/classesDosFiltros'
 import type { FiltroDeEstado } from '../utils/blocosDeCampos'
 
 export interface FiltrosDeCamposProps {
@@ -34,13 +40,6 @@ const OPCOES_DE_ESTADO: OpcaoDeEstado[] = [
   { valor: 'Opcional', rotulo: 'Opcionais' },
 ]
 
-const CLASSE_DO_CHIP =
-  'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1 text-sm hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
-
-const CLASSE_DO_CHIP_PRESSIONADO = 'border-2 border-primary bg-primary font-semibold text-white'
-
-const CLASSE_DO_CHIP_SOLTO = 'border border-border-control bg-white text-ink'
-
 const CLASSE_DA_ACAO =
   'text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
 
@@ -66,7 +65,7 @@ export function FiltrosDeCampos({
   const buscaId = useId()
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-border bg-white p-3">
+    <div className={clsx('flex flex-wrap items-center gap-3', CLASSE_DA_CAIXA_DE_FILTROS)}>
       <div role="group" aria-label="Filtrar por obrigatoriedade" className="flex flex-wrap gap-2">
         {OPCOES_DE_ESTADO.map(({ valor, rotulo }) => {
           const pressionado = estado === valor

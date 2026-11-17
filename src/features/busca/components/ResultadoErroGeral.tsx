@@ -7,7 +7,7 @@ export interface ResultadoErroGeralProps {
 const ARIA_LABEL_GERAL = 'Geral: este erro não é específico de um provedor'
 
 const CLASSE_DO_CHIP =
-  'inline-flex max-w-[45%] shrink-0 items-center rounded-[var(--radius-pill)] border px-2.5 py-0.5 text-xs [overflow-wrap:anywhere]'
+  'inline-flex max-w-full shrink-0 sm:max-w-[45%] items-center rounded-[var(--radius-pill)] border px-2.5 py-0.5 text-xs [overflow-wrap:anywhere]'
 
 /**
  * Chip de contexto do erro no resultado da busca: o provedor e a versão, que é o que separa dois
