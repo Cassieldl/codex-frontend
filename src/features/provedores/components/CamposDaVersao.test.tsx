@@ -798,7 +798,7 @@ describe('CamposDaVersao: teclado e leitor de tela', () => {
 })
 
 describe('CamposDaVersao: legenda da tabela', () => {
-  it('explica por escrito cada marca, com quantos campos têm rejeição registrada', () => {
+  it('explica por escrito as marcas sem texto, com quantos campos têm rejeição registrada', () => {
     renderizar()
 
     const legenda = screen.getByRole('list', { name: 'Legenda:' })
@@ -806,12 +806,7 @@ describe('CamposDaVersao: legenda da tabela', () => {
       within(legenda)
         .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual([
-      'obrigatório',
-      'condicional',
-      'opcional',
-      'ncampo com rejeição registrada nesta versão, n é a quantidade (2 campos)',
-    ])
+    ).toEqual(['ncampo com rejeição registrada nesta versão, n é a quantidade (2 campos)'])
   })
 
   it('com campo da reforma tributária, a legenda explica o selo RT', () => {

@@ -116,15 +116,15 @@ describe('LinhaDoCampo — células', () => {
     )
   })
 
-  it('a obrigatoriedade é um marcador na linha do nome, com o nome por extenso para leitor e dica', () => {
+  it('o uso do campo vem escrito por extenso na linha do nome', () => {
     const { celula } = renderizarLinha(CAMPO_DOIS_DESTINOS_E_TRES_REJEICOES)
 
-    const marcador = celula('campo').querySelector('[data-obrigatoriedade]')!
+    const etiqueta = celula('campo').querySelector('[data-obrigatoriedade]')!
     const botao = within(celula('campo')).getByRole('button', { name: 'PaiPreServico' })
 
-    expect(marcador).toHaveAttribute('title', 'Condicional')
-    expect(within(marcador as HTMLElement).getByText('Condicional')).toHaveClass('sr-only')
-    expect(marcador.parentElement).toBe(botao.parentElement)
+    expect(etiqueta).toHaveTextContent('Condicional')
+    expect(etiqueta).not.toHaveClass('sr-only')
+    expect(etiqueta.parentElement).toBe(botao.parentElement)
   })
 
   it('tamanho e exemplo ausentes deixam a célula vazia, sem traço nem "sem exemplo"', () => {

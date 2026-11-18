@@ -6,8 +6,11 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, within } from '@testing-library/react'
+import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
+import { server } from '../../../test/mocks/server'
 import { mensagensQueAcrescentam } from './camposDosErrosConhecidos'
 import { ErrosConhecidos } from './ErrosConhecidos'
 
@@ -91,7 +94,12 @@ function renderizar(
     getParentRoute: () => rootRoute,
     path: '/',
     component: () => (
-      <ErrosConhecidos resumo={resumo} camposPorGrupo={CAMPOS_POR_GRUPO} {...props} />
+      <ErrosConhecidos
+        resumo={resumo}
+        provedorSlug="prefeitura-exemplo"
+        camposPorGrupo={CAMPOS_POR_GRUPO}
+        {...props}
+      />
     ),
   })
   const router = createRouter({
@@ -99,13 +107,19 @@ function renderizar(
     history: createMemoryHistory({ initialEntries: ['/'] }),
   })
 
-  return render(<RouterProvider router={router} />)
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
 }
 
 function itensDaLista() {
   return within(screen.getAllByRole('list')[0])
     .getAllByRole('listitem')
-    .filter((item) => item.querySelector('a'))
+    .filter((item) => item.querySelector('button[aria-expanded]'))
 }
 
 describe('mensagensQueAcrescentam', () => {
@@ -123,11 +137,48 @@ describe('mensagensQueAcrescentam', () => {
 })
 
 describe('ErrosConhecidos — cada erro', () => {
-  it('é uma linha com código e título, que leva à página do erro', async () => {
+  it('abre a linha com a correção, o link do erro e o campo na tabela', async () => {
+    server.use(
+      http.get(`${import.meta.env.VITE_API_URL}/erros/:slug`, () =>
+        HttpResponse.json({
+          data: { ...ERRO_COM_MENSAGEM_PROPRIA, solucaoSugerida: 'Confira o dígito verificador.' },
+          message: null,
+        }),
+      ),
+    )
     renderizar()
 
-    const link = await screen.findByRole('link', { name: /E0248\s*CNPJ do intermediário inválido/ })
-    expect(link).toHaveAttribute('href', `/erros/${ERRO_COM_MENSAGEM_PROPRIA.slug}`)
+    const linha = await screen.findByRole('button', {
+      name: /E0248\s*CNPJ do intermediário inválido/,
+    })
+    expect(linha).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(linha)
+
+    expect(linha).toHaveAttribute('aria-expanded', 'true')
+    expect(await screen.findByText('Confira o dígito verificador.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Abrir a página do erro' })).toHaveAttribute(
+      'href',
+      `/erros/${ERRO_COM_MENSAGEM_PROPRIA.slug}`,
+    )
+    expect(screen.getByRole('link', { name: 'Ver IntermCNPJ na tabela' })).toHaveAttribute(
+      'href',
+      '/provedores/prefeitura-exemplo/campos#campo-intermservico-intermcnpj',
+    )
+  })
+
+  it('erro sem correção documentada diz isso em vez de inventar uma', async () => {
+    server.use(
+      http.get(`${import.meta.env.VITE_API_URL}/erros/:slug`, () =>
+        HttpResponse.json({ data: { ...ERRO_SEM_CAMPO, solucaoSugerida: null }, message: null }),
+      ),
+    )
+    renderizar()
+
+    fireEvent.click(await screen.findByRole('button', { name: /E1235/ }))
+
+    expect(
+      await screen.findByText('A correção deste erro ainda não foi documentada.'),
+    ).toBeInTheDocument()
   })
 
   it('mostra a mensagem observada só quando ela diz algo além do título', async () => {
@@ -141,9 +192,9 @@ describe('ErrosConhecidos — cada erro', () => {
   it('diz o campo relacionado; erro sem campo não ganha a linha', async () => {
     renderizar()
 
-    const linha = (await screen.findByText(ERRO_COM_MENSAGEM_PROPRIA.titulo)).closest('a')!
+    const linha = (await screen.findByText(ERRO_COM_MENSAGEM_PROPRIA.titulo)).closest('button')!
     expect(linha).toHaveTextContent('Campo: IntermCNPJ')
-    expect(screen.getByText(ERRO_SEM_CAMPO.titulo).closest('a')).not.toHaveTextContent('Campo')
+    expect(screen.getByText(ERRO_SEM_CAMPO.titulo).closest('button')).not.toHaveTextContent('Campo')
   })
 
   it('título cortado em "…" vira a mensagem inteira, que não se repete embaixo', async () => {
@@ -172,12 +223,13 @@ describe('ErrosConhecidos — cada erro', () => {
 
   // O prefixo fixo `/erros/` já mantém o destino na mesma origem; o que este caso prova é o ramo
   // de texto quando o saneador recusa o slug (caractere de controle).
-  it('slug recusado pelo saneador vira texto, sem link', async () => {
+  it('slug recusado pelo saneador abre sem o link para a página do erro', async () => {
     const titulo = 'Título do erro com slug perigoso'
     renderizar({}, { total: 1, itens: [{ ...ERRO_SEM_CAMPO, slug: 'e0001\t//evil.com', titulo }] })
 
-    expect(await screen.findByText(titulo)).toBeInTheDocument()
-    expect(screen.getByText(titulo).closest('a')).toBeNull()
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(titulo) }))
+
+    expect(screen.queryByRole('link', { name: 'Abrir a página do erro' })).not.toBeInTheDocument()
   })
 })
 
@@ -264,7 +316,11 @@ describe('ErrosConhecidos: ordem e paginação', () => {
 describe('ErrosConhecidos — vazio', () => {
   it('não renderiza a seção quando a versão não tem erro', () => {
     const { container } = render(
-      <ErrosConhecidos resumo={{ total: 0, itens: [] }} camposPorGrupo={CAMPOS_POR_GRUPO} />,
+      <ErrosConhecidos
+        resumo={{ total: 0, itens: [] }}
+        provedorSlug="prefeitura-exemplo"
+        camposPorGrupo={CAMPOS_POR_GRUPO}
+      />,
     )
 
     expect(container).toBeEmptyDOMElement()

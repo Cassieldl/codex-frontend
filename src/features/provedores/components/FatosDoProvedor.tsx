@@ -19,7 +19,7 @@ export interface FatosDoProvedorProps {
 const CLASSE_CHIP =
   'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border px-2.5 py-0.5 text-xs font-semibold'
 
-const CLASSE_CHIP_NEUTRO = clsx(CLASSE_CHIP, 'border-border bg-white text-ink')
+const CLASSE_CHIP_NEUTRO = clsx(CLASSE_CHIP, 'border-transparent bg-alert-info text-primary-medium')
 
 function Chip({
   children,

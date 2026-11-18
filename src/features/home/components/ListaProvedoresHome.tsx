@@ -1,10 +1,13 @@
 import { Link } from '@tanstack/react-router'
-import { TriangleAlert } from 'lucide-react'
-import { rotuloVerificacao } from '../../../utils/formatarDataVerificacao'
+import { ArrowRight, Check, TriangleAlert } from 'lucide-react'
+import { formatarDataCurta } from '../../../utils/formatarDataVerificacao'
 import type { CategoriaProvedorHome, CategoriaProvedoresHome, ProvedorHomeDto } from '../types/home'
+import { filtrarProvedoresPorNome } from '../utils/filtrarProvedoresPorNome'
 
 export interface ListaProvedoresHomeProps {
   categorias: CategoriaProvedoresHome[]
+  /** Texto digitado no filtro; vazio mostra todos. */
+  filtro?: string
 }
 
 const ROTULO_CATEGORIA: Record<CategoriaProvedorHome, string> = {
@@ -12,73 +15,101 @@ const ROTULO_CATEGORIA: Record<CategoriaProvedorHome, string> = {
   Proprio: 'Próprio',
 }
 
-function LinhaProvedorHome({ provedor }: { provedor: ProvedorHomeDto }) {
+function CardProvedorHome({ provedor }: { provedor: ProvedorHomeDto }) {
   return (
-    <li className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 border-t border-line px-4 py-3 first:border-t-0 hover:shadow-hover">
-      {/* No celular o nome ocupa a linha inteira e os demais itens descem: truncar ali cortava
-          "Emissor Nacional" em "Emiss...". A partir de `sm` volta a ser coluna flexível. */}
+    <li>
       <Link
         to="/provedores/$provedorSlug"
         params={{ provedorSlug: provedor.slug }}
-        className="min-w-0 basis-full font-semibold text-primary [overflow-wrap:anywhere] hover:underline sm:flex-1 sm:basis-0 sm:truncate"
+        className="group flex h-full flex-col gap-2.5 rounded-xl border border-line bg-white px-5 py-4 text-primary transition-shadow duration-150 hover:border-primary-light hover:shadow-panel"
       >
-        {provedor.nome}
+        <span className="flex items-center justify-between gap-2">
+          <span className="min-w-0 text-card-titulo font-bold [overflow-wrap:anywhere]">
+            {provedor.nome}
+          </span>
+          <span className="flex shrink-0 items-center gap-1.5">
+            {/* Ícone + rótulo acessível: o alerta nunca é comunicado só por cor. */}
+            {provedor.temComunicado && (
+              <TriangleAlert
+                role="img"
+                aria-label={`Comunicado ativo para ${provedor.nome}`}
+                className="size-4 text-severidade-alerta-texto"
+              />
+            )}
+            <ArrowRight
+              className="size-4 text-primary-light transition-transform duration-150 group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </span>
+        </span>
+
+        {provedor.verificadoEm ? (
+          <span className="flex items-center gap-1.5 text-xs text-muted">
+            <Check className="size-3.5 text-success" aria-hidden="true" />
+            Verificado em {formatarDataCurta(provedor.verificadoEm)}
+          </span>
+        ) : (
+          <span className="self-start rounded-[var(--radius-pill)] bg-alert-warning px-2.5 py-0.5 text-xs font-bold text-severidade-alerta-texto">
+            Ainda não verificado
+          </span>
+        )}
       </Link>
-
-      {/* Ícone + rótulo acessível — o alerta nunca é comunicado só por cor. */}
-      {provedor.temComunicado && (
-        <TriangleAlert
-          role="img"
-          aria-label={`Comunicado ativo para ${provedor.nome}`}
-          className="size-4 shrink-0 text-severidade-alerta-texto"
-        />
-      )}
-
-      <span className="shrink-0 text-xs font-medium text-ink sm:w-[168px] sm:text-right">
-        {rotuloVerificacao(provedor.verificadoEm)}
-      </span>
     </li>
   )
 }
 
 /**
- * Lista de provedores da Home, agrupada por categoria.
- *
- * Componente próprio (e não o `ListaProvedores` de P2) porque o dado é outro:
- * `ProvedorHomeDto` traz `temComunicado`. Sem coluna de versão: cada provedor tem uma
- * versão publicada, e a página dele já abre direto no conteúdo.
+ * Provedores da Home em cards, agrupados por categoria. Grupo que o filtro esvazia some; se
+ * todos somem, a lista diz que nada casou em vez de ficar em branco.
  */
-export function ListaProvedoresHome({ categorias }: ListaProvedoresHomeProps) {
-  return (
-    <div className="flex flex-col gap-5">
-      <div className="hidden items-center gap-3.5 px-4 text-aux font-bold uppercase tracking-wider text-primary-medium sm:flex">
-        <span className="min-w-0 flex-1" />
-        <span className="w-[168px] shrink-0 text-right">Verificado em</span>
-      </div>
+export function ListaProvedoresHome({ categorias, filtro = '' }: ListaProvedoresHomeProps) {
+  const filtrando = filtro.trim() !== ''
+  const visiveis = categorias
+    .map((categoria) => {
+      const provedores = filtrarProvedoresPorNome(categoria.provedores, filtro)
+      // Sem filtro vale o total do contrato; filtrando, conta o que sobrou na tela.
+      return {
+        ...categoria,
+        provedores,
+        quantidade: filtrando ? provedores.length : categoria.total,
+      }
+    })
+    .filter((categoria) => categoria.provedores.length > 0)
 
-      {categorias.map((categoria) => (
+  if (visiveis.length === 0) {
+    return (
+      <p
+        role="status"
+        className="rounded-xl border border-line bg-white px-5 py-4 text-sm text-muted"
+      >
+        Nenhum provedor com “{filtro.trim()}” no nome.
+      </p>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {visiveis.map((categoria) => (
         <section
           key={categoria.categoria}
           aria-labelledby={`categoria-home-${categoria.categoria}`}
         >
-          <div className="mb-2 flex items-center gap-2.5">
+          <div className="mb-3 flex items-center gap-2.5">
             <h3
               id={`categoria-home-${categoria.categoria}`}
-              className="text-aux font-bold uppercase tracking-wider text-primary-medium"
+              className="text-xs font-bold tracking-wider text-primary-medium uppercase"
             >
               {ROTULO_CATEGORIA[categoria.categoria]}
             </h3>
             <span className="h-px flex-1 bg-line" />
-            {/* O número sozinho, encostado na borda, lia-se como artefato — e um leitor de tela
-                anunciava só "2". A unidade é barata e resolve os dois. */}
             <span className="text-xs text-muted">
-              {categoria.total} {categoria.total === 1 ? 'provedor' : 'provedores'}
+              {categoria.quantidade} {categoria.quantidade === 1 ? 'provedor' : 'provedores'}
             </span>
           </div>
 
-          <ul className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-card">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
             {categoria.provedores.map((provedor) => (
-              <LinhaProvedorHome key={provedor.slug} provedor={provedor} />
+              <CardProvedorHome key={provedor.slug} provedor={provedor} />
             ))}
           </ul>
         </section>

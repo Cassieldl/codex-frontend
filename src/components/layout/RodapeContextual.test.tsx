@@ -17,7 +17,7 @@ import {
 // Contextos com ação para rota interna (`erro-com-contexto`/`layout`)
 // usam `<Link>` do TanStack Router — precisam de um `RouterProvider` de
 // verdade, mesmo padrão de `erros-index.test.tsx`.
-function renderComRouter(contexto: ContextoRodape) {
+async function renderComRouter(contexto: ContextoRodape) {
   const rootRoute = createRootRoute({ component: Outlet })
   const rota = createRoute({
     getParentRoute: () => rootRoute,
@@ -30,7 +30,10 @@ function renderComRouter(contexto: ContextoRodape) {
     history: createMemoryHistory({ initialEntries: ['/pagina'] }),
   })
 
-  return render(<RouterProvider router={router} />)
+  const resultado = render(<RouterProvider router={router} />)
+  await screen.findByRole('contentinfo')
+
+  return resultado
 }
 
 describe('RodapeContextual', () => {
@@ -41,36 +44,36 @@ describe('RodapeContextual', () => {
     { tipo: 'provedores' },
     { tipo: 'artigos' },
     { tipo: 'provedor', provedorSlug: 'betha' },
-  ])('sem faixa de próximo passo no contexto $tipo', (contexto) => {
-    render(<RodapeContextual contexto={contexto} />)
+  ])('sem faixa de próximo passo no contexto $tipo', async (contexto) => {
+    await renderComRouter(contexto)
 
     expect(screen.queryByText('Próximo passo')).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
   })
 
-  it('mostra o próximo passo de busca sem resultado, com ação de e-mail para o suporte', () => {
-    render(<RodapeContextual contexto={{ tipo: 'busca-sem-resultado' }} />)
+  it('mostra o próximo passo de busca sem resultado, com ação de e-mail para o suporte', async () => {
+    await renderComRouter({ tipo: 'busca-sem-resultado' })
 
     expect(screen.getByText(/Buscou e não achou/)).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Falar com o suporte' })
     expect(link.getAttribute('href')).toContain('mailto:supportbr@migrate.info')
   })
 
-  it('omite o bloco de próximo passo quando o erro é geral, sem contexto de provedor/versão (U9)', () => {
-    render(<RodapeContextual contexto={{ tipo: 'erro-sem-contexto' }} />)
+  it('omite o bloco de próximo passo quando o erro é geral, sem contexto de provedor/versão (U9)', async () => {
+    await renderComRouter({ tipo: 'erro-sem-contexto' })
 
     expect(screen.queryByText(/Corrigiu este campo/)).not.toBeInTheDocument()
   })
 
-  it('erro-sem-contexto segue sem próximo passo nem suporte (404, índice, carregando)', () => {
-    render(<RodapeContextual contexto={{ tipo: 'erro-sem-contexto' }} />)
+  it('erro-sem-contexto segue sem próximo passo nem suporte (404, índice, carregando)', async () => {
+    await renderComRouter({ tipo: 'erro-sem-contexto' })
 
     expect(screen.queryByRole('link', { name: 'Falar com o suporte' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
   })
 
-  it('erro-geral: só o suporte, que leva o código no assunto e no corpo', () => {
-    render(<RodapeContextual contexto={{ tipo: 'erro-geral', codigoErro: 'E0042' }} />)
+  it('erro-geral: só o suporte, que leva o código no assunto e no corpo', async () => {
+    await renderComRouter({ tipo: 'erro-geral', codigoErro: 'E0042' })
 
     expect(screen.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
     const suporte = screen.getByRole('link', { name: 'Falar com o suporte' })
@@ -82,7 +85,7 @@ describe('RodapeContextual', () => {
   })
 
   it('erro-varios-provedores: âncora para a seção de provedores e suporte, sem "Ver o provedor completo"', async () => {
-    renderComRouter({ tipo: 'erro-varios-provedores' })
+    await renderComRouter({ tipo: 'erro-varios-provedores' })
 
     expect(
       await screen.findByRole('link', { name: 'Ver os provedores aplicáveis' }),
@@ -92,14 +95,14 @@ describe('RodapeContextual', () => {
   })
 
   it('erro-com-contexto: mantém "Ver o provedor completo" e acrescenta o suporte', async () => {
-    renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm' })
+    await renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm' })
 
     expect(await screen.findByRole('link', { name: 'Ver o provedor completo' })).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Falar com o suporte' })).toHaveLength(1)
   })
 
   it('erro-com-contexto: só fala em "corrigir o campo" quando o erro tem campo relacionado', async () => {
-    const comCampo = renderComRouter({
+    const comCampo = await renderComRouter({
       tipo: 'erro-com-contexto',
       provedorSlug: 'ipm',
       temCampoRelacionado: true,
@@ -109,7 +112,11 @@ describe('RodapeContextual', () => {
     ).toBeInTheDocument()
     comCampo.unmount()
 
-    renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm', temCampoRelacionado: false })
+    await renderComRouter({
+      tipo: 'erro-com-contexto',
+      provedorSlug: 'ipm',
+      temCampoRelacionado: false,
+    })
     expect(
       await screen.findByText('Resolveu este erro? Confira o resto do provedor.'),
     ).toBeInTheDocument()
@@ -117,7 +124,7 @@ describe('RodapeContextual', () => {
   })
 
   it('monta o link de "ver o provedor completo" sem versão no endereço', async () => {
-    renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm' })
+    await renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm' })
 
     // `Link` só monta depois que o `RouterProvider` resolve o match inicial
     // (assíncrono) — condição observável, nunca contagem de ticks (AP-FRONTEND-016).
@@ -127,15 +134,15 @@ describe('RodapeContextual', () => {
     )
   })
 
-  it('bloco de atendimento e coluna de links da Migrate são idênticos entre contextos diferentes', () => {
-    const { unmount } = render(<RodapeContextual contexto={{ tipo: 'busca-com-resultado' }} />)
+  it('bloco de atendimento e coluna de links da Migrate são idênticos entre contextos diferentes', async () => {
+    const { unmount } = await renderComRouter({ tipo: 'busca-com-resultado' })
     const telefoneHome = screen.getByText('+55 11 4240-6556').textContent
     const linksHome = screen
       .getAllByRole('link', { name: /^(InvoiCy|Base de conhecimento|GitHub)$/ })
       .map((link) => link.textContent)
     unmount()
 
-    render(<RodapeContextual contexto={{ tipo: 'provedores' }} />)
+    await renderComRouter({ tipo: 'provedores' })
     const telefoneProvedores = screen.getByText('+55 11 4240-6556').textContent
     const linksProvedores = screen
       .getAllByRole('link', { name: /^(InvoiCy|Base de conhecimento|GitHub)$/ })
@@ -145,18 +152,18 @@ describe('RodapeContextual', () => {
     expect(linksProvedores).toEqual(linksHome)
   })
 
-  it('não declara o conteúdo como fictício — o acervo é real desde o Emissor Nacional', () => {
-    render(<RodapeContextual contexto={{ tipo: 'busca-com-resultado' }} />)
+  it('não declara o conteúdo como fictício — o acervo é real desde o Emissor Nacional', async () => {
+    await renderComRouter({ tipo: 'busca-com-resultado' })
     const rodape = screen.getByRole('contentinfo')
 
     expect(rodape.textContent).not.toMatch(/fictíci|demonstração/i)
   })
 
   it('no contexto "layout", o próximo passo leva para os provedores (§2.7)', async () => {
-    renderComRouter({ tipo: 'layout' })
+    await renderComRouter({ tipo: 'layout' })
 
     expect(
-      await screen.findByText('Sabe o campo — falta saber como o seu provedor trata ele.'),
+      await screen.findByText('Sabe o campo, falta saber como o seu provedor trata ele.'),
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver os provedores' })).toHaveAttribute(
       'href',
@@ -164,8 +171,8 @@ describe('RodapeContextual', () => {
     )
   })
 
-  it('no contexto "layout-campo", o próximo passo leva ao e-mail de suporte (§2.7)', () => {
-    render(<RodapeContextual contexto={{ tipo: 'layout-campo' }} />)
+  it('no contexto "layout-campo", o próximo passo leva ao e-mail de suporte (§2.7)', async () => {
+    await renderComRouter({ tipo: 'layout-campo' })
 
     expect(
       screen.getByText(
@@ -177,8 +184,21 @@ describe('RodapeContextual', () => {
     expect(link.getAttribute('href')).toContain('Codex')
   })
 
-  it('o link de chamado aparece mesmo sem próximo passo', () => {
-    render(<RodapeContextual contexto={{ tipo: 'erro-sem-contexto' }} />)
+  it('sem passo específico, a faixa oferece o chamado; com passo, a faixa é o passo', async () => {
+    const { unmount } = await renderComRouter({ tipo: 'home' })
+
+    expect(
+      screen.getByRole('heading', { name: 'Não achou a resposta no Codex?' }),
+    ).toBeInTheDocument()
+    unmount()
+
+    await renderComRouter({ tipo: 'busca-sem-resultado' })
+
+    expect(screen.queryByText('Não achou a resposta no Codex?')).not.toBeInTheDocument()
+  })
+
+  it('o link de chamado aparece mesmo sem próximo passo', async () => {
+    await renderComRouter({ tipo: 'erro-sem-contexto' })
 
     expect(screen.getByRole('link', { name: 'Abrir chamado' })).toHaveAttribute(
       'href',
@@ -186,8 +206,8 @@ describe('RodapeContextual', () => {
     )
   })
 
-  it('todo link externo do rodapé abre em nova aba com rel="noopener noreferrer"', () => {
-    render(<RodapeContextual contexto={{ tipo: 'busca-com-resultado' }} />)
+  it('todo link externo do rodapé abre em nova aba com rel="noopener noreferrer"', async () => {
+    await renderComRouter({ tipo: 'busca-com-resultado' })
 
     const linksExternos = screen.getAllByRole('link', {
       name: /^(InvoiCy|Base de conhecimento|GitHub|Abrir chamado)$/,
@@ -204,8 +224,8 @@ describe('RodapeContextual', () => {
 
 describe('RodapeContextual — bloco de atendimento', () => {
   // Literais, não a constante: são os dados reais de contato que o leitor vai usar.
-  it('mostra telefone discável, e-mail com link e horário de atendimento', () => {
-    render(<RodapeContextual contexto={{ tipo: 'busca-com-resultado' }} />)
+  it('mostra telefone discável, e-mail com link e horário de atendimento', async () => {
+    await renderComRouter({ tipo: 'busca-com-resultado' })
 
     expect(screen.getByRole('link', { name: '+55 11 4240-6556' })).toHaveAttribute(
       'href',
@@ -224,8 +244,8 @@ describe('RodapeContextual — bloco de atendimento', () => {
     ['InvoiCy', 'https://invoicy.com.br'],
     ['Base de conhecimento', 'https://desenvolvedores.migrate.info/?utm_source=site'],
     ['GitHub', 'https://github.com/migrate-company/integracao-InvoiCy-BR'],
-  ])('o link "%s" leva a %s', (rotulo, destino) => {
-    render(<RodapeContextual contexto={{ tipo: 'busca-com-resultado' }} />)
+  ])('o link "%s" leva a %s', async (rotulo, destino) => {
+    await renderComRouter({ tipo: 'busca-com-resultado' })
 
     expect(screen.getByRole('link', { name: rotulo })).toHaveAttribute('href', destino)
   })

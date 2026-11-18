@@ -1,5 +1,5 @@
 import { createRoute } from '@tanstack/react-router'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
@@ -41,7 +41,7 @@ function handlerProvedor(slugRequisitado: string, provedor: object) {
   )
 }
 
-/** A mesma forma da árvore real: layout do provedor com o índice e o endereço antigo com versão. */
+/** A mesma forma da árvore real: layout do provedor, abas e o endereço antigo com versão. */
 function renderRota(entradas: string[], portao = criarPortao()) {
   const utils = renderComDestinoLento({
     entradas,
@@ -57,13 +57,16 @@ function renderRota(entradas: string[], portao = criarPortao()) {
         path: '/',
         component: () => null,
       })
+      const rotasDasAbas = ['campos', 'natureza-da-operacao', 'envio-modelo'].map((segmento) =>
+        createRoute({ getParentRoute: () => rotaProvedor, path: segmento, component: () => null }),
+      )
       const rotaVersao = createRoute({
         getParentRoute: () => rotaProvedor,
         path: '$versaoSlug',
         beforeLoad: redirecionarVersaoParaProvedor,
       })
 
-      return [rotaProvedor.addChildren([rotaIndice, rotaVersao])]
+      return [rotaProvedor.addChildren([rotaIndice, ...rotasDasAbas, rotaVersao])]
     },
   })
 
@@ -79,7 +82,10 @@ describe('ProvedorLayoutRota — sair da página não é desfeito pela correçã
     await sairDaPaginaEEsperarDestino({
       router,
       portao,
-      sair: () => userEvent.click(screen.getByRole('link', { name: 'Layout InvoiCy' })),
+      sair: () =>
+        userEvent.click(
+          within(screen.getByRole('banner')).getByRole('link', { name: 'Layout InvoiCy' }),
+        ),
       caminhoDeDestino: '/layout',
     })
   })
@@ -127,7 +133,7 @@ describe('ProvedorLayoutRota: endereço antigo com versão', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/layout/8'))
   })
 
-  it('link antigo seguido de dentro do portal também não empilha o endereço com versão', async () => {
+  it('link antigo seguido de dentro do portal vai direto para a aba da âncora, sem empilhar o endereço com versão', async () => {
     server.use(handlerProvedor('ipm', provedorComSlug('ipm')))
     const portao = criarPortao()
     portao.liberar()
@@ -137,7 +143,7 @@ describe('ProvedorLayoutRota: endereço antigo com versão', () => {
     router.history.push('/provedores/ipm/v1#campo-cnpj-tomador')
 
     await screen.findByRole('heading', { level: 1, name: 'Provedor ipm' })
-    expect(router.state.location.pathname).toBe('/provedores/ipm')
+    expect(router.state.location.pathname).toBe('/provedores/ipm/campos')
     expect(router.state.location.hash).toBe('campo-cnpj-tomador')
 
     router.history.back()

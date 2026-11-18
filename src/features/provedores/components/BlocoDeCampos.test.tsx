@@ -354,3 +354,45 @@ describe('BlocoDeCampos — linhas', () => {
     expect(props.onAbrirCampo).toHaveBeenNthCalledWith(2, 'servico-ibscbs-cclasstrib', 'rejeicoes')
   })
 })
+
+describe('BlocoDeCampos: corte em 10 campos', () => {
+  const DOZE_CAMPOS = Array.from({ length: 12 }, (_, indice) => ({
+    ...DISCRIMINACAO,
+    campoLayoutSlug: `servico-campo-${indice}`,
+    nome: `Campo${indice}`,
+  }))
+  const BLOCO_GRANDE = {
+    ...BLOCO_DE_UM_SUBGRUPO_SEM_SLUG,
+    totalDoBloco: 12,
+    totalVisivel: 12,
+    subgrupos: [{ chave: 'sem-grupo', grupoSlug: null, titulo: null, campos: DOZE_CAMPOS }],
+  }
+
+  function linhas(detalhes: HTMLElement) {
+    return detalhes.querySelectorAll('tbody tr')
+  }
+
+  it('mostra 10 e diz quantos faltam; "Mostrar todos" abre o resto', () => {
+    const { detalhes } = renderizarBloco({ bloco: BLOCO_GRANDE })
+
+    expect(linhas(detalhes)).toHaveLength(10)
+    expect(within(detalhes).getByText(/Mais 2 campos em Outros campos/)).toBeInTheDocument()
+
+    fireEvent.click(within(detalhes).getByRole('button', { name: 'Mostrar todos' }))
+
+    expect(linhas(detalhes)).toHaveLength(12)
+  })
+
+  it('com busca ou filtro ativo, não corta nada', () => {
+    const { detalhes } = renderizarBloco({ bloco: BLOCO_GRANDE, filtrando: true })
+
+    expect(linhas(detalhes)).toHaveLength(12)
+    expect(within(detalhes).queryByRole('button', { name: 'Mostrar todos' })).toBeNull()
+  })
+
+  it('campo aberto por link fora dos 10 primeiros deixa o bloco inteiro à vista', () => {
+    const { detalhes } = renderizarBloco({ bloco: BLOCO_GRANDE, slugAtivo: 'servico-campo-11' })
+
+    expect(linhas(detalhes)).toHaveLength(12)
+  })
+})

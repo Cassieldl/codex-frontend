@@ -106,9 +106,13 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
   })
 
   it('o anel de foco atinge 3:1 — é o que diz onde o teclado está', () => {
-    expect(calcularContraste(token('primary-light'), token('white'))).toBeGreaterThanOrEqual(
+    expect(calcularContraste(token('accent-hover'), token('white'))).toBeGreaterThanOrEqual(
       CONTRASTE_MINIMO.naoTextual,
     )
+  })
+
+  it('o anel de foco é o token medido acima, não uma cor solta', () => {
+    expect(CSS_GLOBAL).toMatch(/:focus-visible\s*\{[^}]*outline:[^;]*var\(--color-accent-hover\)/)
   })
 
   it.each([

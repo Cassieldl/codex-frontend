@@ -1,11 +1,12 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ExternalLink } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { ID_NOVIDADES_DO_LAYOUT } from '../../../utils/mudancasDoLayout'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { useLayoutVersao } from '../hooks/useLayoutVersao'
 import type { NovidadesVersaoLayout } from '../types/layoutPublico'
 import { contarMudancasDaVersao } from '../utils/mudancasDaVersao'
+import { LINK_PLANILHA_DO_LAYOUT } from '../utils/planilhaDoLayout'
 import { ContadoresDeMudanca } from './ContadoresDeMudanca'
 import { ListaDeMudancas } from './ListaDeMudancas'
 import { NotaDaVersao } from './NotaDaVersao'
@@ -52,21 +53,31 @@ export function NovidadesDaVigente({ novidades }: NovidadesDaVigenteProps) {
       ref={secaoRef}
       id={ID_NOVIDADES_DO_LAYOUT}
       aria-labelledby="novidades-titulo"
-      className="flex scroll-mt-6 flex-col gap-4 rounded-[var(--radius-card)] border border-line bg-white p-5 shadow-card"
+      className="flex scroll-mt-6 flex-col gap-5 rounded-[var(--radius-card)] border border-line bg-white p-7 shadow-card"
     >
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <h2 id="novidades-titulo" className="text-subtitulo font-semibold text-ink">
+        <h2 id="novidades-titulo" className="text-subtitulo font-extrabold text-primary">
           {titulo}
         </h2>
-        {anterior && (
-          <ContadoresDeMudanca
-            contadores={contarMudancasDaVersao(mudancas, {
-              novos: novidades.camposNovos,
-              descontinuados: novidades.camposDescontinuados,
-            })}
-          />
-        )}
+        <a
+          href={LINK_PLANILHA_DO_LAYOUT}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-medium underline underline-offset-2"
+        >
+          Baixar a planilha do layout
+          <ExternalLink className="size-3.5" aria-hidden="true" />
+        </a>
       </div>
+
+      {anterior && (
+        <ContadoresDeMudanca
+          contadores={contarMudancasDaVersao(mudancas, {
+            novos: novidades.camposNovos,
+            descontinuados: novidades.camposDescontinuados,
+          })}
+        />
+      )}
 
       <NotaDaVersao descricao={novidades.descricao} somenteResumo={mudancas.length > 0} />
       <ListaDeMudancas mudancas={mudancas} campos={campos} />

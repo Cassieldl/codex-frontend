@@ -131,7 +131,9 @@ export function ArtigoDetalhePage({
                 </p>
                 <EtiquetaTipoArtigo tipo={artigo.tipo} />
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <h1 className="max-w-2xl text-titulo font-bold text-ink">{artigo.titulo}</h1>
+                  <h1 className="max-w-2xl text-titulo font-extrabold text-primary lg:text-h1">
+                    {artigo.titulo}
+                  </h1>
                   <BotaoCopiar
                     compacto
                     icone="link"

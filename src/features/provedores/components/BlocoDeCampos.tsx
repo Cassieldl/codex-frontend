@@ -1,6 +1,8 @@
 import { ChevronDown, TriangleAlert } from 'lucide-react'
+import { useState } from 'react'
 import type { SecaoInicialDoModal } from '../types/modalDoCampo'
 import type { BlocoDeCampos as BlocoDeCamposDados, SubgrupoDeCampos } from '../utils/blocosDeCampos'
+import { recortarCamposDoBloco } from '../utils/recortarCamposDoBloco'
 import { CLASSE_SO_NO_DESKTOP, LinhaDoCampo } from './LinhaDoCampo'
 
 export interface BlocoDeCamposProps {
@@ -100,6 +102,16 @@ export function BlocoDeCampos({
   onAbrirCampo,
 }: BlocoDeCamposProps) {
   const colunas = mostrarExemplo ? COLUNAS : COLUNAS_SEM_EXEMPLO
+  const [mostrandoTodos, setMostrandoTodos] = useState(false)
+
+  // Com busca ou filtro, aparece tudo o que casou; o campo aberto por link também nunca fica oculto.
+  const contemAtivo = bloco.subgrupos.some((subgrupo) =>
+    subgrupo.campos.some((campo) => campo.campoLayoutSlug === slugAtivo),
+  )
+  const recorte =
+    filtrando || mostrandoTodos || contemAtivo
+      ? { subgrupos: bloco.subgrupos, ocultos: 0 }
+      : recortarCamposDoBloco(bloco.subgrupos)
 
   return (
     <details
@@ -121,7 +133,7 @@ export function BlocoDeCampos({
 
       <RotulosDasColunas colunas={colunas} />
 
-      {bloco.subgrupos.map((subgrupo) => (
+      {recorte.subgrupos.map((subgrupo) => (
         <div
           key={subgrupo.chave}
           id={subgrupo.grupoSlug ? `grupo-${subgrupo.grupoSlug}` : undefined}
@@ -173,6 +185,19 @@ export function BlocoDeCampos({
           </table>
         </div>
       ))}
+
+      {recorte.ocultos > 0 && (
+        <p className="border-t border-line px-4 py-3 text-xs text-muted">
+          Mais {recorte.ocultos} {recorte.ocultos === 1 ? 'campo' : 'campos'} em {bloco.rotulo}.{' '}
+          <button
+            type="button"
+            onClick={() => setMostrandoTodos(true)}
+            className="font-semibold text-primary-medium underline underline-offset-2"
+          >
+            Mostrar todos
+          </button>
+        </p>
+      )}
     </details>
   )
 }

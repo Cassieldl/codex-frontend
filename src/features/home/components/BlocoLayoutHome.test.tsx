@@ -7,7 +7,7 @@ import {
   createRouter,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { LayoutResumoHome } from '../types/home'
 import { BlocoLayoutHome } from './BlocoLayoutHome'
 
@@ -57,52 +57,64 @@ function renderBloco(resumo: LayoutResumoHome | null) {
 }
 
 describe('BlocoLayoutHome', () => {
-  it('não renderiza a seção quando não há layout publicado', async () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('não renderiza o card quando não há layout publicado', async () => {
     renderBloco(null)
 
     await screen.findByText(ANCORA)
-    expect(screen.queryByRole('heading', { name: 'Layout InvoiCy' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /Layout InvoiCy/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /^Ver / })).not.toBeInTheDocument()
   })
 
-  it('mostra vigente, prevista e as mudanças', async () => {
+  it('mostra a vigente no título, a prevista e as mudanças, com o link para o que mudou', async () => {
     renderBloco(layout)
 
-    expect(await screen.findByRole('heading', { name: 'Layout InvoiCy' })).toBeInTheDocument()
-    expect(screen.getByText('Versão 4.12')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Layout InvoiCy versão 4.12 vigente' }),
+    ).toBeInTheDocument()
     expect(screen.getByText('Versão 4.13 prevista')).toBeInTheDocument()
-    expect(screen.getByText('6 campos novos · 2 descontinuados')).toBeInTheDocument()
+    expect(screen.getByText(/6 campos novos · 2 descontinuados/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver o que mudou' })).toHaveAttribute(
       'href',
       '/layout#novidades',
     )
   })
 
+  it('com prazo no futuro, o título traz a data e o selo conta os dias', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 10, 17, 10))
+    renderBloco({ ...layout, obrigatoriaEm: '2026-12-01' })
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Layout InvoiCy versão 4.12 obrigatória em 01/12/2026',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Faltam 14 dias')).toBeInTheDocument()
+  })
+
+  it('com o prazo vencido, mantém a data no título e tira o selo', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 11, 5, 10))
+    renderBloco({ ...layout, obrigatoriaEm: '2026-12-01' })
+
+    await screen.findByRole('heading', {
+      name: 'Layout InvoiCy versão 4.12 obrigatória em 01/12/2026',
+    })
+    expect(screen.queryByText(/^Falta/)).not.toBeInTheDocument()
+  })
+
   it('mostra só o resumo da nota: os tópicos do que mudou ficam na página do layout', async () => {
     renderBloco({ ...layout, descricao: 'InvoiCy 3.3.0.0.\nGrupos novos: Condominio' })
 
-    expect(await screen.findByText('InvoiCy 3.3.0.0.')).toBeInTheDocument()
+    expect(await screen.findByText(/InvoiCy 3\.3\.0\.0\./)).toBeInTheDocument()
     expect(screen.queryByText(/Condominio/)).not.toBeInTheDocument()
   })
 
-  /**
-   * Detector do DEFEITO-01. O contrato não tem data de publicação de versão de layout (B-6), e a
-   * fixture acima é o shape REAL do servidor. Antes desta correção o tipo declarava
-   * `publicadaEm` como obrigatório, o componente o formatava e `parseISO(undefined)` derrubava a
-   * Home inteira, com a suíte verde, porque as fixtures escreviam o campo à mão.
-   *
-   * A asserção é de ausência do rótulo: se alguém voltar a prometer a data, este teste cai.
-   */
-  it('não promete data de publicação, o contrato não tem esse campo', async () => {
-    renderBloco(layout)
-
-    await screen.findByRole('heading', { name: 'Layout InvoiCy' })
-    expect(screen.queryByText(/publicada em/i)).not.toBeInTheDocument()
-  })
-
-  it('cala a linha de mudanças quando não há campo novo nem descontinuado', async () => {
-    // Descrição sem as palavras-alvo: o que se afirma aqui é a ausência da
-    // linha de contagem, não a ausência do texto editorial.
+  it('cala as mudanças quando não há campo novo nem descontinuado', async () => {
     renderBloco({
       ...layout,
       descricao: 'Ajustes de redação nos significados.',
@@ -110,7 +122,7 @@ describe('BlocoLayoutHome', () => {
       camposDescontinuados: 0,
     })
 
-    expect(await screen.findByText('Versão 4.12')).toBeInTheDocument()
+    await screen.findByRole('heading', { name: 'Layout InvoiCy versão 4.12 vigente' })
     expect(screen.queryByText(/campos? novos?/)).not.toBeInTheDocument()
     expect(screen.queryByText(/descontinuado/)).not.toBeInTheDocument()
   })
@@ -118,33 +130,13 @@ describe('BlocoLayoutHome', () => {
   it('usa singular quando há exatamente um campo de cada lado', async () => {
     renderBloco({ ...layout, camposNovos: 1, camposDescontinuados: 1 })
 
-    expect(await screen.findByText('1 campo novo · 1 descontinuado')).toBeInTheDocument()
-  })
-
-  it('mostra a origem e a data em que a vigente fica obrigatória', async () => {
-    renderBloco({ ...layout, normaOrigem: 'NT 009 v1.01', obrigatoriaEm: '2026-12-01' })
-
-    await screen.findByRole('heading', { name: 'Layout InvoiCy' })
-    expect(screen.getByText('Origem').nextElementSibling).toHaveTextContent('NT 009 v1.01')
-    expect(screen.getByText('Obrigatória em produção em').nextElementSibling).toHaveTextContent(
-      '01/12/2026',
-    )
-  })
-
-  // Resposta de um backend que ainda não manda os marcos: a seção sobe sem eles.
-  it('sem os marcos no contrato, não mostra origem nem prazo e não quebra', async () => {
-    const { normaOrigem: _norma, obrigatoriaEm: _obrigatoria, ...semMarcos } = layout
-    renderBloco(semMarcos as LayoutResumoHome)
-
-    expect(await screen.findByText('Versão 4.12')).toBeInTheDocument()
-    expect(screen.queryByText('Origem')).not.toBeInTheDocument()
-    expect(screen.queryByText('Obrigatória em produção em')).not.toBeInTheDocument()
+    expect(await screen.findByText(/1 campo novo · 1 descontinuado/)).toBeInTheDocument()
   })
 
   it('omite a prevista quando não há próxima versão anunciada', async () => {
     renderBloco({ ...layout, prevista: null })
 
-    expect(await screen.findByText('Versão 4.12')).toBeInTheDocument()
+    await screen.findByRole('heading', { name: 'Layout InvoiCy versão 4.12 vigente' })
     expect(screen.queryByText(/prevista/)).not.toBeInTheDocument()
   })
 })

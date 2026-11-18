@@ -115,6 +115,8 @@ function renderComRouter(versoes: VersaoProvedorResumo[]) {
         provedorSlug={PROVEDOR_SLUG}
         provedorNome="Prefeitura Exemplo"
         versoes={versoes}
+        avisosDoProvedor={[]}
+        aba="campos"
       />
     ),
   })
@@ -145,7 +147,7 @@ beforeEach(() => {
 })
 
 describe('ProvedorIndexConteudo (rota /provedores/{slug})', () => {
-  it('mostra campos, erros e exemplos direto, sem escolha de versão', async () => {
+  it('mostra o conteúdo da aba direto, sem escolha de versão', async () => {
     const { handler } = handlerVersoesRegistrandoPedidos()
     server.use(handler)
 
@@ -154,8 +156,6 @@ describe('ProvedorIndexConteudo (rota /provedores/{slug})', () => {
     expect(
       await screen.findByRole('heading', { level: 2, name: 'Campos e mapeamento' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 2, name: 'Exemplos' })).toBeInTheDocument()
-    expect(screen.getAllByText(/E1235/).length).toBeGreaterThan(0)
     expect(screen.queryByText(/Escolha uma versão/)).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Versão v1/ })).not.toBeInTheDocument()
   })

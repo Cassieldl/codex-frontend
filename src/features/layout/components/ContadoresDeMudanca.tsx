@@ -19,7 +19,7 @@ export function ContadoresDeMudanca({ contadores }: ContadoresDeMudancaProps) {
   if (contadores.length === 0) return null
 
   return (
-    <ul className="flex flex-wrap gap-2">
+    <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {contadores.map(({ chave, quantidade, camposAfetados }) => {
         const { singular, plural } = ROTULO_DO_CONTADOR[chave]
 
@@ -27,15 +27,17 @@ export function ContadoresDeMudanca({ contadores }: ContadoresDeMudancaProps) {
           <li
             key={chave}
             data-contador={chave}
-            className="inline-flex items-baseline gap-1.5 rounded-[var(--radius-control)] border border-line bg-surface-hover px-3 py-1"
+            className="flex flex-col gap-0.5 rounded-xl border border-line bg-white px-5 py-4"
           >
-            <strong className="text-card-titulo font-bold text-ink tabular-nums">
+            <strong className="text-titulo leading-none font-extrabold text-primary tabular-nums">
               {quantidade}
             </strong>
-            <span className="text-xs text-muted">{quantidade === 1 ? singular : plural}</span>
+            <span className="text-sm font-bold text-primary">
+              {quantidade === 1 ? singular : plural}
+            </span>
             {camposAfetados !== null && (
               <span data-campos-afetados="" className="text-xs text-muted tabular-nums">
-                · {camposAfetados} {camposAfetados === 1 ? 'campo' : 'campos'}
+                {camposAfetados} {camposAfetados === 1 ? 'campo' : 'campos'}
               </span>
             )}
           </li>

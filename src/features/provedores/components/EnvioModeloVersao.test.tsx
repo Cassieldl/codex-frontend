@@ -7,7 +7,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -151,7 +151,14 @@ function renderPagina() {
   const rota = createRoute({
     getParentRoute: () => rootRoute,
     path: CAMINHO,
-    component: () => <VersaoProvedorPage provedorSlug={PROVEDOR_SLUG} versaoSlug={VERSAO_SLUG} />,
+    component: () => (
+      <VersaoProvedorPage
+        provedorSlug={PROVEDOR_SLUG}
+        versaoSlug={VERSAO_SLUG}
+        aba="envio"
+        avisosDoProvedor={[]}
+      />
+    ),
   })
   const router = createRouter({
     routeTree: rootRoute.addChildren([rota]),
@@ -401,10 +408,10 @@ describe('EnvioModeloVersao: cenário do tomador', () => {
 })
 
 describe('EnvioModeloVersao: destino da tag', () => {
-  it('a tag do campo leva à linha dele na tabela da versão, destacada', async () => {
-    const usuario = userEvent.setup()
+  // A âncora vale na raiz do provedor: a moldura troca para a aba Campos (provedor-layout.test).
+  it('a tag do campo aponta para a linha dele na tabela', async () => {
     server.use(handlerDoEnvio().handler)
-    const { container } = renderPagina()
+    renderPagina()
 
     const regiao = await screen.findByRole('region', {
       name: 'Texto do envio modelo mínimo em XML (SOAP)',
@@ -413,17 +420,6 @@ describe('EnvioModeloVersao: destino da tag', () => {
     expect(link).toHaveAttribute('href', '#campo-servico-discriminacao')
     // Tag sem campo na tabela fica texto.
     expect(within(regiao).queryByRole('link', { name: /^Servico/ })).not.toBeInTheDocument()
-
-    await usuario.click(link)
-
-    await waitFor(() =>
-      expect(container.querySelector('#campo-servico-discriminacao')).toHaveClass(
-        'bg-highlight-anchor',
-      ),
-    )
-    expect(container.querySelector('#campo-servico-codigo-cnae')).not.toHaveClass(
-      'bg-highlight-anchor',
-    )
   })
 
   it('campos sem posição aparecem num aviso, cada um levando à linha da tabela', async () => {
@@ -496,8 +492,6 @@ describe('EnvioModeloVersao: estados', () => {
     expect(
       await screen.findByRole('region', { name: 'Texto do envio modelo mínimo em XML (SOAP)' }),
     ).toBeInTheDocument()
-    // A falha ficou na seção: a tabela da versão continuou de pé.
-    expect(screen.getByRole('heading', { level: 2, name: 'Campos e mapeamento' })).toBeVisible()
   })
 
   it('ESTRUTURA_INDISPONIVEL avisa na seção, sem tentar de novo e sem derrubar a página', async () => {
@@ -519,7 +513,6 @@ describe('EnvioModeloVersao: estados', () => {
     ).toBeInTheDocument()
     expect(within(secao).queryByRole('button', { name: /tentar novamente/i })).toBeNull()
     expect(within(secao).queryByRole('radiogroup')).toBeNull()
-    expect(screen.getByRole('heading', { level: 2, name: 'Campos e mapeamento' })).toBeVisible()
     expect(tentativas).toBe(1)
   })
 })

@@ -11,6 +11,8 @@ export interface MarcosDaVersaoProps {
   marcos: Partial<MarcosDaVersaoLayout>
   /** Injetável para o teste não depender do relógio. */
   hoje?: Date
+  /** Escura: faixa de destaque com o prazo à esquerda. Clara: cartão simples. */
+  superficie?: 'clara' | 'escura'
   className?: string
 }
 
@@ -26,13 +28,13 @@ function entradasDaLinha({ marcos, posicaoDeHoje }: LinhaDoTempoDaVersao): Entra
  * Trecho entre duas entradas: cheio quando o tempo até a entrada seguinte já passou. Vertical em
  * tela estreita, onde os rótulos lado a lado se sobrepõem.
  */
-function Trilho({ cheio }: { cheio: boolean }) {
+function Trilho({ cheio, escura }: { cheio: boolean; escura: boolean }) {
   return (
     <li
       aria-hidden="true"
       className={clsx(
         'ml-[5px] h-4 w-0.5 sm:mt-[5px] sm:ml-0 sm:h-0.5 sm:w-auto sm:min-w-6 sm:flex-1 sm:self-start',
-        cheio ? 'bg-primary-medium' : 'bg-border',
+        cheio ? (escura ? 'bg-accent' : 'bg-primary-medium') : escura ? 'bg-white/40' : 'bg-border',
       )}
     />
   )
@@ -42,33 +44,48 @@ function Trilho({ cheio }: { cheio: boolean }) {
 const CLASSE_DA_ENTRADA =
   'flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 sm:flex-col sm:flex-nowrap sm:items-start sm:gap-1'
 
-function ItemDoMarco({ marco }: { marco: MarcoDaVersao }) {
+function ItemDoMarco({ marco, escura }: { marco: MarcoDaVersao; escura: boolean }) {
   return (
     <li data-marco={marco.chave} className={CLASSE_DA_ENTRADA}>
       <span
         aria-hidden="true"
         className={clsx(
-          'size-3 shrink-0 rounded-full border-2 border-primary-medium',
-          marco.passou ? 'bg-primary-medium' : 'bg-white',
+          'size-3 shrink-0 rounded-full border-2',
+          escura ? 'border-white' : 'border-primary-medium',
+          marco.passou
+            ? escura
+              ? 'bg-white'
+              : 'bg-primary-medium'
+            : escura
+              ? 'bg-primary'
+              : 'bg-white',
         )}
       />
-      <span className="text-xs text-muted">{marco.rotulo}</span>
-      <time dateTime={marco.dataIso} className="text-sm font-semibold text-ink tabular-nums">
+      <span className={clsx('text-xs', escura ? 'text-white' : 'text-muted')}>{marco.rotulo}</span>
+      <time
+        dateTime={marco.dataIso}
+        className={clsx('text-sm font-semibold tabular-nums', escura ? 'text-white' : 'text-ink')}
+      >
         {marco.texto}
       </time>
     </li>
   )
 }
 
-function ItemDeHoje({ hoje }: { hoje: Date }) {
+function ItemDeHoje({ hoje, escura }: { hoje: Date; escura: boolean }) {
   return (
     <li aria-current="date" className={CLASSE_DA_ENTRADA}>
       <span
         aria-hidden="true"
         className="size-3 shrink-0 rounded-full bg-accent ring-2 ring-white"
       />
-      <span className="text-xs font-semibold text-ink">Hoje</span>
-      <time dateTime={format(hoje, 'yyyy-MM-dd')} className="text-xs text-muted tabular-nums">
+      <span className={clsx('text-xs font-semibold', escura ? 'text-accent' : 'text-ink')}>
+        Hoje
+      </span>
+      <time
+        dateTime={format(hoje, 'yyyy-MM-dd')}
+        className={clsx('text-xs tabular-nums', escura ? 'text-white' : 'text-muted')}
+      >
         {format(hoje, 'dd/MM/yyyy')}
       </time>
     </li>
@@ -84,24 +101,48 @@ export function MarcosDaVersao({
   versaoRotulo,
   marcos,
   hoje = new Date(),
+  superficie = 'clara',
   className,
 }: MarcosDaVersaoProps) {
+  const escura = superficie === 'escura'
   const linhaDoTempo = montarLinhaDoTempo(marcos, hoje)
   const normaOrigem = marcos.normaOrigem?.trim() || null
 
   if (!linhaDoTempo && !normaOrigem) return null
 
   const versao = formatarVersaoLayout(versaoRotulo)
+  const prazo = linhaDoTempo?.marcos.find((marco) => marco.chave === 'obrigatoriedade')
 
   return (
     <section
       aria-label={`Origem e prazos da ${versao}`}
       className={clsx(
-        'flex flex-col gap-4 rounded-[var(--radius-card)] border border-line bg-white px-5 py-4',
+        escura
+          ? 'grid gap-6 rounded-[var(--radius-card)] bg-primary px-8 py-7 text-white lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-center'
+          : 'flex flex-col gap-4 rounded-[var(--radius-card)] border border-line bg-white px-5 py-4',
         className,
       )}
     >
-      {normaOrigem && (
+      {escura && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-xs font-bold tracking-wider text-accent uppercase">
+            {versao} · vigente
+          </p>
+          {prazo && (
+            <p className="text-subtitulo leading-tight font-extrabold">
+              {prazo.passou ? 'Obrigatória em produção desde ' : 'Obrigatória em produção em '}
+              {prazo.texto}
+            </p>
+          )}
+          {normaOrigem && (
+            <p className="text-sm">
+              Origem <strong data-norma-origem="">{normaOrigem}</strong>
+            </p>
+          )}
+        </div>
+      )}
+
+      {!escura && normaOrigem && (
         <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
           <span className="text-muted">Origem:</span>
           <strong data-norma-origem="" className="text-card-titulo font-semibold text-ink">
@@ -117,11 +158,13 @@ export function MarcosDaVersao({
         >
           {entradasDaLinha(linhaDoTempo).map((entrada, indice) => (
             <Fragment key={entrada.tipo === 'hoje' ? 'hoje' : entrada.marco.chave}>
-              {indice > 0 && <Trilho cheio={entrada.tipo === 'hoje' || entrada.marco.passou} />}
+              {indice > 0 && (
+                <Trilho cheio={entrada.tipo === 'hoje' || entrada.marco.passou} escura={escura} />
+              )}
               {entrada.tipo === 'hoje' ? (
-                <ItemDeHoje hoje={hoje} />
+                <ItemDeHoje hoje={hoje} escura={escura} />
               ) : (
-                <ItemDoMarco marco={entrada.marco} />
+                <ItemDoMarco marco={entrada.marco} escura={escura} />
               )}
             </Fragment>
           ))}

@@ -3,6 +3,8 @@ import clsx from 'clsx'
 
 export interface AbaNavegavel {
   rotulo: string
+  /** Quantidade ao lado do rótulo (erros, campos). */
+  contador?: number
   to: string
   params?: Record<string, string>
   /**
@@ -45,13 +47,23 @@ export function AbasNavegaveis({ abas, ariaLabel, className }: AbasNavegaveisPro
               activeOptions={{ exact: true }}
               aria-current={aba.ativa ? 'page' : undefined}
               className={clsx(
-                'inline-flex items-center whitespace-nowrap border-b-[3px] px-3 py-2 text-sm transition-shadow duration-150',
+                'inline-flex items-center gap-2 border-b-[3px] px-3 py-2 text-sm whitespace-nowrap transition-shadow duration-150',
                 aba.ativa
                   ? 'border-accent-hover font-semibold text-ink'
                   : 'border-transparent font-normal text-muted hover:shadow-hover',
               )}
             >
               {aba.rotulo}
+              {aba.contador !== undefined && (
+                <span
+                  className={clsx(
+                    'rounded-[var(--radius-pill)] px-2 py-0.5 text-xs font-bold tabular-nums',
+                    aba.ativa ? 'bg-primary text-white' : 'bg-alert-info text-primary-medium',
+                  )}
+                >
+                  {aba.contador}
+                </span>
+              )}
             </Link>
           </li>
         ))}

@@ -70,10 +70,10 @@ describe('ArtigosRecentesHome', () => {
     renderArtigos(artigos)
 
     expect(
-      await screen.findByRole('link', { name: 'Identificar a versão pelo retorno' }),
+      await screen.findByRole('link', { name: /Identificar a versão pelo retorno/ }),
     ).toHaveAttribute('href', '/artigos/identificar-a-versao-pelo-retorno')
     expect(
-      screen.getByRole('link', { name: 'Campo ausente quer dizer “não se aplica”' }),
+      screen.getByRole('link', { name: /Campo ausente quer dizer “não se aplica”/ }),
     ).toBeInTheDocument()
   })
 
@@ -81,10 +81,10 @@ describe('ArtigosRecentesHome', () => {
     renderArtigos([])
 
     expect(await screen.findByRole('heading', { name: 'Artigos' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver o índice completo' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Ver todos os artigos' })).toHaveAttribute(
       'href',
       '/artigos?pagina=1',
     )
-    expect(screen.queryByRole('article')).not.toBeInTheDocument()
+    expect(screen.queryByRole('list')).not.toBeInTheDocument()
   })
 })

@@ -146,9 +146,9 @@ describe('LayoutIndicePage', () => {
     // A origem fica só na linha do tempo, acima do card.
     expect(secao.querySelector('[data-origem-da-versao]')).toBeNull()
     expect(screen.getAllByText('NT 009 v1.01')).toHaveLength(1)
-    expect(secao.querySelector('[data-contador="novos"]')).toHaveTextContent('1novo· 44 campos')
+    expect(secao.querySelector('[data-contador="novos"]')).toHaveTextContent('1novo44 campos')
     expect(secao.querySelector('[data-contador="descontinuados"]')).toHaveTextContent(
-      '1saiu· 20 campos',
+      '1saiu20 campos',
     )
     expect(await within(secao).findByRole('link', { name: 'nroDUIMP' })).toHaveAttribute(
       'href',

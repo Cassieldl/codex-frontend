@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-router'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   COMUNICADO_CRITICO_DO_PROVEDOR,
   COMUNICADO_DE_VERSAO,
@@ -55,6 +55,8 @@ const provedorComVersao204 = {
 interface OpcoesRenderPagina {
   provedorSlug: string
   caminhoAtual: string
+  /** Endereço com que o histórico começa, quando difere do caminho servido (ex.: com âncora). */
+  entradaInicial?: string
   /**
    * Deixa a política de retentativa do próprio hook valer. O padrão do harness
    * é `retry: false`, que é o que os testes de conteúdo querem — mas ele
@@ -68,6 +70,7 @@ function renderPagina({
   provedorSlug,
   caminhoAtual,
   usarRetentativaDoHook = false,
+  entradaInicial = caminhoAtual,
 }: OpcoesRenderPagina) {
   const queryClient = new QueryClient({
     defaultOptions: usarRetentativaDoHook
@@ -95,7 +98,7 @@ function renderPagina({
   const routeTree = rootRoute.addChildren([rotaLayout])
   const router = createRouter({
     routeTree,
-    history: createMemoryHistory({ initialEntries: [caminhoAtual] }),
+    history: createMemoryHistory({ initialEntries: [entradaInicial] }),
   })
 
   const utils = render(
@@ -104,7 +107,7 @@ function renderPagina({
     </QueryClientProvider>,
   )
 
-  return { ...utils, navegar }
+  return { ...utils, navegar, router }
 }
 
 function handlerProvedor(slugRequisitado: string, provedor: object) {
@@ -323,35 +326,16 @@ describe('ProvedorLayoutPage — comunicados do contexto', () => {
     expect(chamadas[0].search).toBe('?provedor=prefeitura-exemplo')
   })
 
-  it('o comunicado vem antes dos avisos do provedor, e não há barra de versões', async () => {
-    const provedorComAviso = {
-      ...provedorFake,
-      avisos: [
-        {
-          id: 9,
-          escopo: 'provedor',
-          severidade: 'Alerta',
-          titulo: 'Aviso permanente',
-          corpo: 'Texto do aviso.',
-          vigenciaInicio: '2026-09-01',
-          camposAfetados: [],
-        },
-      ],
-    }
+  it('mostra o comunicado sem barra de versões', async () => {
     const { handler } = handlerComunicadosRegistrandoChamadas([COMUNICADO_CRITICO_DO_PROVEDOR])
-    server.use(handlerProvedor('prefeitura-exemplo', provedorComAviso), handler)
+    server.use(handlerProvedor('prefeitura-exemplo', provedorFake), handler)
 
     renderPagina({
       provedorSlug: 'prefeitura-exemplo',
       caminhoAtual: '/provedores/prefeitura-exemplo',
     })
 
-    const comunicados = await screen.findByRole('region', { name: 'Comunicados ativos' })
-    const avisos = await screen.findByRole('region', { name: 'Avisos do provedor' })
-
-    expect(
-      comunicados.compareDocumentPosition(avisos) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    expect(await screen.findByRole('region', { name: 'Comunicados ativos' })).toBeInTheDocument()
     expect(
       screen.queryByRole('navigation', { name: 'Versões do provedor' }),
     ).not.toBeInTheDocument()
@@ -410,47 +394,33 @@ describe('ProvedorLayoutPage — comunicados do contexto', () => {
  * Os avisos da busca levam a `/provedores/{slug}#avisos`. O alvo só monta depois que P3 responde,
  * então o navegador não rola sozinho: a página rola quando o conteúdo fica pronto.
  */
-describe('ProvedorLayoutPage: âncora #avisos', () => {
-  // O jsdom não implementa `scrollIntoView`: cada teste instala o seu e este bloco devolve o original.
-  const descritorOriginal = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView')
-
-  afterEach(() => {
-    window.location.hash = ''
-    if (descritorOriginal) {
-      Object.defineProperty(Element.prototype, 'scrollIntoView', descritorOriginal)
-    } else {
-      Reflect.deleteProperty(Element.prototype, 'scrollIntoView')
-    }
-  })
-
-  it('rola até a área de avisos quando a URL chega com #avisos', async () => {
-    const rolar = vi.fn()
-    Element.prototype.scrollIntoView = rolar
-    window.location.hash = '#avisos'
+describe('ProvedorLayoutPage: âncora de antes das abas', () => {
+  it('âncora de campo na raiz do provedor troca para a aba Campos, mantendo a âncora', async () => {
     server.use(handlerProvedor('prefeitura-exemplo', provedorFake))
 
-    renderPagina({
+    const { router } = renderPagina({
       provedorSlug: 'prefeitura-exemplo',
       caminhoAtual: '/provedores/prefeitura-exemplo',
+      entradaInicial: '/provedores/prefeitura-exemplo#campo-servico-discriminacao',
+    })
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/provedores/prefeitura-exemplo/campos'),
+    )
+    expect(router.state.location.hash).toBe('campo-servico-discriminacao')
+  })
+
+  it('âncora que não é de aba nenhuma não tira o leitor do lugar', async () => {
+    server.use(handlerProvedor('prefeitura-exemplo', provedorFake))
+
+    const { router } = renderPagina({
+      provedorSlug: 'prefeitura-exemplo',
+      caminhoAtual: '/provedores/prefeitura-exemplo',
+      entradaInicial: '/provedores/prefeitura-exemplo#aviso-9',
     })
 
     await screen.findByRole('heading', { level: 1, name: 'Prefeitura de Exemplo' })
-    await waitFor(() => expect(rolar).toHaveBeenCalledTimes(1))
-    expect(rolar.mock.contexts[0]).toBe(document.getElementById('avisos'))
-  })
-
-  it('sem a âncora, não rola', async () => {
-    const rolar = vi.fn()
-    Element.prototype.scrollIntoView = rolar
-    server.use(handlerProvedor('prefeitura-exemplo', provedorFake))
-
-    renderPagina({
-      provedorSlug: 'prefeitura-exemplo',
-      caminhoAtual: '/provedores/prefeitura-exemplo',
-    })
-
-    await screen.findByRole('heading', { level: 1, name: 'Prefeitura de Exemplo' })
-    expect(rolar).not.toHaveBeenCalled()
+    expect(router.state.location.pathname).toBe('/provedores/prefeitura-exemplo')
   })
 })
 

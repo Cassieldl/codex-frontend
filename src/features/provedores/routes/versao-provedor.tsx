@@ -1,5 +1,8 @@
+import { FileX } from 'lucide-react'
+import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { AvisosProvedor } from '../components/AvisosProvedor'
 import { AvisosVersao } from '../components/AvisosVersao'
 import { CamposDaVersao } from '../components/CamposDaVersao'
 import { EnvioModeloVersao } from '../components/EnvioModeloVersao'
@@ -9,15 +12,25 @@ import {
   type VarianteProvedorIndisponivel,
 } from '../components/EstadoProvedorIndisponivel'
 import { ExemplosVersao } from '../components/ExemplosVersao'
+import { LateralDaAbaErros } from '../components/LateralDaAbaErros'
+import { LateralDaNatureza } from '../components/LateralDaNatureza'
+import { LateralDoEnvioModelo } from '../components/LateralDoEnvioModelo'
 import { NaturezasOperacao } from '../components/NaturezasOperacao'
 import { ErroVersaoProvedorHttp, useVersaoProvedor } from '../hooks/useVersaoProvedor'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
+import { extrairNumeroDaVersao } from '../../../utils/versaoDoLayout'
+import type { AvisoPublico } from '../types/provedor'
+import type { AbaProvedor } from '../utils/abasDoProvedor'
+import { ID_AREA_AVISOS, useRolarParaAreaDeAvisos } from '../utils/avisoAncora'
 import { caminhoDoProvedor } from '../utils/caminhoDoProvedor'
 import { useCampoDestacadoPorAncora } from '../utils/destaqueAncora'
 
 export interface VersaoProvedorPageProps {
   provedorSlug: string
   versaoSlug: string
+  aba: AbaProvedor
+  /** Avisos do provedor (não da versão): vêm de P3 e vão para a lateral da aba Erros. */
+  avisosDoProvedor: AvisoPublico[]
 }
 
 /**
@@ -33,7 +46,7 @@ const VARIANTE_POR_TIPO_DE_ERRO: Record<string, VarianteProvedorIndisponivel | u
 }
 
 /**
- * Conteúdo da versão publicada na página `/provedores/{slug}` (§7.6.2-§7.6.4).
+ * Conteúdo de uma aba da página do provedor (Erros, Campos, Natureza da operação ou Envio modelo).
  *
  * Mora aqui, e não no arquivo de rota, pelo mesmo motivo que `provedor-layout`:
  * assim é testável sem a árvore de rotas gerada. Enquanto esteve dentro da
@@ -41,7 +54,12 @@ const VARIANTE_POR_TIPO_DE_ERRO: Record<string, VarianteProvedorIndisponivel | u
  * (`nao_encontrado`, `limite_excedido`) passaram a cair no estado genérico sem
  * que nada acusasse.
  */
-export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorPageProps) {
+export function VersaoProvedorPage({
+  provedorSlug,
+  versaoSlug,
+  aba,
+  avisosDoProvedor,
+}: VersaoProvedorPageProps) {
   const {
     data: versaoPagina,
     isLoading,
@@ -50,6 +68,8 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
     refetch,
   } = useVersaoProvedor(provedorSlug, versaoSlug)
   const campoDestacado = useCampoDestacadoPorAncora()
+  // A lateral de avisos só existe na aba Erros, e só depois que o conteúdo chega.
+  useRolarParaAreaDeAvisos(aba === 'erros' && versaoPagina !== undefined)
 
   useTituloDaPagina(!isError && versaoPagina ? versaoPagina.provedor.nome : null)
 
@@ -81,17 +101,42 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
       ? ''
       : `${window.location.origin}${caminhoDoProvedor(provedorSlug)}`
 
-  // Ordem da página: o que se consulta rápido primeiro, a referência longa (Campos) depois. A
-  // introdução e a versão do layout ficam no topo da moldura, junto do nome do provedor.
-  return (
-    <div className="flex flex-col gap-8">
-      <AvisosVersao avisos={versaoPagina.avisos} />
+  if (aba === 'erros') {
+    return (
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        {versaoPagina.errosResumo.itens.length > 0 ? (
+          <ErrosConhecidos
+            resumo={versaoPagina.errosResumo}
+            provedorSlug={provedorSlug}
+            camposPorGrupo={versaoPagina.camposPorGrupo}
+          />
+        ) : (
+          <EmptyState
+            message="Nenhum erro conhecido publicado para este provedor."
+            icon={<FileX className="size-10" />}
+          />
+        )}
 
-      <ErrosConhecidos
-        resumo={versaoPagina.errosResumo}
-        camposPorGrupo={versaoPagina.camposPorGrupo}
-      />
+        <aside
+          id={ID_AREA_AVISOS}
+          aria-label="Avisos e atalhos"
+          className="flex scroll-mt-24 flex-col gap-4"
+        >
+          <AvisosProvedor nomeProvedor={versaoPagina.provedor.nome} avisos={avisosDoProvedor} />
+          <AvisosVersao avisos={versaoPagina.avisos} />
+          <LateralDaAbaErros
+            provedorSlug={provedorSlug}
+            provedorNome={versaoPagina.provedor.nome}
+            versaoRotulo={`versão ${extrairNumeroDaVersao(versaoPagina.versao.rotulo)}`}
+            camposPorGrupo={versaoPagina.camposPorGrupo}
+          />
+        </aside>
+      </div>
+    )
+  }
 
+  if (aba === 'campos') {
+    return (
       <CamposDaVersao
         provedorNome={versaoPagina.provedor.nome}
         versaoRotulo={versaoPagina.versao.rotulo}
@@ -103,22 +148,61 @@ export function VersaoProvedorPage({ provedorSlug, versaoSlug }: VersaoProvedorP
         campoDestacado={campoDestacado}
         naturezasOperacao={versaoPagina.naturezasOperacao}
       />
+    )
+  }
 
-      <NaturezasOperacao
-        naturezas={versaoPagina.naturezasOperacao}
-        camposPorGrupo={versaoPagina.camposPorGrupo}
-      />
+  if (aba === 'natureza') {
+    if (versaoPagina.naturezasOperacao.length === 0) {
+      return (
+        <EmptyState
+          message="Este provedor não tem tabela de natureza da operação publicada."
+          icon={<FileX className="size-10" />}
+        />
+      )
+    }
 
-      <EnvioModeloVersao
-        key={`${provedorSlug}/${versaoSlug}`}
-        provedorSlug={provedorSlug}
-        versaoSlug={versaoSlug}
-        provedorNome={versaoPagina.provedor.nome}
-        versaoRotulo={versaoPagina.versao.rotulo}
-        camposPorGrupo={versaoPagina.camposPorGrupo}
-      />
+    return (
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <NaturezasOperacao
+          naturezas={versaoPagina.naturezasOperacao}
+          camposPorGrupo={versaoPagina.camposPorGrupo}
+        />
+        <aside aria-label="Sobre a conversão" className="flex flex-col gap-4">
+          <LateralDaNatureza
+            provedorSlug={provedorSlug}
+            totalDeCodigos={versaoPagina.naturezasOperacao.length}
+            camposPorGrupo={versaoPagina.camposPorGrupo}
+          />
+        </aside>
+      </div>
+    )
+  }
 
-      <ExemplosVersao exemplos={versaoPagina.exemplos} provedorSlug={provedorSlug} />
+  return (
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="flex min-w-0 flex-col gap-8">
+        <EnvioModeloVersao
+          key={`${provedorSlug}/${versaoSlug}`}
+          provedorSlug={provedorSlug}
+          versaoSlug={versaoSlug}
+          provedorNome={versaoPagina.provedor.nome}
+          versaoRotulo={versaoPagina.versao.rotulo}
+          camposPorGrupo={versaoPagina.camposPorGrupo}
+        />
+
+        <ExemplosVersao exemplos={versaoPagina.exemplos} provedorSlug={provedorSlug} />
+      </div>
+
+      <aside aria-label="Antes de enviar" className="flex flex-col gap-4">
+        <LateralDoEnvioModelo
+          provedorSlug={provedorSlug}
+          totalDeAvisos={avisosDoProvedor.length + versaoPagina.avisos.length}
+          codigosDeNatureza={versaoPagina.naturezasOperacao.map(
+            (natureza) => natureza.codigoInvoicy,
+          )}
+          totalDeErros={versaoPagina.errosResumo.total}
+        />
+      </aside>
     </div>
   )
 }

@@ -30,12 +30,12 @@ const nacional: ProvedorHomeDto = {
   temComunicado: true,
 }
 
-function renderLista(categorias: CategoriaProvedoresHome[]) {
+function renderLista(categorias: CategoriaProvedoresHome[], filtro = '') {
   const rootRoute = createRootRoute({ component: Outlet })
   const rotaHome = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
-    component: () => <ListaProvedoresHome categorias={categorias} />,
+    component: () => <ListaProvedoresHome categorias={categorias} filtro={filtro} />,
   })
   const rotaProvedor = createRoute({
     getParentRoute: () => rootRoute,
@@ -65,7 +65,7 @@ describe('ListaProvedoresHome', () => {
   it('cada provedor é um link só, para a página dele, sem coluna nem link de versão', async () => {
     renderLista([{ categoria: 'Proprio', total: 1, provedores: [ipm] }])
 
-    expect(await screen.findByRole('link', { name: 'IPM Sistemas' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: /^IPM Sistemas/ })).toHaveAttribute(
       'href',
       '/provedores/ipm',
     )
@@ -133,23 +133,25 @@ describe('ListaProvedoresHome — data de verificação', () => {
   })
 })
 
-// jsdom não faz layout: a medida em 390 px fica com o navegador. Aqui se trava a regra que a
-// produz, porque o nome que encolhe antes de a linha quebrar vira "Emiss..." no celular.
-describe('ListaProvedoresHome: nome do provedor no celular', () => {
-  it('ocupa a linha inteira abaixo de sm e só trunca a partir de sm', async () => {
-    const emissorNacional: ProvedorHomeDto = {
-      ...nacional,
-      slug: 'emissor-nacional',
-      nome: 'Emissor Nacional',
-    }
-    renderLista([{ categoria: 'Nacional', total: 1, provedores: [emissorNacional] }])
+describe('ListaProvedoresHome: filtro por nome', () => {
+  it('esconde o grupo que fica vazio e conta só os que sobraram', async () => {
+    renderLista(
+      [
+        { categoria: 'Proprio', total: 1, provedores: [ipm] },
+        { categoria: 'Nacional', total: 1, provedores: [nacional] },
+      ],
+      'ipm',
+    )
 
-    const nome = await screen.findByRole('link', { name: 'Emissor Nacional' })
-    const classes = nome.className.split(/\s+/)
+    expect(await screen.findByRole('link', { name: /^IPM Sistemas/ })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Nacional' })).not.toBeInTheDocument()
+  })
 
-    expect(classes).toContain('basis-full')
-    expect(classes).not.toContain('truncate')
-    expect(classes).not.toContain('flex-1')
-    expect(classes).toContain('sm:truncate')
+  it('diz o que não casou em vez de ficar em branco', async () => {
+    renderLista([{ categoria: 'Proprio', total: 1, provedores: [ipm] }], 'betha')
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Nenhum provedor com “betha” no nome.',
+    )
   })
 })

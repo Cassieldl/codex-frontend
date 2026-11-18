@@ -7,11 +7,13 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
+import type { AvisoPublico } from '../types/provedor'
+import type { AbaProvedor } from '../utils/abasDoProvedor'
 import { VersaoProvedorPage } from './versao-provedor'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -26,9 +28,15 @@ interface OpcoesRender {
    * que serve aos testes de conteúdo mas **mascara** o que o hook decide.
    */
   usarRetentativaDoHook?: boolean
+  aba?: AbaProvedor
+  avisosDoProvedor?: AvisoPublico[]
 }
 
-function renderPagina({ usarRetentativaDoHook = false }: OpcoesRender = {}) {
+function renderPagina({
+  usarRetentativaDoHook = false,
+  aba = 'campos',
+  avisosDoProvedor = [],
+}: OpcoesRender = {}) {
   const queryClient = new QueryClient({
     defaultOptions: usarRetentativaDoHook
       ? { queries: { retryDelay: 0 } }
@@ -39,7 +47,14 @@ function renderPagina({ usarRetentativaDoHook = false }: OpcoesRender = {}) {
   const rota = createRoute({
     getParentRoute: () => rootRoute,
     path: CAMINHO,
-    component: () => <VersaoProvedorPage provedorSlug={PROVEDOR_SLUG} versaoSlug={VERSAO_SLUG} />,
+    component: () => (
+      <VersaoProvedorPage
+        provedorSlug={PROVEDOR_SLUG}
+        versaoSlug={VERSAO_SLUG}
+        aba={aba}
+        avisosDoProvedor={avisosDoProvedor}
+      />
+    ),
   })
   const router = createRouter({
     routeTree: rootRoute.addChildren([rota]),
@@ -271,11 +286,6 @@ describe('VersaoProvedorPage — campos da versão', () => {
     server.use(handlerStatus(200, RESPOSTA_DA_VERSAO))
   })
 
-  function linksDaListaDeErros() {
-    const secao = document.getElementById('erros-conhecidos')!
-    return within(secao).getAllByRole('link')
-  }
-
   it('monta a seção de campos com o primeiro bloco aberto', async () => {
     renderPagina()
 
@@ -285,18 +295,16 @@ describe('VersaoProvedorPage — campos da versão', () => {
     expect(screen.getByRole('button', { name: 'PaiPreServico' })).toBeInTheDocument()
   })
 
-  it('o contador de rejeições abre o modal do campo e a lista de erros continua inteira', async () => {
+  it('o contador de rejeições abre o modal do campo', async () => {
     const usuario = userEvent.setup()
     renderPagina()
     await screen.findByRole('heading', { level: 2, name: 'Campos e mapeamento' })
-    expect(linksDaListaDeErros()).toHaveLength(3)
 
     await usuario.click(
       screen.getByRole('button', { name: 'Ver as 2 rejeições registradas no campo PaiPreServico' }),
     )
 
     expect(await screen.findByRole('dialog', { name: 'PaiPreServico' })).toBeInTheDocument()
-    expect(linksDaListaDeErros()).toHaveLength(3)
     expect(screen.queryByRole('button', { name: /Remover o filtro do campo/ })).toBeNull()
   })
 })
@@ -325,30 +333,51 @@ describe('VersaoProvedorPage: seções da versão', () => {
   it('mostra o de-para da natureza da operação que a API entrega', async () => {
     server.use(handlerStatus(200, RESPOSTA_COM_NATUREZA))
 
-    renderPagina()
+    renderPagina({ aba: 'natureza' })
 
     const secao = await screen.findByRole('region', { name: 'Natureza da operação' })
     expect(within(secao).getByRole('cell', { name: 'Exportação de serviço' })).toBeInTheDocument()
   })
 
-  // Os erros sobem porque são consulta rápida; Campos, a referência longa, vem depois deles.
-  it('ordena erros conhecidos, campos, natureza da operação e envio modelo', async () => {
+  it('cada aba mostra só o próprio conteúdo', async () => {
     server.use(handlerStatus(200, RESPOSTA_COM_NATUREZA))
 
-    renderPagina()
+    renderPagina({ aba: 'erros' })
 
-    await screen.findByRole('region', { name: 'Natureza da operação' })
-    const titulos = screen
-      .getAllByRole('heading', { level: 2 })
-      .map((titulo) => titulo.textContent ?? '')
-      .filter((texto) => /^(Erros conhecidos|Campos|Natureza|Envio modelo)/.test(texto))
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Erros conhecidos (3)' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Campos e mapeamento' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Natureza da operação' })).not.toBeInTheDocument()
+  })
+})
 
-    expect(titulos).toEqual([
-      'Erros conhecidos (3)',
-      'Campos e mapeamento',
-      'Natureza da operação',
-      'Envio modelo',
-    ])
+describe('VersaoProvedorPage: lateral de avisos na aba Erros', () => {
+  const aviso: AvisoPublico = {
+    id: 9,
+    escopo: 'provedor',
+    severidade: 'Alerta',
+    titulo: 'Aviso permanente',
+    corpo: 'Texto do aviso.',
+    vigenciaInicio: '2026-09-01',
+    camposAfetados: [],
+  }
+
+  afterEach(() => {
+    window.location.hash = ''
+  })
+
+  it('rola até os avisos quando a URL chega com #avisos', async () => {
+    const rolar = vi.fn()
+    Element.prototype.scrollIntoView = rolar
+    window.location.hash = '#avisos'
+    server.use(handlerStatus(200, RESPOSTA_DA_VERSAO))
+
+    renderPagina({ aba: 'erros', avisosDoProvedor: [aviso] })
+
+    await screen.findByRole('region', { name: 'Avisos do provedor' })
+    await waitFor(() => expect(rolar).toHaveBeenCalledTimes(1))
+    expect(rolar.mock.contexts[0]).toBe(document.getElementById('avisos'))
   })
 })
 

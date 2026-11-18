@@ -1,5 +1,5 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
-import { ArrowRight, Clock, ExternalLink, LifeBuoy, Mail, Phone } from 'lucide-react'
+import { ArrowRight, ArrowUp, Clock, ExternalLink, Mail, Phone } from 'lucide-react'
 import { montarLinkSuporte, ROTULO_FALAR_COM_SUPORTE } from '../../utils/linkSuporte'
 import { CONTEUDO_RODAPE_CONSTANTE } from '../../utils/rodapeConteudoConstante'
 import { PontoDeMarca } from '../ui/PontoDeMarca'
@@ -73,8 +73,8 @@ function montarAcaoSuporteDeErro(codigoErro?: string): AcaoRodape {
 }
 
 /**
- * A faixa só aparece onde há um passo diferente do que a tela já oferece. Buscar não conta: o
- * campo está no cabeçalho de toda página pública.
+ * Passo específico só onde ele difere do que a tela já oferece; sem ele, vale a faixa de chamado.
+ * Buscar não conta: o campo está no cabeçalho de toda página pública.
  */
 function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
   switch (contexto.tipo) {
@@ -114,7 +114,7 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
       }
     case 'layout':
       return {
-        mensagem: 'Sabe o campo — falta saber como o seu provedor trata ele.',
+        mensagem: 'Sabe o campo, falta saber como o seu provedor trata ele.',
         acao: { rotulo: 'Ver os provedores', href: '/provedores' },
       }
     case 'layout-campo':
@@ -140,6 +140,16 @@ const CLASSE_ACAO_SECUNDARIA = `${CLASSE_ACAO_BASE} border border-white text-whi
 const CLASSE_LINK_RODAPE =
   'inline-flex items-center gap-2 text-sm text-white underline-offset-4 hover:underline'
 
+/** Laranja sobre o azul-profundo mede 5,66:1: passa como texto pequeno. */
+const CLASSE_TITULO_COLUNA = 'text-xs font-bold tracking-wider text-accent uppercase'
+
+const PAGINAS_DO_CODEX = [
+  { rotulo: 'Provedores', para: '/provedores' },
+  { rotulo: 'Layout InvoiCy', para: '/layout' },
+  { rotulo: 'Artigos', para: '/artigos' },
+  { rotulo: 'Como funciona', para: '/como-funciona' },
+] as const
+
 /** `mailto:` e âncora da própria página são `<a>`; o resto navega pelo roteador. */
 function AcaoDoRodape({ acao, classe }: { acao: AcaoRodape; classe: string }) {
   if (acao.href.startsWith('mailto:') || acao.href.startsWith('#')) {
@@ -159,8 +169,8 @@ function AcaoDoRodape({ acao, classe }: { acao: AcaoRodape; classe: string }) {
 }
 
 /**
- * Rodapé de toda página pública (nunca usado na área interna). Estrutura fixa: próximo passo
- * específico do contexto no topo; marca, atendimento e links da Migrate constantes embaixo.
+ * Rodapé de toda página pública (nunca usado na área interna). No topo, o próximo passo do
+ * contexto ou a faixa de chamado; embaixo, marca, páginas, atendimento e links da Migrate.
  */
 export function RodapeContextual({ contexto }: RodapeContextualProps) {
   const proximoPasso = obterProximoPasso(contexto)
@@ -170,8 +180,8 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
     <footer className="relative isolate bg-primary text-white">
       <PontosDeLuz />
 
-      {proximoPasso && (
-        <div className="border-b border-white/15">
+      <div className="border-b border-white/15">
+        {proximoPasso ? (
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 text-center sm:flex-row sm:text-left lg:px-8">
             <div className="flex flex-col items-center gap-2 sm:items-start">
               <Sobrelinha>Próximo passo</Sobrelinha>
@@ -191,19 +201,20 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
               </div>
             )}
           </div>
-        </div>
-      )}
+        ) : (
+          <FaixaDeChamado chamado={atendimento.chamado} />
+        )}
+      </div>
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr] lg:px-8">
-        <div className="flex flex-col gap-3 sm:col-span-2 lg:col-span-1">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <img src="/marca/logo-migrate-branco.svg" alt="Migrate" className="h-7 w-auto" />
             <span aria-hidden="true" className="h-6 w-px bg-white/40" />
             <span className="text-lg font-extrabold">Codex</span>
           </div>
           <p className="max-w-xs text-sm text-white">
-            Portal técnico de integração NFS-e: como cada provedor trata cada campo do Layout
-            InvoiCy.
+            Erros, campos e particularidades de cada provedor de NFS-e no Layout InvoiCy.
           </p>
           <p className="text-sm font-semibold italic">
             Evolua
@@ -213,18 +224,26 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
           </p>
         </div>
 
-        <div>
-          <h2 className="text-xs font-bold tracking-wider text-white uppercase">Atendimento</h2>
+        <nav aria-label="Páginas do Codex">
+          <h2 className={CLASSE_TITULO_COLUNA}>Codex</h2>
           <ul className="mt-4 flex flex-col gap-3">
-            <li>
-              <a
-                href={atendimento.telefoneHref}
-                className="inline-flex items-center gap-2 text-card-titulo font-bold text-white underline-offset-4 hover:underline"
-              >
-                <Phone className="size-4 text-accent" aria-hidden="true" />
-                {atendimento.telefone}
-              </a>
-            </li>
+            {PAGINAS_DO_CODEX.map((pagina) => (
+              <li key={pagina.para}>
+                <Link
+                  to={pagina.para}
+                  activeOptions={{ exact: true }}
+                  className={CLASSE_LINK_RODAPE}
+                >
+                  {pagina.rotulo}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div>
+          <h2 className={CLASSE_TITULO_COLUNA}>Atendimento</h2>
+          <ul className="mt-4 flex flex-col gap-3">
             <li>
               <a href={`mailto:${atendimento.emailSuporte}`} className={CLASSE_LINK_RODAPE}>
                 <Mail className="size-4 text-accent" aria-hidden="true" />
@@ -232,15 +251,9 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
               </a>
             </li>
             <li>
-              <a
-                href={atendimento.chamado.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={CLASSE_LINK_RODAPE}
-              >
-                <LifeBuoy className="size-4 text-accent" aria-hidden="true" />
-                {atendimento.chamado.rotulo}
-                <ExternalLink className="size-3.5" aria-hidden="true" />
+              <a href={atendimento.telefoneHref} className={CLASSE_LINK_RODAPE}>
+                <Phone className="size-4 text-accent" aria-hidden="true" />
+                {atendimento.telefone}
               </a>
             </li>
             <li className="inline-flex items-center gap-2 text-xs text-white">
@@ -251,7 +264,7 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
         </div>
 
         <nav aria-label="Links da Migrate">
-          <h2 className="text-xs font-bold tracking-wider text-white uppercase">Migrate</h2>
+          <h2 className={CLASSE_TITULO_COLUNA}>Migrate</h2>
           <ul className="mt-4 flex flex-col gap-3">
             {linksMigrate.map((link) => (
               <li key={link.href}>
@@ -269,6 +282,41 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
           </ul>
         </nav>
       </div>
+
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 border-t border-white/15 px-4 py-6 text-xs text-white lg:px-8">
+        <p>© {new Date().getFullYear()} Migrate</p>
+        {/* `#top` é tratado pelo navegador como o topo do documento, sem precisar de âncora. */}
+        <a
+          href="#top"
+          className="inline-flex items-center gap-1 font-semibold underline-offset-4 hover:underline"
+        >
+          Voltar ao topo
+          <ArrowUp className="size-3.5" aria-hidden="true" />
+        </a>
+      </div>
     </footer>
+  )
+}
+
+/** Faixa padrão: toda página sem passo específico termina oferecendo o chamado. */
+function FaixaDeChamado({ chamado }: { chamado: { rotulo: string; href: string } }) {
+  return (
+    <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-6 sm:flex-row sm:items-center lg:px-8">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-subtitulo font-extrabold">Não achou a resposta no Codex?</h2>
+        <p className="text-sm text-white">
+          Abra um chamado e mande o link da página em que você parou: o suporte começa dali.
+        </p>
+      </div>
+      <a
+        href={chamado.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={CLASSE_ACAO_PRINCIPAL}
+      >
+        {chamado.rotulo}
+        <ExternalLink className="size-4" aria-hidden="true" />
+      </a>
+    </div>
   )
 }

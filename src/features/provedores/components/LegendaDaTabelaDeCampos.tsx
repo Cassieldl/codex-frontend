@@ -2,9 +2,7 @@ import { TriangleAlert } from 'lucide-react'
 import { LegendaDeMarcas } from '../../../components/ui/LegendaDeMarcas'
 import type { ItemDaLegendaDeMarcas } from '../../../components/ui/LegendaDeMarcas'
 import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
-import { ORDEM_DA_OBRIGATORIEDADE, ROTULO_DA_OBRIGATORIEDADE } from '../utils/obrigatoriedade'
 import { CLASSE_DO_SELO_DE_REJEICOES } from './IndicadorErrosDoCampo'
-import { FormaDoMarcador } from './MarcadorObrigatoriedade'
 
 export interface LegendaDaTabelaDeCamposProps {
   /** Campos da versão com rejeição registrada; sem nenhum, a marca não aparece na legenda. */
@@ -21,15 +19,8 @@ function itensDaLegenda({
   camposComRejeicao,
   mostrarReformaTributaria,
 }: LegendaDaTabelaDeCamposProps): ItemDaLegendaDeMarcas[] {
-  const itens: ItemDaLegendaDeMarcas[] = ORDEM_DA_OBRIGATORIEDADE.map((estado) => ({
-    chave: estado,
-    marca: (
-      <span className="inline-flex size-2.5">
-        <FormaDoMarcador estado={estado} />
-      </span>
-    ),
-    significado: ROTULO_DA_OBRIGATORIEDADE[estado].toLowerCase(),
-  }))
+  // O uso do campo vem escrito na própria etiqueta: só as marcas sem texto entram aqui.
+  const itens: ItemDaLegendaDeMarcas[] = []
 
   if (camposComRejeicao > 0) {
     itens.push({
@@ -56,5 +47,8 @@ function itensDaLegenda({
 
 /** Legenda única das marcas da tabela de campos. */
 export function LegendaDaTabelaDeCampos(props: LegendaDaTabelaDeCamposProps) {
-  return <LegendaDeMarcas itens={itensDaLegenda(props)} />
+  const itens = itensDaLegenda(props)
+  if (itens.length === 0) return null
+
+  return <LegendaDeMarcas itens={itens} />
 }

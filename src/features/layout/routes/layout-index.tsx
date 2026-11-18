@@ -33,7 +33,7 @@ export function LayoutIndicePage() {
         className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
       >
         <div className="flex flex-col gap-2">
-          <h1 className="text-titulo font-bold text-ink">Layout InvoiCy</h1>
+          <h1 className="text-titulo font-extrabold text-primary lg:text-h1">Layout InvoiCy</h1>
           <p className="max-w-prose text-sm text-muted">
             O layout é o vocabulário comum do InvoiCy: nome, caminho e significado de cada campo que
             você envia. É o que permite escrever a integração uma vez e transmitir para qualquer
@@ -63,7 +63,10 @@ export function LayoutIndicePage() {
 
         {!isLoading && !isError && indice && !semVersoes && (
           <section aria-labelledby="versoes-layout-titulo" className="flex flex-col gap-3">
-            <h2 id="versoes-layout-titulo" className="text-subtitulo font-semibold text-ink">
+            <h2
+              id="versoes-layout-titulo"
+              className="text-xs font-bold tracking-wider text-primary-medium uppercase"
+            >
               Versão do layout: escolha para ver o dicionário
             </h2>
 
@@ -84,7 +87,12 @@ export function LayoutIndicePage() {
             </ul>
 
             {indice.vigente && (
-              <MarcosDaVersao versaoRotulo={indice.vigente.rotulo} marcos={indice.vigente} />
+              <MarcosDaVersao
+                versaoRotulo={indice.vigente.rotulo}
+                marcos={indice.vigente}
+                superficie="escura"
+                className="mt-2"
+              />
             )}
           </section>
         )}

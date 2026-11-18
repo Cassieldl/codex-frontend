@@ -68,7 +68,7 @@ const PLUGINS_DO_REMARK = {
 // Mora aqui, e não em quem usa, para a página pública e o preview do editor ficarem iguais. O
 // `min-w-0` deixa a tabela rolar dentro da própria região em vez de alargar a página.
 const ESTILO_COMUM =
-  'flex min-w-0 flex-col text-ink [&_a]:text-primary-medium [&_a]:underline [&_a]:[overflow-wrap:anywhere] [&_code]:font-mono [&_code]:text-sm [&_h2]:scroll-mt-6 [&_h2]:text-subtitulo [&_h2]:font-semibold [&_h2]:text-ink [&_h3]:scroll-mt-6 [&_h3]:text-card-titulo [&_h3]:font-medium [&_h3]:text-ink [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3'
+  'flex min-w-0 flex-col text-ink [&_a]:text-primary-medium [&_a]:underline [&_a]:[overflow-wrap:anywhere] [&_code]:font-mono [&_code]:text-sm [&_h2]:scroll-mt-6 [&_h2]:text-subtitulo [&_h2]:font-extrabold [&_h2]:text-primary [&_h3]:scroll-mt-6 [&_h3]:text-card-titulo [&_h3]:font-bold [&_h3]:text-primary [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3'
 
 const ESTILO_POR_VARIANTE: Record<VarianteConteudo, string> = {
   artigo: 'gap-4 text-corpo',

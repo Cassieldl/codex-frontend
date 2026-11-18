@@ -196,11 +196,11 @@ describe('HomePage', () => {
       'Nacional/ADN: transmissão indisponível em Produção',
     )
     expect(screen.getByRole('heading', { name: 'Provedores', level: 2 })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'IPM Sistemas' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^IPM Sistemas/ })).toHaveAttribute(
       'href',
       '/provedores/ipm',
     )
-    expect(screen.getByRole('heading', { name: 'Layout InvoiCy', level: 2 })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /^Layout InvoiCy/, level: 3 })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Artigos', level: 2 })).toBeInTheDocument()
     expect(screen.getByText('Comunicados ativos')).toBeInTheDocument()
   })
@@ -211,8 +211,8 @@ describe('HomePage', () => {
     renderHome()
 
     expect(await screen.findByText('Nenhum provedor publicado ainda.')).toBeInTheDocument()
-    // Sem provedor não há o que escolher — o widget de atalho não aparece.
-    expect(screen.queryByRole('combobox', { name: 'Provedor' })).not.toBeInTheDocument()
+    // Sem provedor não há o que filtrar: o campo de filtro não aparece.
+    expect(screen.queryByRole('searchbox', { name: 'Filtrar provedores' })).not.toBeInTheDocument()
   })
 
   it('layout ausente e artigos vazios não deixam buraco nem mensagem de falha', async () => {
@@ -222,9 +222,9 @@ describe('HomePage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Artigos', level: 2 })).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Layout InvoiCy', level: 2 }),
+      screen.queryByRole('heading', { name: /^Layout InvoiCy/, level: 3 }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver o índice completo' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver todos os artigos' })).toBeInTheDocument()
   })
 })
 

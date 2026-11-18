@@ -91,7 +91,7 @@ describe('NaturezasOperacao', () => {
     )
 
     expect(container.querySelector('[data-abertura-natureza]')).toHaveTextContent(
-      'Envie em natOp o provedor recebe em tribISSQN (grupo tribMun)',
+      'Você envia natOp InvoiCy converte Tabela unificada Provedor recebe tribISSQN (grupo tribMun)',
     )
   })
 

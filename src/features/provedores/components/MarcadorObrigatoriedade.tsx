@@ -7,36 +7,25 @@ export interface MarcadorObrigatoriedadeProps {
   className?: string
 }
 
-export function FormaDoMarcador({ estado }: { estado: EstadoPreenchimentoCampo }) {
-  return (
-    <svg viewBox="0 0 10 10" aria-hidden="true" className="size-full text-primary-medium">
-      {estado === 'Obrigatorio' ? (
-        <circle cx="5" cy="5" r="4.25" fill="currentColor" />
-      ) : (
-        <circle cx="5" cy="5" r="3.75" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      )}
-      {estado === 'Condicional' && (
-        <path d="M5 1.25 A3.75 3.75 0 0 0 5 8.75 Z" fill="currentColor" />
-      )}
-    </svg>
-  )
+/** Cor reforça, o texto decide: a etiqueta sempre diz o uso por extenso. */
+const CLASSE_POR_ESTADO: Record<EstadoPreenchimentoCampo, string> = {
+  Obrigatorio: 'border-primary bg-primary text-white',
+  Condicional: 'border-primary-light bg-alert-info text-primary-medium',
+  Opcional: 'border-border-control bg-white text-ink',
 }
 
-/**
- * Obrigatoriedade do campo como marcador na linha do nome: ponto cheio, meio ponto ou ponto
- * vazado. A forma distingue sem depender de cor, e o nome vai no `title` e para o leitor de tela.
- */
+/** Uso do campo (obrigatório, condicional ou opcional) como etiqueta na linha do nome. */
 export function MarcadorObrigatoriedade({ estado, className }: MarcadorObrigatoriedadeProps) {
-  const rotulo = ROTULO_DA_OBRIGATORIEDADE[estado]
-
   return (
     <span
-      title={rotulo}
       data-obrigatoriedade={estado}
-      className={clsx('inline-flex size-2.5 shrink-0', className)}
+      className={clsx(
+        'inline-flex shrink-0 items-center rounded-[var(--radius-check)] border px-1.5 py-0.5 text-[11px] leading-none font-bold',
+        CLASSE_POR_ESTADO[estado],
+        className,
+      )}
     >
-      <FormaDoMarcador estado={estado} />
-      <span className="sr-only">{rotulo}</span>
+      {ROTULO_DA_OBRIGATORIEDADE[estado]}
     </span>
   )
 }
