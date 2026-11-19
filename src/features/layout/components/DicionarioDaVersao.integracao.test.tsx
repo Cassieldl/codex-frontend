@@ -203,7 +203,7 @@ function botaoDoCampo(nome: string) {
 }
 
 function blocoDe(raiz: string) {
-  return document.getElementById(`bloco-${raiz}`) as HTMLDetailsElement
+  return document.getElementById(`bloco-${raiz}`)
 }
 
 function irParaAncora(slug: string) {
@@ -222,10 +222,10 @@ afterEach(() => {
 })
 
 describe('DicionarioDaVersao com o modal real — foco ao fechar', () => {
-  it('abrir o campo 1, avançar 2 vezes para um bloco fechado e fechar com Esc leva o foco à linha do campo 3, com o bloco aberto', async () => {
+  it('abrir o campo 1, avançar 2 vezes para outro bloco e fechar com Esc leva o foco à linha do campo 3, com o bloco dele na tela', async () => {
     const usuario = userEvent.setup()
     await renderizar()
-    expect(blocoDe('Tomador').open).toBe(false)
+    expect(blocoDe('Tomador')).toBeNull()
 
     await usuario.click(botaoDoCampo('Discriminacao'))
     const dialogo = await screen.findByRole('dialog', { name: 'Discriminacao' })
@@ -241,7 +241,7 @@ describe('DicionarioDaVersao com o modal real — foco ao fechar', () => {
 
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     await waitFor(() => expect(document.activeElement).toBe(botaoDoCampo('TomaCNPJ')))
-    expect(blocoDe('Tomador').open).toBe(true)
+    expect(blocoDe('Tomador')).not.toBeNull()
   })
 })
 
@@ -253,7 +253,7 @@ describe('DicionarioDaVersao com o modal real — âncora', () => {
     irParaAncora('tomador-tomacnpj')
 
     await screen.findByRole('dialog', { name: 'TomaCNPJ' })
-    expect(blocoDe('Tomador').open).toBe(true)
+    expect(blocoDe('Tomador')).not.toBeNull()
     expect(document.querySelectorAll('[aria-current="true"]')).toHaveLength(1)
     expect(botaoDoCampo('TomaCNPJ')).toHaveAttribute('aria-current', 'true')
 

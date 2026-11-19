@@ -56,7 +56,7 @@ function contarDosTipos(
 
 /**
  * Os contadores do "O que mudou". O número conta os itens da lista que a tela mostra: as mudanças
- * estruturadas, ou os chips de campos quando a versão não tem. Os campos marcados no dicionário
+ * estruturadas, ou os campos marcados quando a versão não tem lista. Os campos marcados no dicionário
  * incluem os filhos de grupo novo e o caminho antigo do que mudou de lugar, e entram como detalhe.
  */
 export function contarMudancasDaVersao(
@@ -87,51 +87,6 @@ export function contarMudancasDaVersao(
   ]
 
   return contadores.filter((contador) => contador.quantidade > 0)
-}
-
-export interface CampoDoChip {
-  slug: string
-  nome: string
-  caminhoXml: string
-}
-
-function pontaDoCaminho(caminhoXml: string, segmentos: number): string {
-  return caminhoXml.split('/').filter(Boolean).slice(-segmentos).join('/')
-}
-
-/**
- * Rótulo de cada chip de campo: o nome, ou a ponta do caminho quando o nome se repete na lista. O
- * campo que mudou de grupo aparece como novo e como descontinuado com o mesmo nome; só o caminho
- * diz qual é qual. A ponta cresce até separar os repetidos.
- */
-export function rotulosDosChips(campos: readonly CampoDoChip[]): Map<string, string> {
-  const porNome = new Map<string, CampoDoChip[]>()
-  for (const campo of campos) porNome.set(campo.nome, [...(porNome.get(campo.nome) ?? []), campo])
-
-  const rotulos = new Map<string, string>()
-  for (const [nome, mesmoNome] of porNome) {
-    if (mesmoNome.length === 1) {
-      rotulos.set(mesmoNome[0].slug, nome)
-      continue
-    }
-
-    const maiorCaminho = Math.max(
-      ...mesmoNome.map((campo) => campo.caminhoXml.split('/').filter(Boolean).length),
-    )
-    let segmentos = 2
-    while (
-      segmentos < maiorCaminho &&
-      new Set(mesmoNome.map((campo) => pontaDoCaminho(campo.caminhoXml, segmentos))).size <
-        mesmoNome.length
-    ) {
-      segmentos++
-    }
-    for (const campo of mesmoNome) {
-      rotulos.set(campo.slug, pontaDoCaminho(campo.caminhoXml, segmentos))
-    }
-  }
-
-  return rotulos
 }
 
 /** "Alterado" com o mesmo caminho dos dois lados: a seta sugeriria uma mudança de lugar. */

@@ -1,6 +1,5 @@
-import { Link } from '@tanstack/react-router'
-import { ArrowRight, ExternalLink } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
+import { LinkExterno } from '../../../components/ui/LinkExterno'
 import { ID_NOVIDADES_DO_LAYOUT } from '../../../utils/mudancasDoLayout'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { useLayoutVersao } from '../hooks/useLayoutVersao'
@@ -10,6 +9,9 @@ import { LINK_PLANILHA_DO_LAYOUT } from '../utils/planilhaDoLayout'
 import { ContadoresDeMudanca } from './ContadoresDeMudanca'
 import { ListaDeMudancas } from './ListaDeMudancas'
 import { NotaDaVersao } from './NotaDaVersao'
+
+// O hub mostra um resumo; a lista inteira fica a um clique.
+const MUDANCAS_VISIVEIS_NO_HUB = 4
 
 export interface NovidadesDaVigenteProps {
   novidades: NovidadesVersaoLayout
@@ -53,44 +55,33 @@ export function NovidadesDaVigente({ novidades }: NovidadesDaVigenteProps) {
       ref={secaoRef}
       id={ID_NOVIDADES_DO_LAYOUT}
       aria-labelledby="novidades-titulo"
-      className="flex scroll-mt-6 flex-col gap-5 rounded-[var(--radius-card)] border border-line bg-white p-7 shadow-card"
+      className="flex scroll-mt-6 flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-white p-7 shadow-card"
     >
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <h2 id="novidades-titulo" className="text-subtitulo font-extrabold text-primary">
+      <div className="flex flex-wrap items-start gap-x-5 gap-y-3">
+        <h2 id="novidades-titulo" className="text-subtitulo leading-9 font-extrabold text-primary">
           {titulo}
         </h2>
-        <a
+
+        {anterior && (
+          <ContadoresDeMudanca
+            className="min-w-0 flex-1"
+            contadores={contarMudancasDaVersao(mudancas, {
+              novos: novidades.camposNovos,
+              descontinuados: novidades.camposDescontinuados,
+            })}
+          />
+        )}
+
+        <LinkExterno
           href={LINK_PLANILHA_DO_LAYOUT}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-medium underline underline-offset-2"
+          className="ml-auto inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold link-texto"
         >
           Baixar a planilha do layout
-          <ExternalLink className="size-3.5" aria-hidden="true" />
-        </a>
+        </LinkExterno>
       </div>
 
-      {anterior && (
-        <ContadoresDeMudanca
-          contadores={contarMudancasDaVersao(mudancas, {
-            novos: novidades.camposNovos,
-            descontinuados: novidades.camposDescontinuados,
-          })}
-        />
-      )}
-
       <NotaDaVersao descricao={novidades.descricao} somenteResumo={mudancas.length > 0} />
-      <ListaDeMudancas mudancas={mudancas} campos={campos} />
-
-      <Link
-        to="/layout/$versaoSlug"
-        params={{ versaoSlug: versao.slug }}
-        activeOptions={{ exact: true }}
-        className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-primary-medium hover:underline"
-      >
-        Abrir o dicionário da {formatarVersaoLayout(versao.rotulo)}
-        <ArrowRight className="size-4" aria-hidden="true" />
-      </Link>
+      <ListaDeMudancas mudancas={mudancas} campos={campos} limite={MUDANCAS_VISIVEIS_NO_HUB} />
     </section>
   )
 }

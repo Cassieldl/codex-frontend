@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { campoPassaNoDicionario } from './filtroDoDicionario'
+import { campoPassaNoDicionario, filtroDoDicionarioAtivo } from './filtroDoDicionario'
 
 // Cada termo de busca aparece em UM só dos três textos: o teste de cada coluna só passa se a coluna
 // entra no predicado. O significado traz acento e caixa mista de propósito.
@@ -16,7 +16,7 @@ const CAMPO = {
 }
 
 function busca(termo: string) {
-  return { termo, somenteReformaTributaria: false }
+  return { termo, somenteReformaTributaria: false, somenteNovos: false }
 }
 
 describe('campoPassaNoDicionario', () => {
@@ -60,11 +60,48 @@ describe('campoPassaNoDicionario', () => {
 
   it('só campos da reforma: barra o campo de fora dela e ainda aplica o termo ao da reforma', () => {
     const daReforma = { ...CAMPO, reformaTributaria: true }
-    const soReforma = (termo: string) => ({ termo, somenteReformaTributaria: true })
+    const soReforma = (termo: string) => ({
+      termo,
+      somenteReformaTributaria: true,
+      somenteNovos: false,
+    })
 
     expect(campoPassaNoDicionario(CAMPO, soReforma(''))).toBe(false)
     expect(campoPassaNoDicionario(daReforma, soReforma(''))).toBe(true)
     expect(campoPassaNoDicionario(daReforma, soReforma('nomeunico'))).toBe(true)
     expect(campoPassaNoDicionario(daReforma, soReforma('zzz-inexistente'))).toBe(false)
+  })
+
+  it('só o que mudou: barra o campo que já existia e ainda aplica o termo ao novo', () => {
+    const novo = { ...CAMPO, novoNestaVersao: true }
+    const soNovos = (termo: string) => ({
+      termo,
+      somenteReformaTributaria: false,
+      somenteNovos: true,
+    })
+
+    expect(campoPassaNoDicionario(CAMPO, soNovos(''))).toBe(false)
+    expect(campoPassaNoDicionario(novo, soNovos(''))).toBe(true)
+    expect(campoPassaNoDicionario(novo, soNovos('nomeunico'))).toBe(true)
+    expect(campoPassaNoDicionario(novo, soNovos('zzz-inexistente'))).toBe(false)
+  })
+
+  it('só o que mudou junto com a reforma: passa só o campo novo e da reforma', () => {
+    const filtro = { termo: '', somenteReformaTributaria: true, somenteNovos: true }
+
+    expect(campoPassaNoDicionario({ ...CAMPO, novoNestaVersao: true }, filtro)).toBe(false)
+    expect(campoPassaNoDicionario({ ...CAMPO, reformaTributaria: true }, filtro)).toBe(false)
+    expect(
+      campoPassaNoDicionario({ ...CAMPO, novoNestaVersao: true, reformaTributaria: true }, filtro),
+    ).toBe(true)
+  })
+})
+
+describe('filtroDoDicionarioAtivo', () => {
+  it('só o que mudou conta como filtro ativo, mesmo sem termo', () => {
+    const semFiltro = { termo: ' ', somenteReformaTributaria: false, somenteNovos: false }
+
+    expect(filtroDoDicionarioAtivo(semFiltro)).toBe(false)
+    expect(filtroDoDicionarioAtivo({ ...semFiltro, somenteNovos: true })).toBe(true)
   })
 })

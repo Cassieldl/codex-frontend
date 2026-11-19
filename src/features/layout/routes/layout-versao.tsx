@@ -1,31 +1,29 @@
-import { Link, useLocation } from '@tanstack/react-router'
-import { ArchiveX, CircleHelp, Layers } from 'lucide-react'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
+import { ArchiveX, CircleHelp, Download, Layers } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
+import { AlternadorSegmentado } from '../../../components/ui/AlternadorSegmentado'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { EstadoIndisponivel } from '../../../components/ui/EstadoIndisponivel'
+import { LinkExterno } from '../../../components/ui/LinkExterno'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { agruparEmBlocos, sequenciaDosBlocos } from '../../../utils/blocosDoLayout'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
-import { AbasFormulario } from '../../interno/artigos/components/AbasFormulario'
 import {
-  construirIdLinhaCampo,
-  construirIdLinhaEstrutura,
   extrairSlugDaEstruturaDoHash,
   useCampoDestacadoPorAncora,
 } from '../../provedores/utils/destaqueAncora'
 import { AvisoVocabulario } from '../components/AvisoVocabulario'
-import { NotaDaVersao } from '../components/NotaDaVersao'
-import { ChipVersaoLayout } from '../components/ChipVersaoLayout'
 import { DicionarioDaVersao } from '../components/DicionarioDaVersao'
 import { EstruturaDaVersao } from '../components/EstruturaDaVersao'
-import { HistoricoVersoesLayout } from '../components/HistoricoVersoesLayout'
 import { MarcosDaVersao } from '../components/MarcosDaVersao'
-import { MudancasDaVersao } from '../components/MudancasDaVersao'
+import { NotaDaVersao } from '../components/NotaDaVersao'
+import { SeletorDeVersao } from '../components/SeletorDeVersao'
+import { SeloEstadoDaVersao } from '../components/SeloEstadoDaVersao'
 import { ErroEstruturaIndisponivel, useEstruturaLayout } from '../hooks/useEstruturaLayout'
 import { useLayoutIndice } from '../hooks/useLayoutIndice'
 import { ErroLayoutVersaoHttp, useLayoutVersao } from '../hooks/useLayoutVersao'
@@ -33,22 +31,21 @@ import type { TipoErroLayoutVersao } from '../hooks/useLayoutVersao'
 import { VISOES_DO_LAYOUT } from '../types/estruturaLayout'
 import type { FormatoDaEstrutura, VisaoDoLayout } from '../types/estruturaLayout'
 import { criarFormatosDoCampo } from '../utils/formatosDoCampoNaEstrutura'
+import { LINK_PLANILHA_DO_LAYOUT } from '../utils/planilhaDoLayout'
 
 export interface LayoutVersaoPageProps {
   versaoSlug: string
-  /** Aba aberta, vinda de `?visao=`. */
+  /** Visão aberta, vinda de `?visao=`. */
   visao: VisaoDoLayout
   aoMudarVisao: (visao: VisaoDoLayout) => void
 }
 
-const ROTULO_DA_ABA: Record<VisaoDoLayout, string> = {
+const CLASSE_LARGURA = 'mx-auto w-full max-w-pagina px-4 lg:px-8'
+
+const ROTULO_DA_VISAO: Record<VisaoDoLayout, string> = {
   dicionario: 'Dicionário',
   xml: 'XML (SOAP)',
   json: 'JSON (REST)',
-}
-
-function ehVisaoDoLayout(valor: string): valor is VisaoDoLayout {
-  return (VISOES_DO_LAYOUT as readonly string[]).includes(valor)
 }
 
 const ESTADO_POR_TIPO_DE_ERRO: Record<
@@ -75,28 +72,33 @@ const ESTADO_POR_TIPO_DE_ERRO: Record<
   },
 }
 
+function descreverQuantidade(quantidade: number, singular: string, plural: string): string {
+  return `${quantidade} ${quantidade === 1 ? singular : plural}`
+}
+
 /**
- * `/layout/{versaoSlug}` (tela 6): o dicionário denso de uma versão do Layout
- * InvoiCy. O índice de versões (P10) é consultado à parte só para o seletor e
- * para o histórico: se ele falhar, o dicionário continua de pé. A falha do
- * acessório nunca derruba o conteúdo principal.
+ * `/layout/{versaoSlug}` (tela 6): o dicionário denso de uma versão do Layout InvoiCy. O índice de
+ * versões é consultado à parte só para a lista suspensa de versões: se ele falhar, o dicionário
+ * continua de pé. A falha do acessório nunca derruba o conteúdo principal.
  */
 export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVersaoPageProps) {
-  const { data: pagina, isLoading, isError, error, refetch } = useLayoutVersao(versaoSlug)
+  const {
+    data: pagina,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isPlaceholderData: trocandoDeVersao,
+  } = useLayoutVersao(versaoSlug, { manterAnterior: true })
   const { data: indice } = useLayoutIndice()
   const campoDestacado = useCampoDestacadoPorAncora()
+  const navigate = useNavigate()
 
   const formatoAberto: FormatoDaEstrutura | null = visao === 'dicionario' ? null : visao
-  // A estrutura só é buscada com a aba XML ou JSON aberta; no dicionário vale o que estiver em cache.
+  // A estrutura só é buscada com a visão XML ou JSON aberta; no dicionário vale o que houver em cache.
   const consultaDaEstrutura = useEstruturaLayout(versaoSlug, formatoAberto !== null)
   const hash = useLocation({ select: (local) => local.hash })
   const slugAncoraDaEstrutura = formatoAberto ? extrairSlugDaEstruturaDoHash(hash) : null
-  // O "O que mudou" leva ao campo na aba aberta, sem sair da página.
-  const ancoraDoCampo = useCallback(
-    (slug: string) =>
-      `#${formatoAberto ? construirIdLinhaEstrutura(slug) : construirIdLinhaCampo(slug)}`,
-    [formatoAberto],
-  )
 
   const estruturaIndisponivel = consultaDaEstrutura.error instanceof ErroEstruturaIndisponivel
   const formatosDoCampo = useMemo(
@@ -132,17 +134,35 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
 
   useTituloDaPagina(pagina ? `Layout InvoiCy ${formatarVersaoLayout(pagina.versao.rotulo)}` : null)
 
+  const alternadorDeVisao = (
+    <AlternadorSegmentado
+      rotulo="Formas de ver o Layout InvoiCy"
+      opcoes={VISOES_DO_LAYOUT}
+      rotuloDaOpcao={ROTULO_DA_VISAO}
+      selecionada={visao}
+      onSelecionar={(novaVisao) => {
+        if (novaVisao !== visao) aoMudarVisao(novaVisao)
+      }}
+    />
+  )
+
+  function irParaVersao(slug: string) {
+    void navigate({ to: '/layout/$versaoSlug', params: { versaoSlug: slug }, search: { visao } })
+  }
+
+  const normaOrigem = pagina?.versao.normaOrigem?.trim() || null
+
   return (
     <div className="flex min-h-screen flex-col bg-surface-hover">
       <CabecalhoPublico />
 
-      <main
-        id={ID_CONTEUDO_PRINCIPAL}
-        tabIndex={-1}
-        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8"
-      >
+      <main id={ID_CONTEUDO_PRINCIPAL} tabIndex={-1} className="flex flex-1 flex-col">
         {isLoading && (
-          <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
+          <div
+            aria-live="polite"
+            aria-busy="true"
+            className={`${CLASSE_LARGURA} flex flex-col gap-4 py-8`}
+          >
             <span className="sr-only">Carregando o dicionário de campos…</span>
             <Skeleton className="h-8 w-64" />
             <Skeleton className="h-10 w-full" />
@@ -153,132 +173,131 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
         {/* Limite estrutural (`cap_excedido`) também cai aqui, e não no ErrorState: oferecer
             "tentar novamente" seria mandar o leitor repetir algo que nunca vai dar certo. */}
         {isError && erroTipado && (
-          <EstadoIndisponivel {...ESTADO_POR_TIPO_DE_ERRO[erroTipado.tipo]}>
-            <Link
-              to="/layout"
-              activeOptions={{ exact: true }}
-              className="text-sm font-semibold text-primary-medium hover:underline"
-            >
-              Ver as versões publicadas
-            </Link>
-          </EstadoIndisponivel>
+          <div className={`${CLASSE_LARGURA} py-8`}>
+            <EstadoIndisponivel {...ESTADO_POR_TIPO_DE_ERRO[erroTipado.tipo]}>
+              <Link
+                to="/layout"
+                activeOptions={{ exact: true }}
+                className="text-sm font-semibold text-primary-medium hover:underline"
+              >
+                Ver as versões publicadas
+              </Link>
+            </EstadoIndisponivel>
+          </div>
         )}
 
-        {isError && !erroTipado && <ErrorState onRetry={() => refetch()} />}
+        {isError && !erroTipado && (
+          <div className={`${CLASSE_LARGURA} py-8`}>
+            <ErrorState onRetry={() => refetch()} />
+          </div>
+        )}
 
         {!isLoading && !isError && pagina && (
           <>
-            <div className="flex flex-col gap-2">
-              <p className="text-xs text-muted">
-                <Link to="/layout" activeOptions={{ exact: true }} className="hover:underline">
-                  Layout InvoiCy
-                </Link>{' '}
-                / {formatarVersaoLayout(pagina.versao.rotulo, { maiuscula: true })}
-              </p>
-              <h1 className="text-titulo font-bold text-ink">
-                Layout InvoiCy {formatarVersaoLayout(pagina.versao.rotulo)}
-              </h1>
-              <p className="text-sm text-muted">
-                {pagina.versao.estado} · {pagina.totalCampos} campos no vocabulário
-                {camposNovos > 0 && ` · ${camposNovos} novos nesta versão`}
-              </p>
+            <div className="border-b border-border bg-white">
+              <div className={`${CLASSE_LARGURA} flex flex-col gap-5 py-6`}>
+                <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+                  <div className="flex min-w-0 flex-col gap-2">
+                    <p className="text-xs text-muted">
+                      <Link
+                        to="/layout"
+                        activeOptions={{ exact: true }}
+                        className="underline hover:text-ink"
+                      >
+                        Layout InvoiCy
+                      </Link>{' '}
+                      / {formatarVersaoLayout(pagina.versao.rotulo, { maiuscula: true })}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h1 className="text-titulo font-extrabold text-primary lg:text-h1">
+                        Layout InvoiCy {formatarVersaoLayout(pagina.versao.rotulo)}
+                      </h1>
+                      <SeloEstadoDaVersao estado={pagina.versao.estado} />
+                    </div>
+                    <p data-fatos-da-versao="" className="text-sm text-muted">
+                      {normaOrigem && <>origem {normaOrigem} · </>}
+                      <strong className="font-semibold text-ink">
+                        {descreverQuantidade(pagina.totalCampos, 'campo', 'campos')}
+                      </strong>
+                      {camposNovos > 0 && ` · ${camposNovos} novos nesta versão`}
+                    </p>
+                    <AvisoVocabulario />
+                  </div>
+
+                  <div className="flex flex-wrap items-end gap-3">
+                    {indice && (
+                      <SeletorDeVersao
+                        versoes={indice.versoes}
+                        versaoAtualSlug={versaoSlug}
+                        onEscolher={irParaVersao}
+                      />
+                    )}
+                    <LinkExterno
+                      href={LINK_PLANILHA_DO_LAYOUT}
+                      classeDoIcone="size-4"
+                      className="relative inline-flex h-11 items-center gap-2 rounded-[var(--radius-control)] bg-primary-medium px-4 text-sm font-bold text-white transition-shadow duration-150 hover:shadow-panel"
+                    >
+                      <Download aria-hidden="true" className="size-4" />
+                      Baixar planilha <span className="text-xs font-semibold">.xlsx · GitHub</span>
+                    </LinkExterno>
+                  </div>
+                </div>
+
+                <MarcosDaVersao
+                  versaoRotulo={pagina.versao.rotulo}
+                  marcos={pagina.versao}
+                  destaque="prazo"
+                  estado={pagina.versao.estado.toLowerCase()}
+                />
+              </div>
             </div>
 
-            <MarcosDaVersao versaoRotulo={pagina.versao.rotulo} marcos={pagina.versao} />
+            <div
+              aria-busy={trocandoDeVersao}
+              className={`${CLASSE_LARGURA} flex flex-col gap-6 py-7`}
+            >
+              {!pagina.anterior && pagina.descricao && (
+                <section aria-labelledby="nota-versao-titulo" className="flex flex-col gap-2">
+                  <h2 id="nota-versao-titulo" className="text-subtitulo font-semibold text-ink">
+                    Nota da {formatarVersaoLayout(pagina.versao.rotulo)}
+                  </h2>
+                  <NotaDaVersao descricao={pagina.descricao} />
+                </section>
+              )}
 
-            <AvisoVocabulario />
-
-            {indice && indice.versoes.length > 0 && (
-              <section aria-labelledby="seletor-versao-titulo" className="flex flex-col gap-3">
-                <h2 id="seletor-versao-titulo" className="text-card-titulo font-medium text-ink">
-                  Versão do layout: escolha para ver o dicionário
-                </h2>
-                <ul className="flex flex-wrap gap-3">
-                  {indice.versoes.map((versao) => (
-                    <li key={versao.slug}>
-                      <ChipVersaoLayout versao={versao} ativa={versao.slug === versaoSlug} />
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {pagina.anterior && (
-              <MudancasDaVersao
-                versao={pagina.versao}
-                anterior={pagina.anterior}
-                descricao={pagina.descricao}
-                camposPorGrupo={pagina.camposPorGrupo}
-                ancoraDoCampo={ancoraDoCampo}
-              />
-            )}
-
-            {!pagina.anterior && pagina.descricao && (
-              <section aria-labelledby="nota-versao-titulo" className="flex flex-col gap-2">
-                <h2 id="nota-versao-titulo" className="text-subtitulo font-semibold text-ink">
-                  Nota da {formatarVersaoLayout(pagina.versao.rotulo)}
-                </h2>
-                <NotaDaVersao descricao={pagina.descricao} />
-              </section>
-            )}
-
-            {pagina.anterior && (
-              <p className="text-sm text-muted">
-                Versão anterior:{' '}
-                <Link
-                  to="/layout/$versaoSlug"
-                  params={{ versaoSlug: pagina.anterior.slug }}
-                  activeOptions={{ exact: true }}
-                  className="font-semibold text-primary-medium hover:underline"
-                >
-                  ver o dicionário da {formatarVersaoLayout(pagina.anterior.rotulo)}
-                </Link>{' '}
-                para comparar o vocabulário.
-              </p>
-            )}
-
-            <AbasFormulario
-              ariaLabel="Formas de ver o Layout InvoiCy"
-              valorAtivo={visao}
-              onValorAtivoChange={(valor) => {
-                if (ehVisaoDoLayout(valor)) aoMudarVisao(valor)
-              }}
-              abas={VISOES_DO_LAYOUT.map((aba) => ({
-                valor: aba,
-                rotulo: ROTULO_DA_ABA[aba],
-                // Só o painel aberto é montado: a página continua leve e o modal de uma aba não
-                // sobrevive à troca.
-                conteudo:
-                  aba !== visao ? null : aba === 'dicionario' ? (
-                    <DicionarioDaVersao
-                      versaoRotulo={pagina.versao.rotulo}
-                      totalCampos={pagina.totalCampos}
-                      camposPorGrupo={pagina.camposPorGrupo}
-                      origemUrl={origemUrl}
-                      campoDestacado={campoDestacado}
-                      atalhoDaEstrutura={atalhoDaEstrutura}
-                    />
-                  ) : (
-                    <EstruturaDaVersao
-                      formato={aba}
-                      versaoSlug={versaoSlug}
-                      versaoRotulo={pagina.versao.rotulo}
-                      estrutura={consultaDaEstrutura.data}
-                      isLoading={consultaDaEstrutura.isLoading}
-                      error={consultaDaEstrutura.error}
-                      onRetry={() => void consultaDaEstrutura.refetch()}
-                      camposPorSlug={camposPorSlug}
-                      formatosDoCampo={formatosDoCampo}
-                      slugAncora={slugAncoraDaEstrutura}
-                      origemUrl={origemUrl}
-                    />
-                  ),
-              }))}
-            />
-
-            {indice && (
-              <HistoricoVersoesLayout versoes={indice.versoes} versaoAtualSlug={versaoSlug} />
-            )}
+              {visao === 'dicionario' ? (
+                <DicionarioDaVersao
+                  key={pagina.versao.slug}
+                  versaoRotulo={pagina.versao.rotulo}
+                  totalCampos={pagina.totalCampos}
+                  camposPorGrupo={pagina.camposPorGrupo}
+                  origemUrl={origemUrl}
+                  campoDestacado={campoDestacado}
+                  atalhoDaEstrutura={atalhoDaEstrutura}
+                  temVersaoAnterior={pagina.anterior !== null}
+                  alternadorDeVisao={alternadorDeVisao}
+                />
+              ) : (
+                <>
+                  <div className="rounded-[var(--radius-card)] border border-border bg-white p-4">
+                    {alternadorDeVisao}
+                  </div>
+                  <EstruturaDaVersao
+                    formato={visao}
+                    versaoSlug={versaoSlug}
+                    versaoRotulo={pagina.versao.rotulo}
+                    estrutura={consultaDaEstrutura.data}
+                    isLoading={consultaDaEstrutura.isLoading}
+                    error={consultaDaEstrutura.error}
+                    onRetry={() => void consultaDaEstrutura.refetch()}
+                    camposPorSlug={camposPorSlug}
+                    formatosDoCampo={formatosDoCampo}
+                    slugAncora={slugAncoraDaEstrutura}
+                    origemUrl={origemUrl}
+                  />
+                </>
+              )}
+            </div>
           </>
         )}
       </main>

@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { ChevronRight } from 'lucide-react'
 import { memo } from 'react'
 import type { MouseEvent } from 'react'
 import { CaminhoXml } from '../../../components/ui/CaminhoXml'
@@ -27,7 +28,7 @@ export interface LinhaDoVerbeteProps {
 export const CLASSE_SO_NO_DESKTOP = 'hidden min-[860px]:table-cell'
 
 const CLASSE_DO_NOME =
-  'text-left font-mono text-[13px] font-semibold text-ink [overflow-wrap:anywhere] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'text-left font-mono text-[13px] font-semibold text-ink [overflow-wrap:anywhere] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
 
 const CLASSE_DO_SELO_DE_NOVO =
   'ml-2 inline-flex items-center rounded-[var(--radius-pill)] border border-dashed border-primary px-2 py-px text-aux font-semibold tracking-wide text-primary uppercase'
@@ -57,14 +58,14 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
       onClick={abrirPeloClique}
       className={clsx(
         // A folga cobre o resumo fixo (48px) e o subtítulo, que pode quebrar em até 3 linhas no celular.
-        'scroll-mt-40 cursor-pointer border-t border-line align-top hover:bg-surface-hover max-[859px]:scroll-mt-48',
+        'scroll-mt-40 cursor-pointer border-t border-border align-top hover:bg-surface-hover max-[859px]:scroll-mt-48',
         ativo && 'bg-highlight-anchor',
       )}
     >
       <td
         data-coluna="campo"
         className={clsx(
-          'border-l-[3px] px-3 py-2',
+          'border-l-[3px] px-3 py-3',
           ativo ? 'border-l-accent' : 'border-l-transparent',
         )}
       >
@@ -106,32 +107,30 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
           </span>
         )}
 
-        <div data-resumo-movel="" className="mt-1 min-w-0 min-[860px]:hidden">
+        <div data-coluna="caminho" className="mt-1 min-w-0 [overflow-wrap:anywhere]">
           <CaminhoXml caminho={campo.caminhoXml} />
-          {campo.significado && (
-            <p className="mt-1 line-clamp-2 text-xs text-muted [overflow-wrap:anywhere]">
-              {campo.significado}
-            </p>
-          )}
         </div>
-      </td>
 
-      <td
-        data-coluna="caminho"
-        className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2 [overflow-wrap:anywhere]')}
-      >
-        <CaminhoXml caminho={campo.caminhoXml} />
-      </td>
-
-      <td data-coluna="significado" className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2')}>
         {campo.significado && (
           <p
-            title={campo.significado}
-            className="line-clamp-2 text-xs leading-relaxed text-ink [overflow-wrap:anywhere]"
+            data-resumo-movel=""
+            className="mt-1 text-xs text-muted [overflow-wrap:anywhere] min-[860px]:hidden"
           >
             {campo.significado}
           </p>
         )}
+      </td>
+
+      <td data-coluna="significado" className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-3')}>
+        {campo.significado && (
+          <p className="text-sm leading-relaxed text-ink [overflow-wrap:anywhere]">
+            {campo.significado}
+          </p>
+        )}
+      </td>
+
+      <td aria-hidden="true" className={clsx(CLASSE_SO_NO_DESKTOP, 'py-3 pr-3 text-right')}>
+        <ChevronRight className="ml-auto size-4 text-primary-medium" />
       </td>
     </tr>
   )

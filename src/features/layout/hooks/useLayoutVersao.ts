@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { apiPublico } from '../../../services/api'
 import { devoRetentar } from '../../../utils/retentativaDeQuery'
@@ -43,8 +43,19 @@ function classificarErro(error: unknown): ErroLayoutVersaoHttp | null {
 
 const DEZ_MINUTOS_MS = 1000 * 60 * 10
 
+export interface OpcoesLayoutVersao {
+  /**
+   * Durante a troca de versão, mantém a anterior na tela até a nova chegar: a página não desmonta
+   * e o foco fica na lista de versões.
+   */
+  manterAnterior?: boolean
+}
+
 /** `GET /layout/versoes/{versaoSlug}` (P11) — dicionário denso de uma versão. */
-export function useLayoutVersao(versaoSlug: string) {
+export function useLayoutVersao(
+  versaoSlug: string,
+  { manterAnterior = false }: OpcoesLayoutVersao = {},
+) {
   return useQuery({
     queryKey: layoutKeys.versao(versaoSlug),
     queryFn: async () => {
@@ -58,6 +69,7 @@ export function useLayoutVersao(versaoSlug: string) {
       }
     },
     enabled: versaoSlug.length > 0,
+    placeholderData: manterAnterior ? keepPreviousData : undefined,
     staleTime: DEZ_MINUTOS_MS,
     retry: (contagem, erro) => devoRetentar(contagem, erro),
   })

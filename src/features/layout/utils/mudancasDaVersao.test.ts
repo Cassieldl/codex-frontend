@@ -5,7 +5,6 @@ import {
   campoDaMudanca,
   contarMudancasDaVersao,
   resolverCampoCitado,
-  rotulosDosChips,
 } from './mudancasDaVersao'
 
 const CAMPOS = [
@@ -78,22 +77,6 @@ describe('contarMudancasDaVersao', () => {
   it('sem mudanças estruturadas, conta os campos que viram chip, sem detalhe', () => {
     expect(contarMudancasDaVersao([], { novos: 4, descontinuados: 0 })).toEqual([
       { chave: 'novos', quantidade: 4, camposAfetados: null },
-    ])
-  })
-})
-
-describe('rotulosDosChips', () => {
-  it('nome repetido vira a ponta do caminho que separa os dois; nome único fica', () => {
-    const rotulos = rotulosDosChips([
-      { slug: 'docc-mun-a', nome: 'DoccMun', caminhoXml: '//Obra/Endereco/DoccMun' },
-      { slug: 'docc-mun-b', nome: 'DoccMun', caminhoXml: '//Evento/Endereco/DoccMun' },
-      { slug: 'cep', nome: 'CEP', caminhoXml: '//Obra/Endereco/CEP' },
-    ])
-
-    expect([...rotulos.values()]).toEqual([
-      'Obra/Endereco/DoccMun',
-      'Evento/Endereco/DoccMun',
-      'CEP',
     ])
   })
 })

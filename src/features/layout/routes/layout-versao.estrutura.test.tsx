@@ -182,12 +182,12 @@ describe('LayoutVersaoPage: estrutura XML e JSON', () => {
     const usuario = userEvent.setup()
     const router = renderPagina('/layout/8')
 
-    const abaDicionario = await screen.findByRole('tab', { name: 'Dicionário' })
-    expect(abaDicionario).toHaveAttribute('aria-selected', 'true')
+    const visaoDicionario = await screen.findByRole('radio', { name: 'Dicionário' })
+    expect(visaoDicionario).toHaveAttribute('aria-checked', 'true')
     expect(screen.getByRole('button', { name: 'Número do RPS' })).toBeInTheDocument()
     expect(buscasDaEstrutura).toBe(0)
 
-    await usuario.click(screen.getByRole('tab', { name: 'XML (SOAP)' }))
+    await usuario.click(screen.getByRole('radio', { name: 'XML (SOAP)' }))
 
     expect(
       await screen.findByRole('region', { name: 'Texto da estrutura XML (SOAP)' }),
@@ -196,7 +196,7 @@ describe('LayoutVersaoPage: estrutura XML e JSON', () => {
     expect(buscasDaEstrutura).toBe(1)
 
     // Seta para a direita leva à aba JSON, que reaproveita a resposta em cache.
-    screen.getByRole('tab', { name: 'XML (SOAP)' }).focus()
+    screen.getByRole('radio', { name: 'XML (SOAP)' }).focus()
     await usuario.keyboard('{ArrowRight}')
     expect(
       await screen.findByRole('region', { name: 'Texto da estrutura JSON (REST)' }),
@@ -235,6 +235,40 @@ describe('LayoutVersaoPage: estrutura XML e JSON', () => {
         .getByText(/ValorServicos/)
         .closest('[data-linha]'),
     ).not.toHaveTextContent('uma entre as opções')
+  })
+
+  it('marca na linha, com texto, o campo novo e o da reforma, cruzados pelo dicionário', async () => {
+    const usuario = userEvent.setup()
+    const [numero, valor] = paginaFake.camposPorGrupo[0].campos
+    server.use(
+      handlerLayoutVersaoSucesso('8', {
+        ...paginaFake,
+        camposPorGrupo: [
+          {
+            ...paginaFake.camposPorGrupo[0],
+            campos: [
+              { ...numero, reformaTributaria: true },
+              { ...valor, novoNestaVersao: true },
+            ],
+          },
+        ],
+      }),
+    )
+    renderPagina('/layout/8?visao=xml')
+
+    const regiao = await screen.findByRole('region', { name: 'Texto da estrutura XML (SOAP)' })
+    await usuario.click(screen.getByRole('button', { name: 'Expandir tudo' }))
+    const linhaDe = (nome: string) =>
+      within(regiao).getByRole('button', { name: nome }).closest('[data-linha]')
+
+    expect(linhaDe('ValorServicos')).toHaveTextContent('novo na versão 8')
+    expect(linhaDe('ValorServicos')).not.toHaveTextContent('reforma tributária')
+    expect(linhaDe('Numero')).toHaveTextContent('Campo da reforma tributária (IBS/CBS)')
+    expect(linhaDe('Numero')).not.toHaveTextContent('novo na')
+
+    const legenda = screen.getByRole('list', { name: 'Legenda:' })
+    expect(within(legenda).getByText('campo novo nesta versão')).toBeInTheDocument()
+    expect(within(legenda).getByText('campo da reforma tributária (IBS/CBS)')).toBeInTheDocument()
   })
 
   it('o link da âncora abre o grupo recolhido, rola até a linha e a destaca', async () => {
@@ -287,7 +321,7 @@ describe('LayoutVersaoPage: estrutura XML e JSON', () => {
     renderPagina('/layout/8?visao=xml')
     await screen.findByRole('region', { name: 'Texto da estrutura XML (SOAP)' })
 
-    await usuario.click(screen.getByRole('tab', { name: 'Dicionário' }))
+    await usuario.click(screen.getByRole('radio', { name: 'Dicionário' }))
     await usuario.click(await screen.findByRole('button', { name: 'Número do RPS' }))
 
     const modal = await screen.findByRole('dialog', { name: 'Número do RPS' })
@@ -309,7 +343,7 @@ describe('LayoutVersaoPage: estrutura XML e JSON', () => {
       await screen.findByText('Estrutura desta versão ainda não está disponível.'),
     ).toBeInTheDocument()
 
-    await usuario.click(screen.getByRole('tab', { name: 'Dicionário' }))
+    await usuario.click(screen.getByRole('radio', { name: 'Dicionário' }))
     expect(await screen.findByRole('button', { name: 'Número do RPS' })).toBeInTheDocument()
     // Sem estrutura, o atalho só levaria ao aviso: nem a linha nem o modal o oferecem.
     expect(screen.queryAllByRole('link', { name: /na estrutura/ })).toHaveLength(0)

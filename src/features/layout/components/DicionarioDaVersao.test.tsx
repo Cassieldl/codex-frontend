@@ -192,6 +192,16 @@ function digitarBusca(texto: string) {
   fireEvent.change(buscar(), { target: { value: texto } })
 }
 
+/** Toda busca casa com "/": todos os caminhos começam com "//". Com filtro, vêm todos os blocos. */
+function mostrarTodosOsBlocos() {
+  digitarBusca('/')
+}
+
+function irAoBlocoPeloIndice(nome: RegExp) {
+  const indice = screen.getByRole('navigation', { name: 'Blocos do layout' })
+  fireEvent.click(within(indice).getByRole('link', { name: nome }))
+}
+
 function estadoDosBlocos(container: HTMLElement) {
   return Array.from(container.querySelectorAll('details')).map((bloco) => [bloco.id, bloco.open])
 }
@@ -216,8 +226,22 @@ beforeEach(() => {
 })
 
 describe('DicionarioDaVersao — conteúdo', () => {
-  it('mantém a ordem dos campos devolvida pelo backend, agrupados por bloco', () => {
+  it('sem filtro mostra um bloco por vez, o primeiro, na ordem devolvida pelo backend', () => {
     const { container } = renderizar()
+
+    expect(nomesNaOrdemDoDom(container)).toEqual([
+      'Discriminacao',
+      'PaiPreServico',
+      'ValServicos',
+      'ValPIS',
+    ])
+    expect(container.querySelector('details')).toBeNull()
+  })
+
+  it('com filtro, mostra os campos de todos os blocos na ordem do backend', () => {
+    const { container } = renderizar()
+
+    mostrarTodosOsBlocos()
 
     expect(nomesNaOrdemDoDom(container)).toEqual([
       'Discriminacao',
@@ -240,9 +264,13 @@ describe('DicionarioDaVersao — conteúdo', () => {
   it('o rótulo do bloco vem do cadastro de rótulos; raiz sem rótulo mostra o texto cru', () => {
     renderizar()
 
-    const titulos = screen.getAllByRole('heading', { level: 3 }).map((titulo) => titulo.textContent)
+    const indice = screen.getByRole('navigation', { name: 'Blocos do layout' })
+    const rotulos = within(indice)
+      .getAllByRole('link')
+      .map((link) => link.querySelector('span')?.textContent)
 
-    expect(titulos).toEqual(['Serviço', 'Tomador', 'Prestador', 'Zeta'])
+    expect(rotulos).toEqual(['Serviço', 'Tomador', 'Prestador', 'Zeta'])
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Serviço')
   })
 
   it('o subtítulo do subgrupo é a trilha dentro do bloco', () => {
@@ -257,10 +285,11 @@ describe('DicionarioDaVersao — conteúdo', () => {
   it('a meta do bloco diz quantos campos e quantos são novos nesta versão', () => {
     const { container } = renderizar()
 
-    const resumoDoServico = container.querySelector('#bloco-Servico summary')!
-    const resumoDoTomador = container.querySelector('#bloco-Tomador summary')!
+    expect(container.querySelector('#bloco-Servico header')).toHaveTextContent('4 campos · 1 novo')
 
-    expect(resumoDoServico).toHaveTextContent('4 campos · 1 novo')
+    irAoBlocoPeloIndice(/^Tomador/)
+    const resumoDoTomador = container.querySelector('#bloco-Tomador header')!
+
     expect(resumoDoTomador).toHaveTextContent('1 campo')
     expect(resumoDoTomador).not.toHaveTextContent('novo')
   })
@@ -277,6 +306,7 @@ describe('DicionarioDaVersao — conteúdo', () => {
 
   it('o campo novo e o descontinuado levam o texto, e só eles', () => {
     renderizar()
+    mostrarTodosOsBlocos()
 
     expect(screen.getAllByText('novo na versão 4.13')).toHaveLength(1)
     expect(screen.getByRole('row', { name: /ValServicos/ })).toContainElement(
@@ -293,7 +323,7 @@ describe('DicionarioDaVersao — conteúdo', () => {
 
     const nomes = new Set(screen.getAllByRole('columnheader').map((coluna) => coluna.textContent))
 
-    expect(nomes).toEqual(new Set(['Campo', 'Caminho no Layout InvoiCy', 'Significado']))
+    expect(nomes).toEqual(new Set(['Campo', 'Significado', 'Abrir']))
     for (const rotuloProibido of ['Tipo', 'Tamanho', 'Máscara', 'Obrigatoriedade']) {
       expect(screen.queryByRole('columnheader', { name: rotuloProibido })).toBeNull()
     }
@@ -301,6 +331,7 @@ describe('DicionarioDaVersao — conteúdo', () => {
 
   it('cada tabela tem uma legenda com a trilha do subgrupo', () => {
     renderizar()
+    mostrarTodosOsBlocos()
 
     expect(screen.getByRole('table', { name: 'Campos de Serviço › Valores' })).toBeInTheDocument()
     expect(screen.getByRole('table', { name: 'Campos de Tomador' })).toBeInTheDocument()
@@ -362,7 +393,7 @@ describe('DicionarioDaVersao — frases e estados vazios', () => {
     expect(botoes).toHaveLength(2)
     fireEvent.click(botoes[botoes.length - 1])
 
-    expect(nomesNaOrdemDoDom(container)).toHaveLength(8)
+    expect(nomesNaOrdemDoDom(container)).toHaveLength(4)
     expect(buscar()).toHaveValue('')
   })
 
@@ -410,14 +441,14 @@ describe('DicionarioDaVersao — busca', () => {
 
   it('o campo achado em bloco que estava fechado abre o bloco', () => {
     const { container } = renderizar()
-    expect(container.querySelector<HTMLDetailsElement>('#bloco-Prestador')!.open).toBe(false)
+    expect(container.querySelector('#bloco-Prestador')).toBeNull()
 
     digitarBusca('prestador/im')
 
     expect(estadoDosBlocos(container)).toEqual([['bloco-Prestador', true]])
   })
 
-  it('abre só os blocos com resultado, e limpar mantém o que já estava aberto', () => {
+  it('abre só os blocos com resultado, e limpar volta a um bloco por vez', () => {
     const { container } = renderizar()
 
     digitarBusca('cnpj')
@@ -428,33 +459,40 @@ describe('DicionarioDaVersao — busca', () => {
 
     digitarBusca('')
 
-    expect(estadoDosBlocos(container)).toEqual([
-      ['bloco-Servico', true],
-      ['bloco-Tomador', true],
-      ['bloco-Prestador', true],
-      ['bloco-Zeta', false],
-    ])
+    expect(estadoDosBlocos(container)).toEqual([])
+    expect(container.querySelector('section#bloco-Servico')).not.toBeNull()
   })
 })
 
 describe('DicionarioDaVersao — blocos e índice', () => {
-  it('lista os blocos na ordem da primeira aparição, só o primeiro aberto', () => {
+  it('o rodapé leva ao bloco vizinho, rola até ele e põe o foco no título', () => {
     const { container } = renderizar()
+    expect(screen.queryByRole('button', { name: /Bloco anterior/ })).toBeNull()
 
-    expect(estadoDosBlocos(container)).toEqual([
-      ['bloco-Servico', true],
-      ['bloco-Tomador', false],
-      ['bloco-Prestador', false],
-      ['bloco-Zeta', false],
-    ])
+    fireEvent.click(screen.getByRole('button', { name: 'Próximo bloco: Tomador' }))
+
+    expect(nomesNaOrdemDoDom(container)).toEqual(['TomaCNPJ'])
+    expect(rolarParaOElemento.mock.contexts[0]).toBe(container.querySelector('#bloco-Tomador'))
+    expect(screen.getByRole('heading', { level: 3, name: 'Tomador' })).toHaveFocus()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Bloco anterior: Serviço' }))
+    expect(nomesNaOrdemDoDom(container)[0]).toBe('Discriminacao')
   })
 
-  it('"Expandir todos" abre todos e "Recolher todos" fecha todos', () => {
+  it('o último bloco não tem próximo', () => {
+    renderizar()
+
+    irAoBlocoPeloIndice(/^Zeta/)
+
+    expect(screen.queryByRole('button', { name: /Próximo bloco/ })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Bloco anterior: Prestador' })).toBeInTheDocument()
+  })
+
+  it('"Expandir" e "Recolher todos" só existem com filtro, e valem para os blocos de resultado', () => {
     const { container } = renderizar()
+    expect(screen.queryByRole('button', { name: 'Recolher todos' })).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Expandir todos' }))
-    expect(estadoDosBlocos(container).map(([, aberto]) => aberto)).toEqual([true, true, true, true])
-
+    mostrarTodosOsBlocos()
     fireEvent.click(screen.getByRole('button', { name: 'Recolher todos' }))
     expect(estadoDosBlocos(container).map(([, aberto]) => aberto)).toEqual([
       false,
@@ -462,20 +500,9 @@ describe('DicionarioDaVersao — blocos e índice', () => {
       false,
       false,
     ])
-  })
 
-  it('o navegador abrindo o bloco (Ctrl+F) mantém o estado em dia', () => {
-    const { container } = renderizar()
-    const bloco = container.querySelector<HTMLDetailsElement>('#bloco-Prestador')!
-
-    bloco.open = true
-    fireEvent(bloco, new Event('toggle'))
-
-    // Filtrar tira o bloco da tela e limpar o devolve: ele volta com o estado guardado.
-    digitarBusca('tomacnpj')
-    digitarBusca('')
-
-    expect(container.querySelector<HTMLDetailsElement>('#bloco-Prestador')!.open).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Expandir todos' }))
+    expect(estadoDosBlocos(container).map(([, aberto]) => aberto)).toEqual([true, true, true, true])
   })
 
   it('o índice lista cada bloco com a contagem de campos', () => {
@@ -487,18 +514,39 @@ describe('DicionarioDaVersao — blocos e índice', () => {
       within(indice)
         .getAllByRole('link')
         .map((link) => link.textContent?.replace(/\s+/g, ' ').trim()),
-    ).toEqual(['Serviço 4 campos', 'Tomador 1 campo', 'Prestador 2 campos', 'Zeta 1 campo'])
+    ).toEqual(['Serviço +1 novo 4 campos', 'Tomador 1 campo', 'Prestador 2 campos', 'Zeta 1 campo'])
   })
 
-  it('clicar no índice abre o bloco, rola até ele e põe o foco no resumo', () => {
+  it('clicar no índice mostra o bloco, marca-o como atual e põe o foco no título', () => {
     const { container } = renderizar()
+    expect(screen.getByRole('link', { name: /^Serviço/ })).toHaveAttribute(
+      'aria-current',
+      'location',
+    )
+
+    fireEvent.click(screen.getByRole('link', { name: 'Prestador 2 campos' }))
+
+    const bloco = container.querySelector('#bloco-Prestador')!
+    expect(container.querySelector('#bloco-Servico')).toBeNull()
+    expect(rolarParaOElemento.mock.contexts[0]).toBe(bloco)
+    expect(within(bloco as HTMLElement).getByRole('heading', { level: 3 })).toHaveFocus()
+    expect(screen.getByRole('link', { name: 'Prestador 2 campos' })).toHaveAttribute(
+      'aria-current',
+      'location',
+    )
+    expect(screen.getByRole('link', { name: /^Serviço/ })).not.toHaveAttribute('aria-current')
+  })
+
+  it('com filtro, o índice rola até o bloco recolhível e nenhum fica marcado como atual', () => {
+    const { container } = renderizar()
+    mostrarTodosOsBlocos()
 
     fireEvent.click(screen.getByRole('link', { name: 'Prestador 2 campos' }))
 
     const bloco = container.querySelector<HTMLDetailsElement>('#bloco-Prestador')!
     expect(bloco.open).toBe(true)
-    expect(rolarParaOElemento.mock.contexts[0]).toBe(bloco)
     expect(bloco.querySelector('summary')).toHaveFocus()
+    expect(document.querySelector('[aria-current="location"]')).toBeNull()
   })
 })
 
@@ -549,6 +597,7 @@ describe('DicionarioDaVersao — modal do campo', () => {
     expect(ultimasPropsDoModal().anterior).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Fechar' }))
 
+    irAoBlocoPeloIndice(/^Zeta/)
     fireEvent.click(screen.getByRole('button', { name: 'ZetaCampo' }))
     expect(ultimasPropsDoModal().proximo).toBeNull()
     expect(ultimasPropsDoModal().posicao).toBe(8)
@@ -568,15 +617,21 @@ describe('DicionarioDaVersao — modal do campo', () => {
     expect(props.proximo).toBeNull()
   })
 
-  it('navegar para um campo de bloco fechado abre o bloco', () => {
+  it('navegar para um campo de outro bloco mostra esse bloco, e fechar devolve o foco a ele', () => {
     const { container } = renderizar()
-    expect(container.querySelector<HTMLDetailsElement>('#bloco-Tomador')!.open).toBe(false)
+    expect(container.querySelector('#bloco-Tomador')).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'ValPIS' }))
     fireEvent.click(screen.getByRole('button', { name: 'Próximo campo' }))
 
     expect(screen.getByRole('dialog', { name: 'TomaCNPJ' })).toBeInTheDocument()
-    expect(container.querySelector<HTMLDetailsElement>('#bloco-Tomador')!.open).toBe(true)
+    expect(container.querySelector('#bloco-Tomador')).not.toBeNull()
+    expect(container.querySelector('#bloco-Servico')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar' }))
+
+    expect(container.querySelector('#bloco-Tomador')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'TomaCNPJ' })).toHaveFocus()
   })
 
   it('fechar devolve o foco ao botão da linha do campo em que o modal terminou', () => {
@@ -627,7 +682,8 @@ describe('DicionarioDaVersao — campo apontado por âncora', () => {
   it('abre o bloco, rola até a linha, abre o modal e marca a linha', () => {
     const { container } = renderizar({ campoDestacado: 'prestador-im' })
 
-    expect(container.querySelector<HTMLDetailsElement>('#bloco-Prestador')!.open).toBe(true)
+    expect(container.querySelector('#bloco-Prestador')).not.toBeNull()
+    expect(container.querySelector('#bloco-Servico')).toBeNull()
     expect(screen.getByRole('dialog', { name: 'IM' })).toBeInTheDocument()
     expect(rolarParaOElemento).toHaveBeenCalledExactlyOnceWith({ block: 'center' })
     expect(rolarParaOElemento.mock.contexts[0]).toBe(container.querySelector('#campo-prestador-im'))
@@ -662,6 +718,7 @@ describe('DicionarioDaVersao — campo apontado por âncora', () => {
 
     vi.mocked(limparAncoraDeCampo).mockClear()
     renderizar({ campoDestacado: null })
+    irAoBlocoPeloIndice(/^Prestador/)
     fireEvent.click(screen.getByRole('button', { name: 'IM' }))
     fireEvent.click(screen.getByRole('button', { name: 'Fechar' }))
     expect(limparAncoraDeCampo).not.toHaveBeenCalled()
@@ -677,7 +734,7 @@ describe('DicionarioDaVersao — só campos da reforma tributária', () => {
   }))
 
   function botaoDaReforma() {
-    return screen.getByRole('button', { name: 'Só campos da reforma (RT)' })
+    return screen.getByRole('button', { name: 'Só reforma tributária' })
   }
 
   it('mostra só os campos da reforma, com o selo, e limpar devolve o dicionário inteiro', () => {
@@ -693,7 +750,7 @@ describe('DicionarioDaVersao — só campos da reforma tributária', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Limpar filtro' }))
 
     expect(botaoDaReforma()).toHaveAttribute('aria-pressed', 'false')
-    expect(nomesNaOrdemDoDom(container)).toHaveLength(8)
+    expect(nomesNaOrdemDoDom(container)).toHaveLength(4)
   })
 
   it('o termo continua valendo dentro dos campos da reforma', () => {
@@ -714,5 +771,54 @@ describe('DicionarioDaVersao — só campos da reforma tributária', () => {
       screen.getByText('Nenhum campo da versão 4.13 é da reforma tributária.'),
     ).toBeInTheDocument()
     expect(screen.queryByText(/O nome pode ser o do provedor/)).not.toBeInTheDocument()
+  })
+})
+
+describe('DicionarioDaVersao: só o que mudou', () => {
+  function opcao(rotulo: 'Layout completo' | 'Só o que mudou') {
+    return screen.getByRole('radio', { name: rotulo })
+  }
+
+  it('sem versão anterior, o alternador não aparece', () => {
+    renderizar()
+
+    expect(screen.queryByRole('radiogroup', { name: 'O que mostrar' })).not.toBeInTheDocument()
+  })
+
+  it('blocos sem campo novo somem, o índice acompanha, e "Layout completo" devolve tudo', () => {
+    const { container } = renderizar({ temVersaoAnterior: true })
+
+    expect(opcao('Layout completo')).toHaveAttribute('aria-checked', 'true')
+    fireEvent.click(opcao('Só o que mudou'))
+
+    expect(opcao('Só o que mudou')).toHaveAttribute('aria-checked', 'true')
+    expect(opcao('Layout completo')).toHaveAttribute('aria-checked', 'false')
+    expect(nomesNaOrdemDoDom(container)).toEqual(['ValServicos'])
+    expect(estadoDosBlocos(container)).toEqual([['bloco-Servico', true]])
+    expect(screen.getByText('Mostrando 1 de 8 campos.')).toBeInTheDocument()
+
+    const indice = screen.getByRole('navigation', { name: 'Blocos do layout' })
+    expect(within(indice).getAllByRole('listitem')).toHaveLength(1)
+    expect(
+      within(indice).getByRole('link', { name: 'Serviço +1 novo 1 campo' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(opcao('Layout completo'))
+
+    expect(nomesNaOrdemDoDom(container)).toHaveLength(4)
+  })
+
+  it('combinado com a busca, sem sobra diz "Nenhum campo com esses filtros." e limpar volta', () => {
+    const { container } = renderizar({ temVersaoAnterior: true })
+
+    fireEvent.click(opcao('Só o que mudou'))
+    digitarBusca('tomacnpj')
+
+    expect(screen.getByText('Nenhum campo com esses filtros.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Limpar filtro' })[0])
+
+    expect(opcao('Layout completo')).toHaveAttribute('aria-checked', 'true')
+    expect(nomesNaOrdemDoDom(container)).toHaveLength(4)
   })
 })

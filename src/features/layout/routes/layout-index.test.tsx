@@ -51,17 +51,45 @@ function renderPagina() {
 }
 
 describe('LayoutIndicePage', () => {
-  it('lista as versões publicadas na ordem do backend, com link para o dicionário de cada uma', async () => {
+  it('um cartão por versão, vigente primeiro e as outras na ordem do backend, cada um um link só', async () => {
     server.use(handlerLayoutIndiceSucesso(indiceCompleto))
     renderPagina()
 
-    const links = await screen.findAllByRole('link', { name: /Ver o dicionário da versão/ })
-    expect(links.map((link) => link.getAttribute('aria-label'))).toEqual([
-      'Ver o dicionário da versão 4.13',
-      'Ver o dicionário da versão 4.12',
-      'Ver o dicionário da versão 4.10',
+    const links = await screen.findAllByRole('link', { name: /Abrir dicionário/ })
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/layout/4-12',
+      '/layout/4-13',
+      '/layout/4-10',
     ])
-    expect(links[0]).toHaveAttribute('href', '/layout/4-13')
+    expect(links[0]).toHaveAccessibleName('Versão 4.12 Vigente 58 campos Abrir dicionário')
+  })
+
+  it('a vigente mostra novos e a data de obrigatoriedade; a anterior, só os campos', async () => {
+    const vigente = { ...indiceCompleto.vigente, obrigatoriaEm: '2026-12-01' }
+    server.use(
+      handlerLayoutIndiceSucesso({
+        ...indiceCompleto,
+        vigente,
+        versoes: [indiceCompleto.versoes[0], vigente, indiceCompleto.versoes[2]],
+        novidades: {
+          versao: vigente,
+          anterior: indiceCompleto.versoes[2],
+          descricao: null,
+          camposNovos: 44,
+          camposDescontinuados: 20,
+        },
+      }),
+    )
+    renderPagina()
+
+    expect(
+      await screen.findByRole('link', {
+        name: 'Versão 4.12 Vigente 58 campos · 44 novos · obrigatória em 01/12/2026 Abrir dicionário',
+      }),
+    ).toHaveAttribute('href', '/layout/4-12')
+    expect(
+      screen.getByRole('link', { name: 'Versão 4.10 Anterior 55 campos Abrir dicionário' }),
+    ).toHaveAttribute('href', '/layout/4-10')
   })
 
   it('o estado de cada versão aparece por extenso, nunca só pela forma da borda', async () => {
@@ -92,18 +120,16 @@ describe('LayoutIndicePage', () => {
       name: 'O que mudou da versão 4.10 para a 4.12',
     })
     expect(secao).toHaveAttribute('id', 'novidades')
-    expect(secao.querySelector('[data-contador="novos"]')).toHaveTextContent('44novos')
-    expect(secao.querySelector('[data-contador="descontinuados"]')).toHaveTextContent('20saíram')
+    expect(secao.querySelector('[data-contador="novos"]')).toHaveTextContent('44 novos')
+    expect(secao.querySelector('[data-contador="descontinuados"]')).toHaveTextContent('20 saíram')
     expect(screen.getByText('InvoiCy 3.3.0.0.')).toBeInTheDocument()
     expect(screen.getByText('Grupos novos')).toBeInTheDocument()
     expect(screen.getByText('ValServEst')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Abrir o dicionário da versão 4.12' })).toHaveAttribute(
-      'href',
-      '/layout/4-12',
-    )
+    // O dicionário da versão fica no cabeçalho e nos cartões, sem link repetido no card.
+    expect(within(secao).queryByRole('link', { name: /Abrir o dicionário/ })).toBeNull()
   })
 
-  it('com mudanças estruturadas, agrupa em antes e depois, com contadores que batem com a lista', async () => {
+  it('com mudanças estruturadas, mostra cartões com etiqueta e contadores em campos', async () => {
     const vigente = {
       ...indiceCompleto.vigente,
       normaOrigem: 'NT 009 v1.01',
@@ -146,25 +172,27 @@ describe('LayoutIndicePage', () => {
     // A origem fica só na linha do tempo, acima do card.
     expect(secao.querySelector('[data-origem-da-versao]')).toBeNull()
     expect(screen.getAllByText('NT 009 v1.01')).toHaveLength(1)
-    expect(secao.querySelector('[data-contador="novos"]')).toHaveTextContent('1novo44 campos')
-    expect(secao.querySelector('[data-contador="descontinuados"]')).toHaveTextContent(
-      '1saiu20 campos',
+    // A lista tem 1 grupo novo com 44 campos dentro: a pílula conta campos e a nota explica.
+    expect(secao.querySelector('[data-contador="novos"]')).toHaveTextContent('44 novos')
+    expect(secao.querySelector('[data-contador="descontinuados"]')).toHaveTextContent('20 saíram')
+    expect(secao.querySelector('[data-nota-dos-contadores]')).toHaveTextContent(
+      'Os números contam campos.',
     )
     expect(await within(secao).findByRole('link', { name: 'nroDUIMP' })).toHaveAttribute(
       'href',
       '/layout/campos/numero-duimp',
     )
     expect(secao.querySelector('[data-contador="mudaramDeLugar"]')).toHaveTextContent(
-      '1mudou de lugar',
+      '1 mudou de lugar',
     )
-    expect(secao.querySelector('[data-contador="renomeados"]')).toHaveTextContent('1renomeado')
+    expect(secao.querySelector('[data-contador="renomeados"]')).toHaveTextContent('1 renomeado')
 
-    const grupos = [...secao.querySelectorAll('[data-grupo-de-mudancas]')]
-    expect(grupos.map((grupo) => grupo.querySelector('h3')?.firstChild?.textContent)).toEqual([
-      'Grupos novos',
-      'Mudaram de lugar',
-      'Renomeados',
-      'Saíram',
+    const cartoes = [...secao.querySelectorAll('[data-mudanca]')]
+    expect(cartoes.map((cartao) => cartao.querySelector('p > span')?.textContent)).toEqual([
+      'Grupo novo',
+      'Mudou de lugar',
+      'Renomeado',
+      'Saiu',
     ])
     expect(secao.querySelector('[data-mudanca="renomeado"]')).toHaveTextContent(
       'nDI passou a ser nroDUIMPNúmero da DUIMP.',
@@ -172,6 +200,42 @@ describe('LayoutIndicePage', () => {
     // Os tópicos repetiriam a lista: da nota fica só o resumo.
     expect(within(secao).getByText('InvoiCy 3.3.0.0.')).toBeInTheDocument()
     expect(secao.querySelector('dl')).toBeNull()
+  })
+
+  it('no hub, a lista de mudanças vem cortada em 4, com botão para ver todas', async () => {
+    const vigente = {
+      ...indiceCompleto.vigente,
+      mudancas: ['DestIE', 'DestIM', 'DestCRT', 'nroContCambio', 'nroDUIMP'].map((nome) => ({
+        tipo: 'campoNovo',
+        antes: null,
+        depois: nome,
+        descricao: null,
+      })),
+    }
+    server.use(
+      handlerLayoutIndiceSucesso({
+        ...indiceCompleto,
+        vigente,
+        novidades: {
+          versao: vigente,
+          anterior: indiceCompleto.versoes[2],
+          descricao: null,
+          camposNovos: 5,
+          camposDescontinuados: 0,
+        },
+      }),
+      handlerLayoutVersaoSucesso('4-12', { camposPorGrupo: [] }),
+    )
+    renderPagina()
+
+    const secao = await screen.findByRole('region', {
+      name: 'O que mudou da versão 4.10 para a 4.12',
+    })
+    expect(secao.querySelectorAll('[data-mudanca]')).toHaveLength(4)
+    expect(within(secao).getByRole('button', { name: 'Ver todas as 5 mudanças' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
   })
 
   it('sem versão anterior publicada, a seção não fala em mudança', async () => {
@@ -226,7 +290,7 @@ describe('LayoutIndicePage', () => {
     expect(await screen.findByText('Carregando as versões do Layout InvoiCy…')).toBeInTheDocument()
     // E o carregamento some quando o conteúdo chega, nunca fica preso.
     expect(
-      await screen.findByText('Versão do layout: escolha para ver o dicionário'),
+      await screen.findByRole('heading', { name: 'Dicionário por versão' }),
     ).toBeInTheDocument()
     expect(screen.queryByText('Carregando as versões do Layout InvoiCy…')).not.toBeInTheDocument()
   })
@@ -270,7 +334,7 @@ describe('LayoutIndicePage: título da aba', () => {
     server.use(handlerLayoutIndiceSucesso(indiceCompleto))
     renderPagina()
 
-    await screen.findAllByRole('link', { name: /Ver o dicionário da versão/ })
+    await screen.findAllByRole('link', { name: /Abrir dicionário/ })
     expect(document.title).toBe('Layout InvoiCy | Codex')
   })
 })

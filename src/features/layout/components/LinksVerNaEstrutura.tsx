@@ -24,7 +24,7 @@ const PROTOCOLO_DO_FORMATO: Record<FormatoDaEstrutura, string> = {
 }
 
 const CLASSE_DO_LINK =
-  'text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
 
 /**
  * Atalho do verbete para a linha da tag na estrutura. A rolagem é da estrutura, nunca do router:

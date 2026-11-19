@@ -103,16 +103,19 @@ describe('LinhaDoVerbete', () => {
     expect(screen.queryByText('Descontinuado nesta versão')).toBeNull()
   })
 
-  it('o significado é cortado por CSS em duas linhas, mas o texto inteiro está no DOM', () => {
+  it('o significado aparece inteiro, sem corte, na coluna e no resumo do celular', () => {
     const { linha } = renderizarLinha({
       campo: { ...CAMPO_ATIVO_NA_VERSAO, significado: SIGNIFICADO_LONGO },
     })
 
     const celula = linha.querySelector('[data-coluna="significado"]')!
     const paragrafo = within(celula as HTMLElement).getByText(SIGNIFICADO_LONGO)
+    const resumo = linha.querySelector('[data-resumo-movel]')!
 
-    expect(paragrafo).toHaveClass('line-clamp-2')
-    expect(paragrafo).toHaveAttribute('title', SIGNIFICADO_LONGO)
+    for (const texto of [paragrafo, resumo]) {
+      expect(texto).toHaveTextContent(SIGNIFICADO_LONGO)
+      expect(texto.className).not.toMatch(/line-clamp|truncate/)
+    }
   })
 
   it('clicar na linha, fora do botão, abre o campo', () => {
@@ -156,14 +159,13 @@ describe('LinhaDoVerbete', () => {
     expect(screen.getByRole('row')).not.toHaveClass('bg-highlight-anchor')
   })
 
-  it('o caminho no XML aparece na coluna própria e no resumo do celular', () => {
+  it('o caminho no XML aparece uma vez, embaixo do nome, na célula do campo', () => {
     const { linha } = renderizarLinha()
 
-    expect(linha.querySelector('[data-coluna="caminho"]')).toHaveTextContent(
+    const celulaDoCampo = linha.querySelector('[data-coluna="campo"]')!
+    expect(celulaDoCampo.querySelector('[data-coluna="caminho"]')).toHaveTextContent(
       '//Servico/Valores/ValServicos',
     )
-    expect(linha.querySelector('[data-resumo-movel]')).toHaveTextContent(
-      '//Servico/Valores/ValServicos',
-    )
+    expect(linha.querySelectorAll('[data-coluna="caminho"]')).toHaveLength(1)
   })
 })

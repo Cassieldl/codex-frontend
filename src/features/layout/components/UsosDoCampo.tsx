@@ -23,7 +23,7 @@ const CLASSE_DA_TAG =
   'block font-mono text-[13px] font-semibold text-primary-medium [overflow-wrap:anywhere]'
 
 const CLASSE_DO_LINK =
-  'inline-flex min-h-9 shrink-0 items-center text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'inline-flex min-h-9 shrink-0 items-center text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
 
 function DestinosDoUso({ destinoXml }: { destinoXml: string | null }) {
   const destinos = separarDestinos(destinoXml)
@@ -121,7 +121,7 @@ export function UsosDoCampo({ campoSlug, slugAssentado, nomeDoCampo }: UsosDoCam
       ) : usos.length === 0 ? (
         <p className="mt-2 text-sm text-muted">Nenhum provedor publicado usa este campo ainda.</p>
       ) : (
-        <ul className="mt-3 divide-y divide-line">
+        <ul className="mt-3 divide-y divide-border">
           {usos.map((uso) => (
             <ItemDeUso
               key={`${uso.provedorSlug}/${uso.versaoSlug}`}

@@ -1,7 +1,9 @@
+import clsx from 'clsx'
 import type { ChaveDoContador, ContadorDeMudanca } from '../utils/mudancasDaVersao'
 
 export interface ContadoresDeMudancaProps {
   contadores: readonly ContadorDeMudanca[]
+  className?: string
 }
 
 const ROTULO_DO_CONTADOR: Record<ChaveDoContador, { singular: string; plural: string }> = {
@@ -11,38 +13,53 @@ const ROTULO_DO_CONTADOR: Record<ChaveDoContador, { singular: string; plural: st
   renomeados: { singular: 'renomeado', plural: 'renomeados' },
 }
 
+const COR_DO_PONTO: Record<ChaveDoContador, string> = {
+  novos: 'bg-success',
+  descontinuados: 'bg-error-texto',
+  mudaramDeLugar: 'bg-primary-light',
+  renomeados: 'bg-accent',
+}
+
 /**
- * Quanto a versão mudou, uma caixa por tipo. O número bate com a lista logo abaixo; quando o
- * dicionário marca outra quantidade de campos, ela vem ao lado, menor ("6 novos · 44 campos").
+ * Quanto a versão mudou, uma pílula por tipo, numa linha só. O número conta campos: quando o
+ * dicionário marca mais campos do que a lista tem itens (um grupo novo traz vários campos), vale o
+ * número de campos e uma nota explica a diferença para a lista.
  */
-export function ContadoresDeMudanca({ contadores }: ContadoresDeMudancaProps) {
+export function ContadoresDeMudanca({ contadores, className }: ContadoresDeMudancaProps) {
   if (contadores.length === 0) return null
 
-  return (
-    <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {contadores.map(({ chave, quantidade, camposAfetados }) => {
-        const { singular, plural } = ROTULO_DO_CONTADOR[chave]
+  const contaGruposNaLista = contadores.some(({ camposAfetados }) => camposAfetados !== null)
 
-        return (
-          <li
-            key={chave}
-            data-contador={chave}
-            className="flex flex-col gap-0.5 rounded-xl border border-line bg-white px-5 py-4"
-          >
-            <strong className="text-titulo leading-none font-extrabold text-primary tabular-nums">
-              {quantidade}
-            </strong>
-            <span className="text-sm font-bold text-primary">
-              {quantidade === 1 ? singular : plural}
-            </span>
-            {camposAfetados !== null && (
-              <span data-campos-afetados="" className="text-xs text-muted tabular-nums">
-                {camposAfetados} {camposAfetados === 1 ? 'campo' : 'campos'}
-              </span>
-            )}
-          </li>
-        )
-      })}
-    </ul>
+  return (
+    <div className={clsx('flex flex-col gap-2', className)}>
+      <ul className="flex flex-wrap gap-2">
+        {contadores.map(({ chave, quantidade, camposAfetados }) => {
+          const numero = camposAfetados ?? quantidade
+          const { singular, plural } = ROTULO_DO_CONTADOR[chave]
+
+          return (
+            <li
+              key={chave}
+              data-contador={chave}
+              className="inline-flex h-9 items-center gap-2 rounded-[var(--radius-pill)] border border-border bg-white px-3.5 text-sm text-primary"
+            >
+              <span
+                aria-hidden="true"
+                className={`size-2.5 shrink-0 rounded-full ${COR_DO_PONTO[chave]}`}
+              />
+              <strong className="font-extrabold tabular-nums">{numero}</strong>{' '}
+              <span className="font-semibold">{numero === 1 ? singular : plural}</span>
+            </li>
+          )
+        })}
+      </ul>
+
+      {contaGruposNaLista && (
+        <p data-nota-dos-contadores="" className="text-xs text-muted">
+          Os números contam campos. A lista abaixo junta os campos de um mesmo grupo numa mudança
+          só.
+        </p>
+      )}
+    </div>
   )
 }

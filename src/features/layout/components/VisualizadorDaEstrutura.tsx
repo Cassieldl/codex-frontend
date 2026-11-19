@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { ChevronsDownUp, ChevronsUpDown, Download } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -8,20 +9,27 @@ import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributa
 import type { VizinhoDeCampo } from '../../../types/vizinhoDeCampo'
 import { baixarArquivoDeTexto } from '../../../utils/baixarArquivoDeTexto'
 import type { CampoNaSequencia } from '../../../utils/blocosDoLayout'
+import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { construirIdLinhaEstrutura } from '../../provedores/utils/destaqueAncora'
 import { useAncoraDaEstrutura } from '../hooks/useAncoraDaEstrutura'
 import { ROTULO_DO_FORMATO } from '../types/estruturaLayout'
 import type { FormatoDaEstrutura, NoEstrutura } from '../types/estruturaLayout'
 import type { CampoLayoutPublico } from '../types/layoutPublico'
 import type { FormatosDoCampo } from '../utils/formatosDoCampoNaEstrutura'
+import { marcasDoCampoNaEstrutura } from '../utils/marcasDoCampoNaEstrutura'
+import type { MarcasDoCampoNaEstrutura } from '../utils/marcasDoCampoNaEstrutura'
 import type { LinhaDaEstrutura } from '../utils/linhasDaEstrutura'
 import {
   gruposAbertosPorPadrao,
   montarLinhasDaEstrutura,
   textoDaLinha,
 } from '../utils/linhasDaEstrutura'
-import { CLASSE_DA_ETIQUETA_DE_MARCADOR, LinhaDoTextoDaEstrutura } from './LinhaDoTextoDaEstrutura'
-import type { AcaoDaTag } from './LinhaDoTextoDaEstrutura'
+import {
+  CLASSE_DA_ETIQUETA_DE_MARCADOR,
+  CLASSE_DA_ETIQUETA_DE_NOVO,
+  LinhaDoTextoDaEstrutura,
+} from './LinhaDoTextoDaEstrutura'
+import type { AcaoDaTag, SuperficieDaEstrutura } from './LinhaDoTextoDaEstrutura'
 import { ModalDoVerbete } from './ModalDoVerbete'
 
 /** Página do layout: a tag abre o verbete do campo num modal, e a URL pode apontar uma tag. */
@@ -58,6 +66,8 @@ export interface VisualizadorDaEstruturaProps {
   rotuloDaRegiao: string
   /** Nome acessível do botão de copiar (ex.: "Copiar a estrutura XML (SOAP) completa"). */
   rotuloDaCopia: string
+  /** `escura`: painel de código com o nome do arquivo na barra e tag, valor e pontuação coloridos. */
+  superficie?: SuperficieDaEstrutura
 }
 
 const EXTENSAO: Record<FormatoDaEstrutura, { extensao: string; mime: string }> = {
@@ -67,19 +77,31 @@ const EXTENSAO: Record<FormatoDaEstrutura, { extensao: string; mime: string }> =
 
 const LEGENDA_DO_SUBLINHADO: Record<DestinoDaTag['tipo'], string> = {
   verbete: 'abre o verbete do campo',
-  linhaDaTabela: 'leva ao campo na tabela desta versão',
+  linhaDaTabela: 'abre o campo na aba Campos',
 }
+
+// A marca da legenda fica fora do painel: leva o fundo escuro junto para a cor ser a mesma.
+const CLASSE_DA_AMOSTRA_NO_ESCURO =
+  'inline-flex items-center rounded-[var(--radius-control)] bg-codigo-fundo px-1.5 font-mono'
 
 const SEM_CAMPOS: ReadonlyMap<string, CampoNaSequencia<CampoLayoutPublico>> = new Map()
 
 // Mesma caixa do botão de copiar: a barra inteira tem uma altura e um alinhamento só.
 const CLASSE_DO_BOTAO_DA_BARRA =
-  'inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-white px-2.5 text-xs font-medium text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-white px-2.5 text-xs font-medium text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
+
+// Ação terciária sobre o cabeçalho escuro: sem caixa, só o texto, para não disputar com Copiar e Baixar.
+const CLASSE_DA_ACAO_NO_ESCURO =
+  'inline-flex min-h-9 items-center gap-1.5 rounded-[var(--radius-control)] px-2 text-xs font-semibold text-codigo-texto underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
+
+const CLASSE_DO_BAIXAR_NO_ESCURO =
+  'inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] bg-accent px-3 text-xs font-bold text-primary hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
 
 interface MarcasDoTexto {
   soXml: boolean
   soJson: boolean
   escolha: boolean
+  novo: boolean
   reforma: boolean
   tagClicavel: boolean
 }
@@ -89,16 +111,19 @@ function marcasDoTexto(linhas: readonly LinhaDaEstrutura[], destino: DestinoDaTa
     soXml: false,
     soJson: false,
     escolha: false,
+    novo: false,
     reforma: false,
     tagClicavel: false,
   }
 
   for (const { no } of linhas) {
     if (!no) continue
+    const marcasDaTag = marcasDoCampo(destino, no.campoSlug)
     if (no.formato === 'soXml') marcas.soXml = true
     if (no.formato === 'soJson') marcas.soJson = true
     if (no.escolha) marcas.escolha = true
-    if (daReformaTributaria(destino, no.campoSlug)) marcas.reforma = true
+    if (marcasDaTag.novoNestaVersao) marcas.novo = true
+    if (marcasDaTag.reformaTributaria) marcas.reforma = true
     if (acaoDaTag(destino, no.campoSlug) !== null) marcas.tagClicavel = true
   }
 
@@ -109,8 +134,18 @@ function marcasDoTexto(linhas: readonly LinhaDaEstrutura[], destino: DestinoDaTa
 function itensDaLegenda(
   marcas: MarcasDoTexto,
   destino: DestinoDaTag['tipo'],
+  marcaDeNovo: string | null,
+  superficie: SuperficieDaEstrutura,
 ): ItemDaLegendaDeMarcas[] {
   const itens: ItemDaLegendaDeMarcas[] = []
+
+  if (marcas.novo && marcaDeNovo !== null) {
+    itens.push({
+      chave: 'novo',
+      marca: <span className={CLASSE_DA_ETIQUETA_DE_NOVO}>{marcaDeNovo}</span>,
+      significado: 'campo novo nesta versão',
+    })
+  }
 
   if (marcas.soXml) {
     itens.push({
@@ -143,12 +178,32 @@ function itensDaLegenda(
   if (marcas.tagClicavel) {
     itens.push({
       chave: 'tag',
+      marca:
+        superficie === 'escura' ? (
+          <span className={CLASSE_DA_AMOSTRA_NO_ESCURO}>
+            <span className="font-semibold text-codigo-tag underline decoration-dotted underline-offset-[3px]">
+              sublinhado
+            </span>
+          </span>
+        ) : (
+          <span className="font-mono font-semibold text-primary-medium underline decoration-dotted underline-offset-2">
+            sublinhado
+          </span>
+        ),
+      significado: LEGENDA_DO_SUBLINHADO[destino],
+    })
+  }
+
+  // Só o painel escuro pinta o valor: no claro ele é texto comum.
+  if (superficie === 'escura') {
+    itens.push({
+      chave: 'valor',
       marca: (
-        <span className="font-mono font-semibold text-primary-medium underline decoration-dotted underline-offset-2">
-          sublinhado
+        <span className={CLASSE_DA_AMOSTRA_NO_ESCURO}>
+          <span className="text-codigo-valor">valor</span>
         </span>
       ),
-      significado: LEGENDA_DO_SUBLINHADO[destino],
+      significado: 'exemplo: troque pelo da sua nota',
     })
   }
 
@@ -160,12 +215,12 @@ function comGrupos(abertos: ReadonlySet<number>, grupos: readonly number[]): Rea
   return new Set([...abertos, ...grupos])
 }
 
-function daReformaTributaria(destino: DestinoDaTag, slug: string | null): boolean {
-  if (slug === null) return false
-  if (destino.tipo === 'verbete') {
-    return destino.camposPorSlug.get(slug)?.campo.reformaTributaria === true
+function marcasDoCampo(destino: DestinoDaTag, slug: string | null): MarcasDoCampoNaEstrutura {
+  if (destino.tipo === 'verbete') return marcasDoCampoNaEstrutura(slug, destino.camposPorSlug)
+  return {
+    novoNestaVersao: false,
+    reformaTributaria: slug !== null && destino.camposDaReforma.has(slug),
   }
-  return destino.camposDaReforma.has(slug)
 }
 
 function acaoDaTag(destino: DestinoDaTag, slug: string | null): AcaoDaTag | null {
@@ -185,7 +240,9 @@ export function VisualizadorDaEstrutura({
   nomeBaseDoArquivo,
   rotuloDaRegiao,
   rotuloDaCopia,
+  superficie = 'clara',
 }: VisualizadorDaEstruturaProps) {
+  const escura = superficie === 'escura'
   const contenedorRef = useRef<HTMLDivElement | null>(null)
   // Linha da tag no modal neste instante: o modal devolve o foco depois de sair do DOM, quando o
   // estado já foi limpo.
@@ -194,6 +251,7 @@ export function VisualizadorDaEstrutura({
   const comVerbete = destino.tipo === 'verbete'
   const camposPorSlug = comVerbete ? destino.camposPorSlug : SEM_CAMPOS
   const slugAncora = comVerbete ? destino.slugAncora : null
+  const marcaDeNovo = comVerbete ? `novo na ${formatarVersaoLayout(destino.versaoRotulo)}` : null
 
   const { linhas, ancoras } = useMemo(() => montarLinhasDaEstrutura(raiz, formato), [raiz, formato])
   const marcas = useMemo(() => marcasDoTexto(linhas, destino), [linhas, destino])
@@ -276,6 +334,7 @@ export function VisualizadorDaEstrutura({
     const recolhido = linha.fimDoGrupo !== null && !abertos.has(indice)
     const slug = linha.no?.campoSlug ?? null
     const ehAncora = comVerbete && slug !== null && ancoras.get(slug)?.linha === indice
+    const marcasDaTag = marcasDoCampo(destino, slug)
 
     visiveis.push(
       <LinhaDoTextoDaEstrutura
@@ -290,9 +349,11 @@ export function VisualizadorDaEstrutura({
         idDaAncora={ehAncora ? construirIdLinhaEstrutura(slug) : null}
         destacada={indice === linhaDaAncora}
         acaoDaTag={acaoDaTag(destino, slug)}
-        daReformaTributaria={daReformaTributaria(destino, slug)}
+        daReformaTributaria={marcasDaTag.reformaTributaria}
+        marcaDeNovo={marcasDaTag.novoNestaVersao ? marcaDeNovo : null}
         onAlternarGrupo={alternarGrupo}
         onAbrirTag={abrirTag}
+        superficie={superficie}
       />,
     )
 
@@ -308,57 +369,126 @@ export function VisualizadorDaEstrutura({
     return campo ? { slug: campo.slug, nome: campo.nome } : null
   }
 
+  const legenda = (
+    <LegendaDeMarcas itens={itensDaLegenda(marcas, destino.tipo, marcaDeNovo, superficie)} />
+  )
+
+  const avisoDaAncora = slugAncora !== null && linhaDaAncora === null && (
+    <p
+      role="status"
+      className="rounded-[var(--radius-control)] border border-alert-info-borda bg-alert-info px-3 py-2 text-sm text-ink"
+    >
+      {nomeDaAncora} não aparece na estrutura {ROTULO_DO_FORMATO[formato]} desta versão.
+    </p>
+  )
+
+  const avisoDoArquivo = (
+    <span role="status" aria-live="polite" className="sr-only">
+      {avisoDoDownload}
+    </span>
+  )
+
+  const texto = (
+    <div
+      ref={contenedorRef}
+      role="region"
+      aria-label={rotuloDaRegiao}
+      // Região rolável na horizontal precisa ser alcançável pelo teclado.
+      tabIndex={0}
+      // `relative` prende o `sr-only` absoluto dos marcadores dentro da rolagem: sem ele, estoura a página.
+      className={clsx(
+        'relative overflow-x-auto font-mono text-[13px] leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
+        escura
+          ? 'bg-codigo-fundo py-4'
+          : 'rounded-[var(--radius-card)] border border-border bg-white py-3',
+      )}
+    >
+      {visiveis}
+    </div>
+  )
+
   return (
     <div className="flex flex-col gap-3">
-      <LegendaDeMarcas itens={itensDaLegenda(marcas, destino.tipo)} />
+      {escura ? (
+        <>
+          {avisoDaAncora}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={expandirTudo} className={CLASSE_DO_BOTAO_DA_BARRA}>
-          <ChevronsUpDown aria-hidden="true" className="size-3.5" />
-          Expandir tudo
-        </button>
-        <button
-          type="button"
-          onClick={() => setAbertos(new Set())}
-          className={CLASSE_DO_BOTAO_DA_BARRA}
-        >
-          <ChevronsDownUp aria-hidden="true" className="size-3.5" />
-          Recolher tudo
-        </button>
-        <BotaoCopiar
-          valor={textoCompleto}
-          rotulo={`Copiar ${extensao.toUpperCase()}`}
-          ariaLabel={rotuloDaCopia}
-        />
-        <button type="button" onClick={baixar} className={CLASSE_DO_BOTAO_DA_BARRA}>
-          <Download aria-hidden="true" className="size-3.5" />
-          Baixar .{extensao}
-        </button>
-        <span role="status" aria-live="polite" className="sr-only">
-          {avisoDoDownload}
-        </span>
-      </div>
+          <div className="overflow-hidden rounded-[var(--radius-card)] bg-codigo-fundo">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-white/10 bg-primary px-4 py-3">
+              <span data-nome-do-arquivo="" className="text-[13px] font-semibold text-codigo-texto">
+                {nomeDoArquivo}
+              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" onClick={expandirTudo} className={CLASSE_DA_ACAO_NO_ESCURO}>
+                  <ChevronsUpDown aria-hidden="true" className="size-3.5" />
+                  Expandir tudo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAbertos(new Set())}
+                  className={CLASSE_DA_ACAO_NO_ESCURO}
+                >
+                  <ChevronsDownUp aria-hidden="true" className="size-3.5" />
+                  Recolher tudo
+                </button>
+                <BotaoCopiar
+                  valor={textoCompleto}
+                  rotulo="Copiar"
+                  ariaLabel={rotuloDaCopia}
+                  superficie="escura"
+                />
+                <button
+                  type="button"
+                  onClick={baixar}
+                  aria-label={`Baixar o arquivo ${nomeDoArquivo}`}
+                  className={CLASSE_DO_BAIXAR_NO_ESCURO}
+                >
+                  <Download aria-hidden="true" className="size-3.5" />
+                  Baixar
+                </button>
+                {avisoDoArquivo}
+              </div>
+            </div>
 
-      {slugAncora !== null && linhaDaAncora === null && (
-        <p
-          role="status"
-          className="rounded-[var(--radius-control)] bg-alert-info px-3 py-2 text-sm text-ink"
-        >
-          {nomeDaAncora} não aparece na estrutura {ROTULO_DO_FORMATO[formato]} desta versão.
-        </p>
+            {texto}
+          </div>
+
+          {legenda}
+        </>
+      ) : (
+        <>
+          {legenda}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={expandirTudo} className={CLASSE_DO_BOTAO_DA_BARRA}>
+              <ChevronsUpDown aria-hidden="true" className="size-3.5" />
+              Expandir tudo
+            </button>
+            <button
+              type="button"
+              onClick={() => setAbertos(new Set())}
+              className={CLASSE_DO_BOTAO_DA_BARRA}
+            >
+              <ChevronsDownUp aria-hidden="true" className="size-3.5" />
+              Recolher tudo
+            </button>
+            <BotaoCopiar
+              valor={textoCompleto}
+              rotulo={`Copiar ${extensao.toUpperCase()}`}
+              ariaLabel={rotuloDaCopia}
+            />
+            <button type="button" onClick={baixar} className={CLASSE_DO_BOTAO_DA_BARRA}>
+              <Download aria-hidden="true" className="size-3.5" />
+              Baixar .{extensao}
+            </button>
+            {avisoDoArquivo}
+          </div>
+
+          {avisoDaAncora}
+
+          {texto}
+        </>
       )}
-
-      <div
-        ref={contenedorRef}
-        role="region"
-        aria-label={rotuloDaRegiao}
-        // Região rolável na horizontal precisa ser alcançável pelo teclado.
-        tabIndex={0}
-        // `relative` prende o `sr-only` absoluto dos marcadores dentro da rolagem: sem ele, estoura a página.
-        className="relative overflow-x-auto rounded-[var(--radius-card)] border border-border bg-white py-3 font-mono text-[13px] leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
-      >
-        {visiveis}
-      </div>
 
       {comVerbete && itemAberto && (
         <ModalDoVerbete
