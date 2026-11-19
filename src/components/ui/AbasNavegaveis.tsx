@@ -16,22 +16,55 @@ export interface AbaNavegavel {
   ativa: boolean
 }
 
+export type TamanhoDasAbas = 'padrao' | 'destaque'
+
 export interface AbasNavegaveisProps {
   abas: AbaNavegavel[]
   ariaLabel: string
+  /**
+   * `destaque`: abas de seção de página (texto maior, alvo de 44px) sobre uma faixa que já tem a
+   * própria borda inferior.
+   */
+  tamanho?: TamanhoDasAbas
   className?: string
+}
+
+interface ClassesDoTamanho {
+  lista: string
+  aba: string
+  inativa: string
+}
+
+const CLASSES_DO_TAMANHO: Record<TamanhoDasAbas, ClassesDoTamanho> = {
+  padrao: {
+    lista: 'border-b border-border',
+    aba: 'px-3 py-2 text-sm',
+    inativa: 'font-normal hover:shadow-hover',
+  },
+  destaque: {
+    lista: '',
+    aba: 'min-h-11 px-4 py-3 text-base',
+    inativa: 'font-semibold hover:text-primary',
+  },
 }
 
 // Cada aba é uma URL de verdade (o que a torna copiável) — por isso é um
 // <Link> real do TanStack Router, nunca role="tablist"/"tab" (esse padrão
 // ARIA pressupõe troca de painel sem navegação). A barra de 3px em
 // --color-accent é reforço visual, nunca o único sinal do estado ativo:
-// soma-se a `aria-current="page"` e a `font-semibold`/`text-ink` (§3.2 —
-// laranja sobre branco fica abaixo de 3:1 de contraste não-textual).
-export function AbasNavegaveis({ abas, ariaLabel, className }: AbasNavegaveisProps) {
+// soma-se a `aria-current="page"`, ao `text-ink` e ao contador escuro (§3.2: laranja
+// sobre branco fica abaixo de 3:1 de contraste não-textual).
+export function AbasNavegaveis({
+  abas,
+  ariaLabel,
+  tamanho = 'padrao',
+  className,
+}: AbasNavegaveisProps) {
+  const classes = CLASSES_DO_TAMANHO[tamanho]
+
   return (
     <nav aria-label={ariaLabel} className={className}>
-      <ul className="flex items-center gap-1 overflow-x-auto border-b border-line">
+      <ul className={clsx('flex items-center gap-1 overflow-x-auto', classes.lista)}>
         {abas.map((aba) => (
           <li
             key={`${aba.to}-${JSON.stringify(aba.params ?? {})}-${JSON.stringify(aba.search ?? {})}`}
@@ -47,10 +80,11 @@ export function AbasNavegaveis({ abas, ariaLabel, className }: AbasNavegaveisPro
               activeOptions={{ exact: true }}
               aria-current={aba.ativa ? 'page' : undefined}
               className={clsx(
-                'inline-flex items-center gap-2 border-b-[3px] px-3 py-2 text-sm whitespace-nowrap transition-shadow duration-150',
+                'inline-flex items-center gap-2 border-b-[3px] whitespace-nowrap transition-[box-shadow,color] duration-150',
+                classes.aba,
                 aba.ativa
                   ? 'border-accent-hover font-semibold text-ink'
-                  : 'border-transparent font-normal text-muted hover:shadow-hover',
+                  : clsx('border-transparent text-muted', classes.inativa),
               )}
             >
               {aba.rotulo}

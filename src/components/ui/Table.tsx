@@ -19,7 +19,7 @@ export function TableRoot({ children, className, rotulo }: TableRootComRotuloPro
       tabIndex={0}
       role="region"
       aria-label={rotulo}
-      className="overflow-x-auto rounded-[var(--radius-card)] border border-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+      className="overflow-x-auto rounded-[var(--radius-card)] border border-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover"
     >
       <table className={clsx('w-full border-collapse text-left', className)}>{children}</table>
     </div>
@@ -47,7 +47,7 @@ export interface TableRowProps {
 
 export function TableRow({ children, className, id }: TableRowProps) {
   return (
-    <tr id={id} className={clsx('h-[38px] border-b border-line last:border-b-0', className)}>
+    <tr id={id} className={clsx('h-[38px] border-b border-border last:border-b-0', className)}>
       {children}
     </tr>
   )

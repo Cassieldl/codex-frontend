@@ -20,7 +20,7 @@ export function ImagemDoArtigo({ src, alt, legenda }: ImagemDoArtigoProps) {
         type="button"
         onClick={() => setAmpliada(true)}
         aria-label={`Ampliar imagem: ${textoDaLegenda}`}
-        className="group relative block w-fit max-w-full cursor-zoom-in rounded-[var(--radius-control)] border border-line bg-white p-1 hover:shadow-hover"
+        className="group relative block w-fit max-w-full cursor-zoom-in rounded-[var(--radius-control)] border border-border bg-white p-1 hover:shadow-hover"
       >
         <img
           src={src}

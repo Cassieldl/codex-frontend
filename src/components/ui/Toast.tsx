@@ -13,28 +13,48 @@ export interface ToastProps {
 const toneConfig: Record<
   ToastTone,
   {
-    bg: string
+    superficie: string
     texto: string
     Icone: ComponentType<{ className?: string }>
     role: 'status' | 'alert'
   }
 > = {
-  success: { bg: 'bg-alert-success', texto: 'text-ink', Icone: CircleCheck, role: 'status' },
-  error: { bg: 'bg-alert-error', texto: 'text-ink', Icone: CircleX, role: 'alert' },
-  warning: { bg: 'bg-alert-warning', texto: 'text-ink', Icone: TriangleAlert, role: 'alert' },
-  info: { bg: 'bg-alert-info', texto: 'text-ink', Icone: Info, role: 'status' },
+  success: {
+    superficie: 'border-alert-success-borda bg-alert-success',
+    texto: 'text-alert-success-texto',
+    Icone: CircleCheck,
+    role: 'status',
+  },
+  error: {
+    superficie: 'border-alert-error-borda bg-alert-error',
+    texto: 'text-alert-error-texto',
+    Icone: CircleX,
+    role: 'alert',
+  },
+  warning: {
+    superficie: 'border-alert-warning-borda bg-alert-warning',
+    texto: 'text-alert-warning-texto',
+    Icone: TriangleAlert,
+    role: 'alert',
+  },
+  info: {
+    superficie: 'border-alert-info-borda bg-alert-info',
+    texto: 'text-primary',
+    Icone: Info,
+    role: 'status',
+  },
 }
 
-/** Fundo `alert-*` + ícone Lucide + texto — nunca cor isolada como único sinal. */
+/** Tom de aviso (fundo, borda inteira e texto) + ícone Lucide: a cor nunca é o único sinal. */
 export function Toast({ tone, message, onClose }: ToastProps) {
-  const { bg, texto, Icone, role } = toneConfig[tone]
+  const { superficie, texto, Icone, role } = toneConfig[tone]
 
   return (
     <div
       role={role}
       className={clsx(
-        'flex min-h-[60px] items-center gap-3 rounded-[var(--radius-control)] px-4 py-3 text-sm',
-        bg,
+        'flex min-h-[60px] items-center gap-3 rounded-[var(--radius-control)] border px-4 py-3 text-sm',
+        superficie,
         texto,
       )}
     >

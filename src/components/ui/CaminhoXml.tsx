@@ -37,7 +37,7 @@ function separar(caminho: string): { prefixo: string; segmentos: string[] } {
  *
  * A separação vem do PESO e do espaçamento, nunca de apagar a barra: sobre branco, um cinza claro
  * o bastante para "sumir" fica em 1,2:1 — ilegível para quem enxerga pouco, num caminho técnico em
- * que cada caractere conta. `--color-line` é token de borda e não serve como cor de texto; o mais
+ * que cada caractere conta. `--color-border` é token de borda e não serve como cor de texto; o mais
  * claro que passa AA aqui já é praticamente o `--color-muted` usado nos ancestrais.
  *
  * A quebra continua só nos separadores (`<wbr>`): `break-all` partia `RazaoSoc`/`ial` ao meio, e

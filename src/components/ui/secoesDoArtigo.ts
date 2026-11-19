@@ -20,20 +20,32 @@ export function gerarAncoraSecao(titulo: string): string {
   return `secao-${normalizado}`
 }
 
-/** Regex de linha em vez de `remark`: `##` em bloco de código sobra no sumário, mas seção real nunca falta. */
+const LINHA_DO_SELETOR = /^>\s*\[!SELETOR\]/
+
+/**
+ * Regex de linha em vez de `remark`: `##` em bloco de código sobra no sumário, mas seção real nunca
+ * falta. Os h3 que viram opção de um seletor ficam de fora: só um deles aparece por vez.
+ */
 export function extrairSecoesDoCorpo(corpo: string): ItemSumarioArtigo[] {
-  return corpo
-    .split('\n')
-    .map((linha) => LINHA_TITULO.exec(linha.trim()))
-    .filter((resultado): resultado is RegExpExecArray => resultado !== null)
-    .map((resultado) => {
-      const titulo = resultado[2].trim()
-      return {
-        nivel: resultado[1].length as 2 | 3,
-        titulo,
-        ancora: gerarAncoraSecao(titulo),
-      }
-    })
+  const itens: ItemSumarioArtigo[] = []
+  let dentroDoSeletor = false
+
+  for (const linha of corpo.split('\n')) {
+    const aparada = linha.trim()
+    if (LINHA_DO_SELETOR.test(aparada)) dentroDoSeletor = true
+
+    const resultado = LINHA_TITULO.exec(aparada)
+    if (!resultado) continue
+
+    const nivel = resultado[1].length as 2 | 3
+    if (nivel === 2) dentroDoSeletor = false
+    if (nivel === 3 && dentroDoSeletor) continue
+
+    const titulo = resultado[2].trim()
+    itens.push({ nivel, titulo, ancora: gerarAncoraSecao(titulo) })
+  }
+
+  return itens
 }
 
 export interface TopicoSumario extends ItemSumarioArtigo {
@@ -49,4 +61,16 @@ export function agruparSecoes(itens: ItemSumarioArtigo[]): TopicoSumario[] {
     else topicos.push({ ...item, subtopicos: [] })
   }
   return topicos
+}
+
+/** Posição da seção cuja âncora está no endereço (`#secao-...`), ou `-1`. */
+export function secaoDaAncora(titulos: readonly string[], hash: string): number {
+  let ancora: string
+  try {
+    ancora = decodeURIComponent(hash.replace(/^#/, ''))
+  } catch {
+    return -1
+  }
+  if (!ancora) return -1
+  return titulos.findIndex((titulo) => gerarAncoraSecao(titulo) === ancora)
 }

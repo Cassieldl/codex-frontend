@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   Outlet,
   RouterProvider,
@@ -8,21 +9,34 @@ import {
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { layoutKeys } from '../../features/layout/hooks/layoutKeys'
+import type { LayoutIndice } from '../../features/layout/types/layoutPublico'
 import {
   ID_SECAO_PROVEDORES_APLICAVEIS,
   RodapeContextual,
   type ContextoRodape,
 } from './RodapeContextual'
 
+interface OpcoesDoRender {
+  versaoVigenteDoLayout?: string | null
+  /** Índice já carregado por outra tela, como fica no cache do app. */
+  indiceEmCache?: LayoutIndice
+}
+
 // Contextos com ação para rota interna (`erro-com-contexto`/`layout`)
 // usam `<Link>` do TanStack Router — precisam de um `RouterProvider` de
 // verdade, mesmo padrão de `erros-index.test.tsx`.
-async function renderComRouter(contexto: ContextoRodape) {
+async function renderComRouter(contexto: ContextoRodape, opcoes: OpcoesDoRender = {}) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  if (opcoes.indiceEmCache) queryClient.setQueryData(layoutKeys.indice(), opcoes.indiceEmCache)
+
   const rootRoute = createRootRoute({ component: Outlet })
   const rota = createRoute({
     getParentRoute: () => rootRoute,
     path: '/pagina',
-    component: () => <RodapeContextual contexto={contexto} />,
+    component: () => (
+      <RodapeContextual contexto={contexto} versaoVigenteDoLayout={opcoes.versaoVigenteDoLayout} />
+    ),
   })
   const routeTree = rootRoute.addChildren([rota])
   const router = createRouter({
@@ -30,7 +44,11 @@ async function renderComRouter(contexto: ContextoRodape) {
     history: createMemoryHistory({ initialEntries: ['/pagina'] }),
   })
 
-  const resultado = render(<RouterProvider router={router} />)
+  const resultado = render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
   await screen.findByRole('contentinfo')
 
   return resultado
@@ -138,14 +156,18 @@ describe('RodapeContextual', () => {
     const { unmount } = await renderComRouter({ tipo: 'busca-com-resultado' })
     const telefoneHome = screen.getByText('+55 11 4240-6556').textContent
     const linksHome = screen
-      .getAllByRole('link', { name: /^(InvoiCy|Base de conhecimento|GitHub)$/ })
+      .getAllByRole('link', {
+        name: /^(InvoiCy|Base de conhecimento|GitHub) \(abre em nova aba\)$/,
+      })
       .map((link) => link.textContent)
     unmount()
 
     await renderComRouter({ tipo: 'provedores' })
     const telefoneProvedores = screen.getByText('+55 11 4240-6556').textContent
     const linksProvedores = screen
-      .getAllByRole('link', { name: /^(InvoiCy|Base de conhecimento|GitHub)$/ })
+      .getAllByRole('link', {
+        name: /^(InvoiCy|Base de conhecimento|GitHub) \(abre em nova aba\)$/,
+      })
       .map((link) => link.textContent)
 
     expect(telefoneProvedores).toBe(telefoneHome)
@@ -200,17 +222,17 @@ describe('RodapeContextual', () => {
   it('o link de chamado aparece mesmo sem próximo passo', async () => {
     await renderComRouter({ tipo: 'erro-sem-contexto' })
 
-    expect(screen.getByRole('link', { name: 'Abrir chamado' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Abrir chamado (abre em nova aba)' })).toHaveAttribute(
       'href',
       'https://support.migrate.info/tickets',
     )
   })
 
-  it('todo link externo do rodapé abre em nova aba com rel="noopener noreferrer"', async () => {
+  it('todo link externo do rodapé abre em nova aba, avisa o leitor de tela e usa rel="noopener noreferrer"', async () => {
     await renderComRouter({ tipo: 'busca-com-resultado' })
 
     const linksExternos = screen.getAllByRole('link', {
-      name: /^(InvoiCy|Base de conhecimento|GitHub|Abrir chamado)$/,
+      name: /^(InvoiCy|Base de conhecimento|GitHub|Abrir chamado) \(abre em nova aba\)$/,
     })
 
     expect(linksExternos).toHaveLength(4)
@@ -247,6 +269,65 @@ describe('RodapeContextual — bloco de atendimento', () => {
   ])('o link "%s" leva a %s', async (rotulo, destino) => {
     await renderComRouter({ tipo: 'busca-com-resultado' })
 
-    expect(screen.getByRole('link', { name: rotulo })).toHaveAttribute('href', destino)
+    expect(screen.getByRole('link', { name: `${rotulo} (abre em nova aba)` })).toHaveAttribute(
+      'href',
+      destino,
+    )
+  })
+
+  describe('linha final', () => {
+    const versaoVigente = {
+      slug: '9',
+      rotulo: '9',
+      estado: 'Vigente',
+      ordem: 9,
+      totalCampos: 195,
+      mudancas: [],
+      normaOrigem: null,
+      homologacaoDesde: null,
+      liberadaNoInvoicyEm: null,
+      obrigatoriaEm: null,
+    } satisfies LayoutIndice['versoes'][number]
+
+    const indiceComVigente: LayoutIndice = {
+      vigente: versaoVigente,
+      versoes: [versaoVigente],
+      novidades: null,
+    }
+
+    const ANO = new Date().getFullYear()
+
+    it('cita a versão vigente do índice já carregado', async () => {
+      await renderComRouter({ tipo: 'provedores' }, { indiceEmCache: indiceComVigente })
+
+      expect(
+        screen.getByText(`© ${ANO} Migrate · Layout InvoiCy vigente: versão 9`),
+      ).toBeInTheDocument()
+    })
+
+    it('o índice em cache vale mais que a versão passada pela página', async () => {
+      await renderComRouter(
+        { tipo: 'home' },
+        { versaoVigenteDoLayout: '8', indiceEmCache: indiceComVigente },
+      )
+
+      expect(screen.getByText(/Layout InvoiCy vigente: versão 9$/)).toBeInTheDocument()
+    })
+
+    it('usa a versão passada pela página quando o índice não foi carregado', async () => {
+      await renderComRouter({ tipo: 'home' }, { versaoVigenteDoLayout: 'Versão 9' })
+
+      expect(screen.getByText(/Layout InvoiCy vigente: versão 9$/)).toBeInTheDocument()
+    })
+
+    it('sem versão conhecida, fica só o ano e a Migrate', async () => {
+      await renderComRouter(
+        { tipo: 'provedores' },
+        { indiceEmCache: { vigente: null, versoes: [], novidades: null } },
+      )
+
+      expect(screen.getByText(`© ${ANO} Migrate`)).toBeInTheDocument()
+      expect(screen.queryByText(/Layout InvoiCy vigente/)).not.toBeInTheDocument()
+    })
   })
 })

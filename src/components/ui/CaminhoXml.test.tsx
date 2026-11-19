@@ -103,11 +103,11 @@ describe('CaminhoXml', () => {
 })
 
 /**
- * Guarda estrutural: `--color-line` é token de BORDA (#eaeff2). Como cor de texto sobre branco ele
- * dá **1,16:1** — bem abaixo de qualquer mínimo legível.
+ * Guarda estrutural: `--color-border` é token de BORDA (#dce5ec). Como cor de texto sobre branco ele
+ * dá **1,28:1** — bem abaixo de qualquer mínimo legível.
  *
  * O detector de contraste do projeto mede os pares declarados no CSS, então uma combinação escrita
- * direto no componente (`className="text-line"`) passa por baixo dele. Aconteceu aqui: a primeira
+ * direto no componente (`className="text-border"`) passa por baixo dele. Aconteceu aqui: a primeira
  * versão deste componente pintou o prefixo e as barras assim, e a suíte inteira ficou verde.
  */
 describe('nenhum componente usa token de borda como cor de texto', () => {
@@ -133,9 +133,9 @@ describe('nenhum componente usa token de borda como cor de texto', () => {
 
   // Casa a classe em qualquer lugar da fonte, não só em `className=`: classes também moram em
   // constantes e templates, e a versão restrita ao atributo deixava essas passarem.
-  it('não usa text-line em lugar nenhum', () => {
+  it('não usa text-border em lugar nenhum', () => {
     const comTextoIlegivel = arquivosDeProducao().filter((caminho) =>
-      /(?<![\w-])text-line(?![\w-])/.test(FONTES[caminho]),
+      /(?<![\w-])text-border(?![\w-])/.test(FONTES[caminho]),
     )
 
     expect(comTextoIlegivel).toEqual([])

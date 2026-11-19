@@ -1,8 +1,10 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { BuscaDoCabecalho } from '../../features/busca/components/BuscaDoCabecalho'
 import { PontosDeLuz } from './PontosDeLuz'
 import { PularParaConteudo } from './PularParaConteudo'
+import { secaoDoCaminho } from './secaoDoMenu'
+import type { SecaoDoMenu } from './secaoDoMenu'
 
 export interface CabecalhoPublicoProps {
   /**
@@ -13,11 +15,16 @@ export interface CabecalhoPublicoProps {
 }
 
 /**
- * Item da nav: o indicador de página atual é o sublinhado laranja, onde o laranja só pontua
- * (5,66:1 sobre o azul-profundo). Vem do `data-status="active"` que o próprio `<Link>` marca.
+ * Item da nav: a seção aberta fica em laranja, com o traço embaixo (5,66:1 sobre o azul-profundo).
+ * O hover usa o mesmo laranja, sem o traço.
  */
 const CLASSE_ITEM_NAV =
-  'relative py-1 text-sm font-semibold text-white after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-pill after:bg-transparent hover:after:bg-white data-[status=active]:after:bg-accent'
+  'relative py-1 text-sm font-semibold text-white after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-pill after:bg-transparent hover:text-accent data-[secao=atual]:text-accent data-[secao=atual]:after:bg-accent'
+
+/** Marca o item da seção aberta por atributo de dado: `aria-current` fica só para a página exata. */
+function marcaDaSecao(secao: SecaoDoMenu, secaoAtual: SecaoDoMenu | null) {
+  return { 'data-secao': secao === secaoAtual ? 'atual' : undefined }
+}
 
 /**
  * Cabeçalho de toda página pública, sempre escuro (`--grad-escuro` com pontos de luz), porque o
@@ -30,8 +37,15 @@ const CLASSE_ITEM_NAV =
  * sobrepõe `aria-current` sempre que está ativo, então marcar a seção com `"true"` exigiria
  * calcular a atividade por fora do roteador. O logo não recebe a prop: com `to="/"` o
  * casamento parcial nunca dispara.
+ *
+ * A seção aberta é calculada pelo caminho (`secaoDoCaminho`) e marcada só no visual, com
+ * `data-secao`: em `/provedores/x/campos` o item Provedores fica laranja sem virar "página atual".
  */
 export function CabecalhoPublico({ children }: CabecalhoPublicoProps) {
+  const secaoAtual = secaoDoCaminho(
+    useRouterState({ select: (estado) => estado.location.pathname }),
+  )
+
   return (
     <header className="relative isolate bg-primary text-white">
       <PontosDeLuz />
@@ -43,7 +57,7 @@ export function CabecalhoPublico({ children }: CabecalhoPublicoProps) {
         `flex-wrap` nos dois níveis: abaixo de ~640px a marca e os quatro itens não cabem numa
         linha, e quebrar em duas mantém o menu inteiro legível.
       */}
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-4 lg:px-8">
+      <div className="mx-auto flex max-w-pagina flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-4 lg:px-8">
         <Link to="/" aria-label="Migrate Codex, página inicial" className="flex items-center gap-3">
           <img src="/marca/logo-migrate-branco.svg" alt="Migrate" className="h-7 w-auto" />
           <span aria-hidden="true" className="h-6 w-px bg-white/40" />
@@ -65,29 +79,41 @@ export function CabecalhoPublico({ children }: CabecalhoPublicoProps) {
             to="/provedores"
             search={{ pagina: 1 }}
             activeOptions={{ exact: true }}
+            {...marcaDaSecao('provedores', secaoAtual)}
             className={CLASSE_ITEM_NAV}
           >
             Provedores
           </Link>
-          <Link to="/layout" activeOptions={{ exact: true }} className={CLASSE_ITEM_NAV}>
+          <Link
+            to="/layout"
+            activeOptions={{ exact: true }}
+            {...marcaDaSecao('layout', secaoAtual)}
+            className={CLASSE_ITEM_NAV}
+          >
             Layout InvoiCy
           </Link>
           <Link
             to="/artigos"
             search={{ pagina: 1 }}
             activeOptions={{ exact: true }}
+            {...marcaDaSecao('artigos', secaoAtual)}
             className={CLASSE_ITEM_NAV}
           >
             Artigos
           </Link>
-          <Link to="/como-funciona" activeOptions={{ exact: true }} className={CLASSE_ITEM_NAV}>
+          <Link
+            to="/como-funciona"
+            activeOptions={{ exact: true }}
+            {...marcaDaSecao('como-funciona', secaoAtual)}
+            className={CLASSE_ITEM_NAV}
+          >
             Como funciona
           </Link>
         </nav>
       </div>
 
       {children && (
-        <div className="mx-auto max-w-6xl border-t border-white/15 px-4 pt-10 pb-12 lg:px-8">
+        <div className="mx-auto max-w-pagina border-t border-white/15 px-4 pt-10 pb-12 lg:px-8">
           {children}
         </div>
       )}

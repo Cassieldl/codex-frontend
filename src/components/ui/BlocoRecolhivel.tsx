@@ -9,7 +9,7 @@ export interface BlocoRecolhivelProps {
 /** `<details>` nativo: abre e fecha pelo teclado sem JavaScript próprio. Começa fechado. */
 export function BlocoRecolhivel({ titulo, children }: BlocoRecolhivelProps) {
   return (
-    <details className="group rounded-[var(--radius-control)] border border-line">
+    <details className="group rounded-[var(--radius-control)] border border-border">
       <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-semibold text-ink [&::-webkit-details-marker]:hidden">
         <ChevronRight
           className="size-4 shrink-0 transition-transform group-open:rotate-90"
@@ -17,7 +17,7 @@ export function BlocoRecolhivel({ titulo, children }: BlocoRecolhivelProps) {
         />
         {titulo}
       </summary>
-      <div className="flex flex-col gap-3 border-t border-line px-4 py-3">{children}</div>
+      <div className="flex flex-col gap-3 border-t border-border px-4 py-3">{children}</div>
     </details>
   )
 }

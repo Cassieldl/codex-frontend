@@ -12,6 +12,8 @@ export interface EtiquetaSeveridadeProps {
    * severidade tem um ícone de forma própria: a cor nunca é o único sinal (WCAG 1.4.1).
    */
   somenteIcone?: boolean
+  /** Com `somenteIcone`: o ícone solto, sem o círculo de fundo, para lista compacta. */
+  semFundo?: boolean
   className?: string
 }
 
@@ -22,26 +24,31 @@ interface ConfiguracaoSeveridade {
   // como fundo sólido + texto branco (reprova AA, AP-FRONTEND-015).
   textoClasse: string
   fundoClasse: string
+  /** Ícone solto sobre branco: precisa de 3:1 sozinho, sem o fundo tingido. */
+  iconeClasse: string
 }
 
 const CONFIGURACAO: Record<Severidade, ConfiguracaoSeveridade> = {
   critico: {
     rotulo: 'Crítico',
     Icone: OctagonAlert,
-    textoClasse: 'text-severidade-critico-texto',
+    textoClasse: 'text-alert-error-texto',
     fundoClasse: 'bg-alert-error',
+    iconeClasse: 'text-error-texto',
   },
   alerta: {
     rotulo: 'Alerta',
     Icone: TriangleAlert,
-    textoClasse: 'text-severidade-alerta-texto',
+    textoClasse: 'text-alert-warning-texto',
     fundoClasse: 'bg-alert-warning',
+    iconeClasse: 'text-alert-warning-icone',
   },
   informativo: {
     rotulo: 'Informativo',
     Icone: Info,
     textoClasse: 'text-primary-medium',
     fundoClasse: 'bg-alert-info',
+    iconeClasse: 'text-primary-light',
   },
 }
 
@@ -49,9 +56,19 @@ export function EtiquetaSeveridade({
   severidade,
   contagem,
   somenteIcone = false,
+  semFundo = false,
   className,
 }: EtiquetaSeveridadeProps) {
-  const { rotulo, Icone, textoClasse, fundoClasse } = CONFIGURACAO[severidade]
+  const { rotulo, Icone, textoClasse, fundoClasse, iconeClasse } = CONFIGURACAO[severidade]
+
+  if (somenteIcone && semFundo) {
+    return (
+      <span title={rotulo} className={clsx('inline-flex shrink-0', iconeClasse, className)}>
+        <Icone className="size-4.5" aria-hidden="true" />
+        <span className="sr-only">{rotulo}</span>
+      </span>
+    )
+  }
 
   if (somenteIcone) {
     return (

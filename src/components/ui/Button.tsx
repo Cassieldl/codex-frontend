@@ -50,7 +50,7 @@ export function Button({
       disabled={disabled || isLoading}
       aria-disabled={isLoading || disabled}
       className={clsx(
-        'inline-flex items-center justify-center rounded-[var(--radius-control)] font-semibold transition-shadow duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-light)] disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center rounded-[var(--radius-control)] font-semibold transition-shadow duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover disabled:cursor-not-allowed',
         variantClasses[variant],
         sizeClasses[size],
         className,

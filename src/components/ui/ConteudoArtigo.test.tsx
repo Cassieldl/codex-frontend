@@ -51,10 +51,10 @@ describe('ConteudoArtigo — segurança do renderizador de Markdown (U-4)', () =
     expect(screen.getByText('alt de teste')).toBeInTheDocument()
   })
 
-  it('link externo http(s) ganha target="_blank" e rel="noopener noreferrer"', () => {
+  it('link externo http(s) abre em nova aba, avisa o leitor de tela e usa rel="noopener noreferrer"', () => {
     render(<ConteudoArtigo corpo="[InvoiCy](https://invoicy.com.br)" />)
 
-    const link = screen.getByRole('link', { name: 'InvoiCy' })
+    const link = screen.getByRole('link', { name: 'InvoiCy (abre em nova aba)' })
     expect(link).toHaveAttribute('href', 'https://invoicy.com.br')
     expect(link).toHaveAttribute('target', '_blank')
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
@@ -92,12 +92,17 @@ describe('ConteudoArtigo — segurança do renderizador de Markdown (U-4)', () =
 })
 
 describe('ConteudoArtigo: blocos visuais', () => {
-  it('[!RESUMO] vira cartão rotulado e o marcador some do texto', () => {
-    render(<ConteudoArtigo corpo={'> [!RESUMO]\n> Duas linhas do essencial.'} />)
+  it('[!RESUMO] vira parágrafo de abertura sem caixa nem rótulo, e o marcador some do texto', () => {
+    const { container } = render(
+      <ConteudoArtigo corpo={'> [!RESUMO]\n> Duas linhas do essencial.'} />,
+    )
 
-    const cartao = screen.getByRole('note', { name: 'Resumo rápido' })
-    expect(cartao).toHaveTextContent('Duas linhas do essencial.')
-    expect(cartao).not.toHaveTextContent('[!RESUMO]')
+    const resumo = container.querySelector('[data-bloco="resumo"]')
+    expect(resumo).toHaveTextContent('Duas linhas do essencial.')
+    expect(resumo).not.toHaveTextContent('[!RESUMO]')
+    expect(container).not.toHaveTextContent('Resumo rápido')
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+    expect(container.querySelector('blockquote')).not.toBeInTheDocument()
   })
 
   it.each([
@@ -115,7 +120,7 @@ describe('ConteudoArtigo: blocos visuais', () => {
   it.each([
     ['DICA', 'informacao'],
     ['IMPORTANTE', 'alerta'],
-    ['ATENCAO', 'erro'],
+    ['ATENCAO', 'alerta'],
     ['SUCESSO', 'sucesso'],
   ])('[!%s] vira o alerta Migrate do tipo %s', (marcador, tipo) => {
     const { container } = render(<ConteudoArtigo corpo={`> [!${marcador}]\n> Corpo do alerta.`} />)
@@ -336,11 +341,12 @@ describe('ConteudoArtigo: a fonte vai para o rodapé', () => {
     expect(corpoRenderizado.firstElementChild).toHaveTextContent('Resumo')
     const rodape = corpoRenderizado.lastElementChild!
     expect(rodape.tagName).toBe('FOOTER')
-    expect(rodape).toHaveTextContent('Fonte: Webhook - Configurações (12/08/2026).')
-    expect(screen.getByRole('link', { name: 'Webhook - Configurações' })).toHaveAttribute(
-      'href',
-      'https://exemplo.com/webhook',
+    expect(rodape).toHaveTextContent(
+      'Fonte: Webhook - Configurações (abre em nova aba) (12/08/2026).',
     )
+    expect(
+      screen.getByRole('link', { name: 'Webhook - Configurações (abre em nova aba)' }),
+    ).toHaveAttribute('href', 'https://exemplo.com/webhook')
   })
 
   it('parágrafo "Fontes:" no meio também vai para o rodapé, junto da citação', () => {

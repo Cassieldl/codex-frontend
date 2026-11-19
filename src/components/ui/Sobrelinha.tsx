@@ -7,16 +7,15 @@ interface SobrelinhaProps {
   superficie?: 'escura' | 'clara'
 }
 
-/** Rótulo curto acima de um título, com traço laranja (decorativo nas duas superfícies). */
+/** Rótulo curto acima de um título, sem traço: o traço laranja fica só no título da página. */
 export function Sobrelinha({ children, superficie = 'escura' }: SobrelinhaProps) {
   return (
     <p
       className={clsx(
-        'flex items-center gap-2 text-xs font-bold tracking-wider uppercase',
+        'text-xs font-bold tracking-wider uppercase',
         superficie === 'escura' ? 'text-accent' : 'text-primary-medium',
       )}
     >
-      <span aria-hidden="true" className="h-0.5 w-6 rounded-pill bg-accent" />
       {children}
     </p>
   )

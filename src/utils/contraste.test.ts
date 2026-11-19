@@ -57,7 +57,9 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
     ['primary', 'texto de marca'],
     ['error-texto', 'mensagem de erro'],
     ['success', 'confirmação'],
-    ['primary-light', 'destaque'],
+    ['primary-light', 'destaque e link no hover'],
+    ['link-visitado', 'link visitado'],
+    ['alert-warning-texto', 'etiqueta e texto de cuidado fora do aviso'],
   ]
 
   it.each(TEXTO_SOBRE_BRANCO)('texto `%s` (%s) sobre branco atinge 4.5:1', (nome) => {
@@ -67,24 +69,46 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
   })
 
   const TEXTO_SOBRE_FAIXA: ReadonlyArray<readonly [string, string, string]> = [
-    ['severidade-critico-texto', 'alert-error', 'comunicado crítico'],
-    ['severidade-alerta-texto', 'alert-warning', 'comunicado de alerta'],
-    ['ink', 'alert-info', 'faixa informativa'],
-    ['primary-medium', 'alert-info', 'link na faixa informativa'],
-    ['ink', 'alert-success', 'faixa de sucesso'],
+    ['primary', 'alert-info', 'texto da dica'],
+    ['alert-warning-texto', 'alert-warning', 'texto do cuidado'],
+    ['alert-error-texto', 'alert-error', 'texto do erro'],
+    ['alert-success-texto', 'alert-success', 'texto do sucesso'],
+    ['primary-medium', 'alert-info', 'link e etiqueta sobre o azul suave'],
+    ['primary-medium', 'alert-warning', 'link no aviso de cuidado'],
+    ['primary-medium', 'alert-error', 'link no aviso de erro'],
+    ['primary-medium', 'alert-success', 'link no aviso de sucesso'],
+    ['success', 'alert-success', 'confirmação sobre o fundo de sucesso'],
+    ['error-texto', 'alert-error', 'mensagem de erro dentro do aviso de erro'],
+    ['ink', 'alert-info', 'texto comum sobre o azul suave'],
+    ['ink', 'alert-warning', 'texto comum no aviso de cuidado'],
+    ['ink', 'alert-error', 'texto comum no aviso de erro'],
+    ['ink', 'alert-success', 'texto comum no aviso de sucesso'],
     ['ink', 'surface-hover', 'bloco realçado'],
+    ['primary', 'surface-hover', 'opção do alternador sobre o trilho'],
+    ['muted', 'surface-hover', 'cabeçalho da tabela de natureza da operação'],
     ['ink', 'surface-disabled', 'campo desabilitado'],
     ['ink', 'highlight-anchor', 'linha destacada por âncora'],
-    ['success', 'alert-success', 'rótulo da caixa de dica'],
-    ['ink', 'alert-warning', 'corpo da caixa de atenção'],
-    ['ink', 'alert-error', 'corpo da caixa importante'],
-    ['primary-medium', 'alert-success', 'link na caixa de dica'],
-    ['primary-medium', 'alert-warning', 'link na caixa de atenção'],
-    ['primary-medium', 'alert-error', 'link na caixa importante'],
+    ['accent', 'primary', 'seção atual e hover no menu do topo'],
+    ['alert-info-borda', 'primary', 'rótulo e sinal de tag no bloco escuro do exemplo'],
+    ['white', 'primary', 'nome da tag no bloco escuro do exemplo'],
+    ['codigo-texto', 'codigo-fundo', 'texto do painel de código'],
+    ['codigo-tag', 'codigo-fundo', 'tag no painel de código'],
+    ['codigo-valor', 'codigo-fundo', 'valor de exemplo no painel de código'],
+    ['codigo-pontuacao', 'codigo-fundo', 'pontuação e número de linha no painel de código'],
+    ['codigo-texto', 'primary', 'nome do arquivo e ações no cabeçalho do painel'],
+    ['primary', 'accent', 'Baixar no cabeçalho do painel'],
   ]
 
   it.each(TEXTO_SOBRE_FAIXA)('texto `%s` sobre `%s` (%s) atinge 4.5:1', (frente, fundo) => {
     expect(calcularContraste(token(frente), token(fundo))).toBeGreaterThanOrEqual(
+      CONTRASTE_MINIMO.textoNormal,
+    )
+  })
+
+  it('Copiar no cabeçalho do painel (branco sobre branco a 10% no azul) atinge 4.5:1', () => {
+    const fundoDoBotao = comporSobre(token('white'), token('primary'), 0.1)
+
+    expect(calcularContraste(token('white'), fundoDoBotao)).toBeGreaterThanOrEqual(
       CONTRASTE_MINIMO.textoNormal,
     )
   })
@@ -116,10 +140,11 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
   })
 
   it.each([
-    ['primary-light', 'alert-info'],
+    ['primary-medium', 'alert-info'],
     ['success', 'alert-success'],
-    ['severidade-alerta-texto', 'alert-warning'],
-    ['error', 'alert-error'],
+    ['alert-warning-icone', 'alert-warning'],
+    ['error-texto', 'alert-error'],
+    ['alert-warning-icone', 'white'],
   ])('o ícone `%s` do alerta sobre `%s` atinge 3:1', (icone, fundo) => {
     expect(calcularContraste(token(icone), token(fundo))).toBeGreaterThanOrEqual(
       CONTRASTE_MINIMO.naoTextual,

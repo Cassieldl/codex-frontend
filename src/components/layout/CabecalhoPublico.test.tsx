@@ -73,8 +73,8 @@ describe('CabecalhoPublico — navegação (M31/§4.1)', () => {
   })
 })
 
-// A tela real que expõe o defeito é `/layout/{versaoSlug}`: o chip da versão
-// aberta marca `aria-current="page"` por prop (`ChipVersaoLayout`), e o item
+// A tela real que expõe o defeito é `/layout/{versaoSlug}`: um link da versão
+// aberta marca `aria-current="page"` por prop, e o item
 // "Layout InvoiCy" do menu marcava o mesmo por casamento parcial de CAMINHO
 // feito pelo próprio `<Link>`. O teste reproduz as duas regiões juntas e
 // CONTA — "o item certo está marcado" passaria com dois marcados.
@@ -145,6 +145,18 @@ describe('CabecalhoPublico — aria-current (casamento parcial de caminho)', () 
     expect(
       await screen.findByRole('link', { name: 'Migrate Codex, página inicial' }),
     ).not.toHaveAttribute('aria-current')
+  })
+
+  it('em subpágina, o item da seção fica marcado no visual sem virar página atual', async () => {
+    renderComRotasAninhadas('/layout/v2-01')
+    const nav = await screen.findByRole('navigation', { name: 'Navegação principal' })
+
+    expect(within(nav).getByRole('link', { name: 'Layout InvoiCy' })).toHaveAttribute(
+      'data-secao',
+      'atual',
+    )
+    expect(within(nav).getByRole('link', { name: 'Artigos' })).not.toHaveAttribute('data-secao')
+    expect(contarMarcadosEm(nav)).toBe(0)
   })
 
   it('na própria página da seção o item continua marcado — o exact não apaga o certo', async () => {

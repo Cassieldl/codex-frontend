@@ -10,18 +10,10 @@ export interface SumarioArtigoProps {
   className?: string
 }
 
-const ESTILO_POR_NIVEL: Record<2 | 3, { base: string; atual: string; comum: string }> = {
-  2: {
-    base: 'pl-3 text-sm font-semibold',
-    atual: 'border-accent text-primary-medium',
-    comum: 'border-transparent text-ink',
-  },
-  // O `-ml-px` põe a barra da seção atual em cima do fio vertical dos subtópicos.
-  3: {
-    base: '-ml-px pl-3 text-xs',
-    atual: 'border-accent font-semibold text-ink',
-    comum: 'border-transparent text-muted',
-  },
+// O subtópico só recua mais e diminui a letra.
+const ESTILO_POR_NIVEL: Record<2 | 3, string> = {
+  2: 'px-3 text-sm',
+  3: 'pr-3 pl-6 text-xs',
 }
 
 function LinkDoSumario({
@@ -33,17 +25,15 @@ function LinkDoSumario({
   atual: boolean
   nivel: 2 | 3
 }) {
-  const estilo = ESTILO_POR_NIVEL[nivel]
-
   return (
     <a
       href={`#${item.ancora}`}
       title={item.titulo}
       aria-current={atual ? 'location' : undefined}
       className={clsx(
-        'block border-l-2 py-1 leading-snug hover:underline',
-        estilo.base,
-        atual ? estilo.atual : estilo.comum,
+        'block rounded-[var(--radius-control)] py-1.5 leading-snug hover:underline',
+        ESTILO_POR_NIVEL[nivel],
+        atual ? 'bg-alert-info font-semibold text-primary' : 'text-muted',
       )}
     >
       {/* Corte só visual: o leitor de tela continua lendo o título inteiro. */}
@@ -53,8 +43,8 @@ function LinkDoSumario({
 }
 
 /**
- * Sumário lateral do artigo. Cada tópico (h2) abre um grupo em negrito; os subtópicos (h3) ficam
- * recuados sobre um fio vertical, menores e mais claros. A seção em leitura ganha a barra laranja.
+ * Sumário lateral do artigo. Os subtópicos (h3) ficam recuados sob o tópico (h2), com letra menor.
+ * A seção em leitura ganha fundo azul suave e negrito.
  */
 export function SumarioArtigo({ corpo, mostrarTitulo = true, className }: SumarioArtigoProps) {
   const itens = extrairSecoesDoCorpo(corpo)
@@ -67,7 +57,7 @@ export function SumarioArtigo({ corpo, mostrarTitulo = true, className }: Sumari
       {mostrarTitulo && (
         <p className="text-xs font-semibold tracking-wide text-muted uppercase">Nesta página</p>
       )}
-      <ul className={clsx('flex flex-col gap-2', mostrarTitulo && 'mt-3')}>
+      <ul className={clsx('flex flex-col gap-1', mostrarTitulo && 'mt-3')}>
         {agruparSecoes(itens).map((topico) => (
           <li key={topico.ancora}>
             <LinkDoSumario
@@ -76,7 +66,7 @@ export function SumarioArtigo({ corpo, mostrarTitulo = true, className }: Sumari
               atual={topico.ancora === secaoAtual}
             />
             {topico.subtopicos.length > 0 && (
-              <ul className="mt-1 ml-3 flex flex-col border-l border-line">
+              <ul className="mt-1 flex flex-col gap-1">
                 {topico.subtopicos.map((subtopico) => (
                   <li key={subtopico.ancora}>
                     <LinkDoSumario

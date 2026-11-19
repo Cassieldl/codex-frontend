@@ -5,7 +5,7 @@
 
 export type TipoDeAlertaDoArtigo = 'dica' | 'atencao' | 'importante' | 'sucesso'
 
-type TipoEstruturado = 'cartoes' | 'comparativo' | 'checklist'
+type TipoEstruturado = 'cartoes' | 'comparativo' | 'checklist' | 'conversao' | 'colunas'
 
 export type TipoDeBloco = 'resumo' | TipoDeAlertaDoArtigo | TipoEstruturado | 'passos' | 'detalhes'
 
@@ -20,6 +20,8 @@ const TIPO_POR_MARCADOR: Readonly<Record<string, TipoDeBloco>> = {
   CARTOES: 'cartoes',
   COMPARATIVO: 'comparativo',
   CHECKLIST: 'checklist',
+  CONVERSAO: 'conversao',
+  COLUNAS: 'colunas',
 }
 
 const MARCADOR = /^\[!([A-Z]+)\][ \t]*/
@@ -99,6 +101,7 @@ export function reconhecerSimNao(texto: string): ValorSimNao | null {
 interface NoMarkdown {
   type: string
   value?: string
+  depth?: number
   ordered?: boolean | null
   start?: number | null
   spread?: boolean | null
@@ -276,10 +279,100 @@ function montarComparativo(citacao: NoMarkdown): boolean {
   return true
 }
 
+/** `Destino | valor`, os dois preenchidos. Fora dessa forma, devolve `false`. */
+function montarItemDeConversao(item: NoMarkdown): boolean {
+  const paragrafo = item.children?.[0]
+  if (item.children?.length !== 1 || paragrafo?.type !== 'paragraph') return false
+
+  const trechos = dividirPorBarra(paragrafo.children ?? [])
+  if (trechos.length !== 2 || trechos.some((trecho) => trecho.length === 0)) return false
+
+  const [destino, valor] = trechos.map((trecho) => ({ type: 'paragraph', children: trecho }))
+  marcarNo(destino, { dataParte: 'destinoConversao' })
+  marcarNo(valor, { dataParte: 'valorConversao' })
+  item.spread = true
+  item.children = [destino, valor]
+  marcarNo(item, { dataTipoItem: 'conversao' })
+  return true
+}
+
+/** O código enviado na linha do marcador e uma lista `Destino | valor` com o que cada um recebe. */
+function montarConversao(citacao: NoMarkdown): boolean {
+  const [paragrafo, lista, ...resto] = citacao.children ?? []
+  if (resto.length > 0 || paragrafo?.type !== 'paragraph') return false
+  if (lista?.type !== 'list' || lista.ordered) return false
+
+  const origem = textoPlano(paragrafo).trim()
+  const itens = lista.children ?? []
+  if (!origem || origem.includes('\n') || itens.length === 0) return false
+  if (!itens.every(montarItemDeConversao)) return false
+
+  marcarNo(lista, { dataTipoLista: 'conversao' })
+  marcarNo(citacao, { dataTitulo: origem })
+  citacao.children = [lista]
+  return true
+}
+
+function ehTituloDeNivel(no: NoMarkdown | undefined, nivel: number): boolean {
+  return no?.type === 'heading' && no.depth === nivel
+}
+
+/** Corta a sequência em seções que começam por título h3; `null` quando ela não abre com um. */
+function dividirEmSecoes(nos: NoMarkdown[]): NoMarkdown[][] | null {
+  if (!ehTituloDeNivel(nos[0], 3)) return null
+
+  const secoes: NoMarkdown[][] = []
+  for (const no of nos) {
+    if (ehTituloDeNivel(no, 3)) secoes.push([no])
+    else secoes[secoes.length - 1].push(no)
+  }
+  return secoes
+}
+
+/** Item cujo único conteúdo é um link. */
+function ehItemSoComLink(item: NoMarkdown): boolean {
+  const paragrafo = item.children?.[0]
+  if (item.children?.length !== 1 || paragrafo?.type !== 'paragraph') return false
+  const conteudo = (paragrafo.children ?? []).filter((filho) => !textoEmBranco(filho))
+  return conteudo.length === 1 && conteudo[0].type === 'link'
+}
+
+/** Lista só de links, dentro do cartão, vira uma pilha de linhas clicáveis. */
+function marcarListasDeLinks(nos: NoMarkdown[]) {
+  for (const no of nos) {
+    const itens = no.children ?? []
+    if (no.type !== 'list' || no.ordered || itens.length === 0) continue
+    if (!itens.every(ehItemSoComLink)) continue
+
+    marcarNo(no, { dataTipoLista: 'links' })
+    itens.forEach((item) => marcarNo(item, { dataTipoItem: 'link' }))
+  }
+}
+
+/** Cada título h3 abre um cartão com o que vem até o próximo h3. Pelo menos dois cartões. */
+function montarColunas(citacao: NoMarkdown): boolean {
+  const secoes = dividirEmSecoes(citacao.children ?? [])
+  if (!secoes || secoes.length < 2) return false
+
+  const itens = secoes.map((secao) => {
+    marcarListasDeLinks(secao)
+    const item: NoMarkdown = { type: 'listItem', spread: true, children: secao }
+    marcarNo(item, { dataTipoItem: 'cartaoLivre' })
+    return item
+  })
+
+  const lista: NoMarkdown = { type: 'list', ordered: false, spread: true, children: itens }
+  marcarNo(lista, { dataTipoLista: 'colunas' })
+  citacao.children = [lista]
+  return true
+}
+
 const MONTAGEM_ESTRUTURADA: Readonly<Record<TipoEstruturado, (citacao: NoMarkdown) => boolean>> = {
   cartoes: montarCartoes,
   comparativo: montarComparativo,
   checklist: montarChecklist,
+  conversao: montarConversao,
+  colunas: montarColunas,
 }
 
 function ehEstruturado(tipo: TipoDeBloco): tipo is TipoEstruturado {
@@ -305,6 +398,7 @@ function transformarEstruturado(
   if (!MONTAGEM_ESTRUTURADA[tipo](copia)) return
 
   citacao.children = copia.children
+  citacao.data = copia.data
   marcarNo(citacao, { dataBloco: tipo })
 }
 
@@ -362,13 +456,121 @@ function percorrer(no: NoMarkdown) {
   no.children?.forEach(percorrer)
 }
 
+export const MARCADOR_DO_SELETOR = /^\[!SELETOR\][ \t]*/
+
+/** Primeiro texto da citação quando ela abre com `[!SELETOR]`; fora disso, `null`. */
+function textoDoMarcadorDoSeletor(no: NoMarkdown): NoMarkdown | null {
+  if (no.type !== 'blockquote') return null
+  const paragrafo = no.children?.[0]
+  const primeiroTexto = paragrafo?.type === 'paragraph' ? paragrafo.children?.[0] : undefined
+  if (primeiroTexto?.type !== 'text') return null
+  return MARCADOR_DO_SELETOR.test(primeiroTexto.value ?? '') ? primeiroTexto : null
+}
+
+/**
+ * Monta o seletor: a citação guarda o rótulo e a dica, e cada seção h3 que vem depois dela, até o
+ * próximo h2, vira um painel. Com menos de duas seções, nada muda e o marcador fica visível.
+ */
+function montarSeletor(citacao: NoMarkdown, seguintes: NoMarkdown[]): boolean {
+  const secoes = dividirEmSecoes(seguintes)
+  const primeiroTexto = textoDoMarcadorDoSeletor(citacao)
+  if (!secoes || secoes.length < 2 || !primeiroTexto) return false
+
+  const paragrafo = citacao.children?.[0] as NoMarkdown
+  primeiroTexto.value = (primeiroTexto.value ?? '').replace(MARCADOR_DO_SELETOR, '')
+  const rotulo = retirarPrimeiraLinha(paragrafo)
+  if (paragrafoVazio(paragrafo)) citacao.children?.shift()
+
+  const dica = citacao.children ?? []
+  const paineis = secoes.map((secao, indice) => {
+    const painel: NoMarkdown = { type: 'blockquote', children: secao }
+    marcarNo(painel, {
+      dataBloco: 'painelDoSeletor',
+      dataIndice: indice,
+      dataTitulo: textoPlano(secao[0]).trim(),
+    })
+    return painel
+  })
+
+  const blocoDaDica: NoMarkdown = { type: 'blockquote', children: dica }
+  marcarNo(blocoDaDica, { dataBloco: 'dicaDoSeletor' })
+  citacao.children = dica.length > 0 ? [blocoDaDica, ...paineis] : paineis
+  marcarNo(citacao, { dataBloco: 'seletor', dataTitulo: rotulo || 'Escolha' })
+  return true
+}
+
+/** Fim da região do seletor: o próximo h2 (ou h1) ou o fim do corpo. */
+function fimDaRegiao(filhos: NoMarkdown[], inicio: number): number {
+  let fim = inicio
+  while (fim < filhos.length) {
+    const no = filhos[fim]
+    if (no.type === 'heading' && (no.depth ?? 0) <= 2) break
+    fim++
+  }
+  return fim
+}
+
+function agruparSeletores(arvore: NoMarkdown) {
+  const filhos = arvore.children ?? []
+  const agrupados: NoMarkdown[] = []
+
+  for (let indice = 0; indice < filhos.length; indice++) {
+    const no = filhos[indice]
+    agrupados.push(no)
+    if (!textoDoMarcadorDoSeletor(no)) continue
+
+    const fim = fimDaRegiao(filhos, indice + 1)
+    if (montarSeletor(no, filhos.slice(indice + 1, fim))) indice = fim - 1
+  }
+
+  arvore.children = agrupados
+}
+
+function ehAlertaMarcado(no: NoMarkdown | undefined): boolean {
+  if (no?.type !== 'blockquote') return false
+  const paragrafo = no.children?.[0]
+  const primeiroTexto = paragrafo?.type === 'paragraph' ? paragrafo.children?.[0] : undefined
+  const marcador =
+    primeiroTexto?.type === 'text' ? detectarMarcador(primeiroTexto.value ?? '') : null
+  return marcador !== null && ehAlertaDoArtigo(marcador.tipo)
+}
+
+/** Título h3 seguido direto de tabela forma um grupo; um alerta logo depois entra junto. */
+function agruparTabelas(arvore: NoMarkdown) {
+  const filhos = arvore.children ?? []
+  const agrupados: NoMarkdown[] = []
+
+  for (let indice = 0; indice < filhos.length; indice++) {
+    const no = filhos[indice]
+    if (!ehTituloDeNivel(no, 3) || filhos[indice + 1]?.type !== 'table') {
+      agrupados.push(no)
+      continue
+    }
+
+    const comAlerta = ehAlertaMarcado(filhos[indice + 2])
+    const quantidade = comAlerta ? 3 : 2
+    const grupo: NoMarkdown = {
+      type: 'blockquote',
+      children: filhos.slice(indice, indice + quantidade),
+    }
+    marcarNo(grupo, { dataBloco: 'grupoDeTabela' })
+    agrupados.push(grupo)
+    indice += quantidade - 1
+  }
+
+  arvore.children = agrupados
+}
+
 /**
  * Plugin do remark: reconhece o marcador `[!TIPO]` na primeira linha do blockquote, remove-o do
  * texto exibido e anota o tipo como propriedade do elemento. Quem desenha o bloco é o componente
- * do `blockquote` em `ConteudoArtigo`; o remark-gfm não entende os alertas do GitHub.
+ * do `blockquote` em `ConteudoArtigo`; o remark-gfm não entende os alertas do GitHub. Os blocos que
+ * juntam seções vizinhas (seletor e grupo de tabela) só valem no primeiro nível do corpo.
  */
 export function remarkBlocosDoArtigo() {
   return (arvore: NoMarkdown) => {
+    agruparSeletores(arvore)
+    agruparTabelas(arvore)
     percorrer(arvore)
   }
 }

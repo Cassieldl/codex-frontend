@@ -16,8 +16,8 @@ export interface AlertaMigrateProps {
 interface AparenciaDoAlerta {
   rotulo: string
   Icone: ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>
-  fundoClasse: string
-  // Ícone é sinal não textual: cada par com o fundo é medido a 3:1 em `utils/contraste.test.ts`.
+  // Fundo, borda e texto do tom. Texto e ícone são medidos contra o fundo em `utils/contraste.test.ts`.
+  tomClasse: string
   iconeClasse: string
 }
 
@@ -25,31 +25,32 @@ const APARENCIA: Record<TipoAlerta, AparenciaDoAlerta> = {
   informacao: {
     rotulo: 'Informação',
     Icone: Info,
-    fundoClasse: 'bg-alert-info',
-    iconeClasse: 'text-primary-light',
+    tomClasse: 'border-alert-info-borda bg-alert-info text-primary',
+    iconeClasse: 'text-primary-medium',
   },
   sucesso: {
     rotulo: 'Sucesso',
     Icone: CircleCheck,
-    fundoClasse: 'bg-alert-success',
+    tomClasse: 'border-alert-success-borda bg-alert-success text-alert-success-texto',
     iconeClasse: 'text-success',
   },
   alerta: {
     rotulo: 'Alerta',
     Icone: TriangleAlert,
-    fundoClasse: 'bg-alert-warning',
-    iconeClasse: 'text-severidade-alerta-texto',
+    tomClasse: 'border-alert-warning-borda bg-alert-warning text-alert-warning-texto',
+    iconeClasse: 'text-alert-warning-icone',
   },
   erro: {
     rotulo: 'Erro',
     Icone: CircleAlert,
-    fundoClasse: 'bg-alert-error',
-    iconeClasse: 'text-error',
+    tomClasse: 'border-alert-error-borda bg-alert-error text-alert-error-texto',
+    iconeClasse: 'text-error-texto',
   },
 }
 
 /**
- * Alerta do design system Migrate: fundo do tipo, ícone na cor funcional e texto em `ink`.
+ * Alerta do design system Migrate: fundo, borda inteira e texto no tom do tipo, com ícone próprio.
+ * Vermelho só para erro: cuidado é âmbar e informação é azul.
  * O padrão tem 60 px de altura mínima e respiro de 16 px à esquerda e 20 px à direita; o
  * compacto cabe numa célula de tabela. Sem título, o tipo vira o nome acessível da nota.
  */
@@ -60,7 +61,7 @@ export function AlertaMigrate({
   className,
   children,
 }: AlertaMigrateProps) {
-  const { rotulo, Icone, fundoClasse, iconeClasse } = APARENCIA[tipo]
+  const { rotulo, Icone, tomClasse, iconeClasse } = APARENCIA[tipo]
   const tituloId = useId()
 
   return (
@@ -70,9 +71,9 @@ export function AlertaMigrate({
       aria-label={titulo ? undefined : rotulo}
       data-alerta={tipo}
       className={clsx(
-        'flex items-start rounded-[var(--radius-control)] text-ink',
-        fundoClasse,
-        compacto ? 'gap-2 px-2.5 py-1.5 text-sm' : 'min-h-[60px] gap-3 py-[19px] pr-5 pl-4',
+        'flex items-start rounded-[var(--radius-control)] border',
+        tomClasse,
+        compacto ? 'gap-2 px-2.5 py-1.5 text-sm' : 'min-h-[60px] gap-3 py-[18px] pr-5 pl-4',
         className,
       )}
     >

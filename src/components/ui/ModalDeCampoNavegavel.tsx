@@ -28,6 +28,8 @@ export interface ModalDeCampoNavegavelProps {
   devolverFoco: () => void
   /** Endereço absoluto que o botão "Copiar link do campo" copia. */
   linkDoCampo: string
+  /** Atalhos fixos no rodapé, acima da posição na sequência. */
+  acoesDoRodape?: ReactNode
   children: ReactNode
 }
 
@@ -38,7 +40,7 @@ interface BotaoDeNavegacaoProps {
 }
 
 const CLASSES_DO_BOTAO_DE_NAVEGACAO =
-  'inline-flex h-9 items-center gap-1 rounded-[var(--radius-control)] border border-border bg-white px-2.5 text-sm font-medium text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light aria-disabled:cursor-default aria-disabled:opacity-50 aria-disabled:hover:shadow-none'
+  'inline-flex h-9 items-center gap-1 rounded-[var(--radius-control)] border border-border bg-white px-2.5 text-sm font-medium text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover aria-disabled:cursor-default aria-disabled:opacity-50 aria-disabled:hover:shadow-none'
 
 /**
  * Na ponta da sequência o botão fica `aria-disabled`, nunca `disabled`: um botão focado que vira
@@ -85,6 +87,7 @@ export function ModalDeCampoNavegavel({
   onFechar,
   devolverFoco,
   linkDoCampo,
+  acoesDoRodape,
   children,
 }: ModalDeCampoNavegavelProps) {
   const [houveNavegacao, setHouveNavegacao] = useState(false)
@@ -143,14 +146,17 @@ export function ModalDeCampoNavegavel({
         </>
       }
       rodape={
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted">
-          <p>
-            Campo {posicao} de {total}
-            {filtroAtivo && <span> no filtro atual</span>}
-          </p>
-          <p className="hidden sm:block">
-            <kbd>←</kbd> <kbd>→</kbd> navegam · <kbd>Esc</kbd> fecha
-          </p>
+        <div className="flex flex-col gap-2">
+          {acoesDoRodape}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted">
+            <p>
+              Campo {posicao} de {total}
+              {filtroAtivo && <span> no filtro atual</span>}
+            </p>
+            <p className="hidden sm:block">
+              <kbd>←</kbd> <kbd>→</kbd> navegam · <kbd>Esc</kbd> fecha
+            </p>
+          </div>
         </div>
       }
     >

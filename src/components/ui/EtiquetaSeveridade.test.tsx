@@ -8,7 +8,7 @@ describe('EtiquetaSeveridade', () => {
 
     const etiqueta = screen.getByText('Crítico')
     expect(etiqueta.closest('span')?.querySelector('svg')).toBeInTheDocument()
-    expect(etiqueta.className).toMatch(/text-severidade-critico-texto/)
+    expect(etiqueta.className).toMatch(/text-alert-error-texto/)
     expect(etiqueta.className).toMatch(/bg-alert-error/)
   })
 
@@ -17,7 +17,7 @@ describe('EtiquetaSeveridade', () => {
 
     const etiqueta = screen.getByText('Alerta')
     expect(etiqueta.closest('span')?.querySelector('svg')).toBeInTheDocument()
-    expect(etiqueta.className).toMatch(/text-severidade-alerta-texto/)
+    expect(etiqueta.className).toMatch(/text-alert-warning-texto/)
     expect(etiqueta.className).toMatch(/bg-alert-warning/)
   })
 

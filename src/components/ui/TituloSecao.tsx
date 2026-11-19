@@ -5,13 +5,10 @@ interface TituloSecaoProps {
   children: ReactNode
 }
 
-/** Título de seção da Home, com o fio laranja curto embaixo (decorativo). */
+/** Título de seção da Home. Sem o traço laranja: ele marca só o título da página. */
 export function TituloSecao({ id, children }: TituloSecaoProps) {
   return (
-    <h2
-      id={id}
-      className="relative pb-2 text-titulo font-extrabold text-primary after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-12 after:rounded-pill after:bg-accent"
-    >
+    <h2 id={id} className="text-titulo font-extrabold text-primary">
       {children}
     </h2>
   )

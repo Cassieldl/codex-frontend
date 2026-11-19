@@ -13,51 +13,66 @@
   --color-primary: #002f4f;
   --color-primary-medium: #074b7f;
   --color-primary-light: #1a79c2;
-  --color-primary-light-hover: #4a89c4;
   --color-accent: #ff8500;
   --color-accent-hover: #e07600;
   --color-white: #ffffff;
 
   /* Cor — funcionais */
-  --color-success: #008000;
+  /* Texto e ícone de confirmação: 8,0:1 sobre branco e 7,2:1 sobre o fundo de sucesso. */
+  --color-success: #0b5e0b;
   --color-error: #ff0000;
-  /* Texto/asterisco de erro — `--color-error` é 4,0:1 sobre branco, abaixo do
-     4,5:1 de AA para texto normal (FAIL WCAG 1.4.3, achado #1 do QA).
-     `--color-error` continua válido para borda/ícone (não-textual, ≥3:1).
-     Este par é o mesmo já validado em `--color-severidade-critico-texto`
-     (10,09:1 medido contra branco — ver analise-frontend.md §3.2). */
-  --color-error-texto: #8a0000;
+  /* Texto de erro e ícone do aviso de erro. `--color-error` dá 4,0:1 sobre branco e reprova
+     texto em AA, então fica só para borda de campo. 6,3:1 sobre branco, 5,5:1 no fundo de erro. */
+  --color-error-texto: #c40000;
   --color-ink: #1b2633;
-  --color-muted: #666666;
-  /* Borda DECORATIVA: card, moldura de tabela, separador de bloco. 1,56:1 contra branco — não
-     atinge os 3:1 de 1.4.11 e não precisa: ornamento está fora do alcance do critério. */
-  --color-border: #cfcfcf;
+  --color-muted: #4f5b66;
+  --color-link-visitado: #4a3b8c;
+  /* Borda DECORATIVA: card, moldura de tabela, divisória. Não atinge os 3:1 de 1.4.11 e não
+     precisa: ornamento está fora do alcance do critério. */
+  --color-border: #dce5ec;
   /* Borda que DELIMITA UM CONTROLE (input, select, textarea): é ela que diz onde o campo começa,
      então cai em 1.4.11 e precisa de 3:1. 3,23:1 medido — `#cfcfcf` dava 1,56 e reprovava.
      Token separado de propósito: mudar `--color-border` alteraria todo card e toda tabela do
      produto para resolver um problema que só existe no campo de formulário. */
   --color-border-control: #8f8f8f;
-  --color-line: #eaeff2;
   --color-surface-disabled: #f8f8f8;
   --color-surface-hover: #f0f4f7;
 
-  /* Cor — fundos de alerta (severidade de Aviso) */
-  --color-alert-success: #ddffdd;
-  --color-alert-error: #ffe0e0;
-  --color-alert-warning: #fffbef;
-  --color-alert-info: #dff1fd;
+  /* Cor — tons de aviso: fundo, borda, texto e ícone. O fundo da dica é também o azul suave de
+     item selecionado e de etiqueta; o texto dela é `primary` e o ícone `primary-medium`. O ícone
+     do erro é `error-texto` e o do sucesso é `success`. */
+  --color-alert-info: #e6f0f8;
+  --color-alert-info-borda: #b9d3e8;
+  --color-alert-warning: #fff6ec;
+  --color-alert-warning-borda: #ffc88a;
+  --color-alert-warning-texto: #5c3300;
+  --color-alert-warning-icone: #b35c00;
+  --color-alert-error: #fdecec;
+  --color-alert-error-borda: #f3b4b4;
+  --color-alert-error-texto: #7a0f0f;
+  --color-alert-success: #e9f6e9;
+  --color-alert-success-borda: #a9d8a9;
+  --color-alert-success-texto: #0b4a0b;
 
-  /* Cor — tokens de severidade/destaque */
-  --color-severidade-critico-texto: #8a0000;
-  --color-severidade-alerta-texto: #8a4b00;
   --color-highlight-anchor: #fff4e5;
+
+  /* Cor — painel escuro de código (envio modelo). Texto, tag, valor e pontuação são medidos sobre
+     o fundo em `utils/contraste.test.ts`. A pontuação do protótipo (#6f8798) dava 4,3:1. */
+  --color-codigo-fundo: #0b2233;
+  --color-codigo-texto: #d6e2ec;
+  --color-codigo-pontuacao: #7f97a8;
+  --color-codigo-tag: #8fd0ff;
+  --color-codigo-valor: #ffb566;
+
+  /* Largura das páginas públicas: 1200px de área útil mais o respiro lateral de 32px (`lg:px-8`). */
+  --container-pagina: 1264px;
 
   /* Tipografia — nomes deliberadamente distintos dos de cor (nenhum sufixo
      repetido entre --text-* e --color-*) — AP-FRONTEND-014/colisão deste projeto */
   --font-sans:
     'Montserrat', 'Montserrat Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  --text-aux: 10px;
+  --text-aux: 12px;
   --text-aux--line-height: 1.4;
   --text-corpo: 14px;
   --text-corpo--line-height: 1.6;
@@ -65,6 +80,8 @@
   --text-card-titulo--line-height: 1.4;
   --text-subtitulo: 20px;
   --text-subtitulo--line-height: 1.3;
+  --text-secao: 24px;
+  --text-secao--line-height: 1.25;
   --text-titulo: 32px;
   --text-titulo--line-height: 1.2;
   --text-h1: 36px;
@@ -107,6 +124,24 @@
 body {
   font-family: var(--font-sans);
   color: var(--color-ink);
+}
+
+/* Link no meio do texto: sempre sublinhado, roxo depois de visitado e azul claro com traço de
+   2px no hover. A ordem segue a cascata de link: visitado antes do hover. */
+@utility link-texto {
+  color: var(--color-primary-medium);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+
+  &:visited {
+    color: var(--color-link-visitado);
+  }
+
+  &:hover {
+    color: var(--color-primary-light);
+    text-decoration-thickness: 2px;
+  }
 }
 
 /* Laranja escuro: mesmo tom da aba ativa, legível sobre branco e sobre o azul do cabeçalho. */

@@ -250,13 +250,14 @@ export function Modal(props: ModalProps) {
         aria-labelledby={titleId}
         tabIndex={-1}
         className={clsx(
-          'w-full rounded-[var(--radius-card)] bg-white shadow-panel focus:outline-none',
+          // Sem o "!", o anel global de foco (CSS sem camada) contornaria o diálogo inteiro.
+          'w-full rounded-[var(--radius-card)] bg-white shadow-panel focus:outline-none!',
           dialogoPorVariante[variante],
           sizeClasses[size],
         )}
       >
         {painel ? (
-          <div className="sticky top-0 z-10 flex items-start gap-3 border-b border-line bg-white px-5 pt-5 pb-4 sm:px-6">
+          <div className="sticky top-0 z-10 flex items-start gap-3 border-b border-border bg-white px-5 pt-5 pb-4 sm:px-6">
             <div className="min-w-0 flex-1">
               {painel.sobretitulo}
               {titulo}
@@ -284,7 +285,7 @@ export function Modal(props: ModalProps) {
         </div>
 
         {painel?.rodape && (
-          <div className="sticky bottom-0 z-10 border-t border-line bg-white px-5 py-2.5 sm:px-6">
+          <div className="sticky bottom-0 z-10 border-t border-border bg-white px-5 py-2.5 sm:px-6">
             {painel.rodape}
           </div>
         )}

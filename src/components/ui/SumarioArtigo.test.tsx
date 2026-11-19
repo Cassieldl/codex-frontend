@@ -1,7 +1,12 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SumarioArtigo } from './SumarioArtigo'
-import { agruparSecoes, extrairSecoesDoCorpo, gerarAncoraSecao } from './secoesDoArtigo'
+import {
+  agruparSecoes,
+  extrairSecoesDoCorpo,
+  gerarAncoraSecao,
+  secaoDaAncora,
+} from './secoesDoArtigo'
 import { LIMIAR_SECAO_ATUAL_PX } from './useSecaoAtual'
 
 describe('gerarAncoraSecao', () => {
@@ -43,6 +48,39 @@ describe('extrairSecoesDoCorpo', () => {
 
   it('corpo sem nenhum h2/h3 retorna lista vazia', () => {
     expect(extrairSecoesDoCorpo('Só um parágrafo, sem título.')).toEqual([])
+  })
+
+  it('os h3 de um seletor ficam fora até o próximo h2', () => {
+    const corpo = [
+      '## Tabela do seu padrão',
+      '',
+      '> [!SELETOR] Padrão do município',
+      '',
+      '### GISS',
+      '',
+      '### IPM',
+      '',
+      '## Cuidados',
+      '',
+      '### Depois do seletor',
+    ].join('\n')
+
+    expect(extrairSecoesDoCorpo(corpo).map((item) => item.titulo)).toEqual([
+      'Tabela do seu padrão',
+      'Cuidados',
+      'Depois do seletor',
+    ])
+  })
+})
+
+describe('secaoDaAncora', () => {
+  it('acha a seção pela âncora do endereço, com ou sem acento codificado', () => {
+    const titulos = ['Padrão Nacional', 'GISS']
+
+    expect(secaoDaAncora(titulos, '#secao-giss')).toBe(1)
+    expect(secaoDaAncora(titulos, '#secao-padrao-nacional')).toBe(0)
+    expect(secaoDaAncora(titulos, '#outra')).toBe(-1)
+    expect(secaoDaAncora(titulos, '#%E0%A4%A')).toBe(-1)
   })
 })
 

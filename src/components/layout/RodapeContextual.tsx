@@ -1,7 +1,10 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
-import { ArrowRight, ArrowUp, Clock, ExternalLink, Mail, Phone } from 'lucide-react'
+import { ArrowRight, ArrowUp, Clock, Mail, Phone } from 'lucide-react'
+import { useLayoutIndice } from '../../features/layout/hooks/useLayoutIndice'
 import { montarLinkSuporte, ROTULO_FALAR_COM_SUPORTE } from '../../utils/linkSuporte'
 import { CONTEUDO_RODAPE_CONSTANTE } from '../../utils/rodapeConteudoConstante'
+import { formatarVersaoLayout } from '../../utils/versaoDoLayout'
+import { LinkExterno } from '../ui/LinkExterno'
 import { PontoDeMarca } from '../ui/PontoDeMarca'
 import { Sobrelinha } from '../ui/Sobrelinha'
 import { PontosDeLuz } from './PontosDeLuz'
@@ -47,6 +50,11 @@ export type ContextoRodape =
 
 export interface RodapeContextualProps {
   contexto: ContextoRodape
+  /**
+   * Rótulo da versão vigente quando a página já o tem por outro caminho (a Home, pelo agregador).
+   * O índice do layout em cache tem precedência; sem nenhum dos dois, a linha final não cita versão.
+   */
+  versaoVigenteDoLayout?: string | null
 }
 
 interface AcaoRodape {
@@ -172,9 +180,14 @@ function AcaoDoRodape({ acao, classe }: { acao: AcaoRodape; classe: string }) {
  * Rodapé de toda página pública (nunca usado na área interna). No topo, o próximo passo do
  * contexto ou a faixa de chamado; embaixo, marca, páginas, atendimento e links da Migrate.
  */
-export function RodapeContextual({ contexto }: RodapeContextualProps) {
+export function RodapeContextual({ contexto, versaoVigenteDoLayout }: RodapeContextualProps) {
   const proximoPasso = obterProximoPasso(contexto)
   const { atendimento, linksMigrate } = CONTEUDO_RODAPE_CONSTANTE
+  // Só lê o índice já carregado por outra tela: o rodapé não dispara requisição própria.
+  const { data: indiceDoLayout } = useLayoutIndice({ buscar: false })
+  const versaoVigente = formatarVersaoLayout(
+    indiceDoLayout?.vigente?.rotulo ?? versaoVigenteDoLayout ?? '',
+  )
 
   return (
     <footer className="relative isolate bg-primary text-white">
@@ -182,7 +195,7 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
 
       <div className="border-b border-white/15">
         {proximoPasso ? (
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 text-center sm:flex-row sm:text-left lg:px-8">
+          <div className="mx-auto flex max-w-pagina flex-col items-center justify-between gap-4 px-4 py-6 text-center sm:flex-row sm:text-left lg:px-8">
             <div className="flex flex-col items-center gap-2 sm:items-start">
               <Sobrelinha>Próximo passo</Sobrelinha>
               <p className="text-card-titulo font-semibold">{proximoPasso.mensagem}</p>
@@ -206,7 +219,7 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
         )}
       </div>
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid max-w-pagina gap-10 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <img src="/marca/logo-migrate-branco.svg" alt="Migrate" className="h-7 w-auto" />
@@ -268,23 +281,24 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
           <ul className="mt-4 flex flex-col gap-3">
             {linksMigrate.map((link) => (
               <li key={link.href}>
-                <a
+                <LinkExterno
                   href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className={CLASSE_LINK_RODAPE}
+                  classeDoIcone="size-3.5"
                 >
                   {link.rotulo}
-                  <ExternalLink className="size-3.5" aria-hidden="true" />
-                </a>
+                </LinkExterno>
               </li>
             ))}
           </ul>
         </nav>
       </div>
 
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 border-t border-white/15 px-4 py-6 text-xs text-white lg:px-8">
-        <p>© {new Date().getFullYear()} Migrate</p>
+      <div className="mx-auto flex max-w-pagina flex-wrap items-center justify-between gap-4 border-t border-white/15 px-4 py-6 text-xs text-white lg:px-8">
+        <p>
+          © {new Date().getFullYear()} Migrate
+          {versaoVigente && <> · Layout InvoiCy vigente: {versaoVigente}</>}
+        </p>
         {/* `#top` é tratado pelo navegador como o topo do documento, sem precisar de âncora. */}
         <a
           href="#top"
@@ -301,22 +315,16 @@ export function RodapeContextual({ contexto }: RodapeContextualProps) {
 /** Faixa padrão: toda página sem passo específico termina oferecendo o chamado. */
 function FaixaDeChamado({ chamado }: { chamado: { rotulo: string; href: string } }) {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-6 sm:flex-row sm:items-center lg:px-8">
+    <div className="mx-auto flex max-w-pagina flex-col items-start justify-between gap-4 px-4 py-6 sm:flex-row sm:items-center lg:px-8">
       <div className="flex flex-col gap-1">
         <h2 className="text-subtitulo font-extrabold">Não achou a resposta no Codex?</h2>
         <p className="text-sm text-white">
           Abra um chamado e mande o link da página em que você parou: o suporte começa dali.
         </p>
       </div>
-      <a
-        href={chamado.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={CLASSE_ACAO_PRINCIPAL}
-      >
+      <LinkExterno href={chamado.href} className={CLASSE_ACAO_PRINCIPAL} classeDoIcone="size-4">
         {chamado.rotulo}
-        <ExternalLink className="size-4" aria-hidden="true" />
-      </a>
+      </LinkExterno>
     </div>
   )
 }

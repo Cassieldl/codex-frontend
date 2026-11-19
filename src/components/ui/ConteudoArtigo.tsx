@@ -9,10 +9,11 @@ import { caminhoInternoSeguro } from '../../utils/caminhoInternoSeguro'
 import { AlertaMigrate } from './AlertaMigrate'
 import type { TipoAlerta } from './AlertaMigrate'
 import { BlocoRecolhivel } from './BlocoRecolhivel'
-import { CaixaDestaque } from './CaixaDestaque'
 import { FluxoDeEtapas } from './FluxoDeEtapas'
 import { ImagemDoArtigo } from './ImagemDoArtigo'
+import { LinkExterno } from './LinkExterno'
 import { CartaoDePasso, ListaDePassos } from './PassoAPasso'
+import { DicaDoSeletor, PainelDoSeletor, SeletorDeSecoes } from './SeletorDeSecoes'
 import { TableRoot } from './Table'
 import { ValorSimNao } from './ValorSimNao'
 import {
@@ -25,6 +26,7 @@ import {
   remarkHtmlComoTexto,
 } from './blocosDoArtigo'
 import type { TipoDeAlertaDoArtigo } from './blocosDoArtigo'
+import { CLASSE_CARD } from './classesDeCard'
 import { gerarAncoraSecao } from './secoesDoArtigo'
 
 /**
@@ -68,11 +70,11 @@ const PLUGINS_DO_REMARK = {
 // Mora aqui, e não em quem usa, para a página pública e o preview do editor ficarem iguais. O
 // `min-w-0` deixa a tabela rolar dentro da própria região em vez de alargar a página.
 const ESTILO_COMUM =
-  'flex min-w-0 flex-col text-ink [&_a]:text-primary-medium [&_a]:underline [&_a]:[overflow-wrap:anywhere] [&_code]:font-mono [&_code]:text-sm [&_h2]:scroll-mt-6 [&_h2]:text-subtitulo [&_h2]:font-extrabold [&_h2]:text-primary [&_h3]:scroll-mt-6 [&_h3]:text-card-titulo [&_h3]:font-bold [&_h3]:text-primary [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3'
+  'flex min-w-0 flex-col text-ink [&_a]:link-texto [&_a]:[overflow-wrap:anywhere] [&_code]:font-mono [&_code]:text-sm [&_h2]:scroll-mt-6 [&_h2]:font-extrabold [&_h2]:text-primary [&_h3]:scroll-mt-6 [&_h3]:text-card-titulo [&_h3]:font-bold [&_h3]:text-primary [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-control)] [&_pre]:bg-surface-disabled [&_pre]:p-3'
 
 const ESTILO_POR_VARIANTE: Record<VarianteConteudo, string> = {
-  artigo: 'gap-4 text-corpo',
-  aviso: 'gap-2 text-sm',
+  artigo: 'gap-4 text-corpo [&_h2]:mt-4 [&_h2]:text-secao',
+  aviso: 'gap-2 text-sm [&_h2]:text-subtitulo',
 }
 
 /** Concatena o texto de um node React, recursivamente -- usado só para gerar o `id` do heading. */
@@ -101,7 +103,11 @@ function textoDoNo(no: NoDoHtml): string {
 }
 
 function criarTituloDeSecao(Tag: 'h2' | 'h3') {
-  function TituloDeSecao({ children, ...props }: HTMLAttributes<HTMLHeadingElement> & ExtraProps) {
+  function TituloDeSecao({
+    children,
+    node: _node,
+    ...props
+  }: HTMLAttributes<HTMLHeadingElement> & ExtraProps) {
     const id = gerarAncoraSecao(extrairTexto(children))
     return (
       <Tag id={id} {...props}>
@@ -116,7 +122,7 @@ function criarTituloDeSecao(Tag: 'h2' | 'h3') {
 /**
  * Link do corpo do artigo (§3.2): caminho interno vira `<Link>`-like `<a>`
  * relativo de propósito (nunca precisa de `target`); link externo `http(s)`
- * ganha `target="_blank" rel="noopener noreferrer"` (`security.md` A05);
+ * vira `LinkExterno` (nova aba com `rel="noopener noreferrer"`, `security.md` A05);
  * qualquer outro esquema (`javascript:`, `data:`, etc.) não vira `<a>` --
  * mesmo filtro de `caminhoInternoSeguro` já usado pela busca, aplicado aqui
  * a conteúdo editorial em vez de dado estruturado da API.
@@ -136,12 +142,11 @@ function LinkDoCorpo({
     )
   }
 
-  const externoSeguro = href?.startsWith('http://') || href?.startsWith('https://')
-  if (externoSeguro) {
+  if (href?.startsWith('http://') || href?.startsWith('https://')) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+      <LinkExterno {...props} href={href}>
         {children}
-      </a>
+      </LinkExterno>
     )
   }
 
@@ -151,8 +156,35 @@ function LinkDoCorpo({
 const ALERTA_POR_BLOCO: Record<TipoDeAlertaDoArtigo, { tipo: TipoAlerta; rotulo: string }> = {
   dica: { tipo: 'informacao', rotulo: 'Dica' },
   importante: { tipo: 'alerta', rotulo: 'Importante' },
-  atencao: { tipo: 'erro', rotulo: 'Atenção' },
+  atencao: { tipo: 'alerta', rotulo: 'Atenção' },
   sucesso: { tipo: 'sucesso', rotulo: 'Sucesso' },
+}
+
+// O título vira a faixa do card e a tabela perde a borda própria: um card só, sem moldura dupla.
+const CLASSE_DO_GRUPO_DE_TABELA = `${CLASSE_CARD} overflow-hidden [&>h3]:border-b [&>h3]:border-border [&>h3]:bg-surface-hover [&>h3]:px-5 [&>h3]:py-3 [&>[role=region]]:rounded-none [&>[role=region]]:border-0 [&>*:nth-child(3)]:m-4`
+
+const CLASSE_DO_ROTULO_DA_CONVERSAO = 'text-xs font-semibold tracking-wide text-muted uppercase'
+
+/** Um código enviado e o valor que cada destino recebe por ele. */
+function ExemploDeConversao({ origem, children }: { origem: string; children: ReactNode }) {
+  return (
+    <div
+      data-bloco="conversao"
+      className={`${CLASSE_CARD} grid items-center gap-4 p-5 sm:grid-cols-[auto_auto_minmax(0,1fr)] sm:gap-6`}
+    >
+      <div className="flex flex-col gap-2">
+        <p className={CLASSE_DO_ROTULO_DA_CONVERSAO}>Você envia ao InvoiCy</p>
+        <code className="w-fit rounded-[var(--radius-control)] bg-primary px-3 py-1.5 text-card-titulo! font-bold text-white">
+          {origem}
+        </code>
+      </div>
+      <ArrowRight className="hidden size-5 text-primary-light sm:block" aria-hidden="true" />
+      <div className="flex min-w-0 flex-col gap-2">
+        <p className={CLASSE_DO_ROTULO_DA_CONVERSAO}>A prefeitura recebe</p>
+        {children}
+      </div>
+    </div>
+  )
 }
 
 /** O tipo vem do marcador `[!TIPO]`, anotado por `remarkBlocosDoArtigo`; sem ele, citação comum. */
@@ -169,10 +201,57 @@ function CitacaoDoCorpo({ children, node, ...props }: ComponentProps<'blockquote
     )
   }
 
-  if (tipo === 'resumo') return <CaixaDestaque>{children}</CaixaDestaque>
+  // O resumo abre o artigo como parágrafo maior, sem caixa nem rótulo.
+  if (tipo === 'resumo') {
+    return (
+      <div data-bloco="resumo" className="flex flex-col gap-2 text-card-titulo text-ink">
+        {children}
+      </div>
+    )
+  }
 
-  if (tipo === 'cartoes' || tipo === 'comparativo' || tipo === 'checklist') {
+  if (tipo === 'cartoes' || tipo === 'comparativo' || tipo === 'checklist' || tipo === 'colunas') {
     return <div data-bloco={tipo}>{children}</div>
+  }
+
+  if (tipo === 'conversao') {
+    const origem = node?.properties.dataTitulo
+    return <ExemploDeConversao origem={String(origem ?? '')}>{children}</ExemploDeConversao>
+  }
+
+  if (tipo === 'grupoDeTabela') {
+    return (
+      <div data-bloco="grupoDeTabela" className={CLASSE_DO_GRUPO_DE_TABELA}>
+        {children}
+      </div>
+    )
+  }
+
+  if (tipo === 'seletor' && node) {
+    const blocos = elementosFilhos(node, 'blockquote')
+    const secoes = blocos
+      .filter((bloco) => bloco.properties.dataBloco === 'painelDoSeletor')
+      .map((bloco) => String(bloco.properties.dataTitulo ?? ''))
+    const temDica = blocos.some((bloco) => bloco.properties.dataBloco === 'dicaDoSeletor')
+    const rotulo = node.properties.dataTitulo
+    return (
+      <SeletorDeSecoes rotulo={String(rotulo ?? '')} secoes={secoes} temDica={temDica}>
+        {children}
+      </SeletorDeSecoes>
+    )
+  }
+
+  if (tipo === 'dicaDoSeletor') return <DicaDoSeletor>{children}</DicaDoSeletor>
+
+  if (tipo === 'painelDoSeletor') {
+    return (
+      <PainelDoSeletor
+        indice={Number(node?.properties.dataIndice)}
+        titulo={String(node?.properties.dataTitulo ?? '')}
+      >
+        {children}
+      </PainelDoSeletor>
+    )
   }
 
   if (tipo === 'detalhes') {
@@ -188,14 +267,14 @@ function CitacaoDoCorpo({ children, node, ...props }: ComponentProps<'blockquote
 
   if (tipo === 'fonte') {
     return (
-      <footer className="mt-4 flex flex-col gap-1 border-t border-line pt-4 text-sm text-muted">
+      <footer className="mt-4 flex flex-col gap-1 border-t border-border pt-4 text-sm text-muted">
         {children}
       </footer>
     )
   }
 
   return (
-    <blockquote className="border-l-4 border-line pl-4" {...props}>
+    <blockquote className="border-l-4 border-border pl-4" {...props}>
       {children}
     </blockquote>
   )
@@ -215,6 +294,9 @@ const CLASSE_POR_TIPO_DE_LISTA: Record<string, string> = {
   cartoes: 'grid list-none grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3',
   comparativo: 'grid list-none grid-cols-1 gap-4 md:grid-cols-2',
   checklist: 'flex list-none flex-col gap-2',
+  conversao: 'flex list-none flex-col gap-2',
+  colunas: 'grid list-none grid-cols-1 gap-4 md:grid-cols-2',
+  links: 'flex list-none flex-col gap-2',
 }
 
 function ListaComMarcadores({ children, node }: ComponentProps<'ul'> & ExtraProps) {
@@ -225,8 +307,9 @@ function ListaComMarcadores({ children, node }: ComponentProps<'ul'> & ExtraProp
 }
 
 // O link da ação se estica sobre o cartão inteiro: um só alvo de clique, sem link dentro de link.
-const CLASSE_DO_CARTAO =
-  'relative flex flex-col gap-2 rounded-[var(--radius-card)] border border-line bg-white p-5 transition-shadow has-[a]:hover:shadow-hover has-[a:focus-visible]:shadow-hover'
+const CLASSE_DO_CARTAO = `${CLASSE_CARD} relative flex flex-col gap-2 p-5 transition-[border-color,box-shadow,translate] duration-200 has-[a]:hover:-translate-y-0.5 has-[a]:hover:border-primary-light has-[a]:hover:shadow-panel has-[a:focus-visible]:shadow-panel`
+
+const CLASSE_DO_CARTAO_LIVRE = `${CLASSE_CARD} flex min-w-0 flex-col gap-3 p-5`
 
 function ItemDeLista({ children, node, ...props }: ComponentProps<'li'> & ExtraProps) {
   const numero = node?.properties.dataNumeroPasso
@@ -237,7 +320,25 @@ function ItemDeLista({ children, node, ...props }: ComponentProps<'li'> & ExtraP
 
   if (tipo === 'coluna') {
     return (
-      <li className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line border-t-4 border-t-primary-light bg-white p-5">
+      <li className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border border-t-4 border-t-primary-light bg-white p-5">
+        {children}
+      </li>
+    )
+  }
+
+  if (tipo === 'conversao') {
+    return (
+      <li className="flex items-center justify-between gap-3 rounded-[var(--radius-control)] border border-border px-3 py-2">
+        {children}
+      </li>
+    )
+  }
+
+  if (tipo === 'cartaoLivre') return <li className={CLASSE_DO_CARTAO_LIVRE}>{children}</li>
+
+  if (tipo === 'link') {
+    return (
+      <li className="rounded-[var(--radius-control)] border border-border px-3 py-2 text-sm hover:shadow-hover">
         {children}
       </li>
     )
@@ -259,8 +360,10 @@ const CLASSE_POR_PARTE: Record<string, string> = {
   tituloCartao: 'text-card-titulo font-semibold text-primary',
   textoCartao: 'text-sm text-muted',
   tituloColuna: 'text-card-titulo font-semibold text-primary',
+  destinoConversao: 'text-sm font-semibold text-primary',
+  valorConversao: 'font-mono text-sm font-bold text-primary',
   acaoCartao:
-    "mt-auto inline-flex items-center gap-1 pt-1 text-sm font-semibold [&_a]:no-underline! [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:rounded-[var(--radius-card)] [&_a]:after:content-['']",
+    "mt-auto inline-flex items-center gap-1 pt-1 text-sm font-semibold [&_a]:text-primary-medium! [&_a]:no-underline! [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:rounded-[var(--radius-card)] [&_a]:after:content-['']",
 }
 
 /** Parágrafo com imagem vira `<div>`: `<figure>` dentro de `<p>` é HTML inválido. */
@@ -381,7 +484,7 @@ function CelulaDaTabela({ children, node, ...props }: ComponentProps<'td'> & Ext
   const valor = node ? reconhecerSimNao(textoDoNo(node)) : null
 
   return (
-    <td className={`${CLASSE_DA_CELULA} border-t border-line`} {...props}>
+    <td className={`${CLASSE_DA_CELULA} border-t border-border`} {...props}>
       {valor ? <ValorSimNao valor={valor} /> : children}
     </td>
   )

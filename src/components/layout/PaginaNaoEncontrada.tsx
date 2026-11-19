@@ -22,7 +22,7 @@ export function PaginaNaoEncontrada() {
       <main
         id={ID_CONTEUDO_PRINCIPAL}
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-4 py-8 lg:px-8"
+        className="mx-auto flex w-full max-w-pagina flex-1 flex-col justify-center px-4 py-8 lg:px-8"
       >
         <EstadoIndisponivel
           icone={Compass}

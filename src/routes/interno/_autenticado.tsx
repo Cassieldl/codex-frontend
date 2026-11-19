@@ -35,7 +35,7 @@ export const Route = createFileRoute('/interno/_autenticado')({
  *
  * Sem ele as tabelas de edição esticavam até a borda do monitor: num monitor
  * largo, o nome do campo ficava numa ponta e os botões de ação na outra, com
- * meio metro de vazio no meio. É mais folgado que o `max-w-6xl` do portal
+ * meio metro de vazio no meio. É mais folgado que o `max-w-pagina` do portal
  * público porque aqui as tabelas têm colunas de ação que lá não existem.
  */
 const LARGURA_DO_CONTEUDO = 'mx-auto w-full max-w-7xl'

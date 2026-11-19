@@ -8,7 +8,7 @@ export interface ListaDePassosProps {
 /** Continua um `<ol>`: o leitor de tela anuncia a ordem; o número visível é só visual. */
 export function ListaDePassos({ inicio, children }: ListaDePassosProps) {
   return (
-    <ol start={inicio} className="flex list-none flex-col gap-3">
+    <ol start={inicio} className="flex list-none flex-col gap-2">
       {children}
     </ol>
   )
@@ -21,14 +21,14 @@ export interface CartaoDePassoProps {
 
 export function CartaoDePasso({ numero, children }: CartaoDePassoProps) {
   return (
-    <li className="flex gap-3 rounded-[var(--radius-card)] border border-line bg-white p-4 text-ink shadow-card">
+    <li className="flex gap-3 text-ink">
       <span
         aria-hidden="true"
-        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white"
+        className="flex size-7 shrink-0 items-center self-start justify-center rounded-full bg-primary text-sm font-bold text-white"
       >
         {numero}
       </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-2">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">{children}</div>
     </li>
   )
 }
