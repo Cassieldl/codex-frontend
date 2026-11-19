@@ -20,7 +20,7 @@ export function MarcadorObrigatoriedade({ estado, className }: MarcadorObrigator
     <span
       data-obrigatoriedade={estado}
       className={clsx(
-        'inline-flex shrink-0 items-center rounded-[var(--radius-check)] border px-1.5 py-0.5 text-[11px] leading-none font-bold',
+        'inline-flex shrink-0 items-center rounded-[var(--radius-check)] border px-1.5 py-0.5 text-aux leading-none font-bold',
         CLASSE_POR_ESTADO[estado],
         className,
       )}

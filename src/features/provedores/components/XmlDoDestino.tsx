@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import type { ReactNode } from 'react'
 
 import { niveisDoCaminho } from '../utils/destinosXml'
@@ -18,9 +19,9 @@ interface LinhaDoXml {
 function Tag({ nome, ehFechamento = false }: { nome: string; ehFechamento?: boolean }) {
   return (
     <>
-      <span className="text-muted">{ehFechamento ? '</' : '<'}</span>
-      <span className="text-primary-medium">{nome}</span>
-      <span className="text-muted">{'>'}</span>
+      <span className="text-alert-info-borda">{ehFechamento ? '</' : '<'}</span>
+      <span className="text-white">{nome}</span>
+      <span className="text-alert-info-borda">{'>'}</span>
     </>
   )
 }
@@ -45,9 +46,9 @@ function montarLinhas(niveis: string[], exemplo: string | null): LinhaDoXml[] {
       <>
         <Tag nome={tagDoAlvo} />
         {exemplo ? (
-          <span className="text-ink">{exemplo}</span>
+          <span className="text-accent">{exemplo}</span>
         ) : (
-          <span className="text-muted">…</span>
+          <span className="text-alert-info-borda">…</span>
         )}
         <Tag nome={tagDoAlvo} ehFechamento />
       </>
@@ -69,7 +70,7 @@ function montarLinhas(niveis: string[], exemplo: string | null): LinhaDoXml[] {
 /**
  * O caminho de um destino lido como XML aninhado: ancestrais abertos, a folha com o valor dentro e o
  * fechamento invertido. O recuo é de linha continuada (`padding-left`), não de espaços, para que a
- * linha quebre em vez de rolar para o lado.
+ * linha quebre em vez de rolar para o lado. Mora no bloco escuro de exemplo do modal do campo.
  */
 export function XmlDoDestino({ caminho, exemplo }: XmlDoDestinoProps) {
   const niveis = niveisDoCaminho(caminho)
@@ -83,7 +84,7 @@ export function XmlDoDestino({ caminho, exemplo }: XmlDoDestinoProps) {
       <div
         role="group"
         aria-label={`Caminho no XML do provedor: ${caminho}`}
-        className="rounded-[var(--radius-control)] bg-surface-hover py-3 font-mono text-[12.5px] leading-7"
+        className="py-1 font-mono text-[12.5px] leading-6"
       >
         {linhas.map((linha) => (
           <code
@@ -92,18 +93,19 @@ export function XmlDoDestino({ caminho, exemplo }: XmlDoDestinoProps) {
             data-nivel={linha.nivel}
             data-alvo={linha.ehAlvo ? '' : undefined}
             style={{ paddingLeft: `${linha.nivel + 1}rem` }}
-            className={
-              linha.ehAlvo
-                ? 'block border-l-[3px] border-l-accent bg-highlight-anchor pr-4 font-semibold whitespace-pre-wrap [overflow-wrap:anywhere]'
-                : 'block border-l-[3px] border-l-transparent pr-4 whitespace-pre-wrap [overflow-wrap:anywhere]'
-            }
+            className={clsx(
+              'block border-l-[3px] pr-4 whitespace-pre-wrap [overflow-wrap:anywhere]',
+              linha.ehAlvo ? 'border-l-accent bg-white/10 font-semibold' : 'border-l-transparent',
+            )}
           >
             {linha.conteudo}
           </code>
         ))}
       </div>
 
-      {temExemplo && <figcaption className="mt-1 text-xs text-muted">exemplo real</figcaption>}
+      {temExemplo && (
+        <figcaption className="mt-1 text-xs text-alert-info-borda">exemplo real</figcaption>
+      )}
     </figure>
   )
 }

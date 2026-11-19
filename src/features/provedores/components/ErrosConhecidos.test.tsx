@@ -166,6 +166,48 @@ describe('ErrosConhecidos — cada erro', () => {
     )
   })
 
+  it('erro com campo mostra o que você envia e as rejeições do campo; erro sem campo, não', async () => {
+    const camposComDestino = [
+      {
+        grupo: 'IntermServico',
+        grupoSlug: 'intermservico',
+        campos: [
+          {
+            ...campo('IntermCNPJ', 'intermservico-intermcnpj', [
+              { slug: ERRO_COM_MENSAGEM_PROPRIA.slug, codigo: 'E0248' },
+              { slug: 'e0249-cnpj-do-intermediario-ausente', codigo: 'E0249' },
+            ]),
+            destinoXml: 'DPS/infDPS/interm/CNPJ',
+          },
+        ],
+      },
+    ]
+    server.use(
+      http.get(`${import.meta.env.VITE_API_URL}/erros/:slug`, () =>
+        HttpResponse.json({ data: { ...ERRO_SEM_CAMPO, solucaoSugerida: null }, message: null }),
+      ),
+    )
+    renderizar({ camposPorGrupo: camposComDestino })
+
+    fireEvent.click(await screen.findByRole('button', { name: /E0248/ }))
+
+    const voceEnvia = screen.getByText('Você envia').parentElement!
+    expect(voceEnvia).toHaveTextContent('IntermCNPJ → tag CNPJ')
+    expect(within(voceEnvia).getByRole('link', { name: 'IntermCNPJ' })).toHaveAttribute(
+      'href',
+      '/provedores/prefeitura-exemplo/campos#campo-intermservico-intermcnpj',
+    )
+    expect(screen.getByText('Rejeições nesta versão').parentElement).toHaveTextContent(
+      '2 erros conhecidos',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /E1235/ }))
+
+    await screen.findByText('A correção deste erro ainda não foi documentada.')
+    expect(screen.queryByText('Você envia')).not.toBeInTheDocument()
+    expect(screen.queryByText('Rejeições nesta versão')).not.toBeInTheDocument()
+  })
+
   it('erro sem correção documentada diz isso em vez de inventar uma', async () => {
     server.use(
       http.get(`${import.meta.env.VITE_API_URL}/erros/:slug`, () =>

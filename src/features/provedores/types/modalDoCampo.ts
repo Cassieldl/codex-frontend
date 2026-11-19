@@ -15,6 +15,9 @@ export interface ModalDoCampoProps {
   campo: CampoVersaoPublico
   /** "Serviço › Valores › IBSCBS" = rótulo do bloco + subtítulo do subgrupo (quando existe). */
   trilha: string
+  /** Sobretítulo: a trilha seguida de "Emissor Nacional 0.20". */
+  provedorNome: string
+  versaoRotulo: string
   /** 1-based na sequência visível. */
   posicao: number
   total: number

@@ -24,14 +24,13 @@ export interface LinhaDoCampoProps {
 export const CLASSE_SO_NO_DESKTOP = 'hidden min-[860px]:table-cell'
 
 const CLASSE_DO_NOME =
-  'text-left font-mono text-[13px] font-semibold text-ink [overflow-wrap:anywhere] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'text-left font-mono text-[13px] font-semibold text-ink [overflow-wrap:anywhere] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
 
 const CLASSE_DA_TAG =
   'block font-mono text-[13px] font-semibold text-primary-medium [overflow-wrap:anywhere]'
 
 function descreverResumoMovel(campo: CampoVersaoPublico): string {
   const partes = [campo.tipo]
-  if (campo.tamanho) partes.push(campo.tamanho)
   if (campo.exemplo) partes.push(`ex.: ${campo.exemplo}`)
   return partes.join(' · ')
 }
@@ -88,20 +87,35 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
       id={construirIdLinhaCampo(slug)}
       onClick={abrirPeloClique}
       className={clsx(
-        'scroll-mt-[calc(var(--topo-fixo,0px)_+_8rem)] cursor-pointer border-t border-line align-top hover:bg-surface-hover',
+        'scroll-mt-[calc(var(--topo-fixo,0px)_+_8rem)] cursor-pointer border-t border-border align-top hover:bg-surface-hover',
         ativo && 'bg-highlight-anchor',
       )}
     >
       <td
-        data-coluna="campo"
+        data-coluna="uso"
         className={clsx(
+          CLASSE_SO_NO_DESKTOP,
           'border-l-[3px] px-3 py-2',
           ativo ? 'border-l-accent' : 'border-l-transparent',
         )}
       >
-        {/* O selo RT acompanha o texto do nome, e a etiqueta de uso fica centrada na linha. */}
+        <MarcadorObrigatoriedade estado={campo.estadoPreenchimento} />
+      </td>
+
+      <td
+        data-coluna="campo"
+        className={clsx(
+          'px-3 py-2 max-[859px]:border-l-[3px]',
+          ativo ? 'max-[859px]:border-l-accent' : 'max-[859px]:border-l-transparent',
+        )}
+      >
+        {/* O selo RT acompanha o texto do nome. Em tela estreita a coluna Uso some e a etiqueta
+            volta para a linha do nome. */}
         <div className="flex flex-wrap items-baseline gap-2">
-          <MarcadorObrigatoriedade estado={campo.estadoPreenchimento} className="self-center" />
+          <MarcadorObrigatoriedade
+            estado={campo.estadoPreenchimento}
+            className="self-center min-[860px]:hidden"
+          />
           <button
             type="button"
             data-botao-do-campo=""
@@ -129,13 +143,6 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
 
       <td data-coluna="tipo" className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2 text-xs text-ink')}>
         {campo.tipo}
-      </td>
-
-      <td
-        data-coluna="tamanho"
-        className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2 font-mono text-xs text-ink')}
-      >
-        {campo.tamanho}
       </td>
 
       {mostrarExemplo && (

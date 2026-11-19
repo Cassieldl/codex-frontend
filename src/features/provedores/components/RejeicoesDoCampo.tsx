@@ -43,7 +43,7 @@ function DetalheDaRejeicao({ erro }: { erro: ErroResumoPublico }) {
  * da API) passa por `caminhoInternoSeguro` antes de virar link; se não passar, o item vira texto.
  *
  * Erro do campo que não está em `errosResumo` nunca some: aparece só com o código, sem link, e o
- * slug vai para o console — a lista do campo e a da versão divergiram e alguém precisa saber.
+ * slug vai para o console: a lista do campo e a da versão divergiram e alguém precisa saber.
  */
 export function RejeicoesDoCampo({ erros, errosResumo }: RejeicoesDoCampoProps) {
   const tituloId = useId()
@@ -67,11 +67,17 @@ export function RejeicoesDoCampo({ erros, errosResumo }: RejeicoesDoCampoProps) 
 
   return (
     <section id={ID_SECAO_REJEICOES} aria-labelledby={tituloId} className="scroll-mt-32">
-      <h3 id={tituloId} className="text-aux font-semibold tracking-wide text-muted uppercase">
+      {/* Alvo do foco do atalho "Ver os N erros" no rodapé do modal. */}
+      <h3
+        id={tituloId}
+        tabIndex={-1}
+        data-titulo-das-rejeicoes=""
+        className="text-aux font-semibold tracking-wide text-muted uppercase"
+      >
         Rejeições registradas ({erros.length})
       </h3>
 
-      <ul className="mt-2 flex flex-col divide-y divide-line border-y border-line">
+      <ul className="mt-2 flex flex-col divide-y divide-border border-y border-border">
         {erros.map((erroDoCampo) => {
           const resumo = resumoPorSlug.get(erroDoCampo.slug)
 
@@ -95,7 +101,7 @@ export function RejeicoesDoCampo({ erros, errosResumo }: RejeicoesDoCampoProps) 
               {caminho ? (
                 <Link
                   to={caminho as unknown as LinkProps['to']}
-                  className="block rounded px-2 py-2.5 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+                  className="block rounded px-2 py-2.5 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover"
                 >
                   <DetalheDaRejeicao erro={resumo} />
                 </Link>

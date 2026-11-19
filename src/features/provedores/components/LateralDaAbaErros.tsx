@@ -23,7 +23,7 @@ function CamposMaisRejeitados({
   return (
     <section
       aria-labelledby="campos-mais-rejeitados"
-      className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line bg-white p-5 shadow-card"
+      className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-white p-5 shadow-card"
     >
       <div>
         <h2 id="campos-mais-rejeitados" className="text-card-titulo font-bold text-primary">
@@ -47,7 +47,7 @@ function CamposMaisRejeitados({
               </span>
               <span
                 aria-hidden="true"
-                className="h-1.5 overflow-hidden rounded-[var(--radius-pill)] bg-line"
+                className="h-1.5 overflow-hidden rounded-[var(--radius-pill)] bg-border"
               >
                 <span
                   className="block h-full rounded-[var(--radius-pill)] bg-primary-light"

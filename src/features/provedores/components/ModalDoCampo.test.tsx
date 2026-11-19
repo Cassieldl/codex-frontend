@@ -6,7 +6,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSyncExternalStore } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -95,6 +95,8 @@ function propsBase(sobrescritas: Partial<ModalDoCampoProps> = {}): ModalDoCampoP
   return {
     campo: CAMPO_COM_REJEICOES,
     trilha: 'Serviço',
+    provedorNome: 'Emissor Nacional',
+    versaoRotulo: '0.20',
     posicao: 3,
     total: 7,
     filtroAtivo: false,
@@ -114,7 +116,7 @@ function propsBase(sobrescritas: Partial<ModalDoCampoProps> = {}): ModalDoCampoP
  * externo para o teste poder "rerenderizar" com o campo novo, como a página faz ao navegar, e há
  * um botão gatilho fora do modal para provar quem devolve o foco.
  */
-function renderizar(props: ModalDoCampoProps, { abertoNaMontagem = true } = {}) {
+function renderizar(props: ModalDoCampoProps, { abertoNaMontagem = true, rotaDaAba = false } = {}) {
   let estado = { props, aberto: abertoNaMontagem }
   const ouvintes = new Set<() => void>()
 
@@ -142,10 +144,14 @@ function renderizar(props: ModalDoCampoProps, { abertoNaMontagem = true } = {}) 
   }
 
   const rootRoute = createRootRoute({ component: Outlet })
-  const rota = createRoute({ getParentRoute: () => rootRoute, path: '/', component: Ponte })
+  // Na aba Campos de verdade, a rota traz o slug do provedor; na raiz, não.
+  const caminho = rotaDaAba ? '/provedores/$provedorSlug/campos' : '/'
+  const rota = createRoute({ getParentRoute: () => rootRoute, path: caminho, component: Ponte })
   const router = createRouter({
     routeTree: rootRoute.addChildren([rota]),
-    history: createMemoryHistory({ initialEntries: ['/'] }),
+    history: createMemoryHistory({
+      initialEntries: [rotaDaAba ? '/provedores/emissor-nacional/campos' : '/'],
+    }),
   })
 
   render(<RouterProvider router={router} />)
@@ -196,6 +202,33 @@ describe('ModalDoCampo — identificação', () => {
     renderizar(propsBase())
 
     expect(await screen.findByRole('dialog')).toHaveFocus()
+  })
+
+  it('o sobretítulo junta a trilha, o provedor e a versão', async () => {
+    renderizar(propsBase())
+    await screen.findByRole('dialog')
+
+    expect(screen.getByText('Serviço · Emissor Nacional 0.20')).toBeInTheDocument()
+  })
+})
+
+describe('ModalDoCampo: selos do topo', () => {
+  it('mostra o uso, que o campo está fora da reforma e quantas rejeições ele tem', async () => {
+    renderizar(propsBase())
+    await screen.findByRole('dialog')
+
+    expect(screen.getByText('Condicional')).toHaveAttribute('data-obrigatoriedade', 'Condicional')
+    expect(screen.getByText('Fora da reforma tributária')).toBeInTheDocument()
+    expect(screen.getByText('1 rejeição nesta versão')).toBeInTheDocument()
+  })
+
+  it('campo da reforma troca o "fora" pelo selo RT; sem rejeição, o selo de rejeições some', async () => {
+    renderizar(propsBase({ campo: { ...CAMPO_SEGUINTE, reformaTributaria: true } }))
+    await screen.findByRole('dialog')
+
+    expect(document.querySelector('[data-selo-reforma-tributaria]')).not.toBeNull()
+    expect(screen.queryByText('Fora da reforma tributária')).toBeNull()
+    expect(screen.queryByText(/nesta versão$/)).toBeNull()
   })
 })
 
@@ -434,5 +467,89 @@ describe('ModalDoCampo — natureza da operação', () => {
 
     await screen.findByRole('dialog', { name: 'PaiPreServico' })
     expect(screen.queryByText('De-para da natureza da operação')).toBeNull()
+  })
+})
+
+describe('ModalDoCampo — conversão do valor', () => {
+  const NATOP_COM_CONVERSAO = {
+    ...CAMPO_SEGUINTE,
+    campoLayoutSlug: 'natop',
+    nome: 'natOp',
+    caminhoXml: '//natOp',
+    exemplo: '4',
+    destinoXml: 'DPS/infDPS/valores/trib/tribMun/tribISSQN',
+  }
+  const NATUREZAS = [
+    {
+      codigoInvoicy: 4,
+      descricao: 'Imunidade',
+      valorProvedor: '2',
+      observacao: null,
+      aConfirmar: false,
+    },
+  ]
+
+  it('o natOp mostra lado a lado o que se envia e o que o provedor recebe; outro campo, não', async () => {
+    const { trocarProps } = renderizar(
+      propsBase({ campo: NATOP_COM_CONVERSAO, naturezasOperacao: NATUREZAS }),
+    )
+
+    const voceEnvia = await screen.findByRole('region', { name: 'Você envia (Layout InvoiCy)' })
+    const provedorRecebe = screen.getByRole('region', { name: 'Provedor recebe' })
+    expect(voceEnvia).toHaveTextContent('<natOp>4</natOp>')
+    expect(provedorRecebe).toHaveTextContent('<tribISSQN>2</tribISSQN>')
+    expect(screen.getByText('O InvoiCy converte: 4 (Imunidade) chega como 2.')).toBeInTheDocument()
+
+    trocarProps({ campo: CAMPO_COM_REJEICOES })
+
+    await screen.findByRole('dialog', { name: 'PaiPreServico' })
+    expect(screen.queryByText(/^O InvoiCy converte/)).toBeNull()
+  })
+})
+
+describe('ModalDoCampo: atalho para os erros', () => {
+  it('"Ver o erro" rola até as rejeições e leva o foco ao título delas', async () => {
+    const usuario = userEvent.setup()
+    renderizar(propsBase())
+    await screen.findByRole('dialog')
+    rolagem.mockClear()
+
+    await usuario.click(screen.getByRole('button', { name: 'Ver o erro' }))
+
+    expect(rolagem).toHaveBeenCalledExactlyOnceWith({ block: 'start' })
+    expect(screen.getByRole('heading', { name: 'Rejeições registradas (1)' })).toHaveFocus()
+  })
+
+  it('campo sem rejeição não oferece o atalho', async () => {
+    renderizar(propsBase({ campo: CAMPO_SEGUINTE }))
+    await screen.findByRole('dialog')
+
+    expect(screen.queryByRole('button', { name: /^Ver o/ })).toBeNull()
+  })
+})
+
+describe('ModalDoCampo — links para fora do modal', () => {
+  it('na aba Campos, leva ao verbete no dicionário e ao envio modelo do provedor', async () => {
+    renderizar(propsBase(), { rotaDaAba: true })
+
+    const links = await screen.findByRole('navigation', { name: 'Ver o campo em outras páginas' })
+
+    expect(within(links).getByRole('link', { name: 'No dicionário' })).toHaveAttribute(
+      'href',
+      '/layout/campos/servico-paipreservico',
+    )
+    expect(within(links).getByRole('link', { name: 'No envio modelo' })).toHaveAttribute(
+      'href',
+      '/provedores/emissor-nacional/envio-modelo',
+    )
+  })
+
+  it('fora da rota do provedor, o link do envio modelo não aparece', async () => {
+    renderizar(propsBase())
+
+    const links = await screen.findByRole('navigation', { name: 'Ver o campo em outras páginas' })
+
+    expect(within(links).getByRole('link', { name: 'No dicionário' })).toBeInTheDocument()
+    expect(within(links).queryByRole('link', { name: 'No envio modelo' })).toBeNull()
   })
 })

@@ -1,4 +1,8 @@
-import type { CampoVersaoPublico, GrupoCampoVersao } from '../types/versaoProvedorPagina'
+import type {
+  CampoVersaoPublico,
+  GrupoCampoVersao,
+  NaturezaOperacaoPublica,
+} from '../types/versaoProvedorPagina'
 
 const TAG_NATUREZA_OPERACAO = 'natOp'
 
@@ -26,4 +30,24 @@ export function destinoDaNaturezaOperacao(camposPorGrupo: GrupoCampoVersao[]): T
     .find((item) => ehCampoNaturezaOperacao(item) && item.destinoXml)
 
   return campo?.destinoXml ? separarTagDeDestino(campo.destinoXml) : null
+}
+
+/**
+ * Para cada código que chega ao provedor com o mesmo valor de um código anterior da tabela, o
+ * código anterior. O primeiro de cada valor fica de fora: é a referência dos outros.
+ */
+export function codigosEquivalentesNoProvedor(
+  naturezas: readonly Pick<NaturezaOperacaoPublica, 'codigoInvoicy' | 'valorProvedor'>[],
+): ReadonlyMap<number, number> {
+  const primeiroPorValor = new Map<string, number>()
+  const equivalentes = new Map<number, number>()
+
+  for (const { codigoInvoicy, valorProvedor } of naturezas) {
+    const valor = valorProvedor.trim()
+    const anterior = primeiroPorValor.get(valor)
+    if (anterior === undefined) primeiroPorValor.set(valor, codigoInvoicy)
+    else if (anterior !== codigoInvoicy) equivalentes.set(codigoInvoicy, anterior)
+  }
+
+  return equivalentes
 }

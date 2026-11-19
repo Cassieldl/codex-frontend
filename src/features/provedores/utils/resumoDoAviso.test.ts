@@ -1,37 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ordenarAvisosPorGravidade, primeiraFraseDoAviso } from './resumoDoAviso'
-
-describe('primeiraFraseDoAviso', () => {
-  it('corta na primeira frase e tira a marcação do Markdown', () => {
-    expect(
-      primeiraFraseDoAviso(
-        'Sem a **liberação** na [Nota Control](https://exemplo.com), o retorno é `E157`. Peça antes.',
-      ),
-    ).toBe('Sem a liberação na Nota Control, o retorno é E157.')
-  })
-
-  it('pula título, marcador de bloco e lista, e começa pelo primeiro texto de verdade', () => {
-    const corpo =
-      '## Antes de emitir\n\n> [!ATENCAO] Use só a série 8 em homologação. Outras falham.'
-
-    expect(primeiraFraseDoAviso(corpo)).toBe('Use só a série 8 em homologação.')
-  })
-
-  it('não corta em ponto de versão, de e-mail nem de nome de tag', () => {
-    const corpo =
-      'Na versão 1.01, envie layout_version e escreva para suporte@nota.com.br antes. Depois teste.'
-
-    expect(primeiraFraseDoAviso(corpo)).toBe(
-      'Na versão 1.01, envie layout_version e escreva para suporte@nota.com.br antes.',
-    )
-  })
-
-  it('sem ponto final, devolve o primeiro parágrafo inteiro', () => {
-    expect(primeiraFraseDoAviso('Campos ainda em confirmação\ncom o InvoiCy\n\nOutro')).toBe(
-      'Campos ainda em confirmação com o InvoiCy',
-    )
-  })
-})
+import { ordenarAvisosPorGravidade } from './resumoDoAviso'
 
 describe('ordenarAvisosPorGravidade', () => {
   it('põe crítico, atenção e informação nessa ordem e mantém a ordem recebida no empate', () => {

@@ -11,7 +11,8 @@ export interface NaturezasOperacaoProps {
   camposPorGrupo: GrupoCampoVersao[]
 }
 
-const CLASSE_PASSO = 'flex flex-col gap-1 rounded-xl border border-line px-4 py-3'
+const CLASSE_PASSO =
+  'flex flex-col gap-1 rounded-[var(--radius-card)] border border-border px-4 py-3'
 
 const CLASSE_ROTULO_DO_PASSO = 'text-xs font-bold tracking-wider text-primary-medium uppercase'
 
@@ -31,7 +32,7 @@ export function NaturezasOperacao({ naturezas, camposPorGrupo }: NaturezasOperac
         Natureza da operação
       </h2>
 
-      <div className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-line bg-white p-6 shadow-card">
+      <div className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-white p-6 shadow-card">
         <h3 className="text-card-titulo font-bold text-primary">
           Como a natureza chega ao provedor
         </h3>
@@ -39,7 +40,7 @@ export function NaturezasOperacao({ naturezas, camposPorGrupo }: NaturezasOperac
         {/* Os espaços entre os itens ficam no texto: a leitura e a cópia não grudam as palavras. */}
         <ol
           data-abertura-natureza=""
-          className="grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-center"
+          className="grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto_1.2fr] sm:items-center"
         >
           <li className={CLASSE_PASSO}>
             <span className={CLASSE_ROTULO_DO_PASSO}>Você envia</span>{' '}
@@ -58,10 +59,14 @@ export function NaturezasOperacao({ naturezas, camposPorGrupo }: NaturezasOperac
           <li className={CLASSE_PASSO}>
             <span className={CLASSE_ROTULO_DO_PASSO}>Provedor recebe</span>{' '}
             {destino ? (
-              <span>
+              // O grupo quebra como bloco: sem isso "(grupo" ficava numa linha e "tribMun)" na outra.
+              <span className="flex flex-wrap items-baseline gap-x-1.5">
                 <code className="font-mono text-sm font-bold text-ink">{destino.tag}</code>
                 {destino.grupo && (
-                  <span className="text-xs text-muted"> (grupo {destino.grupo})</span>
+                  <span className="text-xs whitespace-nowrap text-muted">
+                    {' '}
+                    (grupo {destino.grupo})
+                  </span>
                 )}
               </span>
             ) : (
@@ -71,7 +76,7 @@ export function NaturezasOperacao({ naturezas, camposPorGrupo }: NaturezasOperac
         </ol>
       </div>
 
-      <div className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-card">
+      <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-white shadow-card">
         <TabelaNaturezasOperacao naturezas={naturezas} />
       </div>
     </section>

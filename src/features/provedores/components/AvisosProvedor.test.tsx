@@ -249,7 +249,7 @@ describe('AvisoPublicoItem — recolhido até ser aberto', () => {
     expect(detalhesDo(container, 12).open).toBe(true)
   })
 
-  it('fechado, mostra só a primeira frase do corpo; aberto, a frase sai e o corpo inteiro aparece', () => {
+  it('fechado, a lista mostra só o tom e o título; o texto inteiro abre ali mesmo', () => {
     const aviso: AvisoPublico = {
       ...avisoDeProvedor,
       corpo: 'Peça a faixa **antes** da primeira nota. Sem ela, o retorno é E157.',
@@ -259,13 +259,11 @@ describe('AvisoPublicoItem — recolhido até ser aberto', () => {
     )
     const resumo = detalhesDo(container, 7).querySelector('summary')!
 
-    expect(resumo).toHaveTextContent('Peça a faixa antes da primeira nota.')
-    expect(resumo).not.toHaveTextContent('Sem ela')
+    expect(resumo).toHaveTextContent(`Alerta${aviso.titulo}`)
+    expect(resumo).not.toHaveTextContent('Peça a faixa')
     fireEvent.click(resumo)
     expect(detalhesDo(container, 7).open).toBe(true)
-    // O jsdom não dispara o `toggle` sozinho; o navegador dispara.
-    fireEvent(detalhesDo(container, 7), new Event('toggle'))
-    expect(resumo.querySelector('[data-primeira-frase]')).toBeNull()
+    expect(detalhesDo(container, 7)).toHaveTextContent('Sem ela, o retorno é E157.')
   })
 
   it('o link de cada aviso fica na ordem do Tab mesmo fechado, e aparece com o foco dentro do aviso', () => {

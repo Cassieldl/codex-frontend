@@ -3,6 +3,7 @@ import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { AvisosProvedor } from '../components/AvisosProvedor'
+import { AtalhoXmlMontado } from '../components/AtalhoXmlMontado'
 import { AvisosVersao } from '../components/AvisosVersao'
 import { CamposDaVersao } from '../components/CamposDaVersao'
 import { EnvioModeloVersao } from '../components/EnvioModeloVersao'
@@ -140,13 +141,13 @@ export function VersaoProvedorPage({
       <CamposDaVersao
         provedorNome={versaoPagina.provedor.nome}
         versaoRotulo={versaoPagina.versao.rotulo}
-        verificadoEm={versaoPagina.versao.verificadoEm}
         totalCampos={versaoPagina.totalCampos}
         camposPorGrupo={versaoPagina.camposPorGrupo}
         errosResumo={versaoPagina.errosResumo.itens}
         urlProvedorAbsoluta={urlProvedorAbsoluta}
         campoDestacado={campoDestacado}
         naturezasOperacao={versaoPagina.naturezasOperacao}
+        atalhoDoTopo={<AtalhoXmlMontado provedorSlug={provedorSlug} />}
       />
     )
   }

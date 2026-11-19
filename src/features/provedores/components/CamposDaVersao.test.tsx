@@ -7,9 +7,8 @@ import { limparAncoraDeCampo } from '../utils/destaqueAncora'
 import { CamposDaVersao } from './CamposDaVersao'
 import type { CamposDaVersaoProps } from './CamposDaVersao'
 
-const { propsDoModal, seloVerificacaoSpy } = vi.hoisted(() => ({
+const { propsDoModal } = vi.hoisted(() => ({
   propsDoModal: [] as ModalDoCampoProps[],
-  seloVerificacaoSpy: vi.fn(),
 }))
 
 /**
@@ -47,13 +46,6 @@ vi.mock('./ModalDoCampo', () => ({
         </p>
       </div>
     )
-  },
-}))
-
-vi.mock('../../../components/ui/SeloVerificacao', () => ({
-  SeloVerificacao: (props: { data: string; nota?: string }) => {
-    seloVerificacaoSpy(props)
-    return <p data-testid="selo-verificacao">selo de verificação</p>
   },
 }))
 
@@ -224,7 +216,6 @@ function propsDaVersao(sobrescritas: Partial<CamposDaVersaoProps> = {}): CamposD
   return {
     provedorNome: 'Emissor Nacional',
     versaoRotulo: '0.20',
-    verificadoEm: '2026-07-01T00:00:00Z',
     totalCampos: 8,
     camposPorGrupo: CAMPOS_POR_GRUPO,
     errosResumo: ERROS_RESUMO,
@@ -269,12 +260,11 @@ const rolarParaOElemento = vi.fn()
 beforeEach(() => {
   Element.prototype.scrollIntoView = rolarParaOElemento
   rolarParaOElemento.mockClear()
-  seloVerificacaoSpy.mockClear()
   vi.mocked(limparAncoraDeCampo).mockClear()
   propsDoModal.length = 0
 })
 
-describe('CamposDaVersao: afirmação de exaustividade e selo', () => {
+describe('CamposDaVersao: topo da aba', () => {
   it('sem filtro, afirma a exaustividade da versão inteira, numa região que se anuncia sozinha', () => {
     renderizar()
 
@@ -297,22 +287,20 @@ describe('CamposDaVersao: afirmação de exaustividade e selo', () => {
     expect(screen.queryByText(FRASE_SEM_FILTRO)).toBeNull()
   })
 
-  it('o selo de verificação recebe as mesmas props com e sem filtro', () => {
+  it('não repete o título nem a data de verificação, que já estão no cabeçalho do provedor', () => {
     renderizar()
-    const chamadasSemFiltro = seloVerificacaoSpy.mock.calls.length
 
-    digitarBusca('cnpj')
-
-    expect(seloVerificacaoSpy.mock.calls.length).toBeGreaterThan(chamadasSemFiltro)
-    for (const [props] of seloVerificacaoSpy.mock.calls) {
-      expect(props).toEqual({ data: '2026-07-01T00:00:00Z' })
-    }
+    expect(screen.getByRole('heading', { name: 'Campos e mapeamento' })).toHaveClass('sr-only')
+    expect(screen.queryByText(/Verificado/)).toBeNull()
   })
 
-  it('sem data de verificação, não mostra o selo', () => {
-    renderizar({ verificadoEm: null })
+  it('mostra o atalho recebido ao lado da frase de exaustividade', () => {
+    renderizar({ atalhoDoTopo: <a href="/envio">Ver como XML montado</a> })
 
-    expect(screen.queryByTestId('selo-verificacao')).toBeNull()
+    const cabecalho = screen.getByText(FRASE_SEM_FILTRO).parentElement!
+    expect(
+      within(cabecalho).getByRole('link', { name: 'Ver como XML montado' }),
+    ).toBeInTheDocument()
   })
 })
 
@@ -485,6 +473,34 @@ describe('CamposDaVersao: blocos', () => {
     expect(rolarParaOElemento.mock.contexts[0]).toBe(bloco)
     expect(bloco.querySelector('summary')).toHaveFocus()
     expect(window.location.hash).toBe('')
+  })
+
+  it('o índice marca um bloco por vez como atual: o primeiro, até o leitor saltar para outro', () => {
+    renderizar()
+    const indice = screen.getByRole('navigation', { name: 'Blocos do layout' })
+    const atuais = () =>
+      Array.from(indice.querySelectorAll('[aria-current="location"]')).map(
+        (link) => link.firstChild?.textContent,
+      )
+
+    expect(atuais()).toEqual(['Serviço'])
+
+    fireEvent.click(within(indice).getByRole('link', { name: 'Tomador 2 campos' }))
+
+    expect(atuais()).toEqual(['Tomador'])
+  })
+
+  it('filtro que esvazia o bloco atual passa a marca para o primeiro bloco com resultado', () => {
+    renderizar()
+    const indice = screen.getByRole('navigation', { name: 'Blocos do layout' })
+    fireEvent.click(within(indice).getByRole('link', { name: 'Tomador 2 campos' }))
+
+    digitarBusca('cnpj_prest')
+
+    expect(within(indice).getByRole('link', { name: 'Prestador 1 campo' })).toHaveAttribute(
+      'aria-current',
+      'location',
+    )
   })
 
   it('o índice conta os campos do bloco que passam no filtro e não faz link do que ficou com 0', () => {

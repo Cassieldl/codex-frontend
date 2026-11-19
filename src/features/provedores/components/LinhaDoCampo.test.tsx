@@ -94,7 +94,7 @@ function renderizarLinha(
 }
 
 describe('LinhaDoCampo — células', () => {
-  it('mostra nome, estado, tag, tipo, tamanho e exemplo em suas colunas', () => {
+  it('mostra nome, estado, tag, tipo e exemplo em suas colunas, sem coluna de tamanho', () => {
     const { linha, celula } = renderizarLinha(CAMPO_SEM_DESTINO_COM_EXEMPLO)
     const comDestino = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO)
 
@@ -102,7 +102,7 @@ describe('LinhaDoCampo — células', () => {
     expect(within(celula('campo')).getByRole('button', { name: 'natOp' })).toBeInTheDocument()
     expect(celula('campo')).toHaveTextContent('Opcional')
     expect(celula('tipo')).toHaveTextContent('Numérico')
-    expect(celula('tamanho')).toHaveTextContent('1')
+    expect(linha.querySelector('[data-coluna="tamanho"]')).toBeNull()
     expect(celula('exemplo')).toHaveTextContent('1')
     expect(comDestino.celula('tag')).toHaveTextContent('dhEmi')
   })
@@ -116,7 +116,7 @@ describe('LinhaDoCampo — células', () => {
     )
   })
 
-  it('o uso do campo vem escrito por extenso na linha do nome', () => {
+  it('o uso do campo vem escrito por extenso na coluna Uso e, em tela estreita, na linha do nome', () => {
     const { celula } = renderizarLinha(CAMPO_DOIS_DESTINOS_E_TRES_REJEICOES)
 
     const etiqueta = celula('campo').querySelector('[data-obrigatoriedade]')!
@@ -125,12 +125,12 @@ describe('LinhaDoCampo — células', () => {
     expect(etiqueta).toHaveTextContent('Condicional')
     expect(etiqueta).not.toHaveClass('sr-only')
     expect(etiqueta.parentElement).toBe(botao.parentElement)
+    expect(celula('uso')).toHaveTextContent('Condicional')
   })
 
-  it('tamanho e exemplo ausentes deixam a célula vazia, sem traço nem "sem exemplo"', () => {
+  it('exemplo ausente deixa a célula vazia, sem traço nem "sem exemplo"', () => {
     const { celula } = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO)
 
-    expect(celula('tamanho').textContent).toBe('')
     expect(celula('exemplo').textContent).toBe('')
   })
 
@@ -166,11 +166,11 @@ describe('LinhaDoCampo — células', () => {
     expect(celula('exemplo').querySelector('[title]')).toHaveAttribute('title', '1')
   })
 
-  it('o resumo móvel junta tipo, tamanho e exemplo, na célula do campo', () => {
+  it('o resumo móvel junta tipo e exemplo, na célula do campo', () => {
     const { celula } = renderizarLinha(CAMPO_SEM_DESTINO_COM_EXEMPLO)
 
     expect(celula('campo').querySelector('[data-resumo-movel]')?.textContent).toBe(
-      'Numérico · 1 · ex.: 1',
+      'Numérico · ex.: 1',
     )
   })
 })
@@ -249,11 +249,13 @@ describe('LinhaDoCampo — botões', () => {
 })
 
 describe('LinhaDoCampo — campo ativo', () => {
-  it('marca o botão do nome com aria-current e o filete na primeira célula', () => {
+  it('marca o botão do nome com aria-current e o filete na primeira célula visível', () => {
     const { celula, linha } = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO, { ativo: true })
 
     expect(screen.getByRole('button', { name: 'dEmis' })).toHaveAttribute('aria-current', 'true')
-    expect(celula('campo')).toHaveClass('border-l-accent')
+    // No desktop a primeira célula é a do uso; em tela estreita ela some e o filete vai ao nome.
+    expect(celula('uso')).toHaveClass('border-l-accent')
+    expect(celula('campo')).toHaveClass('max-[859px]:border-l-accent')
     expect(linha).toHaveClass('bg-highlight-anchor')
   })
 
@@ -261,8 +263,9 @@ describe('LinhaDoCampo — campo ativo', () => {
     const { celula, linha } = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO)
 
     expect(screen.getByRole('button', { name: 'dEmis' })).not.toHaveAttribute('aria-current')
-    expect(celula('campo')).toHaveClass('border-l-[3px]', 'border-l-transparent')
-    expect(celula('campo')).not.toHaveClass('border-l-accent')
+    expect(celula('uso')).toHaveClass('border-l-[3px]', 'border-l-transparent')
+    expect(celula('uso')).not.toHaveClass('border-l-accent')
+    expect(celula('campo')).toHaveClass('max-[859px]:border-l-transparent')
     expect(linha).not.toHaveClass('bg-highlight-anchor')
   })
 })

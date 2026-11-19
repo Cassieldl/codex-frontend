@@ -103,7 +103,6 @@ function Hospedeiro() {
     <CamposDaVersao
       provedorNome="Emissor Nacional"
       versaoRotulo="0.20"
-      verificadoEm="2026-07-01T00:00:00Z"
       totalCampos={3}
       camposPorGrupo={CAMPOS_POR_GRUPO}
       errosResumo={ERROS_RESUMO}
@@ -141,7 +140,7 @@ function blocoDe(raiz: string) {
 
 function linhasMarcadasComoAtuais() {
   const secao = screen.getByRole('region', { name: 'Campos e mapeamento' })
-  return secao.querySelectorAll('[aria-current]')
+  return secao.querySelectorAll('[data-botao-do-campo][aria-current]')
 }
 
 function buscar() {

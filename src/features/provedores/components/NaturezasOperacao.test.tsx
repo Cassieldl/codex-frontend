@@ -114,6 +114,25 @@ describe('NaturezasOperacao', () => {
     expect((notas[1] as HTMLElement).closest('td')).toHaveAttribute('colspan', '3')
   })
 
+  it('o código que chega igual a um anterior avisa qual, e só ele', () => {
+    const comRepetido: NaturezaOperacaoPublica[] = [
+      ...NATUREZAS,
+      {
+        codigoInvoicy: 9,
+        descricao: 'Exportação de serviço',
+        valorProvedor: '1',
+        observacao: null,
+        aConfirmar: false,
+      },
+    ]
+    render(<NaturezasOperacao naturezas={comRepetido} camposPorGrupo={[]} />)
+
+    const notas = linhasDosCodigos().map(
+      (linha) => linha.querySelector('[data-equivalente]')?.textContent ?? null,
+    )
+    expect(notas).toEqual([null, null, null, 'Chega ao provedor igual ao código 7.'])
+  })
+
   it('não aparece quando a versão não tem tabela', () => {
     const { container } = render(<NaturezasOperacao naturezas={[]} camposPorGrupo={[]} />)
 

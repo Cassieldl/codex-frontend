@@ -156,12 +156,12 @@ function renderizar(campo: CampoVersaoPublico, errosResumo = RESUMO_DAS_REJEICOE
   return render(<RouterProvider router={router} />)
 }
 
-/** Âncora de montagem: o painel principal existe em todo campo. */
+/** Âncora de montagem: o lado do InvoiCy existe em todo campo. */
 async function aguardarMontagem() {
-  return screen.findByRole('region', { name: 'No InvoiCy' })
+  return screen.findByRole('region', { name: 'Você envia (Layout InvoiCy)' })
 }
 
-function valorDoCartaoDeResumo(rotulo: string) {
+function valorDoFato(rotulo: string) {
   return screen.getByText(rotulo, { selector: 'dt' }).nextElementSibling as HTMLElement
 }
 
@@ -178,16 +178,17 @@ function vemDepois(anterior: HTMLElement, posterior: HTMLElement) {
   return Boolean(anterior.compareDocumentPosition(posterior) & Node.DOCUMENT_POSITION_FOLLOWING)
 }
 
-describe('ConteudoDoCampo — ordem das seções', () => {
-  it('lê da explicação ao mapeamento: significado, resumo, InvoiCy, XML do provedor, preenchimento, transformação, rejeições', async () => {
+describe('ConteudoDoCampo: ordem das seções', () => {
+  it('lê da descrição ao mapeamento: significado, fatos, exemplo, preenchimento, transformação, rejeições', async () => {
     renderizar(CAMPO_COM_DOIS_DESTINOS)
     await aguardarMontagem()
 
     const secoes = [
       screen.getByText(/^País de prestação do serviço\./),
-      screen.getByRole('heading', { name: 'Resumo' }),
-      screen.getByRole('heading', { name: 'No InvoiCy' }),
-      screen.getByRole('heading', { name: 'No XML do provedor' }),
+      screen.getByText('Tipo', { selector: 'dt' }),
+      screen.getByRole('heading', { name: 'Caminho no XML' }),
+      screen.getByRole('heading', { name: 'Você envia (Layout InvoiCy)' }),
+      screen.getByRole('heading', { name: 'Provedor recebe' }),
       screen.getByRole('heading', { name: 'Como preencher' }),
       screen.getByRole('heading', { name: 'Transformação' }),
       screen.getByRole('heading', { name: 'Rejeições registradas (3)' }),
@@ -199,56 +200,72 @@ describe('ConteudoDoCampo — ordem das seções', () => {
   })
 })
 
-describe('ConteudoDoCampo — resumo', () => {
-  it('mostra tipo, tamanho, exemplo e a contagem de rejeições', async () => {
+describe('ConteudoDoCampo: fatos do campo', () => {
+  it('mostra tipo, tamanho e as tags do provedor', async () => {
     renderizar(CAMPO_COM_DOIS_DESTINOS)
     await aguardarMontagem()
 
-    expect(valorDoCartaoDeResumo('Tipo')).toHaveTextContent('Texto')
-    expect(valorDoCartaoDeResumo('Tamanho')).toHaveTextContent('2')
-    expect(valorDoCartaoDeResumo('Rejeições')).toHaveTextContent('3')
+    expect(valorDoFato('Tipo')).toHaveTextContent('Texto')
+    expect(valorDoFato('Tamanho')).toHaveTextContent('2')
+    expect(valorDoFato('Tag no provedor')).toHaveTextContent('cPaisPrestacao, cPaisResult')
   })
 
-  it('sem exemplo, diz "sem exemplo real"', async () => {
-    renderizar(CAMPO_COM_DOIS_DESTINOS)
+  it('tamanho, máscara e tag sem dado saem da faixa em vez de virar traço', async () => {
+    renderizar({ ...CAMPO_COM_EXEMPLO, tamanho: null, destinoXml: null })
     await aguardarMontagem()
 
-    expect(valorDoCartaoDeResumo('Exemplo')).toHaveTextContent('sem exemplo real')
+    expect(screen.queryByText('Tamanho', { selector: 'dt' })).toBeNull()
+    expect(screen.queryByText('Máscara', { selector: 'dt' })).toBeNull()
+    expect(screen.queryByText('Tag no provedor', { selector: 'dt' })).toBeNull()
+    expect(document.body.textContent).not.toContain('\u2014')
   })
 
-  it('com exemplo, mostra o valor no resumo', async () => {
-    renderizar(CAMPO_COM_EXEMPLO)
+  it('a máscara fica nos fatos e não se repete em "Como preencher"', async () => {
+    renderizar({ ...CAMPO_COM_VALORES_ACEITOS, mascara: 'AAAA-MM-DD' })
     await aguardarMontagem()
 
-    expect(valorDoCartaoDeResumo('Exemplo')).toHaveTextContent('29155.75')
-    expect(valorDoCartaoDeResumo('Exemplo')).not.toHaveTextContent('sem exemplo real')
-  })
-
-  it('tamanho ausente vira traço, com texto para leitor de tela', async () => {
-    renderizar({ ...CAMPO_COM_EXEMPLO, tamanho: null })
-    await aguardarMontagem()
-
-    const tamanho = valorDoCartaoDeResumo('Tamanho')
-
-    expect(tamanho).toHaveTextContent('—')
-    expect(within(tamanho).getByText('não informado')).toHaveClass('sr-only')
-  })
-
-  it('sem rejeições, o cartão diz "nenhuma" e a seção de rejeições não existe', async () => {
-    renderizar(CAMPO_COM_EXEMPLO)
-    await aguardarMontagem()
-
-    expect(valorDoCartaoDeResumo('Rejeições')).toHaveTextContent('nenhuma')
-    expect(screen.queryByRole('heading', { name: /Rejeições registradas/ })).toBeNull()
+    expect(valorDoFato('Máscara')).toHaveTextContent('AAAA-MM-DD')
+    expect(screen.getAllByText('AAAA-MM-DD')).toHaveLength(1)
   })
 })
 
-describe('ConteudoDoCampo — No InvoiCy e No XML do provedor', () => {
+describe('ConteudoDoCampo: exemplo', () => {
+  it('com exemplo, o bloco se chama Exemplo, a tag do InvoiCy leva o valor e "Copiar exemplo" copia o valor', async () => {
+    const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
+    renderizar(CAMPO_COM_EXEMPLO)
+    const voceEnvia = await aguardarMontagem()
+
+    expect(screen.getByRole('heading', { name: 'Exemplo' })).toBeInTheDocument()
+    expect(voceEnvia).toHaveTextContent('<ValServicos>29155.75</ValServicos>')
+
+    await usuario.click(screen.getByRole('button', { name: 'Copiar exemplo do campo ValServicos' }))
+    expect(escreverNaAreaDeTransferencia).toHaveBeenLastCalledWith('29155.75')
+  })
+
+  it('sem exemplo, diz "sem exemplo real" e não oferece copiar exemplo', async () => {
+    renderizar(CAMPO_COM_DOIS_DESTINOS)
+    const voceEnvia = await aguardarMontagem()
+
+    expect(voceEnvia).toHaveTextContent('sem exemplo real')
+    expect(screen.queryByRole('button', { name: /^Copiar exemplo/ })).toBeNull()
+  })
+
+  it('os dois lados do mapeamento ficam no mesmo bloco', async () => {
+    renderizar(CAMPO_COM_EXEMPLO)
+    const voceEnvia = await aguardarMontagem()
+    const provedorRecebe = screen.getByRole('region', { name: 'Provedor recebe' })
+
+    expect(voceEnvia.parentElement).toBe(provedorRecebe.parentElement)
+  })
+})
+
+describe('ConteudoDoCampo: você envia e provedor recebe', () => {
   it('o botão do InvoiCy copia o caminho que a tela mostra; o de cada destino, o caminho daquele destino', async () => {
     const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
     renderizar(CAMPO_COM_DOIS_DESTINOS)
-    await aguardarMontagem()
+    const voceEnvia = await aguardarMontagem()
 
+    expect(voceEnvia).toHaveTextContent('//Servico/PaiPreServico')
     await usuario.click(
       screen.getByRole('button', { name: 'Copiar caminho do campo PaiPreServico no InvoiCy' }),
     )
@@ -273,7 +290,7 @@ describe('ConteudoDoCampo — No InvoiCy e No XML do provedor', () => {
     )
   })
 
-  it('dois destinos viram dois blocos de XML, dois botões e o aviso de duas tags — nunca um texto com " | "', async () => {
+  it('dois destinos viram dois blocos de XML, dois botões e o aviso de duas tags, nunca um texto com " | "', async () => {
     const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
     renderizar(CAMPO_COM_DOIS_DESTINOS)
     await aguardarMontagem()
@@ -314,11 +331,11 @@ describe('ConteudoDoCampo — No InvoiCy e No XML do provedor', () => {
 
   it('com dois destinos, o exemplo do campo não é atribuído a nenhuma das tags', async () => {
     renderizar({ ...CAMPO_COM_DOIS_DESTINOS, exemplo: '29155.75' })
-    await aguardarMontagem()
+    const voceEnvia = await aguardarMontagem()
 
     const blocos = screen.getAllByRole('group', { name: /^Caminho no XML do provedor:/ })
 
-    expect(valorDoCartaoDeResumo('Exemplo')).toHaveTextContent('29155.75')
+    expect(voceEnvia).toHaveTextContent('29155.75')
     for (const bloco of blocos) {
       expect(bloco.textContent).not.toContain('29155.75')
       expect(bloco.textContent).toContain('…')
@@ -326,13 +343,12 @@ describe('ConteudoDoCampo — No InvoiCy e No XML do provedor', () => {
     expect(screen.queryByText('exemplo real')).toBeNull()
   })
 
-  it('sem destino, diz que o campo não tem destino e não desenha XML nem conector', async () => {
+  it('sem destino, diz que o campo não tem destino e não desenha XML do provedor', async () => {
     renderizar({ ...CAMPO_COM_EXEMPLO, destinoXml: null })
     await aguardarMontagem()
 
     expect(screen.getByText('Este campo não tem destino no XML do provedor.')).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: /^Caminho no XML do provedor:/ })).toBeNull()
-    expect(screen.queryByText('vira, no provedor')).toBeNull()
   })
 
   it('destino omitido vira o aviso, sem bloco de XML nem botão de copiar', async () => {
@@ -356,22 +372,9 @@ describe('ConteudoDoCampo — No InvoiCy e No XML do provedor', () => {
     expect(screen.getByText('e mais destinos (ver Transformação).')).toBeInTheDocument()
     expect(screen.queryByText(/alimenta \d+ tags/)).toBeNull()
   })
-
-  it('o painel do InvoiCy domina: borda forte e caminho maior; o do provedor, não', async () => {
-    renderizar(CAMPO_COM_EXEMPLO)
-    const painelDoInvoicy = await aguardarMontagem()
-    const painelDoProvedor = screen.getByRole('region', { name: 'No XML do provedor' })
-
-    expect(painelDoInvoicy).toHaveClass('border-2')
-    expect(painelDoProvedor).not.toHaveClass('border-2')
-
-    expect(painelDoInvoicy.querySelector('.text-\\[15px\\]')).not.toBeNull()
-    expect(painelDoInvoicy.querySelector('.text-\\[13px\\]')).toBeNull()
-    expect(painelDoProvedor.querySelector('.text-\\[15px\\]')).toBeNull()
-  })
 })
 
-describe('ConteudoDoCampo — como preencher', () => {
+describe('ConteudoDoCampo: como preencher', () => {
   it('chama o domínio de "Valores aceitos" e mostra o termo antigo em lugar nenhum', async () => {
     renderizar(CAMPO_COM_VALORES_ACEITOS)
     await aguardarMontagem()
@@ -390,7 +393,7 @@ describe('ConteudoDoCampo — como preencher', () => {
     expect(screen.queryByText('Máscara')).toBeNull()
   })
 
-  it('sem nenhum atributo, a seção inteira some — texto vazio inclusive', async () => {
+  it('sem nenhum atributo, a seção inteira some, texto vazio inclusive', async () => {
     renderizar(CAMPO_SEM_ATRIBUTOS_OPCIONAIS)
     await aguardarMontagem()
 
@@ -410,7 +413,7 @@ describe('ConteudoDoCampo — como preencher', () => {
   })
 })
 
-describe('ConteudoDoCampo — transformação e rejeições', () => {
+describe('ConteudoDoCampo: transformação e rejeições', () => {
   it('mostra a nota de transformação preservando as quebras; sem ela, a seção some', async () => {
     const { unmount } = renderizar(CAMPO_COM_DOIS_DESTINOS)
     await aguardarMontagem()
@@ -438,5 +441,12 @@ describe('ConteudoDoCampo — transformação e rejeições', () => {
     const secao = await screen.findByRole('region', { name: 'Rejeições registradas (3)' })
 
     expect(within(secao).getAllByRole('link')).toHaveLength(3)
+  })
+
+  it('sem rejeições, a seção de rejeições não existe', async () => {
+    renderizar(CAMPO_COM_EXEMPLO)
+    await aguardarMontagem()
+
+    expect(screen.queryByRole('heading', { name: /Rejeições registradas/ })).toBeNull()
   })
 })

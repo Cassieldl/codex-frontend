@@ -7,7 +7,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import {
@@ -448,32 +448,83 @@ const versaoEscritaNoLayout8 = {
   outrasVersoes: [],
 }
 
-describe('ProvedorLayoutPage: fatos abaixo do nome', () => {
-  it('mostra os fatos em chips, alerta o layout que não é o vigente e recolhe a fonte', async () => {
-    server.use(
-      handlerProvedor('prefeitura-exemplo', provedorFake),
-      http.get(`${API_URL}/provedores/prefeitura-exemplo/versoes/v1`, () =>
-        HttpResponse.json({ data: versaoEscritaNoLayout8, message: null }),
-      ),
-      handlerLayoutIndiceSucesso({
-        vigente: { slug: 'v9', rotulo: '9', estado: 'Vigente', ordem: 9, totalCampos: 10 },
-      }),
-    )
+function renderComLayoutVigente(vigente: object) {
+  server.use(
+    handlerProvedor('prefeitura-exemplo', provedorFake),
+    http.get(`${API_URL}/provedores/prefeitura-exemplo/versoes/v1`, () =>
+      HttpResponse.json({ data: versaoEscritaNoLayout8, message: null }),
+    ),
+    handlerLayoutIndiceSucesso({ vigente, versoes: [vigente] }),
+  )
 
-    renderPagina({
-      provedorSlug: 'prefeitura-exemplo',
-      caminhoAtual: '/provedores/prefeitura-exemplo',
+  return renderPagina({
+    provedorSlug: 'prefeitura-exemplo',
+    caminhoAtual: '/provedores/prefeitura-exemplo',
+  })
+}
+
+function textosDosFatos() {
+  return within(screen.getByRole('list', { name: 'Resumo do provedor' }))
+    .getAllByRole('listitem')
+    .map((item) => item.textContent)
+}
+
+describe('ProvedorLayoutPage: fatos abaixo do nome', () => {
+  it('layout anterior ao vigente vira faixa com o prazo e o link para a versão vigente', async () => {
+    renderComLayoutVigente({
+      slug: 'v9',
+      rotulo: '9',
+      estado: 'Vigente',
+      ordem: 9,
+      totalCampos: 10,
+      obrigatoriaEm: '2026-12-01',
     })
 
-    await screen.findByText('Layout InvoiCy 8, vigente é a 9')
-    const fatos = screen.getByRole('list', { name: 'Resumo do provedor' })
-    expect(
-      within(fatos)
-        .getAllByRole('listitem')
-        .map((item) => item.textContent),
-    ).toEqual(['Nacional', 'Versão 1', 'Layout InvoiCy 8, vigente é a 9', 'Verificado 01/07/2026'])
+    const link = await screen.findByRole('link', { name: 'O que muda na versão 9' })
+    expect(link).toHaveAttribute('href', '/layout/v9')
+    expect(link.parentElement).toHaveTextContent(
+      'Este mapeamento ainda segue o Layout InvoiCy versão 8. A versão 9 é obrigatória em produção em 01/12/2026.',
+    )
+    expect(textosDosFatos()).toEqual(['Nacional', 'Versão 1', 'Verificado em 01/07/2026·fonte'])
+  })
 
-    expect(screen.getByText('Detalhes da fonte').closest('details')).not.toHaveAttribute('open')
-    expect(screen.queryByText(/Escrita contra/)).not.toBeInTheDocument()
+  it('layout em dia fica num chip, sem faixa', async () => {
+    renderComLayoutVigente({
+      slug: 'v8',
+      rotulo: '8',
+      estado: 'Vigente',
+      ordem: 8,
+      totalCampos: 10,
+    })
+
+    await screen.findByText('Layout InvoiCy versão 8')
+    expect(screen.queryByText(/Este mapeamento ainda segue/)).not.toBeInTheDocument()
+    expect(textosDosFatos()).toEqual([
+      'Nacional',
+      'Versão 1',
+      'Layout InvoiCy versão 8',
+      'Verificado em 01/07/2026·fonte',
+    ])
+  })
+
+  it('a fonte abre e fecha pelo botão da linha dos fatos', async () => {
+    renderComLayoutVigente({
+      slug: 'v8',
+      rotulo: '8',
+      estado: 'Vigente',
+      ordem: 8,
+      totalCampos: 10,
+    })
+
+    const botao = await screen.findByRole('button', { name: 'Detalhes da fonte' })
+    const painel = document.getElementById(botao.getAttribute('aria-controls')!)!
+    expect(botao).toHaveAttribute('aria-expanded', 'false')
+    expect(painel).not.toBeVisible()
+
+    fireEvent.click(botao)
+
+    expect(botao).toHaveAttribute('aria-expanded', 'true')
+    expect(painel).toBeVisible()
+    expect(painel).toHaveTextContent(versaoEscritaNoLayout8.versao.introducao)
   })
 })

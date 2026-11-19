@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Check } from 'lucide-react'
+import { Check, Search } from 'lucide-react'
 import { useId } from 'react'
 import type { RefObject } from 'react'
 import {
@@ -41,11 +41,12 @@ const OPCOES_DE_ESTADO: OpcaoDeEstado[] = [
 ]
 
 const CLASSE_DA_ACAO =
-  'text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
 
 /**
- * Filtros da lista de campos: obrigatoriedade (chips), busca e controle dos blocos. O chip
- * pressionado se distingue por borda, fundo e ícone — o estado não depende só de cor.
+ * Filtros da lista de campos num card: a busca larga em cima, os chips de obrigatoriedade e o
+ * controle dos blocos embaixo. O chip pressionado se distingue por borda, fundo e ícone: o estado
+ * não depende só de cor.
  */
 export function FiltrosDeCampos({
   estado,
@@ -65,69 +66,78 @@ export function FiltrosDeCampos({
   const buscaId = useId()
 
   return (
-    <div className={clsx('flex flex-wrap items-center gap-3', CLASSE_DA_CAIXA_DE_FILTROS)}>
-      <div role="group" aria-label="Filtrar por obrigatoriedade" className="flex flex-wrap gap-2">
-        {OPCOES_DE_ESTADO.map(({ valor, rotulo }) => {
-          const pressionado = estado === valor
-
-          return (
-            <button
-              key={valor}
-              type="button"
-              aria-pressed={pressionado}
-              onClick={() => onEstadoChange(valor)}
-              className={clsx(
-                CLASSE_DO_CHIP,
-                pressionado ? CLASSE_DO_CHIP_PRESSIONADO : CLASSE_DO_CHIP_SOLTO,
-              )}
-            >
-              {pressionado && <Check aria-hidden="true" className="size-3.5 shrink-0" />}
-              <span>{rotulo}</span> <b className="tabular-nums">{contagens[valor]}</b>
-            </button>
-          )
-        })}
+    <div className={clsx('flex flex-col gap-3', CLASSE_DA_CAIXA_DE_FILTROS)}>
+      <div className="relative">
+        <label htmlFor={buscaId} className="sr-only">
+          Buscar campo do InvoiCy, tag do provedor ou caminho no XML
+        </label>
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-primary-medium"
+        />
+        <input
+          ref={buscaRef}
+          id={buscaId}
+          type="search"
+          value={termo}
+          onChange={(evento) => onTermoChange(evento.target.value)}
+          placeholder="Buscar por campo, tag ou caminho no XML (ex.: CNPJ, ValorServicos)"
+          className="h-11 w-full rounded-[var(--radius-input)] border border-border-control bg-white pr-4 pl-11 text-sm text-ink placeholder:text-muted focus:border-[1.5px] focus:border-primary-medium focus:outline-none"
+        />
       </div>
 
-      {contagemDaReforma > 0 && (
-        <button
-          type="button"
-          aria-pressed={somenteReformaTributaria}
-          onClick={onAlternarReformaTributaria}
-          className={clsx(
-            CLASSE_DO_CHIP,
-            somenteReformaTributaria ? CLASSE_DO_CHIP_PRESSIONADO : CLASSE_DO_CHIP_SOLTO,
-          )}
-        >
-          {somenteReformaTributaria && <Check aria-hidden="true" className="size-3.5 shrink-0" />}
-          <span>Só campos da reforma (RT)</span> <b className="tabular-nums">{contagemDaReforma}</b>
-        </button>
-      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <div role="group" aria-label="Filtrar por obrigatoriedade" className="flex flex-wrap gap-2">
+          {OPCOES_DE_ESTADO.map(({ valor, rotulo }) => {
+            const pressionado = estado === valor
 
-      <label htmlFor={buscaId} className="sr-only">
-        Buscar campo do InvoiCy, tag do provedor ou caminho no XML
-      </label>
-      <input
-        ref={buscaRef}
-        id={buscaId}
-        type="search"
-        value={termo}
-        onChange={(evento) => onTermoChange(evento.target.value)}
-        placeholder="Buscar por campo, tag ou caminho no XML (ex.: CNPJ, ValorServicos)"
-        className="h-9 min-w-[240px] flex-1 rounded-[var(--radius-input)] border border-border-control bg-white px-3 text-sm text-ink placeholder:text-muted focus:border-[1.5px] focus:border-primary-medium focus:outline-none"
-      />
+            return (
+              <button
+                key={valor}
+                type="button"
+                aria-pressed={pressionado}
+                onClick={() => onEstadoChange(valor)}
+                className={clsx(
+                  CLASSE_DO_CHIP,
+                  pressionado ? CLASSE_DO_CHIP_PRESSIONADO : CLASSE_DO_CHIP_SOLTO,
+                )}
+              >
+                {pressionado && <Check aria-hidden="true" className="size-3.5 shrink-0" />}
+                <span>{rotulo}</span> <b className="tabular-nums">{contagens[valor]}</b>
+              </button>
+            )
+          })}
+        </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={onExpandirTodos} className={CLASSE_DA_ACAO}>
-          Expandir todos
-        </button>
-        <button type="button" onClick={onRecolherTodos} className={CLASSE_DA_ACAO}>
-          Recolher todos
-        </button>
-        {filtroAtivo && (
-          <button type="button" onClick={onLimpar} className={CLASSE_DA_ACAO}>
-            Limpar filtros
+        {contagemDaReforma > 0 && (
+          <button
+            type="button"
+            aria-pressed={somenteReformaTributaria}
+            onClick={onAlternarReformaTributaria}
+            className={clsx(
+              CLASSE_DO_CHIP,
+              somenteReformaTributaria ? CLASSE_DO_CHIP_PRESSIONADO : CLASSE_DO_CHIP_SOLTO,
+            )}
+          >
+            {somenteReformaTributaria && <Check aria-hidden="true" className="size-3.5 shrink-0" />}
+            <span>Só campos da reforma (RT)</span>{' '}
+            <b className="tabular-nums">{contagemDaReforma}</b>
           </button>
         )}
+
+        <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
+          <button type="button" onClick={onExpandirTodos} className={CLASSE_DA_ACAO}>
+            Expandir todos
+          </button>
+          <button type="button" onClick={onRecolherTodos} className={CLASSE_DA_ACAO}>
+            Recolher todos
+          </button>
+          {filtroAtivo && (
+            <button type="button" onClick={onLimpar} className={CLASSE_DA_ACAO}>
+              Limpar filtros
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -1,11 +1,17 @@
-import clsx from 'clsx'
-import { ShieldCheck, TriangleAlert } from 'lucide-react'
+import { Check } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { formatarDataCurta } from '../../../utils/formatarDataVerificacao'
-import { extrairNumeroDaVersao } from '../../../utils/versaoDoLayout'
+import { extrairNumeroDaVersao, formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { useLayoutIndice } from '../../layout/hooks/useLayoutIndice'
 import type { CategoriaProvedor } from '../types/provedor'
-import { descreverLayoutDoProvedor } from '../utils/layoutDoProvedor'
+import { vigenteAFrenteDoProvedor } from '../utils/layoutDoProvedor'
+
+/** Estado do detalhe da fonte: o botão fica na linha dos fatos e o painel, abaixo do nome. */
+export interface FonteDoProvedor {
+  aberta: boolean
+  idDoPainel: string
+  aoAlternar: () => void
+}
 
 export interface FatosDoProvedorProps {
   categoria: CategoriaProvedor
@@ -14,56 +20,71 @@ export interface FatosDoProvedorProps {
   verificadoEm?: string | null
   /** Vem do conteúdo da versão: o chip do layout só aparece depois que ele carrega. */
   versaoLayoutRotulo?: string
+  /** Ausente quando a versão não tem texto de fonte. */
+  fonte?: FonteDoProvedor
 }
 
-const CLASSE_CHIP =
-  'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border px-2.5 py-0.5 text-xs font-semibold'
-
-const CLASSE_CHIP_NEUTRO = clsx(CLASSE_CHIP, 'border-transparent bg-alert-info text-primary-medium')
-
-function Chip({
-  children,
-  className = CLASSE_CHIP_NEUTRO,
-}: {
-  children: ReactNode
-  className?: string
-}) {
+function Chip({ children }: { children: ReactNode }) {
   return (
     <li>
-      <span className={className}>{children}</span>
+      <span className="inline-flex items-center rounded-[var(--radius-pill)] bg-alert-info px-3 py-1 text-xs font-semibold text-primary-medium">
+        {children}
+      </span>
     </li>
   )
 }
 
-/** Só este chip consulta o índice do layout: provedor sem versão publicada não faz a requisição. */
-function ChipLayout({ versaoLayoutRotulo }: { versaoLayoutRotulo: string }) {
-  const { data: indice } = useLayoutIndice()
-  const { texto, desatualizado } = descreverLayoutDoProvedor(
-    versaoLayoutRotulo,
-    indice?.vigente?.rotulo ?? null,
-  )
+/**
+ * Chip do layout só com o mapeamento em dia: defasado, quem fala é a faixa abaixo do nome. Só ele
+ * consulta o índice do layout, então provedor sem versão publicada não faz a requisição.
+ */
+function ChipLayoutEmDia({ versaoLayoutRotulo }: { versaoLayoutRotulo: string }) {
+  const { data: indice, isError } = useLayoutIndice()
 
-  if (!desatualizado) return <Chip>{texto}</Chip>
+  if (!indice && !isError) return null
+  if (vigenteAFrenteDoProvedor(versaoLayoutRotulo, indice)) return null
+
+  return <Chip>Layout InvoiCy {formatarVersaoLayout(versaoLayoutRotulo)}</Chip>
+}
+
+function VerificacaoEFonte({
+  verificadoEm,
+  fonte,
+}: Pick<FatosDoProvedorProps, 'verificadoEm' | 'fonte'>) {
+  if (!verificadoEm && !fonte) return null
 
   return (
-    <Chip
-      className={clsx(
-        CLASSE_CHIP,
-        'border-transparent bg-alert-warning text-severidade-alerta-texto',
+    <li className="flex items-center gap-1.5 text-sm text-muted">
+      {verificadoEm && (
+        <>
+          <Check className="size-4 shrink-0 text-success" aria-hidden="true" />
+          Verificado em {formatarDataCurta(verificadoEm)}
+        </>
       )}
-    >
-      <TriangleAlert className="size-3.5 shrink-0" aria-hidden="true" />
-      {texto}
-    </Chip>
+      {verificadoEm && fonte && <span aria-hidden="true">·</span>}
+      {fonte && (
+        <button
+          type="button"
+          aria-label="Detalhes da fonte"
+          aria-expanded={fonte.aberta}
+          aria-controls={fonte.idDoPainel}
+          onClick={fonte.aoAlternar}
+          className="rounded py-1 font-semibold text-primary-medium underline underline-offset-4 hover:text-primary-light hover:decoration-2"
+        >
+          {verificadoEm ? 'fonte' : 'Fonte'}
+        </button>
+      )}
+    </li>
   )
 }
 
-/** Faixa de fatos logo abaixo do nome do provedor: o que decide a leitura, sem prosa. */
+/** Faixa de fatos ao lado do nome do provedor: o que decide a leitura, sem prosa. */
 export function FatosDoProvedor({
   categoria,
   versaoRotulo,
   verificadoEm,
   versaoLayoutRotulo,
+  fonte,
 }: FatosDoProvedorProps) {
   return (
     <ul aria-label="Resumo do provedor" className="flex flex-wrap items-center gap-2">
@@ -71,14 +92,9 @@ export function FatosDoProvedor({
 
       {versaoRotulo && <Chip>Versão {extrairNumeroDaVersao(versaoRotulo)}</Chip>}
 
-      {versaoLayoutRotulo && <ChipLayout versaoLayoutRotulo={versaoLayoutRotulo} />}
+      {versaoLayoutRotulo && <ChipLayoutEmDia versaoLayoutRotulo={versaoLayoutRotulo} />}
 
-      {verificadoEm && (
-        <Chip>
-          <ShieldCheck className="size-3.5 shrink-0 text-primary-medium" aria-hidden="true" />
-          Verificado {formatarDataCurta(verificadoEm)}
-        </Chip>
-      )}
+      <VerificacaoEFonte verificadoEm={verificadoEm} fonte={fonte} />
     </ul>
   )
 }

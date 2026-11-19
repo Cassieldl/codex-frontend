@@ -93,7 +93,7 @@ export function ExemplosVersao({ exemplos, provedorSlug }: ExemplosVersaoProps) 
                   onClick={() => setExemploAberto(aberto ? null : exemplo.slug)}
                   aria-expanded={aberto}
                   aria-controls={idPainel}
-                  className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-white px-2.5 text-xs font-medium text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+                  className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-white px-2.5 text-xs font-medium text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover"
                 >
                   <IconeEstado className="size-3.5 shrink-0" aria-hidden="true" />
                   {aberto ? 'Fechar o XML' : 'Ver o XML'}
@@ -110,7 +110,7 @@ export function ExemplosVersao({ exemplos, provedorSlug }: ExemplosVersaoProps) 
                     tabIndex={0}
                     role="region"
                     aria-label={`XML do exemplo ${exemplo.nome}`}
-                    className="overflow-auto rounded-[var(--radius-input)] border border-border bg-surface-disabled p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+                    className="overflow-auto rounded-[var(--radius-input)] border border-border bg-surface-disabled p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover"
                   >
                     <code className="font-mono text-xs leading-relaxed text-ink">
                       {exemplo.xml}

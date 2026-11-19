@@ -4,7 +4,7 @@ import type { ErroDoCampo } from '../types/versaoProvedorPagina'
 
 /** Visual do selo de rejeições, repetido na legenda da tabela de campos. */
 export const CLASSE_DO_SELO_DE_REJEICOES =
-  'inline-flex items-center gap-1 rounded-[var(--radius-pill)] border border-border-control bg-alert-warning px-1.5 py-0.5 font-mono text-aux font-semibold text-severidade-alerta-texto'
+  'inline-flex items-center gap-1 rounded-[var(--radius-pill)] border border-border-control bg-alert-warning px-1.5 py-0.5 font-mono text-aux font-semibold text-alert-warning-texto'
 
 export interface IndicadorErrosDoCampoProps {
   erros: ErroDoCampo[]
@@ -40,7 +40,7 @@ export function IndicadorErrosDoCampo({
       title={`Ver ${quantidade} neste campo`}
       className={clsx(
         CLASSE_DO_SELO_DE_REJEICOES,
-        'ml-2 align-middle hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light',
+        'ml-2 align-middle hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
       )}
     >
       <TriangleAlert aria-hidden="true" className="size-3 shrink-0" />

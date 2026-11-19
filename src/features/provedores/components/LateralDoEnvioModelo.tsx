@@ -10,7 +10,7 @@ interface LateralDoEnvioModeloProps {
   totalDeErros: number
 }
 
-const CLASSE_LINK = 'font-semibold text-primary-medium underline underline-offset-2'
+const CLASSE_LINK = 'font-semibold link-texto'
 
 function formatarListaDeCodigos(codigos: number[]): string {
   if (codigos.length <= 1) return codigos.join('')
@@ -59,7 +59,7 @@ export function LateralDoEnvioModelo({
     <>
       <section
         aria-labelledby="antes-da-homologacao"
-        className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line bg-white p-5 shadow-card"
+        className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-white p-5 shadow-card"
       >
         <h2 id="antes-da-homologacao" className="text-card-titulo font-bold text-primary">
           Antes de mandar para homologação
@@ -82,7 +82,7 @@ export function LateralDoEnvioModelo({
       {totalDeErros > 0 && (
         <section
           aria-labelledby="deu-rejeicao"
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line bg-white p-5 shadow-card"
+          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-white p-5 shadow-card"
         >
           <h2 id="deu-rejeicao" className="text-card-titulo font-bold text-primary">
             Deu rejeição?

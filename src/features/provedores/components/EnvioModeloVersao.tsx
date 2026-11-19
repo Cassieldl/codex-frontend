@@ -1,8 +1,7 @@
-import clsx from 'clsx'
 import { useId, useMemo, useState } from 'react'
-import { CLASSE_DA_CAIXA_DE_FILTROS } from '../../../components/ui/classesDosFiltros'
+import { AlternadorSegmentado } from '../../../components/ui/AlternadorSegmentado'
+import type { AlternadorSegmentadoProps } from '../../../components/ui/AlternadorSegmentado'
 import { EmptyState } from '../../../components/ui/EmptyState'
-import { EscolhaEmChips } from '../../../components/ui/EscolhaEmChips'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Select } from '../../../components/ui/Select'
 import { Skeleton } from '../../../components/ui/Skeleton'
@@ -51,6 +50,18 @@ function nomesDosCampos(camposPorGrupo: GrupoCampoVersao[]): ReadonlyMap<string,
     camposPorGrupo.flatMap((grupo) =>
       grupo.campos.map((campo) => [campo.campoLayoutSlug, campo.nome] as const),
     ),
+  )
+}
+
+/** Alternador com o rótulo visível em cima; o nome acessível vem do próprio grupo de rádio. */
+function EscolhaSegmentadaComRotulo<T extends string>(props: AlternadorSegmentadoProps<T>) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span aria-hidden="true" className="text-xs font-normal text-ink lg:text-sm">
+        {props.rotulo}
+      </span>
+      <AlternadorSegmentado {...props} />
+    </div>
   )
 }
 
@@ -113,24 +124,13 @@ export function EnvioModeloVersao({
       aria-labelledby={tituloId}
       className="flex scroll-mt-24 flex-col gap-4"
     >
-      <header className="flex flex-col gap-1">
-        <h2 id={tituloId} className="text-subtitulo font-semibold text-ink">
-          Envio modelo
-        </h2>
-        <p className="max-w-[70ch] text-sm text-muted">
-          {NOME_CURTO_DO_FORMATO[formato]} de exemplo do {provedorNome} {versaoRotulo}, preenchido
-          com valores fictícios.
-        </p>
-        <p className="max-w-[70ch] text-xs text-muted">
-          O mínimo traz só o que o esquema do provedor obriga. A prefeitura pode exigir outros
-          campos por regra própria.
-        </p>
-      </header>
+      {/* A aba já diz "Envio modelo": o título fica só para o leitor de tela e para nomear a seção. */}
+      <h2 id={tituloId} className="sr-only">
+        Envio modelo
+      </h2>
 
       {!indisponivel && (
-        <div
-          className={clsx('flex flex-wrap items-end gap-x-6 gap-y-3', CLASSE_DA_CAIXA_DE_FILTROS)}
-        >
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-4 rounded-[var(--radius-card)] border border-border bg-white p-4 shadow-card">
           {comCenarios && (
             <Select
               label="Cenário"
@@ -142,17 +142,17 @@ export function EnvioModeloVersao({
               onValueChange={(valor) => {
                 if (ehCenarioDoEnvioModelo(valor)) setCenario(valor)
               }}
-              className="w-full sm:w-60"
+              className="w-full min-w-56 flex-1 sm:w-auto"
             />
           )}
-          <EscolhaEmChips
+          <EscolhaSegmentadaComRotulo
             rotulo="Alcance"
             opcoes={ALCANCES_DO_ENVIO_MODELO}
             rotuloDaOpcao={ROTULO_DO_ALCANCE}
             selecionada={alcance}
             onSelecionar={setAlcance}
           />
-          <EscolhaEmChips
+          <EscolhaSegmentadaComRotulo
             rotulo="Formato"
             opcoes={FORMATOS_DA_ESTRUTURA}
             rotuloDaOpcao={ROTULO_DO_FORMATO}
@@ -161,6 +161,17 @@ export function EnvioModeloVersao({
           />
         </div>
       )}
+
+      <div className="flex max-w-[100ch] flex-col gap-0.5 text-sm text-muted">
+        <p>
+          {NOME_CURTO_DO_FORMATO[formato]} de exemplo do {provedorNome} {versaoRotulo}, preenchido
+          com valores fictícios.
+        </p>
+        <p>
+          O mínimo traz só o que o esquema do provedor obriga. A prefeitura pode exigir outros
+          campos por regra própria.
+        </p>
+      </div>
 
       {isLoading && (
         <div aria-live="polite" aria-busy="true" className="flex flex-col gap-2">
@@ -177,7 +188,7 @@ export function EnvioModeloVersao({
       {camposSemPosicao.length > 0 && (
         <div
           role="note"
-          className="flex flex-col gap-1 rounded-[var(--radius-control)] bg-alert-info px-3 py-2 text-sm text-ink"
+          className="flex flex-col gap-1 rounded-[var(--radius-control)] border border-alert-info-borda bg-alert-info px-3 py-2 text-sm text-ink"
         >
           <p>Estes campos da versão não têm posição no envio modelo e ficam fora do texto:</p>
           <ul className="flex flex-wrap gap-x-3 gap-y-1">
@@ -191,7 +202,7 @@ export function EnvioModeloVersao({
                   ) : (
                     <a
                       href={`#${construirIdLinhaCampo(slug)}`}
-                      className="rounded font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+                      className="rounded font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover"
                     >
                       {nome}
                     </a>
@@ -216,6 +227,7 @@ export function EnvioModeloVersao({
           nomeBaseDoArquivo={`envio-modelo-${provedorSlug}-${rotuloParaNomeDeArquivo(versaoSlug)}-${alcance}${cenario === CENARIO_PADRAO ? '' : `-${cenario}`}`}
           rotuloDaRegiao={`Texto do ${rotuloDoEnvio}`}
           rotuloDaCopia={`Copiar o ${rotuloDoEnvio}`}
+          superficie="escura"
         />
       )}
     </section>

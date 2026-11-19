@@ -26,11 +26,11 @@ export function LateralDaNatureza({
     <>
       <section
         aria-labelledby="natureza-fora-da-tabela"
-        className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-accent bg-alert-warning p-5"
+        className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-alert-warning-borda bg-alert-warning p-5"
       >
         <h2
           id="natureza-fora-da-tabela"
-          className="text-card-titulo font-bold text-severidade-alerta-texto"
+          className="text-card-titulo font-bold text-alert-warning-texto"
         >
           Código fora da tabela não converte
         </h2>
@@ -44,7 +44,7 @@ export function LateralDaNatureza({
       {campoNatOp && rejeicoes > 0 && (
         <section
           aria-labelledby="natop-nos-erros"
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line bg-white p-5 shadow-card"
+          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-white p-5 shadow-card"
         >
           <h2 id="natop-nos-erros" className="text-card-titulo font-bold text-primary">
             natOp nos erros

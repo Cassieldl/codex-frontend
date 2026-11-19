@@ -1,8 +1,13 @@
 import type { ErroResumoPublico, GrupoCampoVersao } from '../types/versaoProvedorPagina'
+import { separarDestinos } from '../utils/destinosXml'
 
-interface CampoDoErro {
+export interface CampoDoErro {
   slug: string
   nome: string
+  /** Tags do provedor que recebem o valor do campo; vazia quando o destino não foi mapeado. */
+  tagsDoProvedor: string[]
+  /** Erros conhecidos ligados ao campo nesta versão. */
+  rejeicoes: number
 }
 
 export function normalizar(texto: string): string {
@@ -15,7 +20,14 @@ export function indexarCamposPorErro(grupos: GrupoCampoVersao[]): Map<string, Ca
   for (const campo of grupos.flatMap((grupo) => grupo.campos)) {
     for (const erro of campo.errosConhecidos) {
       const campos = indice.get(erro.slug) ?? []
-      campos.push({ slug: campo.campoLayoutSlug, nome: campo.nome })
+      campos.push({
+        slug: campo.campoLayoutSlug,
+        nome: campo.nome,
+        tagsDoProvedor: separarDestinos(campo.destinoXml).flatMap((destino) =>
+          destino.tipo === 'caminho' ? [destino.tag] : [],
+        ),
+        rejeicoes: campo.errosConhecidos.length,
+      })
       indice.set(erro.slug, campos)
     }
   }

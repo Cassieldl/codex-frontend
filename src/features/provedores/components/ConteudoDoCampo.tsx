@@ -1,119 +1,168 @@
-import { ArrowDown, TriangleAlert } from 'lucide-react'
-import { useId, type ReactNode } from 'react'
+import clsx from 'clsx'
+import { useId } from 'react'
 
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
-import { PainelCaminhoInvoicy } from '../../../components/ui/PainelCaminhoInvoicy'
-import type { CampoVersaoPublico, ErroResumoPublico } from '../types/versaoProvedorPagina'
-import { separarDestinos } from '../utils/destinosXml'
+import type {
+  CampoVersaoPublico,
+  ErroResumoPublico,
+  NaturezaOperacaoPublica,
+} from '../types/versaoProvedorPagina'
+import { conversaoDoCampo, exemploNoProvedor } from '../utils/conversaoDoCampo'
+import type { ConversaoDeValor } from '../utils/conversaoDoCampo'
+import { nomeDaTag, separarDestinos } from '../utils/destinosXml'
+import type { DestinoDoCampo } from '../utils/destinosXml'
 import { RejeicoesDoCampo } from './RejeicoesDoCampo'
 import { XmlDoDestino } from './XmlDoDestino'
 
 export interface ConteudoDoCampoProps {
   campo: CampoVersaoPublico
   errosResumo: ErroResumoPublico[]
+  /** De-para da natureza da operação: no campo `natOp`, o exemplo mostra a conversão. */
+  naturezasOperacao?: NaturezaOperacaoPublica[]
 }
 
 const ROTULO_DE_SECAO = 'text-aux font-semibold tracking-wide text-muted uppercase'
+
+const ROTULO_NO_ESCURO = 'text-aux font-semibold tracking-wide text-alert-info-borda uppercase'
 
 function preenchido(valor: string | null): valor is string {
   return valor !== null && valor !== ''
 }
 
-function CartaoDeResumo({ rotulo, children }: { rotulo: string; children: ReactNode }) {
-  return (
-    <div className="min-w-0 rounded-[var(--radius-control)] bg-surface-hover px-3 py-2.5">
-      <dt className={ROTULO_DE_SECAO}>{rotulo}</dt>
-      <dd className="mt-1 text-sm text-ink [overflow-wrap:anywhere]">{children}</dd>
-    </div>
-  )
+function tagsDosDestinos(destinos: DestinoDoCampo[]): string[] {
+  return destinos.flatMap((destino) => (destino.tipo === 'caminho' ? [destino.tag] : []))
 }
 
-function ResumoDoCampo({ campo }: { campo: CampoVersaoPublico }) {
-  const quantidadeDeRejeicoes = campo.errosConhecidos.length
+interface FatoDoCampo {
+  rotulo: string
+  valor: string | null
+  ehCodigo: boolean
+}
+
+/** Tipo sempre; máscara, tag no provedor e tamanho só quando o dado existe. */
+function FatosDoCampo({ campo }: { campo: CampoVersaoPublico }) {
+  const tags = tagsDosDestinos(separarDestinos(campo.destinoXml))
+  const fatos: FatoDoCampo[] = [
+    { rotulo: 'Tipo', valor: campo.tipo, ehCodigo: false },
+    { rotulo: 'Máscara', valor: campo.mascara, ehCodigo: true },
+    { rotulo: 'Tag no provedor', valor: tags.length > 0 ? tags.join(', ') : null, ehCodigo: true },
+    { rotulo: 'Tamanho', valor: campo.tamanho, ehCodigo: false },
+  ].filter((fato) => preenchido(fato.valor))
 
   return (
-    <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-      <CartaoDeResumo rotulo="Tipo">{campo.tipo}</CartaoDeResumo>
-
-      <CartaoDeResumo rotulo="Tamanho">
-        {campo.tamanho ?? (
-          <>
-            <span aria-hidden="true">—</span>
-            <span className="sr-only">não informado</span>
-          </>
-        )}
-      </CartaoDeResumo>
-
-      <CartaoDeResumo rotulo="Exemplo">
-        {preenchido(campo.exemplo) ? (
-          <span className="font-mono">{campo.exemplo}</span>
-        ) : (
-          <span className="text-muted italic">sem exemplo real</span>
-        )}
-      </CartaoDeResumo>
-
-      <CartaoDeResumo rotulo="Rejeições">
-        {quantidadeDeRejeicoes > 0 ? (
-          <span className="inline-flex items-center gap-1 font-semibold text-severidade-alerta-texto">
-            <TriangleAlert className="size-3.5" aria-hidden="true" />
-            {quantidadeDeRejeicoes}
-          </span>
-        ) : (
-          <span className="text-muted">nenhuma</span>
-        )}
-      </CartaoDeResumo>
+    <dl className="grid overflow-hidden rounded-[var(--radius-control)] border border-border sm:auto-cols-fr sm:grid-flow-col">
+      {fatos.map(({ rotulo, valor, ehCodigo }) => (
+        <div
+          key={rotulo}
+          className="min-w-0 border-b border-border px-3 py-2.5 last:border-b-0 sm:border-b-0 sm:border-l sm:first:border-l-0"
+        >
+          <dt className="text-xs font-medium text-muted">{rotulo}</dt>
+          <dd
+            className={clsx(
+              'mt-0.5 text-sm font-semibold [overflow-wrap:anywhere]',
+              ehCodigo ? 'font-mono text-primary-medium' : 'text-ink',
+            )}
+          >
+            {valor}
+          </dd>
+        </div>
+      ))}
     </dl>
   )
 }
 
-function ConectorParaOProvedor() {
+function TagComValor({ tag, valor }: { tag: string; valor: string | null }) {
+  const conteudo = valor ? (
+    <span className="font-semibold text-accent">{valor}</span>
+  ) : (
+    <span className="text-alert-info-borda">…</span>
+  )
+
+  if (!tag) return <code className="font-mono text-[13px]">{conteudo}</code>
+
   return (
-    <div aria-hidden="true" className="flex flex-col items-center gap-0.5">
-      <ArrowDown className="size-5 text-primary" />
-      <span className="text-xs font-semibold text-primary">vira, no provedor</span>
-    </div>
+    <code className="font-mono text-[13px] [overflow-wrap:anywhere]">
+      <span className="text-alert-info-borda">{'<'}</span>
+      <span className="text-white">{tag}</span>
+      <span className="text-alert-info-borda">{'>'}</span>
+      {conteudo}
+      <span className="text-alert-info-borda">{'</'}</span>
+      <span className="text-white">{tag}</span>
+      <span className="text-alert-info-borda">{'>'}</span>
+    </code>
   )
 }
 
-function PainelNoXmlDoProvedor({ campo }: { campo: CampoVersaoPublico }) {
+function VoceEnvia({ campo, valor }: { campo: CampoVersaoPublico; valor: string | null }) {
   const tituloId = useId()
-  const destinos = separarDestinos(campo.destinoXml)
-  const quantidadeDeTags = destinos.filter((destino) => destino.tipo === 'caminho').length
-  // O exemplo é do campo, não de uma tag: só entra no XML quando há um único destino. Em dois ou
-  // mais, escolher a tag que o recebe seria inventar o exemplo da outra.
-  const exemploDoDestino = destinos.length === 1 ? campo.exemplo : null
 
   return (
-    <section
-      aria-labelledby={tituloId}
-      className="rounded-[var(--radius-card)] border border-border p-4"
-    >
-      <h3 id={tituloId} className={ROTULO_DE_SECAO}>
-        No XML do provedor
-      </h3>
+    <section aria-labelledby={tituloId} className="py-3">
+      <div className="flex items-start justify-between gap-3">
+        <h4 id={tituloId} className={ROTULO_NO_ESCURO}>
+          Você envia (Layout InvoiCy)
+        </h4>
+        <BotaoCopiar
+          compacto
+          rotulo="Copiar caminho"
+          ariaLabel={`Copiar caminho do campo ${campo.nome} no InvoiCy`}
+          valor={campo.caminhoXml}
+        />
+      </div>
+
+      <p className="mt-1">
+        <TagComValor tag={nomeDaTag(campo.caminhoXml)} valor={valor} />
+      </p>
+      <p className="mt-1 text-xs text-alert-info-borda [overflow-wrap:anywhere]">
+        Caminho no InvoiCy: <code className="font-mono text-white">{campo.caminhoXml}</code>
+        {!valor && <span> · sem exemplo real</span>}
+      </p>
+    </section>
+  )
+}
+
+interface ProvedorRecebeProps {
+  destinos: DestinoDoCampo[]
+  /** Valor que chega ao provedor: o exemplo do campo, ou ele já convertido pelo InvoiCy. */
+  valor: string | null
+}
+
+function ProvedorRecebe({ destinos, valor }: ProvedorRecebeProps) {
+  const tituloId = useId()
+  const quantidadeDeTags = tagsDosDestinos(destinos).length
+  // O exemplo é do campo, não de uma tag: só entra no XML quando há um único destino. Em dois ou
+  // mais, escolher a tag que o recebe seria inventar o exemplo da outra.
+  const valorDoDestino = destinos.length === 1 ? valor : null
+
+  return (
+    <section aria-labelledby={tituloId} className="py-3">
+      <h4 id={tituloId} className={ROTULO_NO_ESCURO}>
+        Provedor recebe
+      </h4>
 
       {destinos.length === 0 ? (
-        <p className="mt-2 text-sm text-muted">Este campo não tem destino no XML do provedor.</p>
+        <p className="mt-1 text-sm text-white">Este campo não tem destino no XML do provedor.</p>
       ) : (
         <>
           {quantidadeDeTags >= 2 && (
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-1 text-xs text-alert-info-borda">
               Este campo alimenta {quantidadeDeTags} tags do XML do provedor.
             </p>
           )}
 
-          <ul className="mt-2 flex flex-col gap-3">
+          <ul className="mt-1 flex flex-col gap-2">
             {destinos.map((destino, indice) =>
               destino.tipo === 'omitidos' ? (
-                <li key={`omitidos-${indice}`} className="text-sm text-muted">
+                <li key={`omitidos-${indice}`} className="text-sm text-white">
                   e mais destinos (ver Transformação).
                 </li>
               ) : (
                 <li key={destino.caminho} className="flex items-start gap-2">
                   <div className="min-w-0 flex-1">
-                    <XmlDoDestino caminho={destino.caminho} exemplo={exemploDoDestino} />
+                    <XmlDoDestino caminho={destino.caminho} exemplo={valorDoDestino} />
                   </div>
                   <BotaoCopiar
+                    compacto
                     rotulo="Copiar caminho"
                     ariaLabel={`Copiar caminho do destino ${destino.caminho}`}
                     valor={destino.caminho}
@@ -128,13 +177,58 @@ function PainelNoXmlDoProvedor({ campo }: { campo: CampoVersaoPublico }) {
   )
 }
 
+function descreverConversao(conversao: ConversaoDeValor): string {
+  const nota = `O InvoiCy converte: ${conversao.valorEnviado} (${conversao.descricao}) chega como ${conversao.valorRecebido}.`
+  if (!conversao.aConfirmar) return nota
+  return `${nota} Conversão ainda não confirmada na fonte do provedor.`
+}
+
+interface ExemploDoCampoProps {
+  campo: CampoVersaoPublico
+  naturezasOperacao: NaturezaOperacaoPublica[]
+}
+
+/**
+ * O mapeamento num bloco só: o que se envia no Layout InvoiCy e o que o provedor recebe. No campo
+ * com de-para, os dois lados mostram o mesmo par de valores da conversão.
+ */
+function ExemploDoCampo({ campo, naturezasOperacao }: ExemploDoCampoProps) {
+  const tituloId = useId()
+  const conversao = conversaoDoCampo(campo, naturezasOperacao)
+  const valorEnviado = conversao?.valorEnviado ?? (preenchido(campo.exemplo) ? campo.exemplo : null)
+  const valorRecebido = conversao?.valorRecebido ?? exemploNoProvedor(campo, naturezasOperacao)
+
+  return (
+    <section aria-labelledby={tituloId}>
+      <div className="flex items-center justify-between gap-3">
+        <h3 id={tituloId} className="text-sm font-semibold text-ink">
+          {valorEnviado ? 'Exemplo' : 'Caminho no XML'}
+        </h3>
+        {valorEnviado && (
+          <BotaoCopiar
+            rotulo="Copiar exemplo"
+            ariaLabel={`Copiar exemplo do campo ${campo.nome}`}
+            valor={valorEnviado}
+          />
+        )}
+      </div>
+
+      <div className="mt-2 divide-y divide-white/15 rounded-[var(--radius-card)] bg-primary px-4 text-white">
+        <VoceEnvia campo={campo} valor={valorEnviado} />
+        <ProvedorRecebe destinos={separarDestinos(campo.destinoXml)} valor={valorRecebido} />
+      </div>
+
+      {conversao && <p className="mt-2 text-sm text-muted">{descreverConversao(conversao)}</p>}
+    </section>
+  )
+}
+
 function ComoPreencher({ campo }: { campo: CampoVersaoPublico }) {
   const tituloId = useId()
   const atributos = [
-    { rotulo: 'Condição', valor: campo.condicao, ehLargo: true },
-    { rotulo: 'Máscara', valor: campo.mascara, ehLargo: false },
-    { rotulo: 'Valores aceitos', valor: campo.dominio, ehLargo: false },
-    { rotulo: 'Nota de preenchimento', valor: campo.notaPreenchimento, ehLargo: true },
+    { rotulo: 'Condição', valor: campo.condicao },
+    { rotulo: 'Valores aceitos', valor: campo.dominio },
+    { rotulo: 'Nota de preenchimento', valor: campo.notaPreenchimento },
   ].filter((atributo) => preenchido(atributo.valor))
 
   if (atributos.length === 0) return null
@@ -144,9 +238,9 @@ function ComoPreencher({ campo }: { campo: CampoVersaoPublico }) {
       <h3 id={tituloId} className={ROTULO_DE_SECAO}>
         Como preencher
       </h3>
-      <dl className="mt-2 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+      <dl className="mt-2 flex flex-col gap-3">
         {atributos.map((atributo) => (
-          <div key={atributo.rotulo} className={atributo.ehLargo ? 'sm:col-span-2' : undefined}>
+          <div key={atributo.rotulo}>
             <dt className="text-xs font-medium text-muted">{atributo.rotulo}</dt>
             {/* As notas chegam em parágrafos: preservar as quebras de linha. */}
             <dd className="mt-0.5 text-sm whitespace-pre-line text-ink [overflow-wrap:anywhere]">
@@ -174,14 +268,14 @@ function Transformacao({ nota }: { nota: string | null }) {
 }
 
 /**
- * Corpo do modal do campo. O mapeamento é o centro: o caminho no InvoiCy domina (borda forte,
- * rótulo e caminho maiores, única sombra) e o XML do provedor vem logo abaixo, ligado por uma seta.
- * O resto — significado, resumo, como preencher, transformação e rejeições — se organiza ao redor.
+ * Corpo do modal do campo: a descrição, a faixa de fatos, o exemplo com os dois lados do
+ * mapeamento e, abaixo, como preencher, a transformação e as rejeições.
  */
-export function ConteudoDoCampo({ campo, errosResumo }: ConteudoDoCampoProps) {
-  const resumoId = useId()
-  const temDestino = separarDestinos(campo.destinoXml).length > 0
-
+export function ConteudoDoCampo({
+  campo,
+  errosResumo,
+  naturezasOperacao = [],
+}: ConteudoDoCampoProps) {
   return (
     <div className="flex flex-col gap-5">
       {preenchido(campo.significado) && (
@@ -190,23 +284,8 @@ export function ConteudoDoCampo({ campo, errosResumo }: ConteudoDoCampoProps) {
         </p>
       )}
 
-      <section aria-labelledby={resumoId}>
-        <h3 id={resumoId} className="sr-only">
-          Resumo
-        </h3>
-        <ResumoDoCampo campo={campo} />
-      </section>
-
-      <div className="flex flex-col gap-3">
-        <PainelCaminhoInvoicy
-          titulo="No InvoiCy"
-          nomeDoCampo={campo.nome}
-          caminhoXml={campo.caminhoXml}
-        />
-        {temDestino && <ConectorParaOProvedor />}
-        <PainelNoXmlDoProvedor campo={campo} />
-      </div>
-
+      <FatosDoCampo campo={campo} />
+      <ExemploDoCampo campo={campo} naturezasOperacao={naturezasOperacao} />
       <ComoPreencher campo={campo} />
       <Transformacao nota={campo.notaTransformacao} />
       <RejeicoesDoCampo erros={campo.errosConhecidos} errosResumo={errosResumo} />

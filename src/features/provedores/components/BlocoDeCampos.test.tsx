@@ -189,17 +189,17 @@ describe('BlocoDeCampos — subgrupos e tabelas', () => {
     ])
   })
 
-  it('cada tabela tem seis cabeçalhos de coluna, o último para as rejeições', () => {
+  it('cada tabela tem seis cabeçalhos de coluna, do uso às rejeições', () => {
     const { detalhes } = renderizarBloco()
 
     for (const tabela of detalhes.querySelectorAll('table')) {
       const cabecalhos = Array.from(tabela.querySelectorAll('thead th'))
 
       expect(cabecalhos.map((cabecalho) => cabecalho.textContent)).toEqual([
+        'Uso',
         'Campo InvoiCy',
         'Tag do provedor',
         'Tipo',
-        'Tamanho',
         'Exemplo',
         'Rejeições registradas',
       ])
@@ -252,27 +252,27 @@ describe('BlocoDeCampos — colunas', () => {
     const rotulos = detalhes.querySelector('div[aria-hidden="true"]')!
 
     expect(colunas.map((coluna) => coluna.style.width)).toEqual([
+      '7.25rem',
       '',
       '',
       '6rem',
-      '5rem',
       '',
-      '4.25rem',
+      '6rem',
     ])
     expect(rotulos.getAttribute('style')).toContain(
-      'grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 6rem 5rem minmax(0, 1fr) 4.25rem',
+      'grid-template-columns: 7.25rem minmax(0, 1fr) minmax(0, 1fr) 6rem minmax(0, 1fr) 6rem',
     )
     expect(Array.from(rotulos.children).map((rotulo) => rotulo.textContent)).toEqual([
+      'Uso',
       'Campo InvoiCy',
       'Tag do provedor',
       'Tipo',
-      'Tamanho',
       'Exemplo',
-      '',
+      'Rejeições',
     ])
   })
 
-  it('tipo, tamanho e exemplo somem juntos em tela estreita: col, th e td', () => {
+  it('uso, tipo e exemplo somem juntos em tela estreita: col, th e td', () => {
     const { detalhes } = renderizarBloco()
     const tabela = detalhes.querySelector('table')!
 
@@ -280,25 +280,25 @@ describe('BlocoDeCampos — colunas', () => {
       elementos.map((elemento) => /\bhidden\b/.test(elemento.className))
 
     expect(escondidas(Array.from(tabela.querySelectorAll('col')))).toEqual([
-      false,
-      false,
       true,
+      false,
+      false,
       true,
       true,
       false,
     ])
     expect(escondidas(Array.from(tabela.querySelectorAll('thead th')))).toEqual([
-      false,
-      false,
       true,
+      false,
+      false,
       true,
       true,
       false,
     ])
     expect(escondidas(Array.from(tabela.querySelectorAll('tbody tr:first-child > td')))).toEqual([
-      false,
-      false,
       true,
+      false,
+      false,
       true,
       true,
       false,
@@ -312,14 +312,14 @@ describe('BlocoDeCampos — colunas', () => {
 
     expect(tabela.querySelectorAll('col')).toHaveLength(5)
     expect(Array.from(tabela.querySelectorAll('thead th')).map((th) => th.textContent)).toEqual([
+      'Uso',
       'Campo InvoiCy',
       'Tag do provedor',
       'Tipo',
-      'Tamanho',
       'Rejeições registradas',
     ])
     expect(rotulos.getAttribute('style')).toContain(
-      'grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 6rem 5rem 4.25rem',
+      'grid-template-columns: 7.25rem minmax(0, 1fr) minmax(0, 1fr) 6rem 6rem',
     )
     expect(tabela.querySelectorAll('tbody tr:first-child > td')).toHaveLength(5)
   })

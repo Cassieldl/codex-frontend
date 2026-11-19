@@ -234,8 +234,8 @@ describe('EnvioModeloVersao: alcance e formato', () => {
     // Só a opção marcada entra no Tab.
     expect(minimo).toHaveAttribute('tabindex', '0')
     expect(maximo).toHaveAttribute('tabindex', '-1')
-    expect(minimo).toHaveClass('bg-primary', 'text-white')
-    expect(maximo).not.toHaveClass('bg-primary')
+    expect(minimo).toHaveAttribute('aria-checked', 'true')
+    expect(maximo).toHaveAttribute('aria-checked', 'false')
 
     minimo.focus()
     await usuario.keyboard('{ArrowRight}')
@@ -268,7 +268,7 @@ describe('EnvioModeloVersao: alcance e formato', () => {
     expect(within(secaoDoEnvio()).getByText(/^JSON de exemplo do/)).toBeInTheDocument()
   })
 
-  it('expandir, recolher, copiar e baixar ficam numa barra só, nessa ordem', async () => {
+  it('o painel mostra o nome do arquivo que o Baixar gera e as ações numa barra só, nessa ordem', async () => {
     server.use(handlerDoEnvio().handler)
     renderPagina()
 
@@ -280,7 +280,41 @@ describe('EnvioModeloVersao: alcance e formato', () => {
       within(barra)
         .getAllByRole('button')
         .map((botao) => botao.textContent),
-    ).toEqual(['Expandir tudo', 'Recolher tudo', 'Copiar XML', 'Baixar .xml'])
+    ).toEqual(['Expandir tudo', 'Recolher tudo', 'Copiar', 'Baixar'])
+
+    const nomeDoArquivo = 'envio-modelo-prefeitura-exemplo-v1-minimo.xml'
+    expect(barra.parentElement!.querySelector('[data-nome-do-arquivo]')).toHaveTextContent(
+      nomeDoArquivo,
+    )
+    expect(
+      within(barra).getByRole('button', { name: `Baixar o arquivo ${nomeDoArquivo}` }),
+    ).toBeInTheDocument()
+  })
+
+  it('no XML e no JSON a tag sai em azul claro e o valor de exemplo em laranja', async () => {
+    const usuario = userEvent.setup()
+    server.use(handlerDoEnvio().handler)
+    renderPagina()
+
+    const xml = await screen.findByRole('region', {
+      name: 'Texto do envio modelo mínimo em XML (SOAP)',
+    })
+    const linhaXml = within(xml)
+      .getByRole('link', { name: 'Discriminacao, ver o campo na tabela' })
+      .closest('[data-linha]') as HTMLElement
+    expect(within(linhaXml).getByText('texto(1000)')).toHaveClass('text-codigo-valor')
+    expect(within(linhaXml).getByText('Discriminacao', { selector: 'span' })).toHaveClass(
+      'text-codigo-tag',
+    )
+
+    await usuario.click(within(secaoDoEnvio()).getByRole('radio', { name: 'JSON (REST)' }))
+    const json = await screen.findByRole('region', {
+      name: 'Texto do envio modelo mínimo em JSON (REST)',
+    })
+    const linhaJson = within(json)
+      .getByRole('link', { name: 'Discriminacao, ver o campo na tabela' })
+      .closest('[data-linha]') as HTMLElement
+    expect(within(linhaJson).getByText('"texto(1000)"')).toHaveClass('text-codigo-valor')
   })
 
   it('a legenda segue o desenho da tabela de campos e só explica as marcas do texto', async () => {
@@ -305,7 +339,8 @@ describe('EnvioModeloVersao: alcance e formato', () => {
     ).toEqual([
       'só no envio XML',
       'informe só uma das tags com esta marca',
-      'leva ao campo na tabela desta versão',
+      'abre o campo na aba Campos',
+      'exemplo: troque pelo da sua nota',
     ])
   })
 

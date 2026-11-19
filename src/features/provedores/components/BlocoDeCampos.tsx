@@ -1,4 +1,5 @@
-import { ChevronDown, TriangleAlert } from 'lucide-react'
+import clsx from 'clsx'
+import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import type { SecaoInicialDoModal } from '../types/modalDoCampo'
 import type { BlocoDeCampos as BlocoDeCamposDados, SubgrupoDeCampos } from '../utils/blocosDeCampos'
@@ -20,8 +21,11 @@ export interface BlocoDeCamposProps {
 
 interface ColunaDoBloco {
   chave: string
-  /** Cabeçalho para leitor de tela; na linha de rótulos visível, a de rejeições vira ícone. */
+  /** Cabeçalho da tabela, para leitor de tela. */
   rotulo: string
+  /** Rótulo da linha visível, quando é mais curto que o cabeçalho. */
+  rotuloVisivel?: string
+  alinhadoADireita?: boolean
   /** Largura fixa; sem ela a coluna divide o resto por igual. */
   largura: string | null
   soNoDesktop: boolean
@@ -32,12 +36,19 @@ interface ColunaDoBloco {
  * lista, para os rótulos não se desalinharem das células.
  */
 const COLUNAS: ColunaDoBloco[] = [
+  { chave: 'uso', rotulo: 'Uso', largura: '7.25rem', soNoDesktop: true },
   { chave: 'campo', rotulo: 'Campo InvoiCy', largura: null, soNoDesktop: false },
   { chave: 'tag', rotulo: 'Tag do provedor', largura: null, soNoDesktop: false },
   { chave: 'tipo', rotulo: 'Tipo', largura: '6rem', soNoDesktop: true },
-  { chave: 'tamanho', rotulo: 'Tamanho', largura: '5rem', soNoDesktop: true },
   { chave: 'exemplo', rotulo: 'Exemplo', largura: null, soNoDesktop: true },
-  { chave: 'rejeicoes', rotulo: 'Rejeições registradas', largura: '4.25rem', soNoDesktop: false },
+  {
+    chave: 'rejeicoes',
+    rotulo: 'Rejeições registradas',
+    rotuloVisivel: 'Rejeições',
+    largura: '6rem',
+    soNoDesktop: false,
+    alinhadoADireita: true,
+  },
 ]
 
 const COLUNAS_SEM_EXEMPLO = COLUNAS.filter(({ chave }) => chave !== 'exemplo')
@@ -48,7 +59,7 @@ function montarGridDosRotulos(colunas: ColunaDoBloco[]): string {
   return colunas.map(({ largura }) => largura ?? COLUNA_SEM_LARGURA_NO_GRID).join(' ')
 }
 
-const CLASSE_DA_CELULA_DE_ROTULO = 'px-3 text-xs font-medium text-muted'
+const CLASSE_DA_CELULA_DE_ROTULO = 'px-3 text-aux font-semibold tracking-wide text-muted uppercase'
 
 function descreverQuantidade(quantidade: number, singular: string, plural: string): string {
   return `${quantidade} ${quantidade === 1 ? singular : plural}`
@@ -72,15 +83,14 @@ function RotulosDasColunas({ colunas }: { colunas: ColunaDoBloco[] }) {
     <div
       aria-hidden="true"
       style={{ gridTemplateColumns: montarGridDosRotulos(colunas) }}
-      className="sticky top-[calc(var(--topo-fixo,0px)_+_3rem)] z-[9] hidden h-8 items-center border-t border-b border-line bg-white min-[860px]:grid"
+      className="sticky top-[calc(var(--topo-fixo,0px)_+_3rem)] z-[9] hidden h-8 items-center border-t border-b border-border bg-white min-[860px]:grid"
     >
-      {colunas.map(({ chave, rotulo }) => (
-        <span key={chave} className={CLASSE_DA_CELULA_DE_ROTULO}>
-          {chave === 'rejeicoes' ? (
-            <TriangleAlert aria-hidden="true" className="ml-auto size-3.5" />
-          ) : (
-            rotulo
-          )}
+      {colunas.map(({ chave, rotulo, rotuloVisivel, alinhadoADireita }) => (
+        <span
+          key={chave}
+          className={clsx(CLASSE_DA_CELULA_DE_ROTULO, alinhadoADireita && 'text-right')}
+        >
+          {rotuloVisivel ?? rotulo}
         </span>
       ))}
     </div>
@@ -120,7 +130,7 @@ export function BlocoDeCampos({
       onToggle={(evento) => onAlternar(bloco.raiz, evento.currentTarget.open)}
       className="group mb-3 scroll-mt-[calc(var(--topo-fixo,0px)_+_1rem)] rounded-[var(--radius-card)] border border-border bg-white"
     >
-      <summary className="sticky top-[var(--topo-fixo,0px)] z-10 flex h-12 cursor-pointer list-none items-center gap-3 rounded-[var(--radius-card)] bg-surface-hover px-4 hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light group-open:rounded-b-none [&::-webkit-details-marker]:hidden">
+      <summary className="sticky top-[var(--topo-fixo,0px)] z-10 flex h-12 cursor-pointer list-none items-center gap-3 rounded-[var(--radius-card)] bg-surface-hover px-4 hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover group-open:rounded-b-none [&::-webkit-details-marker]:hidden">
         <h3 className="text-card-titulo font-medium text-ink">{bloco.rotulo}</h3>
         <span className="min-w-0 truncate text-xs text-muted tabular-nums">
           {descreverMeta(bloco, filtrando)}
@@ -140,7 +150,7 @@ export function BlocoDeCampos({
           className="scroll-mt-[calc(var(--topo-fixo,0px)_+_7rem)]"
         >
           {subgrupo.titulo && (
-            <h4 className="sticky top-[calc(var(--topo-fixo,0px)_+_3rem)] z-[8] flex h-8 items-center border-t border-line bg-white px-4 text-xs font-semibold tracking-wide text-muted uppercase min-[860px]:top-[calc(var(--topo-fixo,0px)_+_5rem)]">
+            <h4 className="sticky top-[calc(var(--topo-fixo,0px)_+_3rem)] z-[8] flex h-8 items-center border-t border-border bg-white px-4 text-xs font-semibold tracking-wide text-muted uppercase min-[860px]:top-[calc(var(--topo-fixo,0px)_+_5rem)]">
               {subgrupo.titulo}
             </h4>
           )}
@@ -187,12 +197,12 @@ export function BlocoDeCampos({
       ))}
 
       {recorte.ocultos > 0 && (
-        <p className="border-t border-line px-4 py-3 text-xs text-muted">
+        <p className="border-t border-border px-4 py-3 text-xs text-muted">
           Mais {recorte.ocultos} {recorte.ocultos === 1 ? 'campo' : 'campos'} em {bloco.rotulo}.{' '}
           <button
             type="button"
             onClick={() => setMostrandoTodos(true)}
-            className="font-semibold text-primary-medium underline underline-offset-2"
+            className="font-semibold link-texto"
           >
             Mostrar todos
           </button>

@@ -1,7 +1,8 @@
 import { useCallback, useId, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { IndiceDeBlocos } from '../../../components/ui/IndiceDeBlocos'
-import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
+import { useBlocoAtualNaRolagem } from '../../../hooks/useBlocoAtualNaRolagem'
 import { useBlocosNavegaveis } from '../../../hooks/useBlocosNavegaveis'
 import type { VizinhoDeCampo } from '../../../types/vizinhoDeCampo'
 import type { SecaoInicialDoModal, VizinhoDoCampo } from '../types/modalDoCampo'
@@ -31,7 +32,6 @@ import { ModalDoCampo } from './ModalDoCampo'
 export interface CamposDaVersaoProps {
   provedorNome: string
   versaoRotulo: string
-  verificadoEm: string | null
   totalCampos: number
   camposPorGrupo: GrupoCampoVersao[]
   errosResumo: ErroResumoPublico[]
@@ -40,10 +40,12 @@ export interface CamposDaVersaoProps {
   campoDestacado?: string | null
   /** De-para mostrado no modal do campo `natOp`. */
   naturezasOperacao?: NaturezaOperacaoPublica[]
+  /** Atalho à direita da frase de exaustividade; na página, o "Ver como XML montado". */
+  atalhoDoTopo?: ReactNode
 }
 
 const CLASSE_DO_BOTAO_DE_TEXTO =
-  'text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light'
+  'text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
 
 function slugDoCampo(campo: CampoVersaoPublico): string {
   return campo.campoLayoutSlug
@@ -61,19 +63,19 @@ function paraVizinhoDoCampo(vizinho: VizinhoDeCampo | null): VizinhoDoCampo | nu
 /**
  * Lista exaustiva de campos da versão, em blocos recolhíveis por raiz do layout, com filtros,
  * índice lateral e o detalhe de cada campo num modal. A ausência de um campo aqui é informação de
- * negócio ("não se aplica"), por isso a afirmação de exaustividade e o selo de verificação ficam
- * junto da lista: o filtro muda só o texto da afirmação, nunca o selo.
+ * negócio ("não se aplica"), por isso a afirmação de exaustividade abre a aba. A data de
+ * verificação fica só no cabeçalho do provedor.
  */
 export function CamposDaVersao({
   provedorNome,
   versaoRotulo,
-  verificadoEm,
   totalCampos,
   camposPorGrupo,
   errosResumo,
   urlProvedorAbsoluta,
   campoDestacado = null,
   naturezasOperacao = [],
+  atalhoDoTopo,
 }: CamposDaVersaoProps) {
   const tituloId = useId()
   const buscaRef = useRef<HTMLInputElement | null>(null)
@@ -141,7 +143,20 @@ export function CamposDaVersao({
   })
 
   const filtroAtivo = filtroDeCamposAtivo(filtroAtual)
-  const blocosComResultado = blocosFiltrados.filter((bloco) => bloco.totalVisivel > 0)
+  const blocosComResultado = useMemo(
+    () => blocosFiltrados.filter((bloco) => bloco.totalVisivel > 0),
+    [blocosFiltrados],
+  )
+  const raizesComResultado = useMemo(
+    () => blocosComResultado.map((bloco) => bloco.raiz),
+    [blocosComResultado],
+  )
+  const { raizAtual, marcarBloco } = useBlocoAtualNaRolagem(raizesComResultado)
+
+  function irParaBlocoDoIndice(raiz: string) {
+    irParaBloco(raiz)
+    marcarBloco(raiz)
+  }
 
   // Filtrar abre os blocos que passam a ter resultado: o resultado escondido num bloco fechado
   // seria um filtro que parece não achar nada. Limpar o filtro mantém o que já estava aberto.
@@ -152,10 +167,10 @@ export function CamposDaVersao({
 
     if (!filtroDeCamposAtivo(novoFiltro)) return
 
-    const raizesComResultado = filtrarCampos(blocosCompletos, novoFiltro)
+    const raizesDoNovoFiltro = filtrarCampos(blocosCompletos, novoFiltro)
       .filter((bloco) => bloco.totalVisivel > 0)
       .map((bloco) => bloco.raiz)
-    abrirBlocos(raizesComResultado)
+    abrirBlocos(raizesDoNovoFiltro)
   }
 
   const fraseExaustividade = filtroAtivo
@@ -174,17 +189,15 @@ export function CamposDaVersao({
       aria-labelledby={tituloId}
       className="flex scroll-mt-24 flex-col gap-4"
     >
-      <header className="flex flex-col gap-2">
-        <h2 id={tituloId} className="text-subtitulo font-semibold text-ink">
+      <header className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+        {/* A aba já diz onde se está; o título fica para o leitor de tela nomear a região. */}
+        <h2 id={tituloId} className="sr-only">
           Campos e mapeamento
         </h2>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p aria-live="polite" aria-atomic="true" className="text-sm text-muted">
-            {fraseExaustividade}
-          </p>
-          {verificadoEm && <SeloVerificacao data={verificadoEm} />}
-        </div>
+        <p aria-live="polite" aria-atomic="true" className="text-sm text-muted">
+          {fraseExaustividade}
+        </p>
+        {atalhoDoTopo && <div className="shrink-0">{atalhoDoTopo}</div>}
       </header>
 
       <FiltrosDeCampos
@@ -223,7 +236,8 @@ export function CamposDaVersao({
                 rotulo: bloco.rotulo,
                 quantidadeVisivel: bloco.totalVisivel,
               }))}
-              onIrParaBloco={irParaBloco}
+              onIrParaBloco={irParaBlocoDoIndice}
+              raizAtual={raizAtual}
             />
           </aside>
 
@@ -254,6 +268,8 @@ export function CamposDaVersao({
         <ModalDoCampo
           campo={itemAberto.campo}
           trilha={itemAberto.trilha}
+          provedorNome={provedorNome}
+          versaoRotulo={versaoRotulo}
           posicao={posicao}
           total={totalVisivel}
           filtroAtivo={filtroAtivo}

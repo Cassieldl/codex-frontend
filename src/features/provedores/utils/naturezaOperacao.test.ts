@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { GrupoCampoVersao } from '../types/versaoProvedorPagina'
 import {
+  codigosEquivalentesNoProvedor,
   destinoDaNaturezaOperacao,
   ehCampoNaturezaOperacao,
   separarTagDeDestino,
@@ -59,5 +60,30 @@ describe('naturezaOperacao', () => {
     expect(
       destinoDaNaturezaOperacao(grupoCom([{ caminhoXml: '//natOp', destinoXml: null }])),
     ).toBeNull()
+  })
+
+  it('liga cada código que chega igual ao primeiro código com o mesmo valor no provedor', () => {
+    const naturezas = [
+      { codigoInvoicy: 1, valorProvedor: '1' },
+      { codigoInvoicy: 4, valorProvedor: '2' },
+      { codigoInvoicy: 7, valorProvedor: '1' },
+      { codigoInvoicy: 8, valorProvedor: '4' },
+      { codigoInvoicy: 9, valorProvedor: '1' },
+    ]
+
+    expect([...codigosEquivalentesNoProvedor(naturezas)]).toEqual([
+      [7, 1],
+      [9, 1],
+    ])
+  })
+
+  it('sem valor repetido, nenhum código ganha a nota', () => {
+    const naturezas = [
+      { codigoInvoicy: 1, valorProvedor: '1' },
+      { codigoInvoicy: 4, valorProvedor: '2' },
+      { codigoInvoicy: 9, valorProvedor: '3' },
+    ]
+
+    expect(codigosEquivalentesNoProvedor(naturezas).size).toBe(0)
   })
 })

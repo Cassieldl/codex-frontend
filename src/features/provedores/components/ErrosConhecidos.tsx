@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ChevronDown, Search } from 'lucide-react'
+import { ChevronRight, Search } from 'lucide-react'
 import { useId, useMemo, useRef, useState } from 'react'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { Pagination } from '../../../components/ui/Pagination'
@@ -8,7 +8,7 @@ import { resolverMensagemDoErro } from '../../erros/utils/mensagemDoErro'
 import type { ErroResumoPublico, GrupoCampoVersao } from '../types/versaoProvedorPagina'
 import { ordenarErrosPorCodigo } from '../utils/ordenarErrosPorCodigo'
 import { ID_SECAO_ERROS_CONHECIDOS } from '../utils/secoesDoProvedor'
-import { indexarCamposPorErro, normalizar } from './camposDosErrosConhecidos'
+import { indexarCamposPorErro, normalizar, type CampoDoErro } from './camposDosErrosConhecidos'
 import { DetalheDoErroNaLista } from './DetalheDoErroNaLista'
 
 /** Erros por página: o padrão de paginação do projeto. */
@@ -19,11 +19,6 @@ export interface ErrosConhecidosProps {
   provedorSlug: string
   /** Os campos da versão: é deles que sai o campo de cada erro, pelo vínculo campo → erro. */
   camposPorGrupo: GrupoCampoVersao[]
-}
-
-interface CampoDoErro {
-  slug: string
-  nome: string
 }
 
 function ConteudoDoErro({ erro, campos }: { erro: ErroResumoPublico; campos: CampoDoErro[] }) {
@@ -164,8 +159,8 @@ export function ErrosConhecidos({ resumo, provedorSlug, camposPorGrupo }: ErrosC
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-card">
-          <ul className="flex flex-col divide-y divide-line">
+        <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-white shadow-card">
+          <ul className="flex flex-col divide-y divide-border">
             {visiveis.map((erro) => {
               const aberto = erroAberto === erro.slug
               const idDoPainel = `${painelId}-${erro.slug}`
@@ -178,13 +173,13 @@ export function ErrosConhecidos({ resumo, provedorSlug, camposPorGrupo }: ErrosC
                     aria-expanded={aberto}
                     aria-controls={idDoPainel}
                     onClick={() => setErroAberto(aberto ? null : erro.slug)}
-                    className="flex w-full items-start gap-3 px-5 py-4 text-left transition-shadow duration-150 hover:shadow-hover"
+                    className="flex w-full items-start gap-3 px-5 py-4 text-left transition-colors duration-150 hover:bg-surface-hover"
                   >
                     <ConteudoDoErro erro={erro} campos={campos} />
-                    <ChevronDown
+                    <ChevronRight
                       className={clsx(
-                        'mt-0.5 size-4 shrink-0 text-primary-light transition-transform duration-150',
-                        aberto && 'rotate-180',
+                        'mt-0.5 size-4.5 shrink-0 text-primary-light transition-transform duration-150',
+                        aberto && 'rotate-90',
                       )}
                       aria-hidden="true"
                     />
