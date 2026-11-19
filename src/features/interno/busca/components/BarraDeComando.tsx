@@ -218,7 +218,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
                 onClick={() => {
                   void refetch()
                 }}
-                className="rounded-[5px] border border-line px-3 py-1 text-sm text-ink transition-shadow duration-150 hover:shadow-hover"
+                className="rounded-[5px] border border-border px-3 py-1 text-sm text-ink transition-shadow duration-150 hover:shadow-hover"
               >
                 Tentar de novo
               </button>

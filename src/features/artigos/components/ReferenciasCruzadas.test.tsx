@@ -160,7 +160,7 @@ describe('ReferenciasCruzadas — rejeições relacionadas', () => {
   it('cada rejeição é uma linha com código e título, ligando à página do erro', async () => {
     renderComRouter(<ReferenciasCruzadas camposLayout={[]} erros={[erro]} />)
 
-    const link = await screen.findByRole('link', { name: /E1300 — Não é permitido/ })
+    const link = await screen.findByRole('link', { name: /E1300\s*Não é permitido/ })
     expect(link).toHaveAttribute('href', erro.url)
     expect(screen.queryByText('REJEIÇÃO')).not.toBeInTheDocument()
   })

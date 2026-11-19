@@ -78,7 +78,7 @@ export function HomePage({ navegarParaBusca }: HomePageProps) {
       <main
         id={ID_CONTEUDO_PRINCIPAL}
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-16 px-4 pb-16 lg:px-8"
+        className="mx-auto flex w-full max-w-pagina flex-1 flex-col gap-16 px-4 pb-16 lg:px-8"
       >
         {/* Os cards de entrada sobem sobre o hero e aparecem nos três estados: não dependem do agregador. */}
         <section
@@ -138,7 +138,10 @@ export function HomePage({ navegarParaBusca }: HomePageProps) {
         )}
       </main>
 
-      <RodapeContextual contexto={{ tipo: 'home' }} />
+      <RodapeContextual
+        contexto={{ tipo: 'home' }}
+        versaoVigenteDoLayout={home?.layout?.vigente?.rotulo}
+      />
     </div>
   )
 }

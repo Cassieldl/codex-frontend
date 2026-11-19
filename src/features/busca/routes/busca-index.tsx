@@ -119,7 +119,7 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
       <main
         id={ID_CONTEUDO_PRINCIPAL}
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+        className="mx-auto flex w-full max-w-pagina flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
       >
         {/* O campo no cabeçalho já diz visualmente o que é a página; o título existe para quem
             navega por títulos com leitor de tela, que sem ele chega a uma página sem nome. */}
@@ -149,7 +149,7 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
               portal existe para evitar. A segunda frase troca a narração por uma ação.
             */}
             {resultado.qualidade === 'parcial' && (
-              <p className="rounded-[var(--radius-control)] bg-alert-info px-4 py-2 text-sm text-primary-medium">
+              <p className="rounded-[var(--radius-control)] border border-alert-info-borda bg-alert-info px-4 py-2 text-sm text-primary-medium">
                 Resultados aproximados — nenhum item reúne todos os termos que você digitou. Se
                 nenhum servir, tente o código do erro ou um trecho menor da mensagem.
               </p>

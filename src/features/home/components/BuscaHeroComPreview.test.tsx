@@ -167,6 +167,20 @@ describe('BuscaHeroComPreview', () => {
     await waitFor(() => expect(aoSubmeter).toHaveBeenCalledWith('e0117'))
   })
 
+  it('o botão Buscar leva o termo para a tela de busca', async () => {
+    server.use(
+      http.get(`${API_URL}/busca`, () => HttpResponse.json({ data: resultado([]), message: null })),
+    )
+
+    const usuario = userEvent.setup()
+    const { aoSubmeter } = renderHero()
+
+    await usuario.type(await screen.findByRole('searchbox'), 'e0117')
+    await usuario.click(screen.getByRole('button', { name: 'Buscar' }))
+
+    await waitFor(() => expect(aoSubmeter).toHaveBeenCalledWith('e0117'))
+  })
+
   it('não submete termo curto demais para a busca', async () => {
     const usuario = userEvent.setup()
     const { aoSubmeter } = renderHero()

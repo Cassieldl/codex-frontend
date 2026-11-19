@@ -71,7 +71,7 @@ function CabecalhoDoErro({ erro, versaoUnica }: CabecalhoDoErroProps) {
   const mensagem = resolverMensagemDoErro(erro).principal
 
   return (
-    <header className="flex flex-col gap-3 border-b border-line pb-6">
+    <header className="flex flex-col gap-3 border-b border-border pb-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-mono text-titulo font-bold text-ink">{erro.codigo}</h1>
         <BotaoCopiar
@@ -92,7 +92,7 @@ function CabecalhoDoErro({ erro, versaoUnica }: CabecalhoDoErroProps) {
             <Link
               to="/provedores/$provedorSlug"
               params={{ provedorSlug: versaoUnica.provedorSlug }}
-              className={`${CLASSE_DO_CHIP} border-primary-light bg-white text-primary-medium hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light`}
+              className={`${CLASSE_DO_CHIP} border-primary-light bg-white text-primary-medium hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover`}
             >
               {versaoUnica.provedorNome} {versaoUnica.versaoRotulo}
             </Link>

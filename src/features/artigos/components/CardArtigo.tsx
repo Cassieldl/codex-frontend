@@ -20,9 +20,9 @@ export interface CardArtigoProps {
  */
 export function CardArtigo({ artigo, mostrarTipo = true }: CardArtigoProps) {
   return (
-    <article className="flex flex-col gap-2 border-b border-line px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+    <article className="flex flex-col gap-2 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
       <div className="flex min-w-0 flex-col gap-1.5">
-        {mostrarTipo && <EtiquetaTipoArtigo tipo={artigo.tipo} />}
+        {mostrarTipo && <EtiquetaTipoArtigo tipo={artigo.tipo} variante="chip" />}
 
         <h2 className="text-card-titulo font-semibold">
           <Link

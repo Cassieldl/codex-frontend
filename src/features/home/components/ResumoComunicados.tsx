@@ -48,7 +48,7 @@ export function ResumoComunicados({ comunicados }: ResumoComunicadosProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2 border-b border-line pb-3">
+    <div className="flex flex-col gap-2 border-b border-border pb-3">
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-aux font-semibold uppercase tracking-wider text-muted">
           Comunicados ativos

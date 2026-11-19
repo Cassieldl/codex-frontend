@@ -134,7 +134,7 @@ describe('ArtigoDetalhePage — tela 8', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Onde olhar' })).toBeInTheDocument()
     expect(screen.getByText('CNPJ do tomador')).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: /E0117 — CNPJ do tomador inválido/ }),
+      screen.getByRole('link', { name: /E0117\s*CNPJ do tomador inválido/ }),
     ).toBeInTheDocument()
   })
 
@@ -280,7 +280,7 @@ describe('ArtigoDetalhePage — tela 9 (/como-funciona)', () => {
  * única página de detalhe pública sem nenhuma — a volta ao índice dependia do menu principal.
  */
 describe('ArtigoDetalhePage — trilha de volta ao índice', () => {
-  it('liga "Artigos" ao índice e nomeia o artigo atual', async () => {
+  it('liga "Artigos" ao índice e nomeia o tipo do artigo', async () => {
     server.use(handlerArtigoDetalhe(artigo))
 
     renderPagina({ artigoSlug: artigo.slug, caminhoAtual: artigo.urlCanonica })
@@ -291,7 +291,7 @@ describe('ArtigoDetalhePage — trilha de volta ao índice', () => {
     const linkIndice = within(corpo).getByRole('link', { name: 'Artigos' })
 
     expect(linkIndice).toHaveAttribute('href', expect.stringContaining('/artigos'))
-    expect(linkIndice.parentElement).toHaveTextContent(`Artigos / ${artigo.titulo}`)
+    expect(linkIndice.parentElement).toHaveTextContent('Artigos / Procedimento')
 
     // `/artigos` é ancestral de `/artigos/{slug}`: sem `activeOptions={{ exact: true }}` o Link
     // se marca sozinho como página atual por casamento de prefixo — o defeito reincidente desta
@@ -344,5 +344,36 @@ describe('ArtigoDetalhePage: título da aba', () => {
 
     await screen.findByRole('heading', { level: 1, name: 'Este artigo não existe.' })
     expect(document.title).toBe('Artigo não encontrado | Codex')
+  })
+})
+
+describe('ArtigoDetalhePage: cabeçalho e lateral', () => {
+  it('o resumo abre o cabeçalho antes da verificação e sai do corpo', async () => {
+    const comResumo = {
+      ...artigo,
+      corpo: ['> [!RESUMO]', '> Resumo de abertura.', '', artigo.corpo].join('\n'),
+    }
+    server.use(handlerArtigoDetalhe(comResumo))
+
+    renderPagina({ artigoSlug: artigo.slug, caminhoAtual: artigo.urlCanonica })
+
+    const resumo = await screen.findByText('Resumo de abertura.')
+    expect(resumo.closest('article > header')).not.toBeNull()
+    expect(screen.getAllByText('Resumo de abertura.')).toHaveLength(1)
+    const verificacao = screen.getByText(/Verificado em/)
+    expect(
+      resumo.compareDocumentPosition(verificacao) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('referências ficam na lateral, uma vez só', async () => {
+    server.use(handlerArtigoDetalhe(artigo))
+
+    renderPagina({ artigoSlug: artigo.slug, caminhoAtual: artigo.urlCanonica })
+
+    const lateral = await screen.findByRole('complementary', { name: 'Navegação do artigo' })
+    expect(within(lateral).getByRole('heading', { name: 'Rejeições relacionadas' })).toBeVisible()
+    expect(screen.getAllByRole('heading', { name: 'Rejeições relacionadas' })).toHaveLength(1)
+    expect(within(screen.getByRole('article')).queryByText('CNPJ do tomador')).toBeNull()
   })
 })

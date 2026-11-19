@@ -84,7 +84,7 @@ export function AbasFormulario({
       <div
         role="tablist"
         aria-label={ariaLabel}
-        className="flex items-center gap-1 border-b border-line"
+        className="flex items-center gap-1 border-b border-border"
       >
         {abas.map((aba) => {
           const ativa = aba.valor === valorAtivo
@@ -104,7 +104,7 @@ export function AbasFormulario({
               onKeyDown={aoTeclar}
               className={clsx(
                 'inline-flex items-center border-b-[3px] px-3 py-2 text-sm transition-shadow duration-150',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
                 ativa
                   ? 'border-accent-hover font-semibold text-ink'
                   : 'border-transparent font-normal text-muted hover:shadow-hover',

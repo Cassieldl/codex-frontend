@@ -13,7 +13,7 @@ export interface ReferenciasCruzadasProps {
 
 /**
  * Campos do artigo como tags compactas. A tag abre, abaixo da lista, o que o campo é e o link para
- * a página dele no Layout InvoiCy — um aberto por vez. O caminho só aparece quando o campo está
+ * a página dele no Layout InvoiCy, um aberto por vez. O caminho só aparece quando o campo está
  * dentro de um grupo.
  */
 function CamposRelacionadosDoArtigo({ campos }: { campos: ReferenciaCampoLayout[] }) {
@@ -33,10 +33,10 @@ function CamposRelacionadosDoArtigo({ campos }: { campos: ReferenciaCampoLayout[
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- recebe o Escape que sobe das tags
     <section
       aria-labelledby="campos-layout-relacionados-titulo"
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-2"
       onKeyDown={fecharComEscape}
     >
-      <h2 id="campos-layout-relacionados-titulo" className="text-subtitulo font-semibold text-ink">
+      <h2 id="campos-layout-relacionados-titulo" className={CLASSE_DO_TITULO_DA_LATERAL}>
         Campos do Layout InvoiCy
       </h2>
 
@@ -57,7 +57,7 @@ function CamposRelacionadosDoArtigo({ campos }: { campos: ReferenciaCampoLayout[
                 aria-controls={idPainel}
                 onClick={() => setSlugAberto(estaAberto ? null : campo.slug)}
                 className={clsx(
-                  'inline-flex max-w-full items-center gap-1 rounded-[var(--radius-control)] border px-2.5 py-1 font-mono text-xs text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light',
+                  'inline-flex max-w-full items-center gap-1 rounded-[var(--radius-control)] border px-2.5 py-1 font-mono text-xs text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
                   estaAberto ? 'border-primary-light bg-alert-info' : 'border-border bg-white',
                 )}
               >
@@ -81,14 +81,14 @@ function CamposRelacionadosDoArtigo({ campos }: { campos: ReferenciaCampoLayout[
       {/* O painel existe sempre, para o `aria-controls` das tags apontar para um elemento real. */}
       <div id={idPainel}>
         {aberto && (
-          <div className="flex flex-col gap-2 rounded-[var(--radius-control)] border border-line border-l-2 border-l-accent bg-white p-4">
+          <div className="flex flex-col gap-2 rounded-[var(--radius-control)] border border-border border-l-2 border-l-accent bg-white p-4">
             <p className="font-mono text-sm font-semibold text-ink">{aberto.nome}</p>
             {grupoAberto && (
               <p className="text-xs text-muted">
                 Dentro do grupo <span className="font-mono">{grupoAberto}</span>
               </p>
             )}
-            <p className="max-w-[70ch] text-sm text-ink">{aberto.significado}</p>
+            <p className="text-sm text-ink">{aberto.significado}</p>
             <Link
               to="/layout/campos/$campoSlug"
               params={{ campoSlug: aberto.slug }}
@@ -104,34 +104,38 @@ function CamposRelacionadosDoArtigo({ campos }: { campos: ReferenciaCampoLayout[
   )
 }
 
+// Mesmo desenho do "Nesta página" do sumário, que fica logo acima na lateral.
+const CLASSE_DO_TITULO_DA_LATERAL = 'text-xs font-semibold tracking-wide text-muted uppercase'
+
 /**
- * Referências cruzadas da página do artigo: campos do Layout InvoiCy e rejeições relacionadas. O
+ * Referências cruzadas da lateral do artigo: campos do Layout InvoiCy e rejeições relacionadas. O
  * título de cada seção já diz a natureza das referências, então os itens não repetem rótulo.
  */
 export function ReferenciasCruzadas({ camposLayout, erros }: ReferenciasCruzadasProps) {
   if (camposLayout.length === 0 && erros.length === 0) return null
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {camposLayout.length > 0 && <CamposRelacionadosDoArtigo campos={camposLayout} />}
 
       {erros.length > 0 && (
-        <section aria-labelledby="erros-relacionados-titulo" className="flex flex-col gap-3">
-          <h2 id="erros-relacionados-titulo" className="text-subtitulo font-semibold text-ink">
+        <section aria-labelledby="erros-relacionados-titulo" className="flex flex-col gap-2">
+          <h2 id="erros-relacionados-titulo" className={CLASSE_DO_TITULO_DA_LATERAL}>
             Rejeições relacionadas
           </h2>
 
-          <ul className="flex flex-col divide-y divide-line border-y border-line">
+          <ul className="flex flex-col gap-2">
             {erros.map((erro) => (
-              <li key={erro.slug} className="py-2.5">
-                {/* Rota tipada a partir do `slug` do contrato — não remonta a
+              <li key={erro.slug}>
+                {/* Rota tipada a partir do `slug` do contrato: não remonta a
                     string de `url`, que aqui serve só de dado de exibição. */}
                 <Link
                   to="/erros/$erroSlug"
                   params={{ erroSlug: erro.slug }}
-                  className="text-sm text-primary-medium hover:underline"
+                  className="flex flex-col text-sm text-primary-medium hover:underline"
                 >
-                  <span className="font-mono font-semibold">{erro.codigo}</span> — {erro.titulo}
+                  <span className="font-mono font-semibold">{erro.codigo}</span>{' '}
+                  <span>{erro.titulo}</span>
                 </Link>
               </li>
             ))}

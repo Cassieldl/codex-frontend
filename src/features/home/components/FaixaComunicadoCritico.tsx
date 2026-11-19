@@ -63,12 +63,9 @@ export function FaixaComunicadoCritico({ comunicados }: FaixaComunicadoCriticoPr
   const [principal, ...demais] = criticos
 
   return (
-    <div
-      role="alert"
-      className="border-b border-dashed border-severidade-critico-texto bg-alert-error"
-    >
-      <div className="mx-auto flex max-w-6xl items-start gap-3 px-4 py-2.5 lg:px-8">
-        <span className="flex shrink-0 items-center gap-1.5 pt-0.5 text-aux font-bold uppercase tracking-wider text-severidade-critico-texto">
+    <div role="alert" className="border-b border-alert-error-borda bg-alert-error">
+      <div className="mx-auto flex max-w-pagina items-start gap-3 px-4 py-2.5 lg:px-8">
+        <span className="flex shrink-0 items-center gap-1.5 pt-0.5 text-aux font-bold uppercase tracking-wider text-alert-error-texto">
           <TriangleAlert className="size-3.5 shrink-0" aria-hidden="true" />
           Crítico
         </span>
@@ -100,7 +97,7 @@ export function FaixaComunicadoCritico({ comunicados }: FaixaComunicadoCriticoPr
           type="button"
           onClick={() => setDispensada(true)}
           aria-label="Dispensar este comunicado nesta sessão"
-          className="-m-2 shrink-0 p-2 text-severidade-critico-texto hover:underline"
+          className="-m-2 shrink-0 p-2 text-alert-error-texto hover:underline"
         >
           <X className="size-4" aria-hidden="true" />
         </button>

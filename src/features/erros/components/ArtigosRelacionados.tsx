@@ -25,7 +25,7 @@ export function ArtigosRelacionados({ artigos }: ArtigosRelacionadosProps) {
         Artigos relacionados
       </h2>
 
-      <ul className="flex flex-col divide-y divide-line border-y border-line">
+      <ul className="flex flex-col divide-y divide-border border-y border-border">
         {artigos.map((artigo) => {
           const caminho = caminhoInternoSeguro(artigo.url)
 
@@ -35,7 +35,7 @@ export function ArtigosRelacionados({ artigos }: ArtigosRelacionadosProps) {
                 <span className="text-aux font-semibold tracking-wide text-muted uppercase">
                   {artigo.rotulo}
                 </span>
-                <EtiquetaTipoArtigo tipo={artigo.tipo} />
+                <EtiquetaTipoArtigo tipo={artigo.tipo} variante="chip" />
               </div>
 
               {caminho ? (

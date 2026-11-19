@@ -35,7 +35,7 @@ const EXEMPLOS: ReadonlyArray<{ titulo: string; markdown: string }> = [
 /** Referência rápida dos blocos que o renderizador entende; fechada por padrão para não ocupar o editor. */
 export function AjudaDeFormatacao() {
   return (
-    <details className="rounded-[var(--radius-control)] border border-line p-3 text-sm text-ink">
+    <details className="rounded-[var(--radius-control)] border border-border p-3 text-sm text-ink">
       <summary className="cursor-pointer font-semibold">Formatação disponível</summary>
       <dl className="mt-3 flex flex-col gap-3">
         {EXEMPLOS.map((exemplo) => (

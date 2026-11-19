@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { ehTextoDeFonte } from '../../../components/ui/blocosDoArtigo'
+import { CLASSE_CARD_CLICAVEL } from '../../../components/ui/classesDeCard'
 import { TituloSecao } from '../../../components/ui/TituloSecao'
 import { formatarDataCurta } from '../../../utils/formatarDataVerificacao'
 import { EtiquetaTipoArtigo } from '../../artigos/components/EtiquetaTipoArtigo'
@@ -16,9 +17,9 @@ function CardArtigoHome({ artigo }: { artigo: ArtigoRecenteHome }) {
       <Link
         to="/artigos/$artigoSlug"
         params={{ artigoSlug: artigo.slug }}
-        className="flex h-full flex-col gap-2.5 rounded-[var(--radius-card)] border border-line bg-white p-6 text-primary transition-shadow duration-150 hover:border-primary-light hover:shadow-panel"
+        className={`${CLASSE_CARD_CLICAVEL} flex h-full flex-col gap-2.5 p-6 text-primary`}
       >
-        <EtiquetaTipoArtigo tipo={artigo.tipo} />
+        <EtiquetaTipoArtigo tipo={artigo.tipo} variante="chip" />
         <span className="text-card-titulo leading-snug font-bold">{artigo.titulo}</span>
         {/* Resumo que é só a citação da fonte não diz do que o artigo trata: fica só o título. */}
         {artigo.resumo && !ehTextoDeFonte(artigo.resumo) && (
@@ -49,10 +50,13 @@ export function ArtigosRecentesHome({ artigos }: ArtigosRecentesHomeProps) {
         <Link
           to="/artigos"
           search={{ pagina: 1 }}
-          className="inline-flex items-center gap-1 text-sm font-semibold text-primary-medium hover:underline"
+          className="group inline-flex items-center gap-1 text-sm font-bold text-primary-medium"
         >
           Ver todos os artigos
-          <ArrowRight className="size-4" aria-hidden="true" />
+          <ArrowRight
+            className="size-4 transition-transform duration-150 group-hover:translate-x-1"
+            aria-hidden="true"
+          />
         </Link>
       </div>
 

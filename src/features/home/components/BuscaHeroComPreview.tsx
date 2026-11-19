@@ -7,7 +7,7 @@ import { useResultadoBusca } from '../../busca/hooks/useResultadoBusca'
 import type { GrupoResultado } from '../../busca/types/resultadoBusca'
 
 export interface BuscaHeroComPreviewProps {
-  /** Enter sem item escolhido — leva à tela de busca com o termo digitado. */
+  /** Enter ou o botão Buscar, sem item escolhido: leva à tela de busca com o termo digitado. */
   aoSubmeter: (termo: string) => void
 }
 
@@ -17,7 +17,7 @@ const MAX_ITENS_POR_GRUPO = 3
 
 function GrupoPreview({ grupo }: { grupo: GrupoResultado }) {
   return (
-    <div className="border-b border-line last:border-b-0">
+    <div className="border-b border-border last:border-b-0">
       <div className="flex items-center justify-between gap-3 bg-surface-disabled px-4 py-2">
         <span className="text-aux font-semibold uppercase tracking-wider text-muted">
           {grupo.rotulo}
@@ -41,7 +41,7 @@ function GrupoPreview({ grupo }: { grupo: GrupoResultado }) {
             // A `url` se repete entre avisos do mesmo provedor e o item não traz id: a posição desempata.
             <li
               key={`${item.tipo}-${indice}-${item.url}`}
-              className="border-t border-line first:border-t-0"
+              className="border-t border-border first:border-t-0"
             >
               {caminho ? (
                 <Link
@@ -108,11 +108,12 @@ export function BuscaHeroComPreview({ aoSubmeter }: BuscaHeroComPreviewProps) {
         onValorChange={digitar}
         onSubmit={submeter}
         variante="destaque"
+        rotuloDoBotao="Buscar"
         placeholder="Código de erro, trecho da mensagem, provedor ou campo"
       />
 
       {painelVisivel && (
-        <div className="absolute inset-x-0 top-16 z-20 max-h-[420px] overflow-y-auto rounded-[var(--radius-card)] border border-line bg-white shadow-panel">
+        <div className="absolute inset-x-0 top-18 z-20 max-h-[420px] overflow-y-auto rounded-[var(--radius-card)] border border-border bg-white shadow-panel">
           {/*
             Na falha, quem é anunciado é o próprio texto visível — sem uma
             segunda linha viva repetindo a frase, e sem contagem alguma. Um

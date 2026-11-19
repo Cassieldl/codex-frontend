@@ -16,16 +16,33 @@ export interface CampoBuscaProps {
   campoRef?: Ref<HTMLInputElement>
   /** Tecla que foca o campo: vira dica visual e `aria-keyshortcuts`. Quem escuta a tecla é o chamador. */
   atalhoTeclado?: string
+  /** Texto do botão de enviar dentro da moldura. Sem ele, o campo envia só pelo Enter. */
+  rotuloDoBotao?: string
 }
 
 const PLACEHOLDER_PADRAO = 'Busque pelo código do erro, a mensagem recebida ou o nome do provedor'
 
 const CLASSE_MOLDURA: Record<VarianteCampoBusca, string> = {
-  padrao: 'h-11 border-border focus-within:outline-primary-light',
-  destaque: 'h-14 border-transparent px-4 shadow-panel focus-within:outline-primary-light',
+  padrao: 'border-border focus-within:outline-accent-hover',
+  destaque: 'border-transparent shadow-panel focus-within:outline-accent-hover',
   // Sobre o azul-profundo o anel azul-claro mal aparece: o anel branco marca o foco.
-  compacta: 'h-10 border-transparent focus-within:outline-white',
+  compacta: 'border-transparent focus-within:outline-white',
 }
+
+const CLASSE_TAMANHO: Record<VarianteCampoBusca, string> = {
+  padrao: 'h-11 px-3',
+  destaque: 'h-14 px-4',
+  compacta: 'h-10 px-3',
+}
+
+const CLASSE_ANEL_DA_MOLDURA = 'focus-within:outline-2 focus-within:outline-offset-2'
+
+// Com o botão dentro, a moldura acende só com o campo focado: o botão tem o próprio anel.
+const CLASSE_ANEL_DA_MOLDURA_COM_BOTAO =
+  'has-[input:focus]:outline-2 has-[input:focus]:outline-offset-2 has-[input:focus]:outline-accent-hover'
+
+const CLASSE_BOTAO =
+  'h-12 shrink-0 rounded-[var(--radius-control)] bg-accent px-6 text-sm font-bold text-primary transition-shadow duration-150 hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
 
 const CLASSE_KBD =
   'hidden shrink-0 rounded-[var(--radius-check)] border border-border-control px-2 py-0.5 font-sans text-xs font-semibold text-muted sm:block'
@@ -45,6 +62,7 @@ export function CampoBusca({
   rotuloOculto = 'Buscar no Codex',
   campoRef,
   atalhoTeclado,
+  rotuloDoBotao,
 }: CampoBuscaProps) {
   const inputId = useId()
   const destaque = variante === 'destaque'
@@ -65,8 +83,10 @@ export function CampoBusca({
       {/* O input não desenha contorno próprio: o anel de foco fica na moldura inteira. */}
       <div
         className={clsx(
-          'flex items-center gap-3 rounded-[var(--radius-input)] border bg-white px-3 focus-within:outline-2 focus-within:outline-offset-2',
+          'flex items-center gap-3 rounded-[var(--radius-input)] border bg-white',
           CLASSE_MOLDURA[variante],
+          rotuloDoBotao ? 'h-16 pr-2 pl-4' : CLASSE_TAMANHO[variante],
+          rotuloDoBotao ? CLASSE_ANEL_DA_MOLDURA_COM_BOTAO : CLASSE_ANEL_DA_MOLDURA,
         )}
       >
         <Search
@@ -98,6 +118,11 @@ export function CampoBusca({
           <kbd aria-hidden="true" className={CLASSE_KBD}>
             {atalhoTeclado}
           </kbd>
+        )}
+        {rotuloDoBotao && (
+          <button type="submit" className={CLASSE_BOTAO}>
+            {rotuloDoBotao}
+          </button>
         )}
       </div>
     </form>

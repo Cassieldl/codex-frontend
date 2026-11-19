@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
+import { CLASSE_HOVER_DO_CARD_CLICAVEL } from '../../../components/ui/classesDeCard'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { EstadoIndisponivel } from '../../../components/ui/EstadoIndisponivel'
@@ -168,7 +169,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
                     {caminho ? (
                       <Link
                         to={caminho as unknown as LinkProps['to']}
-                        className="flex flex-col gap-1 rounded-[var(--radius-card)] border border-border p-4 hover:shadow-hover"
+                        className={`flex flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-white p-4 ${CLASSE_HOVER_DO_CARD_CLICAVEL}`}
                       >
                         {conteudo}
                       </Link>

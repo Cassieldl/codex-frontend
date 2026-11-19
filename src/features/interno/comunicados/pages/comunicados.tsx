@@ -233,7 +233,7 @@ export function ComunicadosPage() {
       {erroDeEscrita && !erroNoModal && (
         <div
           role="alert"
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-error bg-alert-error p-4"
+          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-alert-error-borda bg-alert-error p-4"
         >
           <p className="text-sm text-error-texto">{erroDeEscrita.info.mensagem}</p>
           {erroDeEscrita.info.orientacao && (

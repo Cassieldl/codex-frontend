@@ -203,6 +203,7 @@ describe('HomePage', () => {
     expect(screen.getByRole('heading', { name: /^Layout InvoiCy/, level: 3 })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Artigos', level: 2 })).toBeInTheDocument()
     expect(screen.getByText('Comunicados ativos')).toBeInTheDocument()
+    expect(screen.getByText(/Layout InvoiCy vigente: versão 4\.12$/)).toBeInTheDocument()
   })
 
   it('acervo sem provedor nenhum mostra estado vazio, nunca uma lista muda', async () => {
@@ -225,6 +226,7 @@ describe('HomePage', () => {
       screen.queryByRole('heading', { name: /^Layout InvoiCy/, level: 3 }),
     ).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver todos os artigos' })).toBeInTheDocument()
+    expect(screen.queryByText(/Layout InvoiCy vigente/)).not.toBeInTheDocument()
   })
 })
 

@@ -16,12 +16,12 @@ export interface ComunicadosDoContextoProps extends ContextoDeComunicados {
   caminhoAtual?: string
 }
 
-// Mesmos pares de fundo e texto da faixa crítica da Home e da etiqueta de severidade — a cor
-// nunca é o único sinal: a etiqueta traz ícone e a palavra.
+// Tons de aviso do design system, com borda inteira. A cor nunca é o único sinal: a etiqueta traz
+// ícone e a palavra.
 const CLASSE_CARD: Record<SeveridadeComunicado, string> = {
-  Critico: 'border-severidade-critico-texto bg-alert-error',
-  Alerta: 'border-severidade-alerta-texto bg-alert-warning',
-  Informativo: 'border-primary-medium bg-alert-info',
+  Critico: 'border-alert-error-borda bg-alert-error text-alert-error-texto',
+  Alerta: 'border-alert-warning-borda bg-alert-warning text-alert-warning-texto',
+  Informativo: 'border-alert-info-borda bg-alert-info text-primary',
 }
 
 /** Provedor + versão quando o comunicado é de uma versão: o leitor sabe a qual ele se refere. */
@@ -45,7 +45,7 @@ function CardComunicado({ comunicado, caminhoAtual }: CardComunicadoProps) {
     <div
       role={comunicado.severidade === 'Critico' ? 'alert' : undefined}
       className={clsx(
-        'flex flex-col gap-2 rounded-[var(--radius-card)] border border-l-4 px-4 py-3 text-ink',
+        'flex flex-col gap-2 rounded-[var(--radius-card)] border px-4 py-3',
         CLASSE_CARD[comunicado.severidade],
       )}
     >

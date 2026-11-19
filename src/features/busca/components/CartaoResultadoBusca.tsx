@@ -1,4 +1,5 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
+import { CLASSE_HOVER_DO_CARD_CLICAVEL } from '../../../components/ui/classesDeCard'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import type { ResultadoItem } from '../types/resultadoBusca'
 import { formatarMetaResultado } from '../utils/formatarMetaResultado'
@@ -10,7 +11,8 @@ export interface CartaoResultadoBuscaProps {
   item: ResultadoItem
 }
 
-const CLASSE_DO_CARTAO = 'flex flex-col gap-1 rounded-[var(--radius-card)] border border-border p-4'
+const CLASSE_DO_CARTAO =
+  'flex flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-white p-4'
 
 function ConteudoDoCartao({ item }: CartaoResultadoBuscaProps) {
   const ehErro = item.tipo === 'erro'
@@ -83,7 +85,7 @@ export function CartaoResultadoBusca({ item }: CartaoResultadoBuscaProps) {
   return (
     <Link
       to={caminho as unknown as LinkProps['to']}
-      className={`${CLASSE_DO_CARTAO} hover:shadow-hover`}
+      className={`${CLASSE_DO_CARTAO} ${CLASSE_HOVER_DO_CARD_CLICAVEL}`}
     >
       <ConteudoDoCartao item={item} />
     </Link>

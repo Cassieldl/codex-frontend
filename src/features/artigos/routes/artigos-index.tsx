@@ -78,7 +78,7 @@ export function ArtigosIndexPage({ q, tipo, pagina, navegar }: ArtigosIndexPageP
       <main
         id={ID_CONTEUDO_PRINCIPAL}
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+        className="mx-auto flex w-full max-w-pagina flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
       >
         <div className="flex flex-col gap-2">
           <h1 className="text-titulo font-bold text-ink">Índice de artigos</h1>
@@ -130,7 +130,7 @@ export function ArtigosIndexPage({ q, tipo, pagina, navegar }: ArtigosIndexPageP
 
         {!isLoading && !isError && data && data.items.length > 0 && (
           <>
-            <div className="border-t border-line">
+            <div className="border-t border-border">
               {data.items.map((artigo) => (
                 <CardArtigo key={artigo.slug} artigo={artigo} mostrarTipo={tipo === undefined} />
               ))}

@@ -133,7 +133,7 @@ export function GrupoResultadoLista({ grupo, parametros }: GrupoResultadoListaPr
         id={tituloGrupoId}
         ref={tituloRef}
         tabIndex={-1}
-        className="text-subtitulo font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+        className="text-subtitulo font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover"
       >
         {grupo.rotulo} <span className="text-sm font-normal text-muted">({total})</span>
       </h2>
@@ -144,7 +144,7 @@ export function GrupoResultadoLista({ grupo, parametros }: GrupoResultadoListaPr
         <button
           type="button"
           onClick={abrirPaginacao}
-          className="self-start py-1 text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light"
+          className="self-start py-1 text-sm font-semibold text-primary-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover"
         >
           Ver os {grupo.total} {grupo.rotulo.toLowerCase()}
         </button>

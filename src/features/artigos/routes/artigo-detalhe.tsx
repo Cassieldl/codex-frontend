@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import clsx from 'clsx'
 import { isAxiosError } from 'axios'
 import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
@@ -14,10 +15,12 @@ import { SumarioArtigo } from '../../../components/ui/SumarioArtigo'
 import { corrigirUrlCanonica } from '../../../utils/corrigirUrlCanonica'
 import { handleApiError } from '../../../utils/handleApiError'
 import { EstadoArtigoIndisponivel } from '../components/EstadoArtigoIndisponivel'
-import { EtiquetaTipoArtigo } from '../components/EtiquetaTipoArtigo'
 import { ReferenciasCruzadas } from '../components/ReferenciasCruzadas'
+import { ROTULO_TIPO_ARTIGO } from '../components/rotulosTipoArtigo'
 import { useArtigoPorSlug } from '../hooks/useArtigoPorSlug'
 import { useLinkCanonico } from '../hooks/useLinkCanonico'
+import type { ArtigoDetalhe } from '../types/artigo'
+import { separarResumo } from '../utils/separarResumo'
 
 export interface NavegarParaCanonica {
   href: string
@@ -38,6 +41,80 @@ export interface ArtigoDetalhePageProps {
    */
   reservado?: boolean
   navegar: (opcoes: NavegarParaCanonica) => void
+}
+
+/**
+ * Cabeçalho (trilha, título, resumo de abertura, verificação e link), corpo e lateral com o
+ * sumário e as referências. No celular o sumário vai para o topo e as referências descem para o
+ * fim; nos dois casos aparecem uma vez só.
+ */
+function ArtigoCarregado({ artigo }: { artigo: ArtigoDetalhe }) {
+  const { resumo, restante } = separarResumo(artigo.corpo)
+  const temReferencias =
+    artigo.camposLayoutRelacionados.length > 0 || artigo.errosRelacionados.length > 0
+
+  return (
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_17.5rem] lg:items-start">
+      <article className="flex min-w-0 flex-col gap-6">
+        <header className="flex flex-col gap-3">
+          {/* Mesma trilha textual da página do provedor e da versão do layout: volta ao índice
+              sem depender do menu principal. */}
+          <p className="text-xs text-muted">
+            <Link
+              to="/artigos"
+              search={{ pagina: 1 }}
+              activeOptions={{ exact: true }}
+              className="link-texto"
+            >
+              Artigos
+            </Link>{' '}
+            / <span>{ROTULO_TIPO_ARTIGO[artigo.tipo]}</span>
+          </p>
+          <h1 className="max-w-3xl text-titulo font-extrabold text-primary lg:text-h1">
+            {artigo.titulo}
+          </h1>
+          {resumo && <ConteudoArtigo corpo={resumo} className="max-w-3xl" />}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {artigo.verificadoEm && <SeloVerificacao data={artigo.verificadoEm} />}
+            <BotaoCopiar
+              compacto
+              icone="link"
+              valor={() => window.location.href}
+              ariaLabel={`Copiar link do artigo ${artigo.titulo}`}
+              rotulo="Copiar link"
+            />
+          </div>
+        </header>
+
+        {/* Sumário colapsado no topo em telas estreitas: `<details>` nativo, acessível por
+            padrão e sem JS extra (§3.6). */}
+        <details className="rounded-[var(--radius-card)] border border-border bg-white p-4 lg:hidden">
+          <summary className="cursor-pointer text-sm font-semibold text-ink">Nesta página</summary>
+          <SumarioArtigo corpo={artigo.corpo} mostrarTitulo={false} className="mt-3" />
+        </details>
+
+        <ConteudoArtigo corpo={restante} />
+      </article>
+
+      <aside
+        aria-label="Navegação do artigo"
+        className={clsx(
+          'flex-col gap-6 lg:sticky lg:top-8 lg:flex lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto',
+          temReferencias ? 'flex' : 'hidden',
+        )}
+      >
+        <SumarioArtigo corpo={artigo.corpo} className="hidden lg:block" />
+        {temReferencias && (
+          <div className="flex flex-col gap-6 border-border lg:border-t lg:pt-6">
+            <ReferenciasCruzadas
+              camposLayout={artigo.camposLayoutRelacionados}
+              erros={artigo.errosRelacionados}
+            />
+          </div>
+        )}
+      </aside>
+    </div>
+  )
 }
 
 /**
@@ -80,7 +157,7 @@ export function ArtigoDetalhePage({
       <main
         id={ID_CONTEUDO_PRINCIPAL}
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8"
+        className="mx-auto flex w-full max-w-pagina flex-1 flex-col gap-8 px-4 py-8 lg:px-8"
       >
         {(isLoading || precisaRedirecionar) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
@@ -112,60 +189,7 @@ export function ArtigoDetalhePage({
         )}
 
         {!isLoading && !isError && artigo && !precisaRedirecionar && (
-          <div className="grid gap-8 lg:grid-cols-[1fr_240px] lg:items-start">
-            <article className="flex min-w-0 flex-col gap-6">
-              <header className="flex flex-col gap-3 border-b border-line pb-6">
-                {/* Mesma trilha textual da página do provedor e da versão do layout. Sem ela, a
-                    volta ao índice dependia do menu principal — o artigo era a única página de
-                    detalhe pública sem caminho de retorno. */}
-                <p className="text-xs text-muted">
-                  <Link
-                    to="/artigos"
-                    search={{ pagina: 1 }}
-                    activeOptions={{ exact: true }}
-                    className="hover:underline"
-                  >
-                    Artigos
-                  </Link>{' '}
-                  / {artigo.titulo}
-                </p>
-                <EtiquetaTipoArtigo tipo={artigo.tipo} />
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <h1 className="max-w-2xl text-titulo font-extrabold text-primary lg:text-h1">
-                    {artigo.titulo}
-                  </h1>
-                  <BotaoCopiar
-                    compacto
-                    icone="link"
-                    valor={() => window.location.href}
-                    ariaLabel={`Copiar link do artigo ${artigo.titulo}`}
-                    rotulo="Copiar link"
-                  />
-                </div>
-                {artigo.verificadoEm && <SeloVerificacao data={artigo.verificadoEm} />}
-              </header>
-
-              {/* Sumário colapsado no topo em telas estreitas — `<details>`
-                  nativo, acessível por padrão e sem JS extra (§3.6). */}
-              <details className="rounded-[var(--radius-card)] border border-line p-4 lg:hidden">
-                <summary className="cursor-pointer text-sm font-semibold text-ink">
-                  Nesta página
-                </summary>
-                <SumarioArtigo corpo={artigo.corpo} mostrarTitulo={false} className="mt-3" />
-              </details>
-
-              <ConteudoArtigo corpo={artigo.corpo} />
-
-              <ReferenciasCruzadas
-                camposLayout={artigo.camposLayoutRelacionados}
-                erros={artigo.errosRelacionados}
-              />
-            </article>
-
-            <aside className="hidden lg:sticky lg:top-8 lg:block">
-              <SumarioArtigo corpo={artigo.corpo} />
-            </aside>
-          </div>
+          <ArtigoCarregado artigo={artigo} />
         )}
       </main>
 
