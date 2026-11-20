@@ -46,7 +46,7 @@ export const COMUNICADO_DE_VERSAO = {
 }
 
 /**
- * Handler de `GET /comunicados` que anota a URL de cada chamada — o teste confere os parâmetros
+ * Handler de `GET /comunicados` que anota a URL de cada chamada - o teste confere os parâmetros
  * que chegaram ao servidor, não os que o cliente acredita ter enviado.
  */
 export function handlerComunicadosRegistrandoChamadas(comunicados: object[]): {

@@ -1,12 +1,12 @@
 /**
- * Conteúdo fixo do rodapé público (§8) — bloco de atendimento e coluna de
+ * Conteúdo fixo do rodapé público (§8) - bloco de atendimento e coluna de
  * links da Migrate, iguais em toda página pública. Vive centralizado aqui
  * (não hardcoded em `RodapeContextual`) para não divergir entre páginas; o
  * e-mail também alimenta todo link "Falar com o suporte" (`linkSuporte.ts`).
  *
  * A coluna "Migrate" só leva destinos conferidos: `ajuda.migrate.info` e
  * `status.migrate.info` respondiam com o mesmo site genérico que qualquer
- * subdomínio inventado — curinga do DNS, não páginas reais.
+ * subdomínio inventado - curinga do DNS, não páginas reais.
  */
 export const CONTEUDO_RODAPE_CONSTANTE = {
   atendimento: {

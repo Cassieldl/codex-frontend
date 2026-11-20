@@ -10,7 +10,7 @@ import { routeTree } from '../routeTree.gen'
  *
  * Sem `notFoundComponent`, o TanStack Router renderiza o próprio "Not Found":
  * em inglês, sem cabeçalho, sem navegação e sem saída. Foi o que este portal
- * fazia — descoberto ao abrir `/comunicados` no navegador, um endereço que
+ * fazia - descoberto ao abrir `/comunicados` no navegador, um endereço que
  * parece existir (a entidade existe na área interna) e não existe em público.
  *
  * O teste roda contra a árvore de rotas REAL (`routeTree.gen`), não contra uma
@@ -44,7 +44,7 @@ describe('endereço que não corresponde a rota nenhuma', () => {
 
     await screen.findByRole('heading', { level: 1, name: 'Página não encontrada.' })
 
-    // O aviso cru da biblioteca não traz nem cabeçalho nem rodapé — a presença
+    // O aviso cru da biblioteca não traz nem cabeçalho nem rodapé - a presença
     // dos dois é o que distingue "página do produto" de "tela da lib".
     expect(screen.getByRole('banner')).toBeInTheDocument()
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
@@ -73,7 +73,7 @@ describe('endereço que não corresponde a rota nenhuma', () => {
    *
    * A verificação é sobre o casamento de rota, não sobre a tela montada: as
    * rotas reais do portal carregam sob demanda e não resolvem dentro de um
-   * `render` de teste (o router fica em `pending` e o container, vazio) — é por
+   * `render` de teste (o router fica em `pending` e o container, vazio) - é por
    * isso que os testes de tela deste projeto montam a própria árvore em vez de
    * usar a gerada. `router.load()` resolve, e é o que responde à pergunta:
    * endereço válido casa uma rota própria; só o inválido para na raiz.

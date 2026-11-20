@@ -33,7 +33,7 @@ export function criarPortao(): PortaoDeCarregamento {
 }
 
 interface OpcoesRoteador {
-  /** Rotas da página sob teste, filhas da raiz — as mesmas que a árvore real registra. */
+  /** Rotas da página sob teste, filhas da raiz - as mesmas que a árvore real registra. */
   rotasDaPagina: (rotaRaiz: AnyRoute) => AnyRoute[]
   entradas: string[]
   indiceInicial?: number

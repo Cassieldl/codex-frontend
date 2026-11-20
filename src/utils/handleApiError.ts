@@ -42,7 +42,7 @@ export interface ErroDeCampoApi {
  * Erros por campo do `422 VALIDATION_ERROR`, para o formulário destacar o campo em vez de dizer
  * só "um ou mais campos são inválidos".
  *
- * O backend monta este `details[]` declaradamente para o cliente consumir — e o cliente não
+ * O backend monta este `details[]` declaradamente para o cliente consumir - e o cliente não
  * consumia. É a mesma junção sem dono que já mordeu esta base: cada lado prova a própria metade
  * e ninguém prova a travessia. Devolve `[]` quando o erro não é de validação de campo.
  */

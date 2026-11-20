@@ -26,7 +26,7 @@ export const provedoresSearchSchema = z.object({
   q: z.string().optional(),
   categoria: z.enum(['Nacional', 'Proprio']).optional(),
   pagina: z.coerce.number().int().min(1).catch(1),
-  /** PQ-10 — nunca lido pela aplicação, só para o router não descartar o parâmetro. */
+  /** PQ-10: nunca lido pela aplicação, só para o router não descartar o parâmetro. */
   origem: z.string().optional(),
 })
 

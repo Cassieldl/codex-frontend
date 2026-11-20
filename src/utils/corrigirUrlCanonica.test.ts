@@ -25,7 +25,7 @@ describe('corrigirUrlCanonica', () => {
 
   // Mutação-alvo: se `corrigirUrlCanonica` parasse de validar por
   // `caminhoInternoSeguro` (ex.: devolvesse `{ href: caminhoCanonico, replace: true }`
-  // direto), este teste cairia — é o que prova que o saneador está de fato no caminho.
+  // direto), este teste cairia - é o que prova que o saneador está de fato no caminho.
   it('nunca propaga um destino que caminhoInternoSeguro rejeitaria', () => {
     expect(corrigirUrlCanonica('/erros/e0117', '/\\evil.com')).toBeNull()
   })

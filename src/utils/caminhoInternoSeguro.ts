@@ -20,24 +20,24 @@ function contemCaractereDeControle(valor: string): boolean {
 /**
  * Valida que uma string vinda da API é um caminho interno seguro antes de
  * entrar em `<Link to>`, `<a href>` ou `navigate({ href })` (BAIXO-02 da
- * auditoria de segurança — A01 Open Redirect / A03 input não confiável em
+ * auditoria de segurança - A01 Open Redirect / A03 input não confiável em
  * sink de navegação).
  *
  * Defesa em profundidade: o backend (BACK-2/BACK-3) já garante que todo
  * `url` público retornado pela API é um caminho relativo montado a partir do
- * value object `Slug` (`[a-z0-9-]+`, sem `/`, `\` ou `:`) — não há vetor
+ * value object `Slug` (`[a-z0-9-]+`, sem `/`, `\` ou `:`) - não há vetor
  * ativo hoje. Mas quem fecha o vetor de fato **é este filtro**, não a
  * garantia do backend: se um endpoint novo, uma migração de dados ou um bug
- * algum dia devolver outra coisa, é este código que segura a porta — por
+ * algum dia devolver outra coisa, é este código que segura a porta - por
  * isso ele precisa ser correto de fato, não decorativo.
  *
- * Único saneador de caminho interno da base — também usado por
+ * Único saneador de caminho interno da base - também usado por
  * `routes/interno/entrar.tsx` para montar `redirectUri` do login (BAIXO-01).
  * Nesse consumidor, quem fecha o vetor de fato é a concatenação com
  * `window.location.origin` (a origem é sempre literal, o retorno daqui só
  * contribui com o caminho); em sinks sem essa segunda camada (`<a href>`
  * direto, sem `<Link>` do router nem concatenação com origem), este filtro É
- * a única defesa — por isso precisa ser correto sozinho, sem depender de
+ * a única defesa - por isso precisa ser correto sozinho, sem depender de
  * quem o chama. Ver AP-SECURITY-011/010: não basta copiar a função, é
  * preciso saber qual camada sustentava a garantia no contexto de origem
  * antes de reusá-la em um sink mais exposto.
@@ -52,7 +52,7 @@ function contemCaractereDeControle(valor: string): boolean {
  * propósito: o parser de URL do navegador (WHATWG) remove TAB/LF/CR de
  * qualquer posição da string antes de interpretá-la, então um caminho como
  * "/<TAB>/evil.com" só colapsa para "//evil.com" (protocol-relative) DEPOIS
- * que os `startsWith` já rodaram sobre a forma pré-normalização — validar a
+ * que os `startsWith` já rodaram sobre a forma pré-normalização - validar a
  * string como ela chegou não protege um sink que a resolve como o navegador
  * a normaliza (BAIXO-03, AP-SECURITY-011). Caminho legítimo (montado a
  * partir de `Slug`) nunca contém esses caracteres, então rejeitar a classe

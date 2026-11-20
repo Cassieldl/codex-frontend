@@ -4,7 +4,7 @@ import type { HttpHandler } from 'msw'
 /**
  * Handlers base do MSW, compartilhados por toda a suíte. Cada feature
  * acrescenta os próprios handlers replicando o envelope real da API
- * (AP-ARQUITETURA-001 — `ApiResponse<T>` vs `PaginatedResponse<T>` cru,
+ * (AP-ARQUITETURA-001 - `ApiResponse<T>` vs `PaginatedResponse<T>` cru,
  * conforme `analise-frontend.md` §5.4), seja aqui ou via `server.use(...)`
  * dentro do próprio arquivo de teste.
  *
@@ -27,11 +27,11 @@ export const handlers: HttpHandler[] = [
 ]
 
 /**
- * Resposta padrão de `GET /busca` (P1), já no shape pós-P1/I21 —
+ * Resposta padrão de `GET /busca` (P1), já no shape pós-P1/I21 -
  * `descricaoCasamento`/`publicado`/`meta` vivem no item, nunca no grupo (ver
  * `features/busca/types/resultadoBusca.ts`). Uso opcional via
  * `server.use(handlerBuscaVazia())`, para quem só precisa de uma resposta
- * válida sem repetir o envelope inteiro — não é registrado em `handlers` por
+ * válida sem repetir o envelope inteiro - não é registrado em `handlers` por
  * padrão, para não mudar o comportamento de nenhum teste que já monta o
  * próprio `server.use(...)` (disciplina atual do arquivo).
  */
@@ -52,9 +52,9 @@ export function handlerBuscaVazia(): HttpHandler {
 
 /**
  * Resposta padrão de `GET /erros/:slug` (P6), incluindo
- * `artigosRelacionados: []` — coleção vazia, nunca omitida (PQ-08). O tipo
+ * `artigosRelacionados: []` - coleção vazia, nunca omitida (PQ-08). O tipo
  * `ErroDetalhe` ainda não declara este campo nesta unidade (FRONT-B
- * acrescenta, `analise-frontend.md` §5) — o handler já responde com o shape
+ * acrescenta, `analise-frontend.md` §5) - o handler já responde com o shape
  * final para não exigir retrabalho quando o tipo for estendido.
  */
 export function handlerErroDetalhePadrao(slug = 'e0117'): HttpHandler {
@@ -78,7 +78,7 @@ export function handlerErroDetalhePadrao(slug = 'e0117'): HttpHandler {
 }
 
 /**
- * Bloco FRONT-B — P7/P8 (artigos públicos). `GET /artigos` é
+ * Bloco FRONT-B: P7/P8 (artigos públicos). `GET /artigos` é
  * `PaginatedResponse<T>` **cru** e `GET /artigos/{slug}` é `ApiResponse<T>`
  * **enveloped**: os dois envelopes convivem no mesmo recurso, medidos no wire
  * real do backend. Replicar cada um como ele é aqui é o que impede que um
@@ -108,13 +108,13 @@ export function handlerArtigoDetalhe<Artigo extends { slug: string }>(artigo: Ar
 }
 
 /**
- * Bloco FRONT-C1 — I30/I31 (comunicados internos). Os dois envelopes do
+ * Bloco FRONT-C1: I30/I31 (comunicados internos). Os dois envelopes do
  * recurso, como estão no wire real: **I30 é `PaginatedResponse<T>` cru na
  * raiz** e **I31 (e as respostas de I32/I33/I35) vêm enveloped em `data`**.
  * Reproduzi-los como são aqui é o que impede um teste de passar contra um
  * mock conveniente (AP-ARQUITETURA-001).
  *
- * Nenhum item carrega `etag`: o backend nunca devolveu esse campo no corpo — o
+ * Nenhum item carrega `etag`: o backend nunca devolveu esse campo no corpo - o
  * valor do `If-Match` é DERIVADO de `versaoConcorrencia` pelo hook de leitura.
  */
 export function handlerComunicadosLista(
@@ -143,13 +143,13 @@ export function handlerComunicadoDetalhe<Comunicado extends { id: number }>(
 }
 
 /**
- * Bloco FRONT-C2 — I23/I24/I36 (artigos internos). O recurso tem os **dois**
+ * Bloco FRONT-C2: I23/I24/I36 (artigos internos). O recurso tem os **dois**
  * envelopes no wire real: **I23 é `PaginatedResponse<T>` cru na raiz**,
  * enquanto **I24 e I36 vêm enveloped em `data`**. Replicar cada um como ele é
  * aqui é o que impede um teste de passar contra um mock conveniente
  * (AP-ARQUITETURA-001).
  *
- * Nenhum item carrega `etag`: o backend nunca devolveu esse campo no corpo — o
+ * Nenhum item carrega `etag`: o backend nunca devolveu esse campo no corpo - o
  * valor do `If-Match` é DERIVADO de `versaoConcorrencia` pelo hook de leitura.
  */
 export function handlerArtigosAdminLista(
@@ -245,7 +245,7 @@ export function handlerCampoLayoutVerbeteSucesso(
 }
 
 /**
- * I36 — existência por slug. A rota é mais específica que `/interno/artigos/{id}`
+ * I36: existência por slug. A rota é mais específica que `/interno/artigos/{id}`
  * na intenção, mas `existe` não casa com `{id:int}` no backend; no MSW as duas
  * convivem porque os caminhos são literais distintos.
  */
@@ -259,7 +259,7 @@ export function handlerArtigoExiste(slug: string, artigoId: number | null): Http
 }
 
 /**
- * Bloco FRONT-C — desfechos de P11/P12 que a tela 6 precisa tratar e que os
+ * Bloco FRONT-C: desfechos de P11/P12 que a tela 6 precisa tratar e que os
  * handlers de sucesso de FRONT-A não cobrem. Os erros replicam o envelope real
  * de erro da API (`{ error: { code, message } }`), e o `code` **importa**: é
  * ele que distingue as duas causas do `410` de P12 (o campo saiu do ar × o
@@ -279,7 +279,7 @@ export function handlerLayoutVersaoDespublicada(versaoSlug: string): HttpHandler
   )
 }
 
-/** `422` do cap de campos por versão (PQ-10) — limite estrutural, não falha transitória. */
+/** `422` do cap de campos por versão (PQ-10) - limite estrutural, não falha transitória. */
 export function handlerLayoutVersaoCapExcedido(versaoSlug: string): HttpHandler {
   return http.get(`${API_URL}/layout/versoes/${versaoSlug}`, () =>
     HttpResponse.json(
@@ -308,7 +308,7 @@ export function handlerCampoLayoutDespublicado(
 
 /**
  * Campos de uma versão densa. `urlCanonica` é derivada do slug **pelo
- * backend** — quem constrói fixture nunca deve assumir que ela é
+ * backend** - quem constrói fixture nunca deve assumir que ela é
  * `/layout/campos/{slug}` montado à mão (A3: a fonte única é o campo).
  */
 export function construirCamposLayout(
@@ -335,7 +335,7 @@ export function construirGrupoCamposLayout(grupo: string, grupoSlug: string, cam
 }
 
 /**
- * Bloco FRONT-B — desfechos de P9 (Home) que o handler de sucesso de FRONT-A
+ * Bloco FRONT-B: desfechos de P9 (Home) que o handler de sucesso de FRONT-A
  * não cobre. Sucesso com conteúdo continua vindo de `handlerHomeSucesso`.
  */
 export function handlerHomeErro(status = 500): HttpHandler {

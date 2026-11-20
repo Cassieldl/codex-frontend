@@ -34,8 +34,8 @@ describe('formatarVersaoLayout', () => {
 /**
  * Texto de versão do layout tem dono: depois de "Layout InvoiCy" só entra `formatarVersaoLayout(…)`.
  * O rótulo cru ("8") imprimiria "Layout InvoiCy 8", e um rótulo que já traz a palavra imprimiria
- * "versão versão". A varredura cobre as três formas de montar o texto — JSX, template e
- * concatenação —, porque cada uma passa despercebida pelas regexes das outras.
+ * "versão versão". A varredura cobre as três formas de montar o texto (JSX, template e
+ * concatenação), porque cada uma passa despercebida pelas regexes das outras.
  */
 const DEPOIS_DE_LAYOUT_INVOICY =
   /Layout InvoiCy(?:\s|\{\s*(['"`])\s*\1\s*\})*(?:\$?\{|['"`]\s*\+)\s*([\s\S]{0,40})/g

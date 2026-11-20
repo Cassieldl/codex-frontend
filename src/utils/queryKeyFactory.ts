@@ -1,7 +1,7 @@
 /**
  * Base da keys factory por entidade (`analise-frontend.md` §5.3). Cada
  * feature cria seu próprio `<entidade>Keys.ts` estendendo o resultado desta
- * função com as chaves específicas da entidade (`detail`, `versao`, etc.) —
+ * função com as chaves específicas da entidade (`detail`, `versao`, etc.) -
  * nunca hooks de `useQuery`/`useMutation` inline em página.
  *
  * Exemplo:

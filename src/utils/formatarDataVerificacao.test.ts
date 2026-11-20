@@ -7,10 +7,10 @@ import {
 
 /**
  * `new Date('2026-03-14')` é lido como meia-noite **UTC** e vira 13/03 em qualquer fuso a oeste de
- * Greenwich — o de todo usuário do Codex. A lista de provedores exibia exatamente isso: uma
+ * Greenwich - o de todo usuário do Codex. A lista de provedores exibia exatamente isso: uma
  * verificação registrada em 14 aparecia como 13. Vale para os dois formatos.
  */
-describe('data de verificação — o dia registrado nunca desloca', () => {
+describe('data de verificação: o dia registrado nunca desloca', () => {
   it('por extenso', () => {
     expect(formatarDataVerificacao('2026-03-14')).toBe('14 de março de 2026')
   })
@@ -34,7 +34,7 @@ describe('data de verificação — o dia registrado nunca desloca', () => {
  * de verificação em destaque e em prosa; numérico na coluna de tabela, onde a forma compacta é o
  * que deixa as datas comparáveis de relance. Unificar os dois apaga essa distinção.
  */
-describe('data de verificação — cada formato no seu papel', () => {
+describe('data de verificação: cada formato no seu papel', () => {
   it('o formato de destaque escreve o mês por extenso', () => {
     const formatada = formatarDataVerificacao('2026-09-24')
 
