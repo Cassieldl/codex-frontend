@@ -1,13 +1,13 @@
 export type EstadoPreenchimentoCampo = 'Obrigatorio' | 'Opcional' | 'Condicional'
 
-/** Opção de campo canônico para o select de `CampoVersaoForm` (U4 — FK, nunca texto livre). */
+/** Opção de campo canônico para o select de `CampoVersaoForm` (U4 - FK, nunca texto livre). */
 export interface OpcaoCampoLayout {
   id: number
   nome: string
   caminhoXml: string
 }
 
-/** `CampoVersaoAdmin` — item de `GET /interno/versoes/{id}/campos` (I11). */
+/** `CampoVersaoAdmin` - item de `GET /interno/versoes/{id}/campos` (I11). */
 export interface CampoVersaoAdmin {
   id: number
   campoLayoutId: number
@@ -27,7 +27,7 @@ export interface CampoVersaoAdmin {
   etag?: string
 }
 
-/** `GET /interno/versoes/{id}/campos` (I11) — shape exato: campo `campos`, não `camposVersao`. */
+/** `GET /interno/versoes/{id}/campos` (I11) - shape exato: campo `campos`, não `camposVersao`. */
 export interface RespostaCamposVersao {
   campos: CampoVersaoAdmin[]
   camposLayoutAusentes: OpcaoCampoLayout[]

@@ -7,12 +7,12 @@ import {
 
 /**
  * Réplica da leitura que o backend faz do header em
- * `Codex.API/Common/IfMatchExtensoes.cs:ExigirIfMatch` — `TrimStart('W', '/')`,
+ * `Codex.API/Common/IfMatchExtensoes.cs:ExigirIfMatch` - `TrimStart('W', '/')`,
  * `Trim('"')` e `uint.TryParse`.
  *
  * Existe para provar o ida-e-volta: o que esta util escreve é exatamente o que
  * aquele parser lê de volta. Se o backend mudar o formato aceito, este teste
- * fica verde por engano — por isso o `formatarEtagConcorrencia` também é
+ * fica verde por engano - por isso o `formatarEtagConcorrencia` também é
  * comparado ao literal esperado, e não só ao resultado do round-trip.
  */
 function lerComoOBackendLe(valorDoHeader: string): number | null {
@@ -31,7 +31,7 @@ describe('formatarEtagConcorrencia', () => {
   it.each([
     ['limite inferior do uint do xmin', 0],
     ['valor corriqueiro', 12],
-    ['limite superior do uint32 — não pode virar notação exponencial', 4_294_967_295],
+    ['limite superior do uint32: não pode virar notação exponencial', 4_294_967_295],
   ])('%s: o backend lê de volta o mesmo número que foi escrito', (_caso, versao) => {
     const header = formatarEtagConcorrencia(versao)
 
@@ -50,7 +50,7 @@ describe('comEtagDeConcorrencia', () => {
     expect(comEtag).toEqual({ ...recurso, etag: 'W/"12"' })
   })
 
-  it('não muta o objeto recebido — a resposta da query permanece o corpo cru', () => {
+  it('não muta o objeto recebido - a resposta da query permanece o corpo cru', () => {
     comEtagDeConcorrencia(recurso)
 
     expect(recurso).not.toHaveProperty('etag')
@@ -68,7 +68,7 @@ describe('comEtagDeConcorrencia', () => {
 
 /**
  * Toda coleção que passa por aqui é obrigatória no contrato, então a ausência é defeito, não caso
- * de borda: engolir com lista vazia faria a tela perder o bloco sem dizer nada — a manifestação
+ * de borda: engolir com lista vazia faria a tela perder o bloco sem dizer nada - a manifestação
  * silenciosa, que nas três ocorrências desta base (`versoes`, `avisos`, `campoLayoutNome`) foi
  * sempre a que demorou a aparecer. A mensagem nomeia o campo porque era o que faltava para o
  * sintoma apontar para algum lugar.
@@ -95,10 +95,10 @@ describe('comEtagDeConcorrenciaNaColecao', () => {
 
 /**
  * Guarda estrutural: o `.map(comEtagDeConcorrencia)` direto é a forma perigosa, e proteger só os
- * pontos já encontrados deixaria o próximo hook nascer com o mesmo defeito — que não aparece em
+ * pontos já encontrados deixaria o próximo hook nascer com o mesmo defeito - que não aparece em
  * teste nenhum, porque depende de o servidor omitir um campo.
  */
-describe('área interna — nenhum hook mapeia coleção sem a guarda', () => {
+describe('área interna: nenhum hook mapeia coleção sem a guarda', () => {
   const FONTES = import.meta.glob('../**/*.ts', {
     query: '?raw',
     import: 'default',

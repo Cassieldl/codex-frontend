@@ -87,7 +87,7 @@ function rotuloDaVersaoNaLinha(linha: HTMLElement): string {
   return within(linha).getAllByRole('link')[0].textContent ?? ''
 }
 
-describe('VerificacoesVencidas — conteúdo', () => {
+describe('VerificacoesVencidas: conteúdo', () => {
   it('lista as versões na ordem recebida do servidor, sem reordenar', async () => {
     usarLista([
       VERSAO_VERIFICADA_HA_200_DIAS,
@@ -112,7 +112,7 @@ describe('VerificacoesVencidas — conteúdo', () => {
 
     const [nunca, noventa, duzentos] = await linhasDaTabela()
     expect(within(nunca).getByText('Nunca verificada')).toBeInTheDocument()
-    expect(within(nunca).getByText('—')).toBeInTheDocument()
+    expect(within(nunca).getByText('-')).toBeInTheDocument()
     expect(within(noventa).getByText('Verificada há 90 dias')).toBeInTheDocument()
     expect(within(noventa).getByText('07/07/2026')).toBeInTheDocument()
     expect(within(noventa).queryByText('Nunca verificada')).not.toBeInTheDocument()
@@ -174,7 +174,7 @@ describe('VerificacoesVencidas — conteúdo', () => {
   })
 })
 
-describe('VerificacoesVencidas — estados', () => {
+describe('VerificacoesVencidas: estados', () => {
   it('anuncia o carregamento antes da lista chegar', async () => {
     usarLista(TRES_VERSOES)
 
@@ -213,7 +213,7 @@ describe('VerificacoesVencidas — estados', () => {
   })
 })
 
-describe('VerificacoesVencidas — prazo e paginação', () => {
+describe('VerificacoesVencidas: prazo e paginação', () => {
   it('pede 90 dias, página 1 e 25 por página no começo', async () => {
     const pedidos: PedidoCapturado[] = []
     usarListaCapturandoPedidos(pedidos)

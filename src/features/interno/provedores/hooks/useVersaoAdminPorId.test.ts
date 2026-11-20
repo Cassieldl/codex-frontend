@@ -49,7 +49,7 @@ function responderCom(versao: unknown) {
   )
 }
 
-describe('useVersaoAdminPorId — avisos', () => {
+describe('useVersaoAdminPorId: avisos', () => {
   it('entrega os ids dos campos afetados e o etag derivado de cada aviso', async () => {
     responderCom(versaoDoServidor)
 

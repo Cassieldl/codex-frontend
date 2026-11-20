@@ -9,8 +9,8 @@ interface EnvelopeCampoVersaoAdmin {
 }
 
 /**
- * `POST /interno/versoes/{id}/campos` (I12) — role `camposversao-adicionar`.
- * `422` quando a contagem já está em 2000 (M22, cap) — propagado como
+ * `POST /interno/versoes/{id}/campos` (I12) - role `camposversao-adicionar`.
+ * `422` quando a contagem já está em 2000 (M22, cap) - propagado como
  * `AxiosError`, tratado pela página (toast, sem mensagem genérica).
  */
 export function useCriarCampoVersao(versaoId: number) {

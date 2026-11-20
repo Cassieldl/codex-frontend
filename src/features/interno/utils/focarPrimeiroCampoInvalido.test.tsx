@@ -10,7 +10,7 @@ interface Valores {
 /**
  * Reproduz a forma dos formulários desta área: um campo PRÓPRIO no topo, controlado por fora do
  * `register` (todo `Select` daqui é assim), e um campo registrado logo abaixo. É essa ordem que
- * expõe o defeito — o React Hook Form só alcança o que tem `ref`, então pulava o de cima.
+ * expõe o defeito - o React Hook Form só alcança o que tem `ref`, então pulava o de cima.
  */
 function FormularioDeTeste() {
   const {
@@ -62,7 +62,7 @@ describe('focarPrimeiroCampoInvalido', () => {
 
 /**
  * Guarda estrutural: o handler precisa estar em TODO formulário da área, senão o próximo nasce
- * pulando o primeiro erro — e o defeito não aparece em teste de tela nenhum, porque a validação
+ * pulando o primeiro erro - e o defeito não aparece em teste de tela nenhum, porque a validação
  * funciona e a mensagem aparece; só o foco vai para o lugar errado.
  */
 describe('todo formulário da área interna leva o foco ao primeiro erro', () => {
@@ -96,7 +96,7 @@ describe('todo formulário da área interna leva o foco ao primeiro erro', () =>
    * vencedor muda com o agendamento.
    *
    * Foi assim que o primeiro conserto passou verde e continuou quebrado no navegador: em jsdom o
-   * nosso `requestAnimationFrame` corria depois do RHF e ganhava; no Chrome, antes — e o RHF
+   * nosso `requestAnimationFrame` corria depois do RHF e ganhava; no Chrome, antes - e o RHF
    * sobrescrevia, levando o foco de volta ao segundo campo. Nenhum teste de comportamento pega
    * isso, porque a ordem dos dois é justamente o que difere entre os ambientes.
    */

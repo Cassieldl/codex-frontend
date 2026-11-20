@@ -10,7 +10,7 @@ interface EnvelopeVersoesAdmin {
 }
 
 /**
- * `GET /interno/provedores/{id}/versoes` (I6) — `ApiResponse<T[]>`, role
+ * `GET /interno/provedores/{id}/versoes` (I6) - `ApiResponse<T[]>`, role
  * `versoesprovedor-buscar`. O `etag` de cada versão sai do
  * `versaoConcorrencia` do corpo (coleção, sem header por item).
  *

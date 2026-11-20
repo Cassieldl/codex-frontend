@@ -11,7 +11,7 @@ interface EnvelopeVersaoAdminDetalhe {
 }
 
 /**
- * `GET /interno/versoes/{id}` (I8a) — inclui os avisos desta versão.
+ * `GET /interno/versoes/{id}` (I8a) - inclui os avisos desta versão.
  *
  * Mesmas duas fontes do validador que `useProvedorAdminPorId`: header `ETag`
  * primeiro, `versaoConcorrencia` do corpo como reserva canônica. Cada aviso

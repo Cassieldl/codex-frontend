@@ -13,9 +13,9 @@ interface PaginatedResponseCru<T> {
 }
 
 /**
- * `GET /interno/provedores` (I1) — `PaginatedResponse<T>` cru, role
+ * `GET /interno/provedores` (I1) - `PaginatedResponse<T>` cru, role
  * `provedores-buscar`. O `etag` de cada item é derivado do
- * `versaoConcorrencia` do corpo (header `ETag` não alcança item de lista) —
+ * `versaoConcorrencia` do corpo (header `ETag` não alcança item de lista) -
  * é o que permite publicar/despublicar direto da lista.
  */
 interface OpcoesProvedoresAdmin {

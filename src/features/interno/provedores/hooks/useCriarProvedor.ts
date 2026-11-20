@@ -8,7 +8,7 @@ interface EnvelopeProvedorAdminDetalhe {
   message: string | null
 }
 
-/** `POST /interno/provedores` (I3) — role `provedores-adicionar`, nasce sempre em rascunho. */
+/** `POST /interno/provedores` (I3) - role `provedores-adicionar`, nasce sempre em rascunho. */
 export function useCriarProvedor() {
   const queryClient = useQueryClient()
 

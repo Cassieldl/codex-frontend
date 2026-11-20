@@ -12,7 +12,7 @@ const API_URL = import.meta.env.VITE_API_URL
 /**
  * Corpo de `GET /interno/provedores` (I1) com o shape REAL de
  * `PaginatedResponse<ProvedorAdminListaItemDto>`: cada item traz
- * `versaoConcorrencia` e **nenhum** campo `etag` — o backend nunca devolveu
+ * `versaoConcorrencia` e **nenhum** campo `etag` - o backend nunca devolveu
  * `etag` no corpo. Nenhum literal `W/"…"` aparece nesta fixture de propósito:
  * o valor esperado no `If-Match` tem de ser DERIVADO daqui.
  */
@@ -52,7 +52,7 @@ function novoQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } })
 }
 
-describe('useProvedoresAdmin (I1) — validador de concorrência do item de lista', () => {
+describe('useProvedoresAdmin (I1): validador de concorrência do item de lista', () => {
   it('deriva o etag de cada item do versaoConcorrencia do corpo', async () => {
     server.use(http.get(`${API_URL}/interno/provedores`, () => HttpResponse.json(respostaLista)))
 
@@ -72,7 +72,7 @@ describe('useProvedoresAdmin (I1) — validador de concorrência do item de list
     )
   })
 
-  it('o corpo da resposta real não tem campo etag — o valor é derivado, nunca repassado', () => {
+  it('o corpo da resposta real não tem campo etag - o valor é derivado, nunca repassado', () => {
     for (const item of respostaLista.items) {
       expect(item).not.toHaveProperty('etag')
     }
@@ -109,7 +109,7 @@ describe('useProvedoresAdmin (I1) — validador de concorrência do item de list
     })
 
     // O header chega ao formato que `IfMatchExtensoes.ExigirIfMatch` aceita, e
-    // com o valor que veio do banco — a junção que a demanda nunca provou.
+    // com o valor que veio do banco - a junção que a demanda nunca provou.
     expect(requisicaoCapturada.ifMatch).toBe('W/"12"')
   })
 })

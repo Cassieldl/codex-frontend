@@ -16,7 +16,7 @@ export interface VariaveisTrocarSlugProvedor {
 }
 
 /**
- * `PUT /interno/provedores/{id}/slug` (I37) — reusa a role
+ * `PUT /interno/provedores/{id}/slug` (I37) - reusa a role
  * `provedores-atualizar`, `If-Match` obrigatório como toda escrita interna.
  *
  * `409` (o endereço já pertence a outra entidade) e `422` (endereço igual ao
@@ -24,7 +24,7 @@ export interface VariaveisTrocarSlugProvedor {
  * quem chama decide onde mostrá-los.
  *
  * Invalida o detalhe **e** a listagem: o slug é o endereço público do provedor e
- * aparece nos dois lugares — deixar a lista com o valor velho entregaria um link
+ * aparece nos dois lugares - deixar a lista com o valor velho entregaria um link
  * que só redireciona. O `409` de concorrência relê os dois também, para a
  * segunda tentativa levar o etag novo.
  */

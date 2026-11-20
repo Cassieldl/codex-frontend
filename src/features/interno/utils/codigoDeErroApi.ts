@@ -2,12 +2,12 @@ import { isAxiosError } from 'axios'
 
 /**
  * Extrai o `code` do envelope de erro da API (`{ error: { code, message } }`).
- * Devolve `null` para qualquer coisa fora desse formato — erro de rede, HTML
+ * Devolve `null` para qualquer coisa fora desse formato - erro de rede, HTML
  * de proxy, resposta sem envelope.
  *
  * Único extrator da área interna: cada entidade mantém a própria tabela de
  * recuperação (o que o editor faz a seguir muda por entidade), mas a leitura
- * do envelope é a mesma em todas — duas cópias divergiriam no dia em que o
+ * do envelope é a mesma em todas - duas cópias divergiriam no dia em que o
  * formato do envelope mudasse.
  */
 export function extrairCodigoDeErroApi(erro: unknown): string | null {

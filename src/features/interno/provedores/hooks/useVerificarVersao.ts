@@ -17,8 +17,8 @@ interface VariaveisVerificarVersao {
 }
 
 /**
- * `PUT /interno/versoes/{id}/verificacao` (I10) — role `versoesprovedor-atualizar`.
- * Payload é **só** `{ verificadoEm }`, sem campo de ambiente estruturado (U3 —
+ * `PUT /interno/versoes/{id}/verificacao` (I10) - role `versoesprovedor-atualizar`.
+ * Payload é **só** `{ verificadoEm }`, sem campo de ambiente estruturado (U3 -
  * Homologação/Produção não existe no modelo).
  */
 export function useVerificarVersao() {

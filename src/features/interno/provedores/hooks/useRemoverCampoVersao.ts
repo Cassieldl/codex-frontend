@@ -8,7 +8,7 @@ interface VariaveisRemoverCampoVersao {
   etag?: string
 }
 
-/** `DELETE /interno/campos-versao/{id}` (I13b) — role `camposversao-remover`, `If-Match` obrigatório. */
+/** `DELETE /interno/campos-versao/{id}` (I13b) - role `camposversao-remover`, `If-Match` obrigatório. */
 export function useRemoverCampoVersao() {
   const queryClient = useQueryClient()
 

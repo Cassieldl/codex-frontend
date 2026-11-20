@@ -6,7 +6,7 @@ import type { AvisoAdmin } from '../types/avisoAdmin'
  *
  * Aqui a ausência é mais perigosa que no portal: o formulário de edição pré-seleciona os campos a
  * partir dessa lista e envia o resultado em `campoVersaoIds`, que **substitui** o que está gravado.
- * Se o campo faltasse e virasse `[]`, salvar um aviso — sem tocar nos campos — apagaria os vínculos
+ * Se o campo faltasse e virasse `[]`, salvar um aviso - sem tocar nos campos - apagaria os vínculos
  * em silêncio. Então falha e nomeia o que faltou.
  */
 export function prepararAvisosAdmin(

@@ -49,7 +49,7 @@ function responderCom(provedor: unknown) {
   )
 }
 
-describe('useProvedorAdminPorId — avisos', () => {
+describe('useProvedorAdminPorId: avisos', () => {
   it('aviso de provedor chega com lista vazia de campos afetados', async () => {
     responderCom(provedorDoServidor)
 

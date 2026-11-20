@@ -7,7 +7,7 @@ interface VariaveisRemoverAviso {
   etag?: string
 }
 
-/** `DELETE /interno/avisos/{id}` (I14c) — role `avisos-remover`, `If-Match` obrigatório. */
+/** `DELETE /interno/avisos/{id}` (I14c) - role `avisos-remover`, `If-Match` obrigatório. */
 export function useRemoverAviso(chaveParaInvalidar: QueryKey) {
   const queryClient = useQueryClient()
 

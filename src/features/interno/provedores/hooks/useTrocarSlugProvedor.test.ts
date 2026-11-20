@@ -84,7 +84,7 @@ describe('useTrocarSlugProvedor (I37)', () => {
     expect(retorno?.slug).toBeUndefined()
   })
 
-  it('invalida o detalhe E a listagem — o endereço aparece nos dois lugares', async () => {
+  it('invalida o detalhe E a listagem - o endereço aparece nos dois lugares', async () => {
     server.use(
       http.put(`${API_URL}/interno/provedores/${PROVEDOR_ID}/slug`, () =>
         HttpResponse.json({ data: provedorRenomeado, message: null }),

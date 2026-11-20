@@ -191,7 +191,7 @@ export function IdProvedorPage({ provedorId }: IdProvedorPageProps) {
     )
   }
 
-  /** A mutation só dispara depois da confirmação — nunca do clique na lista. */
+  /** A mutation só dispara depois da confirmação - nunca do clique na lista. */
   function confirmarRemocao() {
     if (!avisoParaRemover) return
 

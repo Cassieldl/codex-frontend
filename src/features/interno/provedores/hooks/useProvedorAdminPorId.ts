@@ -11,7 +11,7 @@ interface EnvelopeProvedorAdminDetalhe {
 }
 
 /**
- * `GET /interno/provedores/{id}` (I2) — inclui todos os avisos de provedor
+ * `GET /interno/provedores/{id}` (I2) - inclui todos os avisos de provedor
  * (publicados e rascunho). Hooks de mutação (`useAtualizarProvedor`,
  * `usePublicarProvedor`) repassam o `etag` daqui em `If-Match` (M9).
  *

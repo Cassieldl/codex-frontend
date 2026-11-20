@@ -8,7 +8,7 @@ interface EnvelopeVersaoAdminDetalhe {
   message: string | null
 }
 
-/** `POST /interno/provedores/{id}/versoes` (I7) — role `versoesprovedor-adicionar`. */
+/** `POST /interno/provedores/{id}/versoes` (I7) - role `versoesprovedor-adicionar`. */
 export function useCriarVersaoProvedor(provedorId: number) {
   const queryClient = useQueryClient()
 
