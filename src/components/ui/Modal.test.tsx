@@ -53,7 +53,7 @@ describe('Modal', () => {
     expect(botaoAbrir).toHaveFocus()
   })
 
-  it('prende o foco dentro do modal — Tab do último elemento volta ao primeiro', async () => {
+  it('prende o foco dentro do modal - Tab do último elemento volta ao primeiro', async () => {
     const usuario = userEvent.setup()
     render(<HospedeiroModal />)
 
@@ -68,7 +68,7 @@ describe('Modal', () => {
     expect(fechar).toHaveFocus()
   })
 
-  it('prende o foco dentro do modal — Shift+Tab do primeiro elemento vai ao último', async () => {
+  it('prende o foco dentro do modal - Shift+Tab do primeiro elemento vai ao último', async () => {
     const usuario = userEvent.setup()
     render(<HospedeiroModal />)
 
@@ -89,7 +89,7 @@ describe('Modal', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('botão "Fechar" tem alvo de toque ampliado (≥44×44) via ::after — Achado #6', async () => {
+  it('botão "Fechar" tem alvo de toque ampliado (≥44×44) via ::after - Achado #6', async () => {
     const usuario = userEvent.setup()
     render(<HospedeiroModal />)
 
@@ -122,7 +122,7 @@ function HospedeiroComDevolucao({ devolverFoco }: { devolverFoco: () => void }) 
   )
 }
 
-describe('Modal — devolverFoco', () => {
+describe('Modal: devolverFoco', () => {
   it('substitui a devolução ao elemento que abriu e roda depois de o diálogo sair do DOM', async () => {
     const usuario = userEvent.setup()
     const dialogoNoDocumentoAoDevolver: boolean[] = []
@@ -177,7 +177,7 @@ describe('Modal — devolverFoco', () => {
   })
 })
 
-describe('Modal — focoInicial', () => {
+describe('Modal: focoInicial', () => {
   it('"dialogo" foca o próprio diálogo, e não o primeiro botão do conteúdo', () => {
     render(
       <Modal isOpen onClose={() => {}} title="Título" focoInicial="dialogo">
@@ -218,7 +218,7 @@ describe('Modal — focoInicial', () => {
   })
 })
 
-describe('Modal — variante painel', () => {
+describe('Modal: variante painel', () => {
   function renderizarPainel(onClose: () => void = () => {}) {
     return render(
       <Modal
@@ -332,7 +332,7 @@ describe('Modal — variante painel', () => {
   })
 })
 
-describe('Modal — variante padrão', () => {
+describe('Modal: variante padrão', () => {
   it('não aceita as props do painel e não renderiza nada de painel', () => {
     render(
       // @ts-expect-error `rodape` só existe na variante `painel`
@@ -343,7 +343,7 @@ describe('Modal — variante padrão', () => {
   })
 })
 
-describe('Modal — chaveDoConteudo', () => {
+describe('Modal: chaveDoConteudo', () => {
   function modalPainelComChave(chave: string, aberto = true) {
     return (
       <Modal

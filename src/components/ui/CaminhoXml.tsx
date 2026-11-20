@@ -28,7 +28,7 @@ function separar(caminho: string): { prefixo: string; segmentos: string[] } {
  *
  * Três coisas atrapalhavam, e nenhuma era o conteúdo. A barra tinha a mesma cor e o mesmo corpo dos
  * nomes, então `//Servico/Valores/ValorServicos` chegava como um bloco só, sem junta visível. O
- * `//` da frente é sintaxe, não informação — mas abre a leitura e leva a atenção primeiro. E o nó
+ * `//` da frente é sintaxe, não informação - mas abre a leitura e leva a atenção primeiro. E o nó
  * que interessa, o último, dependia só do peso da fonte para se separar dos ancestrais.
  *
  * Aqui as barras ganham respiro, os ancestrais ficam em cinza e o nó final recebe peso e tinta
@@ -36,7 +36,7 @@ function separar(caminho: string): { prefixo: string; segmentos: string[] } {
  * levando o caminho exato, e é por isso que a barra não virou `›`.
  *
  * A separação vem do PESO e do espaçamento, nunca de apagar a barra: sobre branco, um cinza claro
- * o bastante para "sumir" fica em 1,2:1 — ilegível para quem enxerga pouco, num caminho técnico em
+ * o bastante para "sumir" fica em 1,2:1 - ilegível para quem enxerga pouco, num caminho técnico em
  * que cada caractere conta. `--color-border` é token de borda e não serve como cor de texto; o mais
  * claro que passa AA aqui já é praticamente o `--color-muted` usado nos ancestrais.
  *

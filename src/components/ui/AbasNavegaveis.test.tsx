@@ -22,7 +22,7 @@ function renderComRouter(abas: AbaNavegavel[], caminhoInicial: string) {
     path: '/versao-b',
     component: () => <AbasNavegaveis abas={abas} ariaLabel="Versões" />,
   })
-  // Rota "base" (ex.: /provedor sem versão escolhida, M25) — não bate com
+  // Rota "base" (ex.: /provedor sem versão escolhida, M25) - não bate com
   // nenhuma das abas, cenário real de "nenhuma versão selecionada".
   const rotaSemVersao = createRoute({
     getParentRoute: () => rootRoute,
@@ -86,7 +86,7 @@ describe('AbasNavegaveis', () => {
     }
   })
 
-  it('clique com modificador (ctrl) não faz preventDefault — mantém "abrir em nova aba"', async () => {
+  it('clique com modificador (ctrl) não faz preventDefault - mantém "abrir em nova aba"', async () => {
     renderComRouter(
       [
         { rotulo: 'Versão A', to: '/versao-a', ativa: true },
@@ -102,7 +102,7 @@ describe('AbasNavegaveis', () => {
     expect(naoFoiCancelado).toBe(true)
   })
 
-  // §2.1 — abas do índice de artigos são filtro por URL (mesma rota, `search`
+  // §2.1 - abas do índice de artigos são filtro por URL (mesma rota, `search`
   // diferente), não rota com parâmetro de caminho. O aditivo é opcional: sem
   // `search`, o href continua sendo exatamente o de antes.
   it('serializa `search` no href da aba, mantendo o href limpo quando não há search', async () => {
@@ -183,7 +183,7 @@ describe('AbasNavegaveis', () => {
     expect(abaTodos).not.toHaveAttribute('aria-current')
   })
 
-  it('abas com o mesmo `to` e `search` diferente coexistem — nenhuma some por chave repetida', async () => {
+  it('abas com o mesmo `to` e `search` diferente coexistem - nenhuma some por chave repetida', async () => {
     const rootRoute = createRootRoute({ component: Outlet })
     const rotaArtigos = createRoute({
       getParentRoute: () => rootRoute,
@@ -230,7 +230,7 @@ describe('AbasNavegaveis', () => {
   // Abas que navegam por parâmetro de caminho. Cobre a montagem do
   // href a partir de `params` (medido: zerar `params` no componente derruba só este
   // teste). NÃO é detector do `activeOptions={{ exact: true }}`: com params as URLs
-  // já diferem, então o casamento exato ou parcial dá o mesmo resultado — quem
+  // já diferem, então o casamento exato ou parcial dá o mesmo resultado - quem
   // protege aquilo é o caso do subconjunto de search, acima.
   it('marca a aba certa também quando a navegação é por parâmetro de caminho', async () => {
     const rootRoute = createRootRoute({ component: Outlet })

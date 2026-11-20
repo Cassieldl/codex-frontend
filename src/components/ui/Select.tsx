@@ -8,7 +8,7 @@ export interface SelectOption {
 }
 
 /**
- * Superfície onde o campo é desenhado. Só o rótulo e os textos auxiliares mudam de cor — o
+ * Superfície onde o campo é desenhado. Só o rótulo e os textos auxiliares mudam de cor - o
  * controle em si mantém fundo claro nas duas, porque é um campo de formulário.
  */
 export type SelectSuperficie = 'clara' | 'escura'
@@ -28,7 +28,7 @@ export interface SelectProps {
   superficie?: SelectSuperficie
 }
 
-/** Combobox custom (`role="listbox"`) — seguindo `analise-frontend.md` §4. */
+/** Combobox custom (`role="listbox"`) - seguindo `analise-frontend.md` §4. */
 export function Select({
   label,
   options,
@@ -55,13 +55,13 @@ export function Select({
 
   const opcaoSelecionada = options.find((opcao) => opcao.value === value) ?? null
 
-  /** Id do `<li role="option">` — alvo do `aria-activedescendant` (padrão APG). */
+  /** Id do `<li role="option">` - alvo do `aria-activedescendant` (padrão APG). */
   function idDaOpcao(indice: number) {
     return `${listboxId}-opcao-${indice}`
   }
 
   // Só existe opção ativa com a lista aberta. Fechada (ou sem options), o
-  // atributo fica AUSENTE — nunca vazio nem apontando para id inexistente.
+  // atributo fica AUSENTE - nunca vazio nem apontando para id inexistente.
   const opcaoAtiva = aberto ? (options[indiceAtivo] ?? null) : null
   const idOpcaoAtiva = opcaoAtiva ? idDaOpcao(indiceAtivo) : undefined
 
@@ -118,7 +118,7 @@ export function Select({
         if (aberto) {
           evento.preventDefault()
           // Sem parar a propagação, o mesmo Escape chega ao ouvinte de `document` do Modal e
-          // fecha o formulário inteiro junto com a lista — descartando o que já foi digitado.
+          // fecha o formulário inteiro junto com a lista - descartando o que já foi digitado.
           // O padrão ARIA manda Escape fechar só o popover do topo.
           evento.stopPropagation()
           fechar()
@@ -167,7 +167,7 @@ export function Select({
         onKeyDown={aoTeclarBotao}
         onBlur={fechar}
         className={clsx(
-          // O fundo é explícito para o controle continuar legível sobre qualquer superfície —
+          // O fundo é explícito para o controle continuar legível sobre qualquer superfície -
           // sem ele, o texto escuro fica invisível dentro do cabeçalho em gradiente.
           'flex h-9 items-center justify-between rounded-[var(--radius-control)] border bg-white px-3 text-sm text-ink',
           'focus:outline-none focus:border-[1.5px] focus:border-primary-medium disabled:bg-surface-disabled disabled:text-muted',

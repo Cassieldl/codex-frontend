@@ -6,7 +6,7 @@ import { Modal } from './Modal'
 import { Select } from './Select'
 
 /**
- * O defeito não existe em nenhum dos dois componentes isolados — só na composição.
+ * O defeito não existe em nenhum dos dois componentes isolados - só na composição.
  * `Select` tratava `Escape` sem parar a propagação e `Modal` escuta `keydown` em `document`:
  * o mesmo Escape fechava a lista **e** o formulário inteiro, descartando o que já tinha sido
  * digitado. Os dois passavam nos próprios testes.
@@ -66,10 +66,10 @@ describe('Select dentro de Modal', () => {
  * Item nomeado do checklist de acessibilidade (§12): ao fechar, o foco volta para o gatilho.
  * Estava marcado como verificado **por leitura do código** e não se sustentava ao ser exercitado:
  * `autoFocus` no conteúdo é aplicado por React na fase de commit, ANTES do efeito do `Modal`
- * guardar o elemento anterior — o que ficava guardado era um nó do próprio diálogo, e ao fechar o
+ * guardar o elemento anterior - o que ficava guardado era um nó do próprio diálogo, e ao fechar o
  * foco caía no `body` sem erro nenhum.
  */
-describe('Modal — devolução de foco ao gatilho', () => {
+describe('Modal: devolução de foco ao gatilho', () => {
   function TelaComModal({ comAutoFocus }: { comAutoFocus: boolean }) {
     const [aberto, setAberto] = useState(false)
 

@@ -6,8 +6,8 @@ const CAMINHO = '//Servico/Valores/ValorServicos'
 
 describe('CaminhoXml', () => {
   /**
-   * A cópia do caminho é o uso principal da coluna. Se a quebra entrasse como caractere — um
-   * hífen, um espaço, uma quebra de linha —, o que o integrador colasse no código não seria o
+   * A cópia do caminho é o uso principal da coluna. Se a quebra entrasse como caractere (um
+   * hífen, um espaço, uma quebra de linha), o que o integrador colasse no código não seria o
    * caminho. `textContent` é exatamente o que o navegador copia.
    */
   it('preserva o caminho íntegro no texto, sem inserir caractere de quebra', () => {
@@ -17,7 +17,7 @@ describe('CaminhoXml', () => {
   })
 
   /**
-   * Uma oportunidade de quebra por separador ENTRE NÓS — nem menos (o caminho longo transborda a
+   * Uma oportunidade de quebra por separador ENTRE NÓS - nem menos (o caminho longo transborda a
    * coluna), nem em qualquer posição (`break-all` partia `RazaoSocial` ao meio).
    *
    * As barras do prefixo não contam: quebrar a linha no meio de `//` não ajuda ninguém, e antes
@@ -34,7 +34,7 @@ describe('CaminhoXml', () => {
 
   /**
    * O `//` é sintaxe de XPath, não informação: abre a leitura e leva a atenção antes do primeiro
-   * nome. Ele continua no texto — quem copia precisa do caminho exato —, mas recua visualmente.
+   * nome. Ele continua no texto (quem copia precisa do caminho exato), mas recua visualmente.
    */
   it('atenua o prefixo, sem tirá-lo do texto', () => {
     const { container } = render(<CaminhoXml caminho={CAMINHO} />)
@@ -93,7 +93,7 @@ describe('CaminhoXml', () => {
     expect(container.textContent).toBe(CAMINHO)
   })
 
-  /** Caminho sem separador nenhum não ganha ponto de quebra — não há onde quebrar bem. */
+  /** Caminho sem separador nenhum não ganha ponto de quebra - não há onde quebrar bem. */
   it('não insere quebra em caminho de segmento único', () => {
     const { container } = render(<CaminhoXml caminho="Rps" />)
 
@@ -104,7 +104,7 @@ describe('CaminhoXml', () => {
 
 /**
  * Guarda estrutural: `--color-border` é token de BORDA (#dce5ec). Como cor de texto sobre branco ele
- * dá **1,28:1** — bem abaixo de qualquer mínimo legível.
+ * dá **1,28:1** - bem abaixo de qualquer mínimo legível.
  *
  * O detector de contraste do projeto mede os pares declarados no CSS, então uma combinação escrita
  * direto no componente (`className="text-border"`) passa por baixo dele. Aconteceu aqui: a primeira

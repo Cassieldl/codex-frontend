@@ -4,7 +4,7 @@ import { formatarDataVerificacao } from '../../utils/formatarDataVerificacao'
 
 export interface SeloVerificacaoProps {
   /**
-   * A string ISO da API é o formato preferido — converter no chamador com `new Date(iso)` já
+   * A string ISO da API é o formato preferido - converter no chamador com `new Date(iso)` já
    * exibiu o dia anterior aqui, porque data sem horário é lida como UTC.
    */
   data: Date | string
@@ -13,7 +13,7 @@ export interface SeloVerificacaoProps {
 }
 
 // Sustenta, junto com a afirmação de exaustividade da tabela de campos, a leitura de que "campo
-// ausente não se aplica" — conteúdo de confiança, não enfeite. O formato por extenso que isso
+// ausente não se aplica" - conteúdo de confiança, não enfeite. O formato por extenso que isso
 // exige mora em `formatarDataVerificacao`, compartilhado com as demais superfícies: enquanto cada
 // tela formatava por conta própria, duas caíram no numérico e no abreviado que a regra proíbe.
 export function SeloVerificacao({ data, nota, className }: SeloVerificacaoProps) {

@@ -34,7 +34,7 @@ describe('EtiquetaPublicacao', () => {
     ).toBeInTheDocument()
   })
 
-  it('nenhum dos três estados depende só de cor — cada um tem texto acessível distinto', () => {
+  it('nenhum dos três estados depende só de cor - cada um tem texto acessível distinto', () => {
     const { unmount: unmountPublicado } = render(
       <EtiquetaPublicacao publicadoProprio publicadoEfetivo />,
     )

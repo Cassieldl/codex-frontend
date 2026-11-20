@@ -10,7 +10,7 @@ type Ouvinte = (state: AuthState) => void
 
 /**
  * Store minimalista de autenticação, fora do React. Não usa Keycloak/rede
- * diretamente — apenas guarda o estado atual e notifica assinantes quando
+ * diretamente - apenas guarda o estado atual e notifica assinantes quando
  * `auth/keycloak.ts` (via `iniciarAutenticacao`/`garantirAutenticacao`)
  * atualiza o resultado do check-sso.
  */
@@ -36,7 +36,7 @@ function criarAuthStore(estadoInicial: AuthState) {
 
 export const authStore = criarAuthStore({ estado: 'carregando' })
 
-/** Hook de leitura do estado de autenticação — só para UX (esconder/mostrar elementos). */
+/** Hook de leitura do estado de autenticação - só para UX (esconder/mostrar elementos). */
 export function useAuthState(): AuthState {
   return useSyncExternalStore(authStore.subscribe, authStore.getState, authStore.getState)
 }

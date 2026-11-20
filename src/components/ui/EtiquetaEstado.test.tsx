@@ -12,7 +12,7 @@ describe('EtiquetaEstado', () => {
     expect(etiqueta.className).toMatch(/border-primary\b/)
   })
 
-  it('mostra o texto literal "Condicional" com borda tracejada (M34 — risco de rejeição)', () => {
+  it('mostra o texto literal "Condicional" com borda tracejada (M34 - risco de rejeição)', () => {
     render(<EtiquetaEstado estado="condicional" />)
 
     const etiqueta = screen.getByText('Condicional')
@@ -20,7 +20,7 @@ describe('EtiquetaEstado', () => {
     expect(etiqueta.className).toMatch(/border-dashed/)
   })
 
-  it('mostra o texto literal "Opcional" com borda fina neutra (M34 — menor risco dos três)', () => {
+  it('mostra o texto literal "Opcional" com borda fina neutra (M34 - menor risco dos três)', () => {
     render(<EtiquetaEstado estado="opcional" />)
 
     const etiqueta = screen.getByText('Opcional')
@@ -28,7 +28,7 @@ describe('EtiquetaEstado', () => {
     expect(etiqueta.className).toMatch(/border-border/)
   })
 
-  it('nunca usa cor de fundo como sinal — só forma de borda + texto', () => {
+  it('nunca usa cor de fundo como sinal - só forma de borda + texto', () => {
     const estados = ['obrigatorio', 'opcional', 'condicional'] as const
 
     for (const estado of estados) {

@@ -43,7 +43,7 @@ describe('EtiquetaSeveridade', () => {
   })
 })
 
-describe('EtiquetaSeveridade — só o ícone', () => {
+describe('EtiquetaSeveridade: só o ícone', () => {
   it('o nome continua disponível para o leitor de tela e como dica', () => {
     render(<EtiquetaSeveridade severidade="alerta" somenteIcone />)
 
@@ -52,7 +52,7 @@ describe('EtiquetaSeveridade — só o ícone', () => {
     expect(nome.parentElement).toHaveAttribute('title', 'Alerta')
   })
 
-  it('cada severidade tem um ícone de forma própria — a cor não é o único sinal', () => {
+  it('cada severidade tem um ícone de forma própria - a cor não é o único sinal', () => {
     const iconeDe = (severidade: 'critico' | 'alerta' | 'informativo') => {
       const { container, unmount } = render(
         <EtiquetaSeveridade severidade={severidade} somenteIcone />,

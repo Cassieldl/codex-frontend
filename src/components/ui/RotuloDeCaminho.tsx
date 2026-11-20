@@ -9,7 +9,7 @@ export interface RotuloDeCaminhoProps {
  *
  * Sem espaço, o caminho inteiro é uma palavra só: não cabe numa coluna estreita e estoura o
  * contêiner, ou, com `overflow-wrap: anywhere`, quebra no meio do nome (`TribRegula` / `r`). A barra
- * é a junta natural — o `<wbr>` depois dela marca onde quebrar, sem trocar nenhum caractere, então
+ * é a junta natural - o `<wbr>` depois dela marca onde quebrar, sem trocar nenhum caractere, então
  * o texto copiado continua sendo o caminho exato. Quem usa ainda deve pôr `overflow-wrap:anywhere`
  * no contêiner, para o segmento que sozinho não couber.
  */

@@ -13,7 +13,7 @@ describe('PularParaConteudo (WCAG 2.4.1)', () => {
   })
 
   /**
-   * As duas classes andam em par. Só `sr-only` esconde o link para sempre — ele continua focável
+   * As duas classes andam em par. Só `sr-only` esconde o link para sempre - ele continua focável
    * e invisível, que é pior que não existir: o foco desaparece da tela sem explicação.
    */
   it('fica fora da vista até receber foco, e aparece quando focado', () => {

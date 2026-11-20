@@ -20,7 +20,7 @@ export interface EtiquetaSeveridadeProps {
 interface ConfiguracaoSeveridade {
   rotulo: string
   Icone: ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>
-  // Pares de cor calculados e testados em §3.2 — nunca token de erro puro
+  // Pares de cor calculados e testados em §3.2 - nunca token de erro puro
   // como fundo sólido + texto branco (reprova AA, AP-FRONTEND-015).
   textoClasse: string
   fundoClasse: string

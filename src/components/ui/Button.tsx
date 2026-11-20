@@ -15,7 +15,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   type?: 'button' | 'submit' | 'reset'
 }
 
-// Nenhuma variante usa --color-accent (laranja) como fundo — decisão U5.
+// Nenhuma variante usa --color-accent (laranja) como fundo - decisão U5.
 // Hover é sempre sombra (--shadow-hover), nunca mudança de cor de fundo.
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
@@ -46,7 +46,7 @@ export function Button({
       type={type}
       // `isLoading` também desabilita de fato, não só para o leitor de tela: com apenas
       // `aria-disabled`, o botão seguia clicável e um duplo clique disparava dois PUT com o mesmo
-      // If-Match — o segundo voltava 409 e a tela dizia "outra pessoa salvou", que era mentira.
+      // If-Match - o segundo voltava 409 e a tela dizia "outra pessoa salvou", que era mentira.
       disabled={disabled || isLoading}
       aria-disabled={isLoading || disabled}
       className={clsx(

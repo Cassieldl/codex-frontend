@@ -13,7 +13,7 @@ type ModalBaseProps = {
   /**
    * Mantém o título só para leitor de tela (`sr-only`), preservando o
    * `aria-labelledby` do diálogo. Usado pela barra de comando, onde o campo de
-   * busca ocupa o lugar do cabeçalho — trocar o título por `aria-label` deixaria
+   * busca ocupa o lugar do cabeçalho - trocar o título por `aria-label` deixaria
    * o diálogo sem nome visível E sem nó de título, e é o mesmo nome que já
    * existe aqui.
    */
@@ -107,7 +107,7 @@ export function Modal(props: ModalProps) {
   }, [onClose, devolverFoco, focoInicial])
 
   // Capturado durante a RENDERIZAÇÃO, não no efeito: `autoFocus` no conteúdo é aplicado por React
-  // na fase de commit, que acontece antes dos efeitos — guardar aqui dentro do `useEffect` já
+  // na fase de commit, que acontece antes dos efeitos - guardar aqui dentro do `useEffect` já
   // pegaria um nó do próprio diálogo, e ao fechar o foco cairia no `<body>` em silêncio. O item
   // "foco volta ao gatilho" do checklist de acessibilidade depende disto.
   if (isOpen && elementoAnteriorRef.current === null) {
@@ -123,7 +123,7 @@ export function Modal(props: ModalProps) {
       dialogNode?.focus()
     } else {
       // Foco inicial prioriza o primeiro campo do conteúdo (children), não o
-      // botão de fechar do cabeçalho — evita que "Esc"/leitura comecem no X.
+      // botão de fechar do cabeçalho - evita que "Esc"/leitura comecem no X.
       const primeiroFocavel =
         conteudoRef.current?.querySelector<HTMLElement>(FOCAVEL_SELECTOR) ??
         dialogNode?.querySelector<HTMLElement>(FOCAVEL_SELECTOR)
@@ -182,7 +182,7 @@ export function Modal(props: ModalProps) {
         return
       }
 
-      // Só devolve o foco se o gatilho ainda estiver no documento — `focus()` num nó desconectado
+      // Só devolve o foco se o gatilho ainda estiver no documento - `focus()` num nó desconectado
       // não lança, apenas joga o foco no `<body>`.
       if (anterior?.isConnected) anterior.focus()
     }
@@ -211,7 +211,7 @@ export function Modal(props: ModalProps) {
       aria-label="Fechar"
       className={clsx(
         // Caixa visual pequena (p-1), mas alvo de toque 44×44 via ::after
-        // com preenchimento invisível — mesmo padrão de `BotaoCopiar`.
+        // com preenchimento invisível - mesmo padrão de `BotaoCopiar`.
         "relative rounded p-1 text-ink after:absolute after:top-1/2 after:left-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
         'hover:shadow-hover',
       )}

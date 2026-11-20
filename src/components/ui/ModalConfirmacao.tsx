@@ -5,7 +5,7 @@ export interface ModalConfirmacaoProps {
   isOpen: boolean
   /** Ex.: "Remover exemplo". */
   title: string
-  /** O que será feito, com o nome do item — quem confirma precisa ver o que some. */
+  /** O que será feito, com o nome do item - quem confirma precisa ver o que some. */
   message: string
   confirmLabel?: string
   isConfirming?: boolean
@@ -17,7 +17,7 @@ export interface ModalConfirmacaoProps {
 
 /**
  * Confirmação de ação destrutiva. Remoção é irreversível pela interface, então
- * nunca dispara direto do clique na lista — e a falha (409 de `etag` velho, 403
+ * nunca dispara direto do clique na lista - e a falha (409 de `etag` velho, 403
  * de permissão) aparece aqui, em vez de o item simplesmente continuar na tela
  * sem explicação.
  */

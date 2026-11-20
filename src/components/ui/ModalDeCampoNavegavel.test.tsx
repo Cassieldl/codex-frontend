@@ -71,7 +71,7 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn()
 })
 
-describe('ModalDeCampoNavegavel — navegação por teclado', () => {
+describe('ModalDeCampoNavegavel: navegação por teclado', () => {
   it('← e → sem modificador navegam e cancelam o evento', () => {
     const onNavegar = vi.fn()
     render(<ModalDeCampoNavegavel {...propsBase({ onNavegar })} />)
@@ -117,7 +117,7 @@ describe('ModalDeCampoNavegavel — navegação por teclado', () => {
   })
 })
 
-describe('ModalDeCampoNavegavel — botões de navegação', () => {
+describe('ModalDeCampoNavegavel: botões de navegação', () => {
   it('Próximo campo e Campo anterior chamam onNavegar com o slug do vizinho', async () => {
     const onNavegar = vi.fn()
     const usuario = userEvent.setup()
@@ -160,7 +160,7 @@ describe('ModalDeCampoNavegavel — botões de navegação', () => {
   })
 })
 
-describe('ModalDeCampoNavegavel — identificação e rodapé', () => {
+describe('ModalDeCampoNavegavel: identificação e rodapé', () => {
   it('é um diálogo com o nome do campo, a trilha e o conteúdo após o título', () => {
     render(
       <ModalDeCampoNavegavel {...propsBase({ aposTitulo: <span>Etiqueta de estado</span> })} />,
@@ -209,7 +209,7 @@ describe('ModalDeCampoNavegavel — identificação e rodapé', () => {
   })
 })
 
-describe('ModalDeCampoNavegavel — copiar link do campo', () => {
+describe('ModalDeCampoNavegavel: copiar link do campo', () => {
   it('copia exatamente o linkDoCampo, com o nome do campo no rótulo acessível', async () => {
     const usuario = userEvent.setup()
     const escreverNaAreaDeTransferencia = vi
@@ -225,7 +225,7 @@ describe('ModalDeCampoNavegavel — copiar link do campo', () => {
   })
 })
 
-describe('ModalDeCampoNavegavel — anúncio da troca', () => {
+describe('ModalDeCampoNavegavel: anúncio da troca', () => {
   it('fica vazio na abertura e diz em que campo se está depois de navegar', async () => {
     const usuario = userEvent.setup()
     renderizarNavegavel()
@@ -247,7 +247,7 @@ describe('ModalDeCampoNavegavel — anúncio da troca', () => {
   })
 })
 
-describe('ModalDeCampoNavegavel — troca de chave', () => {
+describe('ModalDeCampoNavegavel: troca de chave', () => {
   it('remonta o conteúdo (o "Copiado" zera) sem remontar a região de anúncio', async () => {
     const usuario = userEvent.setup()
     vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)

@@ -32,7 +32,7 @@ describe('Toast', () => {
     expect(aoFechar).toHaveBeenCalledTimes(1)
   })
 
-  it('botão "Fechar aviso" tem alvo de toque ampliado (≥44×44) via ::after — Achado #6', () => {
+  it('botão "Fechar aviso" tem alvo de toque ampliado (≥44×44) via ::after - Achado #6', () => {
     render(<Toast tone="error" message="Falha ao salvar." onClose={() => {}} />)
 
     const fechar = screen.getByRole('button', { name: 'Fechar aviso' })

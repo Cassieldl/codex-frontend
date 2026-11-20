@@ -4,7 +4,7 @@ export interface SkeletonProps {
   className?: string
 }
 
-/** Placeholder de carregamento — decorativo, o `aria-live` de "Carregando" fica no container pai. */
+/** Placeholder de carregamento - decorativo, o `aria-live` de "Carregando" fica no container pai. */
 export function Skeleton({ className }: SkeletonProps) {
   return (
     <div

@@ -42,7 +42,7 @@ describe('extrairSecoesDoCorpo', () => {
     ])
   })
 
-  it('ignora h1 — só h2/h3 viram entrada de sumário', () => {
+  it('ignora h1 - só h2/h3 viram entrada de sumário', () => {
     expect(extrairSecoesDoCorpo('# Título\n\nTexto.')).toEqual([])
   })
 
@@ -120,7 +120,7 @@ describe('agruparSecoes', () => {
 
 const CORPO = '## Primeira seção\n\n### Detalhe\n\n## Segunda seção'
 
-describe('SumarioArtigo — hierarquia', () => {
+describe('SumarioArtigo: hierarquia', () => {
   it('o subtópico fica numa lista dentro do item do tópico, não ao lado dele', () => {
     render(<SumarioArtigo corpo={CORPO} />)
 
@@ -144,7 +144,7 @@ describe('SumarioArtigo — hierarquia', () => {
   })
 })
 
-describe('SumarioArtigo — seção em leitura', () => {
+describe('SumarioArtigo: seção em leitura', () => {
   const posicoes = new Map<string, number>()
 
   function montarTitulos() {

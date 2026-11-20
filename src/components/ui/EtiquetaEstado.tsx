@@ -7,15 +7,15 @@ export interface EtiquetaEstadoProps {
   className?: string
 }
 
-// §3.3(a) — o papel mais repetido da tela mais densa do produto não pode
+// §3.3(a) - o papel mais repetido da tela mais densa do produto não pode
 // gastar a paleta semântica (reservada para Avisos, §3.3b). Por isso a
 // distinção vem só de FORMA da borda + texto literal, nunca de cor de fundo
 // nem de tokens de severidade. Cores usadas aqui são neutras/institucionais
 // (--color-primary, --color-border), nunca --color-alert-*/--color-error.
 //
-// M34 — tracejado vai para "Condicional", não para "Opcional": tracejado é a
+// M34: tracejado vai para "Condicional", não para "Opcional": tracejado é a
 // metáfora natural de "vale sob uma condição", e ignorar um campo condicional
-// quando a condição se aplica causa rejeição — risco operacional maior que o
+// quando a condição se aplica causa rejeição - risco operacional maior que o
 // de um campo opcional, que por isso fica com o tratamento mais fraco (borda
 // fina cinza) dos três.
 const CONFIGURACAO: Record<EstadoPreenchimento, { rotulo: string; bordaClasse: string }> = {

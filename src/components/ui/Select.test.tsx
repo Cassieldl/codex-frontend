@@ -29,7 +29,7 @@ function renderizarSelect(props: Partial<ComponentProps<typeof Select>> = {}) {
 /**
  * Resolve o `aria-activedescendant` do jeito que um leitor de tela resolve:
  * segue o IDREF até o elemento real. Falha alto se o atributo estiver ausente
- * ou pendurado num id inexistente — que é justamente o defeito do P-13.
+ * ou pendurado num id inexistente - que é justamente o defeito do P-13.
  */
 function opcaoAnunciadaComoAtiva(combobox: HTMLElement): HTMLElement {
   const idAtivo = combobox.getAttribute('aria-activedescendant')
@@ -45,7 +45,7 @@ function opcaoAnunciadaComoAtiva(combobox: HTMLElement): HTMLElement {
   return opcao
 }
 
-describe('Select — rótulo e identificação', () => {
+describe('Select: rótulo e identificação', () => {
   it('associa o <label> ao combobox via htmlFor/id', () => {
     renderizarSelect()
 
@@ -75,8 +75,8 @@ describe('Select — rótulo e identificação', () => {
 
 // Achado #7 do QA (rodada 1): o asterisco visual é `aria-hidden`, então sem o
 // par `sr-only` + `aria-required` o campo não é anunciado como obrigatório a
-// leitor de tela. O achado foi fechado sem teste — esta é a dívida P-07.
-describe('Select — estado obrigatório (Achado #7 do QA)', () => {
+// leitor de tela. O achado foi fechado sem teste - esta é a dívida P-07.
+describe('Select: estado obrigatório (Achado #7 do QA)', () => {
   it('anuncia "obrigatório" a leitor de tela e marca aria-required no combobox', () => {
     renderizarSelect({ required: true })
 
@@ -106,7 +106,7 @@ describe('Select — estado obrigatório (Achado #7 do QA)', () => {
   })
 })
 
-describe('Select — hint e erro', () => {
+describe('Select: hint e erro', () => {
   it('erro é comunicado por texto + aria-invalid + aria-describedby, nunca só cor', () => {
     renderizarSelect({ error: 'A categoria é obrigatória.' })
 
@@ -143,7 +143,7 @@ describe('Select — hint e erro', () => {
   })
 })
 
-describe('Select — valor exibido', () => {
+describe('Select: valor exibido', () => {
   it('mostra o placeholder enquanto nada está selecionado', () => {
     renderizarSelect({ placeholder: 'Selecione a categoria…' })
 
@@ -163,7 +163,7 @@ describe('Select — valor exibido', () => {
   })
 })
 
-describe('Select — abrir, selecionar e fechar com mouse', () => {
+describe('Select: abrir, selecionar e fechar com mouse', () => {
   it('começa fechado, com aria-expanded=false e sem listbox no DOM', () => {
     renderizarSelect()
 
@@ -226,7 +226,7 @@ describe('Select — abrir, selecionar e fechar com mouse', () => {
   })
 })
 
-describe('Select — teclado', () => {
+describe('Select: teclado', () => {
   it('ArrowDown abre a lista sem selecionar nada', async () => {
     const usuario = userEvent.setup()
     const { onValueChange } = renderizarSelect()
@@ -302,7 +302,7 @@ describe('Select — teclado', () => {
   })
 })
 
-describe('Select — desabilitado', () => {
+describe('Select: desabilitado', () => {
   it('não abre a lista por clique nem por teclado quando disabled', async () => {
     const usuario = userEvent.setup()
     const { onValueChange } = renderizarSelect({ disabled: true })
@@ -321,9 +321,9 @@ describe('Select — desabilitado', () => {
 
 // P-13: o destaque da opção ativa era só visual (`bg-surface-hover`). Quem
 // navega de teclado via o destaque e não OUVIA nada até apertar Enter. As
-// asserções abaixo checam o que chega ao leitor de tela — o elemento apontado
-// pelo `aria-activedescendant` e seu nome acessível —, nunca a classe CSS.
-describe('Select — opção ativa anunciada (P-13, padrão APG)', () => {
+// asserções abaixo checam o que chega ao leitor de tela (o elemento apontado
+// pelo `aria-activedescendant` e seu nome acessível), nunca a classe CSS.
+describe('Select: opção ativa anunciada (P-13, padrão APG)', () => {
   it('ao abrir, anuncia como ativa a opção já selecionada', async () => {
     const usuario = userEvent.setup()
     renderizarSelect({ value: 'regional' })
@@ -408,7 +408,7 @@ describe('Select — opção ativa anunciada (P-13, padrão APG)', () => {
     expect(new Set(ids).size).toBe(OPCOES.length)
   })
 
-  it('fechado, o atributo fica AUSENTE — não vazio nem apontando para o nada', () => {
+  it('fechado, o atributo fica AUSENTE - não vazio nem apontando para o nada', () => {
     renderizarSelect({ value: 'regional' })
 
     expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant')
@@ -439,7 +439,7 @@ describe('Select — opção ativa anunciada (P-13, padrão APG)', () => {
 
 // P-14: `aria-controls` apontava para o `<ul>` mesmo fechado, quando o elemento
 // nem existe no DOM. Mesmo princípio do P-13: IDREF só enquanto há alvo.
-describe('Select — aria-controls acompanha a existência da lista (P-14)', () => {
+describe('Select: aria-controls acompanha a existência da lista (P-14)', () => {
   it('fechado, não há aria-controls apontando para elemento inexistente', () => {
     renderizarSelect()
 
@@ -466,7 +466,7 @@ describe('Select — aria-controls acompanha a existência da lista (P-14)', () 
 /**
  * O rótulo do campo é desenhado sobre a superfície onde o `Select` está, não sobre o controle.
  * Fixá-lo em `text-ink` fez o filtro de provedor da busca ficar em 1,1:1 contra o gradiente do
- * cabeçalho — invisível na tela mais usada do produto, e fora do alcance da auditoria de tokens,
+ * cabeçalho - invisível na tela mais usada do produto, e fora do alcance da auditoria de tokens,
  * que mede cores isoladas e não a composição.
  *
  * O caso afirma LEGIBILIDADE, não nome de classe: resolve a classe aplicada para a cor real do

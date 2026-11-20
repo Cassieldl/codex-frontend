@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest'
 import { CabecalhoPublico } from './CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from './PularParaConteudo'
 
-// `<Link>` do TanStack Router precisa de um `RouterProvider` real — mesmo
+// `<Link>` do TanStack Router precisa de um `RouterProvider` real - mesmo
 // padrão de `RodapeContextual.test.tsx`. As rotas de destino (`/artigos`,
 // `/como-funciona`) ainda não existem nesta unidade (nascem em FRONT-B):
 // a árvore de teste só precisa da rota que hospeda o componente.
@@ -31,7 +31,7 @@ function renderComRouter() {
   return render(<RouterProvider router={router} />)
 }
 
-describe('CabecalhoPublico — navegação (M31/§4.1)', () => {
+describe('CabecalhoPublico: navegação (M31/§4.1)', () => {
   it('mostra "Layout InvoiCy" apontando para /layout, entre Provedores e Artigos (§2.6)', async () => {
     renderComRouter()
 
@@ -77,7 +77,7 @@ describe('CabecalhoPublico — navegação (M31/§4.1)', () => {
 // aberta marca `aria-current="page"` por prop, e o item
 // "Layout InvoiCy" do menu marcava o mesmo por casamento parcial de CAMINHO
 // feito pelo próprio `<Link>`. O teste reproduz as duas regiões juntas e
-// CONTA — "o item certo está marcado" passaria com dois marcados.
+// CONTA: "o item certo está marcado" passaria com dois marcados.
 function renderComRotasAninhadas(caminhoInicial: string) {
   const rootRoute = createRootRoute({ component: Outlet })
   const paginaComChip = (
@@ -115,8 +115,8 @@ function contarMarcadosEm(regiao: HTMLElement) {
     .filter((link) => link.getAttribute('aria-current') !== null).length
 }
 
-describe('CabecalhoPublico — aria-current (casamento parcial de caminho)', () => {
-  it('em subpágina da seção, a nav não marca nada — o "página atual" é só o da página', async () => {
+describe('CabecalhoPublico: aria-current (casamento parcial de caminho)', () => {
+  it('em subpágina da seção, a nav não marca nada - o "página atual" é só o da página', async () => {
     renderComRotasAninhadas('/layout/v2-01')
     await screen.findByRole('link', { name: 'Layout InvoiCy' })
 
@@ -159,7 +159,7 @@ describe('CabecalhoPublico — aria-current (casamento parcial de caminho)', () 
     expect(contarMarcadosEm(nav)).toBe(0)
   })
 
-  it('na própria página da seção o item continua marcado — o exact não apaga o certo', async () => {
+  it('na própria página da seção o item continua marcado - o exact não apaga o certo', async () => {
     renderComRotasAninhadas('/layout')
     const nav = await screen.findByRole('navigation', { name: 'Navegação principal' })
 
@@ -176,7 +176,7 @@ describe('CabecalhoPublico — aria-current (casamento parcial de caminho)', () 
  * simplesmente não vai a lugar nenhum, e nada na tela denuncia. Por isso o teste amarra o `href`
  * ao id exportado, em vez de repetir a string.
  */
-describe('CabecalhoPublico — pular para o conteúdo', () => {
+describe('CabecalhoPublico: pular para o conteúdo', () => {
   it('oferece o link de pulo apontando para o id do conteúdo principal', async () => {
     renderComRouter()
 
@@ -185,7 +185,7 @@ describe('CabecalhoPublico — pular para o conteúdo', () => {
     expect(pulo).toHaveAttribute('href', `#${ID_CONTEUDO_PRINCIPAL}`)
   })
 
-  it('é o PRIMEIRO link do documento — depois do logo, já não serve para pular nada', async () => {
+  it('é o PRIMEIRO link do documento - depois do logo, já não serve para pular nada', async () => {
     const { container } = renderComRouter()
 
     await screen.findByRole('link', { name: 'Pular para o conteúdo' })
@@ -200,7 +200,7 @@ describe('CabecalhoPublico — pular para o conteúdo', () => {
     const pulo = await screen.findByRole('link', { name: 'Pular para o conteúdo' })
 
     // `sr-only` é o que o tira da vista; `focus:not-sr-only` é o que o traz de volta. Sem o
-    // segundo, o link existe, é focável e continua invisível — pior que não ter.
+    // segundo, o link existe, é focável e continua invisível - pior que não ter.
     expect(pulo.className).toContain('sr-only')
     expect(pulo.className).toContain('focus:not-sr-only')
   })
@@ -210,11 +210,11 @@ describe('CabecalhoPublico — pular para o conteúdo', () => {
  * Sem quebra de linha, a marca e os quatro itens disputam uma única linha: em 390px o menu
  * invadia o logo ("CodexProvedores" colados) e "Como funciona" era cortado pela borda.
  *
- * O jsdom não faz layout, então a asserção é sobre as classes que autorizam a quebra — a medida
+ * O jsdom não faz layout, então a asserção é sobre as classes que autorizam a quebra - a medida
  * real (nenhum item além da viewport em 390px) só existe no navegador. É uma asserção fraca de
  * propósito: trava a regressão exata, sem fingir que mede geometria.
  */
-describe('CabecalhoPublico — cabimento em telas estreitas', () => {
+describe('CabecalhoPublico: cabimento em telas estreitas', () => {
   it('autoriza a quebra de linha na faixa e na navegação', async () => {
     renderComRouter()
 

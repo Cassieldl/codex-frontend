@@ -9,7 +9,7 @@ export const keycloak = new Keycloak({
 
 /**
  * Idioma da tela de login, que é hospedada pelo Keycloak (D1/M18) e não por
- * nós. Sem isto ela abre no idioma padrão do realm — em inglês, no meio de um
+ * nós. Sem isto ela abre no idioma padrão do realm - em inglês, no meio de um
  * portal inteiramente em português, logo na porta da área interna.
  *
  * O realm também declara `pt-BR` como padrão; pedir aqui mantém a garantia do
@@ -21,10 +21,10 @@ let promessaInicializacao: Promise<boolean> | null = null
 
 /**
  * Dispara o check-sso do Keycloak. Chamada uma única vez, em paralelo à
- * montagem do router (main.tsx) — nunca bloqueia a app pública.
+ * montagem do router (main.tsx) - nunca bloqueia a app pública.
  *
  * `keycloak.init()` REJEITA a promise quando o check-sso falha (não resolve
- * com `false`) — por isso a promise retornada aqui também rejeita nesse
+ * com `false`) - por isso a promise retornada aqui também rejeita nesse
  * caso. Quem chama (main.tsx) é responsável por `.catch()`; `garantirAutenticacao`
  * é a forma segura de consumir o resultado sem propagar a rejeição.
  */

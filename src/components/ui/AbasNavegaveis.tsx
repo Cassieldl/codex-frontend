@@ -8,7 +8,7 @@ export interface AbaNavegavel {
   to: string
   params?: Record<string, string>
   /**
-   * Search params da aba (§2.1) — usado quando a aba é um filtro por URL
+   * Search params da aba (§2.1) - usado quando a aba é um filtro por URL
    * (índice de artigos), não uma rota com parâmetro de caminho. Opcional e
    * retrocompatível: sem ele, o comportamento é o de antes.
    */
@@ -48,7 +48,7 @@ const CLASSES_DO_TAMANHO: Record<TamanhoDasAbas, ClassesDoTamanho> = {
   },
 }
 
-// Cada aba é uma URL de verdade (o que a torna copiável) — por isso é um
+// Cada aba é uma URL de verdade (o que a torna copiável) - por isso é um
 // <Link> real do TanStack Router, nunca role="tablist"/"tab" (esse padrão
 // ARIA pressupõe troca de painel sem navegação). A barra de 3px em
 // --color-accent é reforço visual, nunca o único sinal do estado ativo:

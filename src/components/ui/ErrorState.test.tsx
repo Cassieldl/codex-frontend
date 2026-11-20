@@ -30,7 +30,7 @@ describe('ErrorState', () => {
   })
 })
 
-describe('ErrorState — foco do botão de retry', () => {
+describe('ErrorState: foco do botão de retry', () => {
   it('por padrão NÃO rouba o foco', () => {
     // O default mudou para `false` de propósito: em busca ao vivo o erro chega enquanto o usuário
     // digita, e o salto de foco engolia os caracteres seguintes; dentro de um modal, o foco
@@ -40,7 +40,7 @@ describe('ErrorState — foco do botão de retry', () => {
     expect(screen.getByRole('button', { name: 'Tentar novamente' })).not.toHaveFocus()
   })
 
-  it('rouba o foco quando quem monta pede — tela inteira de erro', () => {
+  it('rouba o foco quando quem monta pede - tela inteira de erro', () => {
     render(<ErrorState onRetry={vi.fn()} autoFocusRetry />)
 
     expect(screen.getByRole('button', { name: 'Tentar novamente' })).toHaveFocus()

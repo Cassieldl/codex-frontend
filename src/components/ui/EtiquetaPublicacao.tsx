@@ -6,14 +6,14 @@ export interface EtiquetaPublicacaoProps {
   publicadoProprio: boolean
   /** `publicadoProprio` do item **e** de todos os ancestrais já carregados na tela (M19). */
   publicadoEfetivo: boolean
-  /** Rótulo do ancestral em rascunho — só faz sentido quando "publicado, oculto". */
+  /** Rótulo do ancestral em rascunho - só faz sentido quando "publicado, oculto". */
   motivoOculto?: string
   className?: string
 }
 
-// Uso exclusivo da área interna (§3.4) — nunca renderizado em página pública.
+// Uso exclusivo da área interna (§3.4) - nunca renderizado em página pública.
 // É decorativo: publicar/despublicar é sempre um <Button> dedicado ao lado,
-// nunca esta etiqueta. Os três estados nunca dependem só de cor — cada um
+// nunca esta etiqueta. Os três estados nunca dependem só de cor - cada um
 // tem forma de borda + ícone + texto literal distintos.
 export function EtiquetaPublicacao({
   publicadoProprio,
