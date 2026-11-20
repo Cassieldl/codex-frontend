@@ -33,7 +33,7 @@ function criarWrapper(queryClient: QueryClient) {
 }
 
 describe('useCriarComunicado (I32)', () => {
-  it('não envia If-Match — o recurso ainda não existe, não há versão a conferir', async () => {
+  it('não envia If-Match - o recurso ainda não existe, não há versão a conferir', async () => {
     const capturado: { ifMatch: string | null; corpo: unknown } = { ifMatch: null, corpo: null }
     server.use(
       http.post(`${API_URL}/interno/comunicados`, async ({ request }) => {
@@ -97,7 +97,7 @@ describe('useCriarComunicado (I32)', () => {
     expect(capturado.corpo).not.toHaveProperty('versaoProvedorId')
   })
 
-  it('lê o detalhe do envelope { data } — I32 não responde corpo cru', async () => {
+  it('lê o detalhe do envelope { data } - I32 não responde corpo cru', async () => {
     server.use(
       http.post(`${API_URL}/interno/comunicados`, () =>
         HttpResponse.json({ data: detalheCriado, message: null }, { status: 201 }),
@@ -125,8 +125,8 @@ describe('useCriarComunicado (I32)', () => {
   })
 })
 
-describe('useCriarComunicado — D-1 (publicar)', () => {
-  it('devolve a message do envelope junto com o comunicado — a tela nunca infere o desfecho', async () => {
+describe('useCriarComunicado: D-1 (publicar)', () => {
+  it('devolve a message do envelope junto com o comunicado - a tela nunca infere o desfecho', async () => {
     server.use(
       http.post(`${API_URL}/interno/comunicados`, () =>
         HttpResponse.json(
@@ -157,7 +157,7 @@ describe('useCriarComunicado — D-1 (publicar)', () => {
     expect(retorno?.comunicado.publicado).toBe(true)
   })
 
-  it('quem não define publicar continua criando rascunho — o campo nem viaja', async () => {
+  it('quem não define publicar continua criando rascunho - o campo nem viaja', async () => {
     const capturado: { corpo: Record<string, unknown> | null } = { corpo: null }
     server.use(
       http.post(`${API_URL}/interno/comunicados`, async ({ request }) => {
@@ -176,7 +176,7 @@ describe('useCriarComunicado — D-1 (publicar)', () => {
 
     let retorno: ResultadoCriarComunicado | undefined
     await act(async () => {
-      // A tela 12 chama exatamente assim, sem `publicar` — D-1 não muda o
+      // A tela 12 chama exatamente assim, sem `publicar` - D-1 não muda o
       // comportamento dela.
       retorno = await result.current.mutateAsync({
         titulo: 'Instabilidade na SEFIN',

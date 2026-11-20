@@ -6,7 +6,7 @@ export interface ListarComunicadosAdminParams {
   abrangencia?: AbrangenciaComunicado
   provedorId?: number
   /**
-   * Default `false` no backend (I30) — esconde só o que **encerrou**
+   * Default `false` no backend (I30) - esconde só o que **encerrou**
    * (`expiraEm` no passado). Rascunho vigente continua na visão padrão.
    */
   incluirEncerrados?: boolean

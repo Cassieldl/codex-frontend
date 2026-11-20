@@ -35,7 +35,7 @@ describe.each([
   ['Nome', 120],
   ['Caminho no XML', 160],
   ['Grupo', 120],
-] as const)('CampoLayoutForm — teto de %s', (campo, teto) => {
+] as const)('CampoLayoutForm: teto de %s', (campo, teto) => {
   it(`aceita ${teto} caracteres`, async () => {
     const valor = (campo === 'Caminho no XML' ? '//' : '').padEnd(teto, 'a')
     const { onSubmit } = await criarCom(campo, valor)

@@ -29,7 +29,7 @@ function FormularioComunicadoGlobal({
   onCancelar,
 }: FormularioComunicadoGlobalProps) {
   // Guarda o erro inteiro, não só a mensagem: o 422 traz os campos culpados, e é o terceiro
-  // consumidor deste formulário — sem isto, só aqui o editor leria "um ou mais campos são
+  // consumidor deste formulário - sem isto, só aqui o editor leria "um ou mais campos são
   // inválidos" sem saber qual.
   const [erroServidor, setErroServidor] = useState<ErroDeEscritaComunicado | null>(null)
 
@@ -39,7 +39,7 @@ function FormularioComunicadoGlobal({
     nome: provedor.nome,
   }))
 
-  // Mesmo hook da tela 12 — nunca um segundo caminho de criação. Ele já
+  // Mesmo hook da tela 12 - nunca um segundo caminho de criação. Ele já
   // invalida `comunicadosAdminKeys.lists()`, então a tela 12 converge sozinha.
   const criarComunicado = useCriarComunicado()
 
@@ -71,14 +71,14 @@ function FormularioComunicadoGlobal({
 
 /**
  * Publicar comunicado de qualquer tela da área interna (§10). Mesmo
- * formulário da tela 12, reusado inteiro — "formulário mínimo" no escopo é
+ * formulário da tela 12, reusado inteiro - "formulário mínimo" no escopo é
  * leitura de UX, não um segundo formulário com outras regras.
  *
  * Nasce escondido sem `comunicados-adicionar`: o botão global não tem página
  * que faça a checagem por ele.
  *
  * D-1: com `comunicados-publicar` o rótulo "Publicar comunicado" passa a ser
- * verdadeiro — o comunicado nasce no ar, em uma só escrita (I32 com
+ * verdadeiro - o comunicado nasce no ar, em uma só escrita (I32 com
  * `publicar: true`). Sem a role, o botão se chama "Novo comunicado" e cria
  * rascunho. O que o toast diz vem da `message` do backend, nunca do que foi
  * pedido: pedir para publicar e ter publicado são coisas diferentes, e afirmar

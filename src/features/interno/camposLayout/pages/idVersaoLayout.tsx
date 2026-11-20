@@ -37,7 +37,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
   const permissoes = usePermissoesInterno()
 
   const { data: campos, isLoading, isError, refetch } = useCamposLayoutPorVersao(versaoLayoutId)
-  // Opções de "versão de descontinuação" (§5.1b) — só versões posteriores à
+  // Opções de "versão de descontinuação" (§5.1b) - só versões posteriores à
   // atual fazem sentido; a lista completa é pequena o bastante (versões de
   // layout, não campos) para não precisar de busca/paginação aqui.
   const { data: versoesLayout } = useVersoesLayout({ tamanhoPagina: 200 })
@@ -59,7 +59,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
 
   // A tela edita o vocabulário de UMA versão, e nada nela dizia qual: com mais de uma versão
   // publicada, o editor não tinha como saber onde estava salvando. O rótulo sai da lista que já é
-  // carregada para o select de descontinuação — nenhuma requisição a mais.
+  // carregada para o select de descontinuação - nenhuma requisição a mais.
   const rotuloDaVersao = versoesLayout?.items.find((versao) => versao.id === versaoLayoutId)?.rotulo
 
   const campoEmEdicao = typeof modalAberto === 'object' ? modalAberto : null
@@ -148,7 +148,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
     )
   }
 
-  /** A mutation só dispara depois da confirmação — nunca do clique na lista. */
+  /** A mutation só dispara depois da confirmação - nunca do clique na lista. */
   function confirmarRemocao() {
     if (!campoParaRemover) return
 

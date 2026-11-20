@@ -53,7 +53,7 @@ const comunicadoCriado = {
 
 /**
  * Espelha I32: `publicado` sai do que o backend FEZ e a `message` descreve esse
- * mesmo fato — nunca o `publicar` que o cliente pediu.
+ * mesmo fato - nunca o `publicar` que o cliente pediu.
  */
 function handlerCriar(capturado?: { corpo: Record<string, unknown> | null }) {
   return http.post(`${API_URL}/interno/comunicados`, async ({ request }) => {
@@ -107,7 +107,7 @@ describe('PublicarComunicadoGlobal', () => {
     expect(screen.queryByRole('button', { name: /comunicado/i })).not.toBeInTheDocument()
   })
 
-  it('só consulta provedores quando o modal abre — o botão está em toda tela interna', async () => {
+  it('só consulta provedores quando o modal abre - o botão está em toda tela interna', async () => {
     const usuario = userEvent.setup()
     let consultas = 0
     server.use(
@@ -153,7 +153,7 @@ describe('PublicarComunicadoGlobal', () => {
     await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('A expiração precisa ser no futuro.')
-    // O que foi digitado continua na tela — nada de reabrir e redigitar.
+    // O que foi digitado continua na tela - nada de reabrir e redigitar.
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: /Título/ })).toHaveValue('Instabilidade na SEFIN')
   })
@@ -200,7 +200,7 @@ describe('PublicarComunicadoGlobal', () => {
   })
 })
 
-describe('PublicarComunicadoGlobal — D-1, os três desfechos', () => {
+describe('PublicarComunicadoGlobal: D-1, os três desfechos', () => {
   it('com comunicados-publicar: o rótulo promete publicação, o payload pede, e o toast repete o que o backend disse', async () => {
     const usuario = userEvent.setup()
     const capturado: { corpo: Record<string, unknown> | null } = { corpo: null }
@@ -216,7 +216,7 @@ describe('PublicarComunicadoGlobal — D-1, os três desfechos', () => {
 
     expect(capturado.corpo?.publicar).toBe(true)
     // O texto vem da `message` de I32. Um literal fixo no cliente cairia aqui ou
-    // no caso do rascunho — as duas mensagens não podem ser a mesma.
+    // no caso do rascunho - as duas mensagens não podem ser a mesma.
     expect(screen.getByRole('status')).toHaveTextContent('Comunicado publicado.')
   })
 
@@ -243,7 +243,7 @@ describe('PublicarComunicadoGlobal — D-1, os três desfechos', () => {
     autenticarCom(['comunicados-adicionar', 'comunicados-publicar', 'provedores-buscar'])
     server.use(
       handlerProvedores(),
-      // `Forbid()` do ASP.NET responde 403 SEM envelope — é a forma real, não um
+      // `Forbid()` do ASP.NET responde 403 SEM envelope - é a forma real, não um
       // `{ error: ... }` de conveniência.
       http.post(`${API_URL}/interno/comunicados`, () => new HttpResponse(null, { status: 403 })),
     )

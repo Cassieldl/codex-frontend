@@ -1,10 +1,10 @@
 export type EstadoCampoLayout = 'Ativo' | 'Descontinuado'
 
 /**
- * `CampoLayoutAdmin` — R3 (`analise-backend.md` §5.1a): vocabulário canônico,
+ * `CampoLayoutAdmin` - R3 (`analise-backend.md` §5.1a): vocabulário canônico,
  * **nunca** `tipo`/`tamanho`/`mascara`/`dominio`/`estadoPreenchimento`/
  * `condicao`/`exemplo`/`notaPreenchimento`/`destinoXml`/`notaTransformacao`
- * — comportamento vive em `CampoVersaoAdmin`, nunca aqui.
+ * - comportamento vive em `CampoVersaoAdmin`, nunca aqui.
  */
 export interface CampoLayoutAdmin {
   id: number
@@ -21,7 +21,7 @@ export interface CampoLayoutAdmin {
   etag?: string
 }
 
-/** `CriarCampoLayoutDto` (I16) — sem `publicado`. */
+/** `CriarCampoLayoutDto` (I16) - sem `publicado`. */
 export interface CriarCampoLayoutDto {
   nome: string
   caminhoXml: string
@@ -32,7 +32,7 @@ export interface CriarCampoLayoutDto {
 }
 
 /**
- * `AtualizarCampoLayoutDto` (I17a) — `versaoLayoutDescontinuadoId` obrigatório
+ * `AtualizarCampoLayoutDto` (I17a) - `versaoLayoutDescontinuadoId` obrigatório
  * se `estado === 'Descontinuado'`, proibido caso contrário (§5.1b, validado
  * no schema Zod de `CampoLayoutForm`).
  */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { nomeDaListaPorTipo, rotaEdicaoPorTipo } from './rotaEdicaoPorTipo'
 
-describe('rotaEdicaoPorTipo — tabela de destinos (F-3)', () => {
+describe('rotaEdicaoPorTipo: tabela de destinos (F-3)', () => {
   it('leva cada tipo com atalho à LISTAGEM interna dele, nunca ao registro', () => {
     expect(rotaEdicaoPorTipo('provedor')).toBe('/interno/provedores')
     expect(rotaEdicaoPorTipo('versaoprovedor')).toBe('/interno/provedores')
@@ -10,7 +10,7 @@ describe('rotaEdicaoPorTipo — tabela de destinos (F-3)', () => {
     expect(rotaEdicaoPorTipo('artigo')).toBe('/interno/artigos')
   })
 
-  it('nenhum destino carrega id de registro — a limitação de F-3 é estrutural', () => {
+  it('nenhum destino carrega id de registro - a limitação de F-3 é estrutural', () => {
     const destinos = ['provedor', 'versaoprovedor', 'campolayout', 'erro', 'artigo'].map(
       (tipo) => rotaEdicaoPorTipo(tipo) as string,
     )
@@ -21,7 +21,7 @@ describe('rotaEdicaoPorTipo — tabela de destinos (F-3)', () => {
     }
   })
 
-  it('aviso não tem atalho — vive dentro do detalhe de um provedor/versão', () => {
+  it('aviso não tem atalho - vive dentro do detalhe de um provedor/versão', () => {
     expect(rotaEdicaoPorTipo('aviso')).toBeNull()
   })
 
@@ -41,7 +41,7 @@ describe('rotaEdicaoPorTipo — tabela de destinos (F-3)', () => {
   })
 })
 
-describe('nomeDaListaPorTipo — frase da ressalva de PQ-09', () => {
+describe('nomeDaListaPorTipo: frase da ressalva de PQ-09', () => {
   it('nomeia a listagem em português e no plural', () => {
     expect(nomeDaListaPorTipo('provedor')).toBe('provedores')
     expect(nomeDaListaPorTipo('versaoprovedor')).toBe('versões de provedor')
@@ -60,7 +60,7 @@ describe('nomeDaListaPorTipo — frase da ressalva de PQ-09', () => {
     expect(nomeDaListaPorTipo('comunicado')).toBe('comunicado')
   })
 
-  it('todo tipo com rota de edição tem nome de lista — o aria-label nunca fica sem frase', () => {
+  it('todo tipo com rota de edição tem nome de lista - o aria-label nunca fica sem frase', () => {
     for (const tipo of ['provedor', 'versaoprovedor', 'campolayout', 'erro', 'artigo']) {
       expect(rotaEdicaoPorTipo(tipo)).not.toBeNull()
       expect(nomeDaListaPorTipo(tipo)).not.toBe(tipo)

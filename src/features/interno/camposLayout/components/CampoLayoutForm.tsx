@@ -14,9 +14,9 @@ const ESTADO_OPTIONS: SelectOption[] = [
   { value: 'Descontinuado', label: 'Descontinuado' },
 ]
 
-// R3 (`analise-backend.md` §5.1a) — campo canônico é identidade, nunca
+// R3 (`analise-backend.md` §5.1a) - campo canônico é identidade, nunca
 // comportamento. Este formulário nunca oferece tipo/tamanho/máscara/domínio/
-// obrigatoriedade — isso vive só em `CampoVersaoForm`.
+// obrigatoriedade - isso vive só em `CampoVersaoForm`.
 // Os tetos são os do backend (`LimitesCampoLayout`), que são os das colunas.
 function criarSchema(modo: 'criar' | 'editar') {
   return z
@@ -73,7 +73,7 @@ export interface CampoLayoutFormDto {
 export interface CampoLayoutFormProps {
   modo: 'criar' | 'editar'
   initialData?: CampoLayoutAdmin
-  /** Só relevante em `modo="editar"` — versões do layout posteriores à de origem deste campo. */
+  /** Só relevante em `modo="editar"` - versões do layout posteriores à de origem deste campo. */
   opcoesVersaoLayoutDescontinuar?: SelectOption[]
   onSubmit: (dto: CampoLayoutFormDto) => void
   onCancel: () => void

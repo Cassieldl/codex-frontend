@@ -11,7 +11,7 @@ const API_URL = import.meta.env.VITE_API_URL
 /**
  * Corpo REAL de `GET /interno/comunicados` (I30): `PaginatedResponse<T>` **cru
  * na raiz**, sem envelope `data`. Cada item traz `versaoConcorrencia` e nenhum
- * `etag` — nenhum literal `W/"…"` aparece aqui de propósito, o valor esperado
+ * `etag` - nenhum literal `W/"…"` aparece aqui de propósito, o valor esperado
  * no `If-Match` tem de ser DERIVADO.
  *
  * As três combinações de `publicado`/`encerrado` que a visão padrão
@@ -89,7 +89,7 @@ describe('useComunicadosAdmin (I30)', () => {
     expect(capturado.url?.searchParams.get('tamanhoPagina')).toBe('50')
   })
 
-  it('a visão padrão entrega o rascunho vigente intacto — o filtro esconde só o encerrado', async () => {
+  it('a visão padrão entrega o rascunho vigente intacto - o filtro esconde só o encerrado', async () => {
     server.use(
       http.get(`${API_URL}/interno/comunicados`, () => HttpResponse.json(respostaVisaoPadrao)),
     )
@@ -129,14 +129,14 @@ describe('useComunicadosAdmin (I30)', () => {
     )
   })
 
-  it('o corpo real não tem campo etag — o valor é derivado, nunca repassado', () => {
+  it('o corpo real não tem campo etag - o valor é derivado, nunca repassado', () => {
     expect(respostaVisaoPadrao.items).not.toHaveLength(0)
     for (const item of respostaVisaoPadrao.items) {
       expect(item).not.toHaveProperty('etag')
     }
   })
 
-  it('lê o corpo CRU na raiz — envelope { data } de I31-I35 não se aplica a I30', async () => {
+  it('lê o corpo CRU na raiz - envelope { data } de I31-I35 não se aplica a I30', async () => {
     server.use(
       http.get(`${API_URL}/interno/comunicados`, () =>
         HttpResponse.json({ data: respostaVisaoPadrao, message: null }),
@@ -147,7 +147,7 @@ describe('useComunicadosAdmin (I30)', () => {
       wrapper: criarWrapper(novoQueryClient()),
     })
 
-    // Enveloped, a leitura crua não acha `items` e a query falha — é a prova de
+    // Enveloped, a leitura crua não acha `items` e a query falha - é a prova de
     // que o hook está casado com o envelope certo do endpoint certo.
     await waitFor(() => expect(result.current.isError).toBe(true))
   })

@@ -9,7 +9,7 @@ interface VariaveisRemoverCampoLayout {
   etag?: string
 }
 
-/** `DELETE /interno/campos-layout/{id}` (I17b) — role `campolayout-remover`, `If-Match` obrigatório. */
+/** `DELETE /interno/campos-layout/{id}` (I17b) - role `campolayout-remover`, `If-Match` obrigatório. */
 export function useRemoverCampoLayout() {
   const queryClient = useQueryClient()
 

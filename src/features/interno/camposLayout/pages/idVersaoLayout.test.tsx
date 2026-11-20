@@ -115,10 +115,10 @@ afterEach(() => {
 
 /**
  * A tela edita o vocabulário de UMA versão do layout, escolhida pela URL. Ela não dizia qual: com
- * mais de uma versão publicada, quem edita não tinha como saber onde estava salvando — e o erro
+ * mais de uma versão publicada, quem edita não tinha como saber onde estava salvando - e o erro
  * só apareceria no portal, já publicado.
  */
-describe('IdVersaoLayoutPage — a versão que está sendo editada', () => {
+describe('IdVersaoLayoutPage: a versão que está sendo editada', () => {
   it('nomeia a versão no título e na trilha', async () => {
     server.use(...handlers())
 

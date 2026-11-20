@@ -10,14 +10,14 @@ export function caminhoDoItemBuscaInterna(item: ResultadoItem): string | null {
 }
 
 /**
- * Valor que o "Copiar link" coloca na área de transferência — mesma regra para
+ * Valor que o "Copiar link" coloca na área de transferência - mesma regra para
  * o clique na tela 11 e para o `Ctrl+Enter` da barra de comando, para a
  * decisão de negócio não existir em dois lugares.
  *
  * O ponto (PQ-09): a busca interna enxerga rascunho, e copiar a URL pública de
  * um conteúdo não publicado manda o parceiro para um 404/410. Item em rascunho
  * copia o link INTERNO de edição; item sem rota de edição não copia nada
- * (`null`) — o chamador mostra o motivo em vez de um botão que engana.
+ * (`null`) - o chamador mostra o motivo em vez de um botão que engana.
  *
  * `item.url` vem da API e só entra no texto copiado depois de
  * `caminhoInternoSeguro` (BAIXO-04): "@evil.com" concatenado com a origem vira

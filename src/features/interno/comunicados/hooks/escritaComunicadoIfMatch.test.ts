@@ -11,7 +11,7 @@ import { usePublicarComunicado } from './usePublicarComunicado'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-/** Corpo de `GET /interno/comunicados/{id}` (I31) — enveloped, com `versaoConcorrencia` e sem `etag`. */
+/** Corpo de `GET /interno/comunicados/{id}` (I31) - enveloped, com `versaoConcorrencia` e sem `etag`. */
 const detalheDoServidor = {
   id: 77,
   titulo: 'Manutenção programada',
@@ -37,7 +37,7 @@ function novoQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } })
 }
 
-describe('escrita de comunicado — If-Match derivado da leitura (I31 → I33/I34/I35)', () => {
+describe('escrita de comunicado: If-Match derivado da leitura (I31 → I33/I34/I35)', () => {
   it('I31 traz corpo e os ids brutos de escopo, e deriva o etag do versaoConcorrencia', async () => {
     server.use(
       http.get(`${API_URL}/interno/comunicados/77`, () =>
@@ -51,7 +51,7 @@ describe('escrita de comunicado — If-Match derivado da leitura (I31 → I33/I3
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    // Os três campos que a listagem NÃO tem — sem eles o modal abre vazio.
+    // Os três campos que a listagem NÃO tem - sem eles o modal abre vazio.
     expect(result.current.data?.corpo).toBe('A prefeitura ficará indisponível no domingo.')
     expect(result.current.data?.provedorId).toBe(4)
     expect(result.current.data?.versaoProvedorId).toBe(9)
@@ -131,7 +131,7 @@ describe('escrita de comunicado — If-Match derivado da leitura (I31 → I33/I3
     expect(capturado.del).toBe('W/"31"')
   })
 
-  it('publicar manda só { publicado } no corpo — nenhum outro campo do comunicado', async () => {
+  it('publicar manda só { publicado } no corpo - nenhum outro campo do comunicado', async () => {
     const capturado: { corpo: unknown } = { corpo: null }
     server.use(
       http.put(`${API_URL}/interno/comunicados/77/publicacao`, async ({ request }) => {

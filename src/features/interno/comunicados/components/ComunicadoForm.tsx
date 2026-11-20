@@ -30,7 +30,7 @@ const ABRANGENCIA_OPTIONS: SelectOption[] = [
   { value: 'ProvedorVersao', label: 'Uma versão de um provedor' },
 ]
 
-/** Limite de `Comunicado.Corpo` no backend (decisoes.md B-6) — os dois lados concordam. */
+/** Limite de `Comunicado.Corpo` no backend (decisoes.md B-6) - os dois lados concordam. */
 const LIMITE_CORPO = 2000
 
 // A abrangência determina a própria estrutura do formulário (mesmo princípio de
@@ -97,14 +97,14 @@ export interface ComunicadoFormProps {
   onCancel: () => void
   isSubmitting?: boolean
   erroServidor?: string | null
-  /** Erros por campo do 422 — destacam o campo em vez de deixar só a mensagem geral. */
+  /** Erros por campo do 422 - destacam o campo em vez de deixar só a mensagem geral. */
   errosDeCampo?: ErroDeCampoApi[]
 }
 
 /**
  * Converte o `expiraEm` do contrato (ISO-8601 com offset) para o formato que o
  * `<input type="datetime-local">` aceita, no fuso do editor. Data inválida ou
- * ausente vira campo vazio — nunca `Invalid Date` visível na tela.
+ * ausente vira campo vazio - nunca `Invalid Date` visível na tela.
  */
 function paraCampoDataHora(iso: string | undefined): string {
   if (!iso) return ''
@@ -176,7 +176,7 @@ export function ComunicadoForm({
     setValue('abrangencia', valor as AbrangenciaComunicado, { shouldValidate: true })
 
     // Voltar para uma abrangência mais larga descarta o escopo que ela não
-    // comporta — o CHECK de consistência do banco recusaria a sobra.
+    // comporta - o CHECK de consistência do banco recusaria a sobra.
     if (valor === 'Global') {
       setValue('provedorId', '')
     }
@@ -219,7 +219,7 @@ export function ComunicadoForm({
         label="Corpo"
         required
         rows={4}
-        hint={`Texto curto, sem formatação — ${corpoAtual.length} de ${LIMITE_CORPO} caracteres.`}
+        hint={`Texto curto, sem formatação: ${corpoAtual.length} de ${LIMITE_CORPO} caracteres.`}
         error={errors.corpo?.message}
         {...register('corpo')}
       />
@@ -240,7 +240,7 @@ export function ComunicadoForm({
           label="Expira em"
           type="datetime-local"
           required
-          hint="Comunicado sempre tem prazo — depois dele, sai do ar sozinho."
+          hint="Comunicado sempre tem prazo: depois dele, sai do ar sozinho."
           error={errors.expiraEm?.message}
           {...register('expiraEm')}
         />
@@ -249,7 +249,7 @@ export function ComunicadoForm({
       <fieldset className="flex flex-col gap-5">
         {/*
           Sem asterisco: todo campo deste grupo tem label e marca própria de obrigatoriedade, então
-          a marca na legend era a segunda para o mesmo campo — a tela mostrava "* Onde o comunicado
+          a marca na legend era a segunda para o mesmo campo - a tela mostrava "* Onde o comunicado
           aparece" e "* Abrangência" empilhados, lidos como dois rótulos do mesmo select. Difere de
           `ErroForm`, onde a legend marca um grupo que é exigido como um todo e não tem label filho.
         */}

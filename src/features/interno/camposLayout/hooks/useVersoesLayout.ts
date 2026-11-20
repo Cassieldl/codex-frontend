@@ -13,7 +13,7 @@ interface PaginatedResponseCru<T> {
 }
 
 /**
- * `GET /interno/layout/versoes` (I15a) — `PaginatedResponse<T>` cru, role
+ * `GET /interno/layout/versoes` (I15a) - `PaginatedResponse<T>` cru, role
  * `versoeslayout-buscar`. O `etag` de cada item é derivado do
  * `versaoConcorrencia` do corpo, que é a única fonte possível do validador
  * num item de lista.

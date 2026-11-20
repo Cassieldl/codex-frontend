@@ -8,7 +8,7 @@ interface EnvelopeCampoLayoutAdmin {
   message: string | null
 }
 
-/** `POST /interno/layout/versoes/{id}/campos` (I16) — sem `publicado`. */
+/** `POST /interno/layout/versoes/{id}/campos` (I16) - sem `publicado`. */
 export function useCriarCampoLayout(versaoLayoutId: number) {
   const queryClient = useQueryClient()
 

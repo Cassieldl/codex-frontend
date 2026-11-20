@@ -16,7 +16,7 @@ interface VariaveisAtualizarComunicado {
 }
 
 /**
- * `PUT /interno/comunicados/{id}` (I33) — role `comunicados-atualizar`,
+ * `PUT /interno/comunicados/{id}` (I33) - role `comunicados-atualizar`,
  * `If-Match` obrigatório. É por aqui que se **estende a expiração** de um
  * comunicado encerrado antes de republicar (decisoes.md B-4).
  *

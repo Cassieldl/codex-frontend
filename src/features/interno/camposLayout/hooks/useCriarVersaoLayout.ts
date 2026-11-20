@@ -8,7 +8,7 @@ interface EnvelopeVersaoLayoutAdmin {
   message: string | null
 }
 
-/** `POST /interno/layout/versoes` (I15b) — sem `ordem` (auto-atribuída) e sem `publicado`. */
+/** `POST /interno/layout/versoes` (I15b) - sem `ordem` (auto-atribuída) e sem `publicado`. */
 export function useCriarVersaoLayout() {
   const queryClient = useQueryClient()
 

@@ -10,7 +10,7 @@ interface EnvelopeComunicadoAdmin {
 }
 
 /**
- * `GET /interno/comunicados/{id}` (I31) — `ApiResponse<T>` enveloped, role
+ * `GET /interno/comunicados/{id}` (I31) - `ApiResponse<T>` enveloped, role
  * `comunicados-buscar`.
  *
  * A lista (I30) não traz `corpo`, `provedorId` nem `versaoProvedorId`: sem

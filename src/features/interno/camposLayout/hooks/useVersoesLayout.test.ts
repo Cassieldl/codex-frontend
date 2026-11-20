@@ -12,7 +12,7 @@ const API_URL = import.meta.env.VITE_API_URL
 /**
  * Shape REAL de `PaginatedResponse<VersaoLayoutAdminDto>` (I15a): `estado` é
  * campo obrigatório da resposta e os valores são os do enum
- * `EstadoVersaoLayout` do backend (`Prevista`/`Vigente`/`Anterior`) — nunca
+ * `EstadoVersaoLayout` do backend (`Prevista`/`Vigente`/`Anterior`) - nunca
  * `Ativo`/`Descontinuado`, que são estado de CAMPO canônico. Sem `etag` no
  * corpo: o validador viaja em `versaoConcorrencia`.
  */

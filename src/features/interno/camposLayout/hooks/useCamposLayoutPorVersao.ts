@@ -10,11 +10,11 @@ interface EnvelopeCamposLayoutAdmin {
 }
 
 /**
- * `GET /interno/layout/versoes/{id}/campos` (I16) — `ApiResponse<T[]>`, role
+ * `GET /interno/layout/versoes/{id}/campos` (I16) - `ApiResponse<T[]>`, role
  * `campolayout-buscar`. Reaproveitado por `CampoVersaoForm` (via mapeamento
  * para `OpcaoCampoLayout`) para alimentar o select de campo canônico (U4).
  *
- * O `etag` de cada campo é derivado do `versaoConcorrencia` do corpo — a
+ * O `etag` de cada campo é derivado do `versaoConcorrencia` do corpo - a
  * resposta é uma coleção, então o header `ETag` não alcança item nenhum, e é
  * daqui que sai o `If-Match` de I17a/I17b/I17c.
  */

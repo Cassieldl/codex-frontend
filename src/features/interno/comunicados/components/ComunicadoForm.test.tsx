@@ -15,7 +15,7 @@ const PROVEDORES: OpcaoProvedorComunicado[] = [
   { id: 5, nome: 'Prefeitura Vizinha' },
 ]
 
-/** `GET /interno/provedores/{id}/versoes` (I6) — `ApiResponse<T[]>` enveloped. */
+/** `GET /interno/provedores/{id}/versoes` (I6) - `ApiResponse<T[]>` enveloped. */
 function handlerVersoes(provedorId: number, versoes: { id: number; rotulo: string }[]) {
   return http.get(`${API_URL}/interno/provedores/${provedorId}/versoes`, () =>
     HttpResponse.json({
@@ -72,7 +72,7 @@ async function preencherBasico(expiraEm = FUTURO) {
   await usuario.type(screen.getByLabelText(/expira em/i), expiraEm)
 }
 
-describe('ComunicadoForm — estrutura decidida pela abrangência', () => {
+describe('ComunicadoForm: estrutura decidida pela abrangência', () => {
   it('abrangência Global não renderiza provedor nem versão', () => {
     renderizar()
 
@@ -99,7 +99,7 @@ describe('ComunicadoForm — estrutura decidida pela abrangência', () => {
   })
 })
 
-describe('ComunicadoForm — consistência de escopo no envio', () => {
+describe('ComunicadoForm: consistência de escopo no envio', () => {
   it('Global envia provedorId e versaoProvedorId como undefined', async () => {
     const usuario = userEvent.setup()
     const { onSubmit } = renderizar()
@@ -219,7 +219,7 @@ describe('ComunicadoForm — consistência de escopo no envio', () => {
   })
 })
 
-describe('ComunicadoForm — expiração obrigatória e no futuro (M-3)', () => {
+describe('ComunicadoForm: expiração obrigatória e no futuro (M-3)', () => {
   it('sem expiração, bloqueia o submit', async () => {
     const usuario = userEvent.setup()
     const { onSubmit } = renderizar()
@@ -282,7 +282,7 @@ describe('ComunicadoForm — expiração obrigatória e no futuro (M-3)', () => 
   })
 })
 
-describe('ComunicadoForm — limite de corpo (B-6)', () => {
+describe('ComunicadoForm: limite de corpo (B-6)', () => {
   it('2000 caracteres passam; 2001 reprovam com mensagem em português', async () => {
     const usuario = userEvent.setup()
     const { onSubmit } = renderizar()
@@ -307,7 +307,7 @@ describe('ComunicadoForm — limite de corpo (B-6)', () => {
   })
 })
 
-describe('ComunicadoForm — edição a partir do detalhe (I31)', () => {
+describe('ComunicadoForm: edição a partir do detalhe (I31)', () => {
   it('pré-preenche corpo e escopo com os campos que só o detalhe tem', async () => {
     server.use(handlerVersoes(4, [{ id: 9, rotulo: 'ABRASF 2.04' }]))
     const detalhe: ComunicadoAdminDetalhe = {

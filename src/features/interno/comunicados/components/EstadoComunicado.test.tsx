@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { EstadoComunicado } from './EstadoComunicado'
 
 describe('EstadoComunicado', () => {
-  it('rascunho vigente é "Rascunho" — nunca "Encerrado"', () => {
+  it('rascunho vigente é "Rascunho" - nunca "Encerrado"', () => {
     render(<EstadoComunicado publicado={false} encerrado={false} />)
 
     expect(screen.getByText('Rascunho')).toBeInTheDocument()
@@ -19,14 +19,14 @@ describe('EstadoComunicado', () => {
     expect(screen.queryByText('Rascunho')).not.toBeInTheDocument()
   })
 
-  it('publicado e encerrado é "Encerrado" — o vencimento vence a publicação na leitura', () => {
+  it('publicado e encerrado é "Encerrado" - o vencimento vence a publicação na leitura', () => {
     render(<EstadoComunicado publicado encerrado />)
 
     expect(screen.getByText('Encerrado')).toBeInTheDocument()
     expect(screen.queryByText('Publicado')).not.toBeInTheDocument()
   })
 
-  it('rascunho encerrado é "Rascunho vencido" — a janela passou sem ele ir ao ar (D-2)', () => {
+  it('rascunho encerrado é "Rascunho vencido" - a janela passou sem ele ir ao ar (D-2)', () => {
     render(<EstadoComunicado publicado={false} encerrado />)
 
     expect(screen.getByText('Rascunho vencido')).toBeInTheDocument()

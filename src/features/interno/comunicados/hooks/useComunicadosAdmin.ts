@@ -13,16 +13,16 @@ interface PaginatedResponseCru<T> {
 }
 
 /**
- * `GET /interno/comunicados` (I30) — `PaginatedResponse<T>` **cru na raiz**
+ * `GET /interno/comunicados` (I30) - `PaginatedResponse<T>` **cru na raiz**
  * (I31-I35 é que vêm enveloped em `data`), role `comunicados-buscar`.
  *
  * `incluirEncerrados` viaja como o chamador mandou, sem default próprio aqui:
  * o filtro é da tela, e o default do backend (`false`) esconde apenas o que
- * **encerrou** (`expiraEm` no passado) — rascunho vigente segue na resposta,
+ * **encerrou** (`expiraEm` no passado) - rascunho vigente segue na resposta,
  * que é o que sustenta o badge "Rascunho" da lista.
  *
  * O `etag` de cada item sai do `versaoConcorrencia` do corpo (header `ETag` é
- * um por resposta, não alcança item de lista) — é o que permite publicar,
+ * um por resposta, não alcança item de lista) - é o que permite publicar,
  * despublicar e remover direto da listagem.
  */
 export function useComunicadosAdmin(params: ListarComunicadosAdminParams) {

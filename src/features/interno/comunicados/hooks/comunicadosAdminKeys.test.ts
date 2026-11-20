@@ -23,7 +23,7 @@ describe('comunicadosAdminKeys', () => {
     expect(padrao).not.toEqual(comEncerrados)
   })
 
-  it('detail é prefixado por all — invalidar a raiz alcança lista e detalhe', () => {
+  it('detail é prefixado por all - invalidar a raiz alcança lista e detalhe', () => {
     expect(comunicadosAdminKeys.detail(7)).toEqual(['comunicadosAdmin', 'detail', 7])
     expect(comunicadosAdminKeys.detail(7).slice(0, 1)).toEqual([...comunicadosAdminKeys.all])
     expect(comunicadosAdminKeys.lists().slice(0, 1)).toEqual([...comunicadosAdminKeys.all])

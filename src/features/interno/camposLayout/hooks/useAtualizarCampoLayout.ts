@@ -17,9 +17,9 @@ interface VariaveisAtualizarCampoLayout {
 }
 
 /**
- * `PUT /interno/campos-layout/{id}` (I17a) — role `campolayout-atualizar`,
+ * `PUT /interno/campos-layout/{id}` (I17a) - role `campolayout-atualizar`,
  * `If-Match` obrigatório. `versaoLayoutDescontinuadoId` obrigatório se
- * `estado === 'Descontinuado'`, proibido caso contrário — validado no
+ * `estado === 'Descontinuado'`, proibido caso contrário - validado no
  * `CampoLayoutForm`, espelhando o validator do backend (§5.1b). No `409` de
  * concorrência relê a lista, de onde sai o etag da segunda tentativa.
  */
