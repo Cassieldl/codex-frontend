@@ -60,7 +60,7 @@ describe('ArtigosRecentesHome', () => {
   it('ArtigoRecenteHome é aceito onde ArtigoListaItem é esperado', () => {
     // Trava de compatibilidade: `CardArtigo` é reusado do índice de artigos, e
     // só continua reusável enquanto os dois shapes forem o mesmo. Se P9 e P7
-    // divergirem num campo, esta atribuição para de compilar — que é o ponto.
+    // divergirem num campo, esta atribuição para de compilar - que é o ponto.
     const comoItemDeLista: ArtigoListaItem = artigos[0]
 
     expect(comoItemDeLista.slug).toBe('identificar-a-versao-pelo-retorno')

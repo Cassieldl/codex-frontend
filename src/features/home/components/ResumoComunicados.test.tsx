@@ -28,7 +28,7 @@ function comunicado(
 }
 
 /**
- * Âncora de montagem — `RouterProvider` monta de forma assíncrona, e afirmar
+ * Âncora de montagem - `RouterProvider` monta de forma assíncrona, e afirmar
  * `container` vazio logo depois de `render` passa mesmo com o componente
  * renderizando. Ausência só vale depois de esperar por isto.
  */
@@ -114,7 +114,7 @@ describe('ResumoComunicados', () => {
 
   /**
    * O título ia só em `title=`, que teclado não alcança, e o chip global era um
-   * `<span>` — o comunicado que o PRD §2.1 nomeia entregava zero informação.
+   * `<span>` - o comunicado que o PRD §2.1 nomeia entregava zero informação.
    */
   it('mostra o título no texto do chip, inclusive no global, que não tem link', async () => {
     renderResumo([comunicado('IPM Sistemas'), comunicado(null, 'Informativo')])
@@ -165,10 +165,10 @@ describe('ResumoComunicados', () => {
  * etiqueta de severidade, o prefixo do alvo consumia a faixa toda e sobrava "Todos os provedores:
  * Tra...".
  *
- * O jsdom não faz layout, então a asserção é sobre a faixa declarada — a medida real só existe no
+ * O jsdom não faz layout, então a asserção é sobre a faixa declarada - a medida real só existe no
  * navegador. Asserção fraca de propósito: trava a regressão exata sem fingir que mede largura.
  */
-describe('ResumoComunicados — faixa do chip', () => {
+describe('ResumoComunicados: faixa do chip', () => {
   it('reserva largura suficiente para o assunto, não só para o prefixo', async () => {
     renderResumo([comunicado(null)])
 

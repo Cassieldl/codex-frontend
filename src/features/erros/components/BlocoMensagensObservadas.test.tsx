@@ -14,7 +14,7 @@ function configurarUsuarioComClipboard() {
 }
 
 describe('BlocoMensagensObservadas', () => {
-  it('gera um aria-label específico e único por variante — nunca "Copiar" genérico', () => {
+  it('gera um aria-label específico e único por variante - nunca "Copiar" genérico', () => {
     render(
       <BlocoMensagensObservadas
         codigoErro="E0117"

@@ -9,7 +9,7 @@ export interface ArtigosRelacionadosProps {
 
 /**
  * Bloco "Artigos relacionados" da página do erro (§5). Mesmo padrão de
- * `CamposRelacionados`: seção inteira some quando a coleção é vazia — nunca
+ * `CamposRelacionados`: seção inteira some quando a coleção é vazia - nunca
  * um `<h2>` órfão seguido de nada.
  *
  * Navega com o `url` que o backend já entrega pronto (nunca remonta a rota no

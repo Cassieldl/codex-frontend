@@ -1,6 +1,6 @@
 // Espelha `analise-backend.md` §4.1 (P5/P6) e `analise-frontend.md` §5.4/§7.2.
 // `ErroDetalhe.versoesAplicaveis` é **array vazio**, nunca `null`/omitido,
-// quando o erro não tem provedor/versão aplicável (U9) — a API já garante
+// quando o erro não tem provedor/versão aplicável (U9) - a API já garante
 // isso no DTO, o frontend só respeita o shape.
 
 import type { TipoArtigo } from '../../artigos/types/artigo'
@@ -14,7 +14,7 @@ export interface VersaoAplicavel {
   versaoRotulo: string
 }
 
-/** Versão de provedor em que o campo aparece — é para a âncora dele que o link aponta. */
+/** Versão de provedor em que o campo aparece - é para a âncora dele que o link aponta. */
 export interface AncoraCampoVersao {
   provedorSlug: string
   versaoSlug: string
@@ -44,10 +44,10 @@ export interface ErroDetalhe {
   variantes: string[]
   causaProvavel: string | null
   solucaoSugerida: string | null
-  /** Lista vazia é válida — erro geral de origem `InvoiCy`/`Schema` (U9). */
+  /** Lista vazia é válida - erro geral de origem `InvoiCy`/`Schema` (U9). */
   versoesAplicaveis: VersaoAplicavel[]
   camposRelacionados: CampoRelacionado[]
-  /** Sempre presente — `[]` quando não há artigo ligado, nunca omitido nem `null` (PQ-08). */
+  /** Sempre presente - `[]` quando não há artigo ligado, nunca omitido nem `null` (PQ-08). */
   artigosRelacionados: ReferenciaArtigo[]
 }
 
@@ -56,6 +56,6 @@ export interface ErroListaItem {
   codigo: string
   titulo: string
   origem: OrigemErro
-  /** `null` quando o erro é geral (U9) — nunca "—". */
+  /** `null` quando o erro é geral (U9), nunca travessão. */
   provedorNome: string | null
 }

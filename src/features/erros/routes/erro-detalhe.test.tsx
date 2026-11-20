@@ -88,7 +88,7 @@ function renderPagina({ erroSlug, caminhoAtual = `/erros/${erroSlug}` }: OpcoesR
   return { ...utils, navegar }
 }
 
-describe('ErroDetalhePage — bloco de artigos relacionados (§5)', () => {
+describe('ErroDetalhePage: bloco de artigos relacionados (§5)', () => {
   it('sem artigos ligados (coleção vazia do contrato), a seção não aparece', async () => {
     server.use(handlerErroDetalhePadrao('e0117'))
 
@@ -235,7 +235,7 @@ describe('ErroDetalhePage: o que decide o caso vem primeiro', () => {
   })
 })
 
-describe('ErroDetalhePage — causa provável', () => {
+describe('ErroDetalhePage: causa provável', () => {
   it('preserva a quebra entre a regra da Sefin e o lugar onde ela se aplica', async () => {
     // Formato da carga do Emissor Nacional: regra numa linha, caminho na seguinte.
     const causa = 'Regra da Sefin: O CNPJ do tomador deve ser válido.\nOnde: DPS/infDPS/toma/CNPJ'
@@ -254,10 +254,10 @@ describe('ErroDetalhePage — causa provável', () => {
   })
 })
 
-// F-4 (`arquitetura.md` §5.F) — `erro` nunca teve mecanismo de correção de
+// F-4 (`arquitetura.md` §5.F) - `erro` nunca teve mecanismo de correção de
 // slug. Estes testes travam que ele passou a ter, no mesmo padrão de
 // `artigo-detalhe.test.tsx`.
-describe('ErroDetalhePage — correção de URL canônica (F-4)', () => {
+describe('ErroDetalhePage: correção de URL canônica (F-4)', () => {
   it('não redireciona quando o caminho atual já é o canônico', async () => {
     server.use(handlerErroDetalhePadrao('e0117'))
 
@@ -288,7 +288,7 @@ describe('ErroDetalhePage — correção de URL canônica (F-4)', () => {
   })
 })
 
-describe('ErroDetalhePage — rodapé: próximo passo e caminho ao suporte (§7.1/§7.2)', () => {
+describe('ErroDetalhePage: rodapé: próximo passo e caminho ao suporte (§7.1/§7.2)', () => {
   const versaoIpm = {
     provedorSlug: 'ipm',
     provedorNome: 'IPM',
@@ -386,7 +386,7 @@ describe('ErroDetalhePage — rodapé: próximo passo e caminho ao suporte (§7.
  * consulta só, com todos os provedores aplicáveis ao erro; o erro geral (sem versões) consulta
  * sem provedor e recebe só os comunicados globais.
  */
-describe('ErroDetalhePage — comunicados do contexto', () => {
+describe('ErroDetalhePage: comunicados do contexto', () => {
   function versaoAplicavel(provedorSlug: string, versaoSlug: string) {
     return {
       provedorSlug,

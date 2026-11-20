@@ -42,7 +42,7 @@ function envolverComQueryClient(
 }
 
 describe('useHome', () => {
-  it('lê o envelope `data` de P9 — ApiResponse, não PaginatedResponse cru', async () => {
+  it('lê o envelope `data` de P9 - ApiResponse, não PaginatedResponse cru', async () => {
     server.use(http.get(`${API_URL}/home`, () => HttpResponse.json({ data: home, message: null })))
 
     const { result } = renderHook(() => useHome(), { wrapper: envolverComQueryClient() })
@@ -53,7 +53,7 @@ describe('useHome', () => {
 
   it('falha alto quando a resposta vem no envelope do vizinho (cru na raiz)', async () => {
     // As listagens públicas respondem cruas na raiz. Se este hook aceitasse os
-    // dois formatos, o teste acima passaria por coincidência — aqui a leitura
+    // dois formatos, o teste acima passaria por coincidência - aqui a leitura
     // TEM de quebrar, nunca entregar uma Home meio vazia como se fosse sucesso.
     server.use(handlerHomeCruSemEnvelope(home))
 

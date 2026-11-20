@@ -24,7 +24,7 @@ function LinhaCritica({ comunicado }: { comunicado: ComunicadoVigenteHome }) {
       </span>
 
       {/*
-        `url` é `null` em comunicado global (PQ-15 — não há provedor para
+        `url` é `null` em comunicado global (PQ-15 - não há provedor para
         abrir). O saneamento vem junto do ramo, não junto do dado: o dia em
         que o backend passar a mandar uma URL, ela já entra filtrada.
       */}
@@ -42,15 +42,15 @@ function LinhaCritica({ comunicado }: { comunicado: ComunicadoVigenteHome }) {
 
 /**
  * Faixa do topo da Home para comunicados `Critico` de **qualquer abrangência**
- * (arquitetura §5.D/U-5 — o PRD falava só de global, mas a faixa do artboard
+ * (arquitetura §5.D/U-5 - o PRD falava só de global, mas a faixa do artboard
  * nomeia provedor; a Home recebe todos os vigentes e a UI distribui).
  *
  * `role="alert"` de propósito: é a única informação da página que interrompe o
- * leitor de tela, e ela nunca depende só de cor — ícone + a palavra "Crítico"
+ * leitor de tela, e ela nunca depende só de cor - ícone + a palavra "Crítico"
  * carregam o mesmo significado.
  *
  * Dispensável **na sessão**: o estado é `useState` local e volta no próximo
- * carregamento. Nada é persistido — incidente em curso não pode ser silenciado
+ * carregamento. Nada é persistido - incidente em curso não pode ser silenciado
  * para sempre com um clique.
  */
 export function FaixaComunicadoCritico({ comunicados }: FaixaComunicadoCriticoProps) {

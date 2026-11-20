@@ -25,7 +25,7 @@ const campos = [
   },
 ]
 
-// Com contexto, cada campo vira `<Link>` do TanStack Router — precisa de um
+// Com contexto, cada campo vira `<Link>` do TanStack Router - precisa de um
 // `RouterProvider` de verdade (mesmo padrão de `erros-index.test.tsx`).
 function renderComRouter(props: CamposRelacionadosProps) {
   const rootRoute = createRootRoute({ component: Outlet })
@@ -51,7 +51,7 @@ describe('CamposRelacionados', () => {
     })
 
     // `Link` só monta depois que o `RouterProvider` resolve o match inicial
-    // (assíncrono) — condição observável, nunca contagem de ticks (AP-FRONTEND-016).
+    // (assíncrono) - condição observável, nunca contagem de ticks (AP-FRONTEND-016).
     const link = await screen.findByRole('link', { name: 'CNPJ do tomador' })
     expect(link).toHaveAttribute('href', '/provedores/ipm-sistemas#campo-cnpj-tomador')
   })

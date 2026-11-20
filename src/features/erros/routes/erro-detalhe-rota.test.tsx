@@ -13,7 +13,7 @@ import { ErroDetalheRota } from './erro-detalhe-rota'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-/** Corpo de `GET /erros/{slug}` — o slug do corpo é o canônico, seja qual for o slug pedido. */
+/** Corpo de `GET /erros/{slug}` - o slug do corpo é o canônico, seja qual for o slug pedido. */
 function erroComSlug(slug: string) {
   return {
     slug,
@@ -45,7 +45,7 @@ function renderRota(entradas: string[], portao = criarPortao()) {
   return { ...utils, portao }
 }
 
-describe('ErroDetalheRota — sair da página não é desfeito pela correção de URL', () => {
+describe('ErroDetalheRota: sair da página não é desfeito pela correção de URL', () => {
   it('ao navegar para outra tela enquanto ela carrega, a URL termina no destino', async () => {
     server.use(handlerErroDetalhePadrao('e0117'))
     const { router, portao } = renderRota(['/erros/e0117'])
@@ -73,7 +73,7 @@ describe('ErroDetalheRota — sair da página não é desfeito pela correção d
   })
 })
 
-describe('ErroDetalheRota — slug desatualizado', () => {
+describe('ErroDetalheRota: slug desatualizado', () => {
   it('troca a entrada do histórico pelo slug canônico, sem empilhar o endereço morto', async () => {
     server.use(
       http.get(`${API_URL}/erros/e0117-slug-antigo`, () =>

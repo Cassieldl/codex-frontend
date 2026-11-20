@@ -29,7 +29,7 @@ describe('useErrosPorCodigo', () => {
     expect(errosKeys.list({ codigo: 'E0117' })).toEqual(['erros', 'list', { codigo: 'E0117' }])
   })
 
-  it('parseia o envelope PaginatedResponse **cru** — nunca `.data`', async () => {
+  it('parseia o envelope PaginatedResponse **cru** - nunca `.data`', async () => {
     const requisicaoCapturada: { url: URL | null } = { url: null }
     server.use(
       http.get(`${API_URL}/erros`, ({ request }) => {

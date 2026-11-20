@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { ErroSemVersaoAplicavel, type ErroSemVersaoAplicavelProps } from './ErroSemVersaoAplicavel'
 
-// Com versões aplicáveis, cada item vira `<Link>` do TanStack Router —
+// Com versões aplicáveis, cada item vira `<Link>` do TanStack Router -
 // precisa de um `RouterProvider` de verdade (mesmo padrão de `erros-index.test.tsx`).
 function renderComRouter(props: ErroSemVersaoAplicavelProps) {
   const rootRoute = createRootRoute({ component: Outlet })
@@ -29,12 +29,12 @@ function renderComRouter(props: ErroSemVersaoAplicavelProps) {
 }
 
 describe('ErroSemVersaoAplicavel', () => {
-  it('sem versões aplicáveis, renderiza o texto de erro geral — nunca lista vazia nem "Aplicável a: —"', () => {
+  it('sem versões aplicáveis, renderiza o texto de erro geral, nunca lista vazia nem "Aplicável a:" seguido de travessão', () => {
     render(<ErroSemVersaoAplicavel versoesAplicaveis={[]} />)
 
     expect(screen.getByText('Este erro é geral: vale para qualquer provedor.')).toBeInTheDocument()
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
-    expect(screen.queryByText('—')).not.toBeInTheDocument()
+    expect(screen.queryByText('\u2014')).not.toBeInTheDocument()
     expect(screen.queryByText(/Aplicável a/i)).not.toBeInTheDocument()
     expect(screen.queryByText('Provedores aplicáveis')).not.toBeInTheDocument()
   })
@@ -64,7 +64,7 @@ describe('ErroSemVersaoAplicavel', () => {
     })
 
     // `Link` só monta depois que o `RouterProvider` resolve o match inicial
-    // (assíncrono) — condição observável, nunca contagem de ticks (AP-FRONTEND-016).
+    // (assíncrono) - condição observável, nunca contagem de ticks (AP-FRONTEND-016).
     expect(await screen.findByText('Provedores aplicáveis')).toBeInTheDocument()
 
     expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([

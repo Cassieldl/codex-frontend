@@ -4,10 +4,10 @@ import type { HomeDto } from '../types/home'
 import { homeKeys } from './homeKeys'
 
 /**
- * `GET /home` (P9) — `ApiResponse<HomeDto>` **enveloped em `data`**, ao
+ * `GET /home` (P9) - `ApiResponse<HomeDto>` **enveloped em `data`**, ao
  * contrário das listagens públicas (`GET /provedores`, `GET /artigos`), que
  * vêm cruas na raiz. Os dois envelopes convivem na mesma API
- * (AP-ARQUITETURA-001) — ler o errado aqui devolveria `undefined` em silêncio.
+ * (AP-ARQUITETURA-001) - ler o errado aqui devolveria `undefined` em silêncio.
  */
 interface EnvelopeHome {
   data: HomeDto

@@ -17,7 +17,7 @@ import { ErrosIndexPage } from './erros-index'
 const API_URL = import.meta.env.VITE_API_URL
 
 // `ErrosIndexPage` embute `CabecalhoPublico` (M31), que usa `<Link>` do
-// TanStack Router — precisa de um `RouterProvider` de verdade no teste,
+// TanStack Router - precisa de um `RouterProvider` de verdade no teste,
 // não só `QueryClientProvider`. `codigo`/`navigate` continuam injetados por
 // prop (não por `Route.useSearch()`), o que mantém a asserção de
 // redirecionamento simples: basta inspecionar o mock, sem ler a URL do router.
@@ -50,7 +50,7 @@ function respostaPaginada(items: object[], totalCount = items.length) {
   return HttpResponse.json({ items, totalCount, page: 1, pageSize: 50, totalPages: 1 })
 }
 
-describe('ErrosIndexPage — /erros?codigo=', () => {
+describe('ErrosIndexPage: /erros?codigo=', () => {
   it('totalCount === 1 navega direto para a página do erro', async () => {
     // JSON literal transcrito de ErroListaItemDto, sem o tipo do cliente.
     const item = {
@@ -97,7 +97,7 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
     expect(navigate).not.toHaveBeenCalled()
   })
 
-  it('desambiguação mostra "Geral" (nunca "—") quando o item não tem provedor (U9)', async () => {
+  it('desambiguação mostra "Geral" (nunca travessão) quando o item não tem provedor (U9)', async () => {
     const itemGeral = {
       slug: 'e0117-geral',
       codigo: 'E0117',
@@ -117,7 +117,7 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
     renderPagina('E0117')
 
     expect(await screen.findByText('Geral')).toBeInTheDocument()
-    expect(screen.queryByText('—')).not.toBeInTheDocument()
+    expect(screen.queryByText('\u2014')).not.toBeInTheDocument()
   })
 
   it('totalCount === 0 cai no estado "não encontrado", sem navegar e sem aparência de erro', async () => {
@@ -139,17 +139,17 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
 
 /**
  * Com o parâmetro vazio a query fica desabilitada e nunca há `data`, então nenhum dos estados de
- * resultado casa. Sem um caso próprio, a rota renderizava um `<main>` sem um único nó — a tela
+ * resultado casa. Sem um caso próprio, a rota renderizava um `<main>` sem um único nó - a tela
  * morta que a regra de estados de UI existe para impedir.
  */
-describe('ErrosIndexPage — sem código na URL', () => {
+describe('ErrosIndexPage: sem código na URL', () => {
   it('explica o que a página faz e oferece a busca, em vez de tela vazia', async () => {
     renderPagina('')
 
     expect(await screen.findByText('Nenhum código de erro foi informado.')).toBeInTheDocument()
     expect(screen.getByText('Busque pelo código ou pela mensagem do erro.')).toBeInTheDocument()
 
-    // O `search` explícito é exigido pelo tipo da rota, que valida `q` — daí o href sair com o
+    // O `search` explícito é exigido pelo tipo da rota, que valida `q` - daí o href sair com o
     // parâmetro vazio, que é o estado inicial da busca.
     expect(screen.getByRole('link', { name: 'Buscar no Codex' })).toHaveAttribute(
       'href',

@@ -24,7 +24,7 @@ function provedoresDistintos(versoes: VersaoAplicavel[]): VersaoAplicavel[] {
  * "Provedores aplicáveis" (§7.2): dois estados possíveis (U9).
  * Um erro de origem `InvoiCy`/`Schema` pode chegar sem nenhuma versão
  * aplicável. Nesse caso o título da seção **some** e um texto único ocupa o
- * lugar da lista — nunca lista vazia, nunca "Aplicável a: —": é informação de
+ * lugar da lista. Nunca lista vazia, nunca "Aplicável a:" seguido de travessão: é informação de
  * natureza do erro, não lacuna de cadastro.
  */
 export function ErroSemVersaoAplicavel({ versoesAplicaveis }: ErroSemVersaoAplicavelProps) {

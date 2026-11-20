@@ -72,7 +72,7 @@ function GrupoPreview({ grupo }: { grupo: GrupoResultado }) {
  *    site atrapalha mais do que ajuda, e numa busca ao vivo o salto de foco
  *    chega a engolir caracteres já digitados.
  * 2. **Erro nunca é lido como vazio.** Com `isError`, o painel some e a região
- *    viva anuncia uma frase própria, **sem contagem** — "0 resultados" numa
+ *    viva anuncia uma frase própria, **sem contagem** - "0 resultados" numa
  *    falha de rede seria uma afirmação sobre o acervo que ninguém mediu.
  */
 export function BuscaHeroComPreview({ aoSubmeter }: BuscaHeroComPreviewProps) {
@@ -115,7 +115,7 @@ export function BuscaHeroComPreview({ aoSubmeter }: BuscaHeroComPreviewProps) {
       {painelVisivel && (
         <div className="absolute inset-x-0 top-18 z-20 max-h-[420px] overflow-y-auto rounded-[var(--radius-card)] border border-border bg-white shadow-panel">
           {/*
-            Na falha, quem é anunciado é o próprio texto visível — sem uma
+            Na falha, quem é anunciado é o próprio texto visível - sem uma
             segunda linha viva repetindo a frase, e sem contagem alguma. Um
             `aria-live` com "0 resultados" aqui afirmaria sobre o acervo algo
             que ninguém chegou a medir.

@@ -121,7 +121,7 @@ describe('BuscaHeroComPreview', () => {
     expect(screen.queryByText('Quarto erro')).not.toBeInTheDocument()
   })
 
-  it('erro de busca não é lido como "nenhum resultado" — sem contagem nenhuma', async () => {
+  it('erro de busca não é lido como "nenhum resultado" - sem contagem nenhuma', async () => {
     server.use(http.get(`${API_URL}/busca`, () => new HttpResponse(null, { status: 500 })))
 
     const usuario = userEvent.setup()
@@ -135,7 +135,7 @@ describe('BuscaHeroComPreview', () => {
     expect(screen.queryByText(/Nenhum resultado para/)).not.toBeInTheDocument()
   })
 
-  it('busca sem resultado diz que o acervo não cobre o termo — e isso não é erro', async () => {
+  it('busca sem resultado diz que o acervo não cobre o termo - e isso não é erro', async () => {
     server.use(
       http.get(`${API_URL}/busca`, () =>
         HttpResponse.json({

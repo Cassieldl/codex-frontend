@@ -35,7 +35,7 @@ const alerta: ComunicadoVigenteHome = {
 /**
  * Âncora de montagem. `RouterProvider` monta de forma assíncrona: afirmar
  * `container` vazio logo depois de `render` passa mesmo quando o componente
- * renderiza de fato — o DOM ainda está vazio porque o router não chegou lá.
+ * renderiza de fato - o DOM ainda está vazio porque o router não chegou lá.
  * Toda asserção de ausência aqui espera esta âncora primeiro.
  */
 const ANCORA = 'rota montada'
@@ -134,7 +134,7 @@ describe('FaixaComunicadoCritico', () => {
     ).toBeInTheDocument()
   })
 
-  it('comunicado global não vira link — sem provedor, não há detalhe para abrir', async () => {
+  it('comunicado global não vira link - sem provedor, não há detalhe para abrir', async () => {
     renderFaixa([
       {
         ...critico,

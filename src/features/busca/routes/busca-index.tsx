@@ -20,7 +20,7 @@ import { useResultadoBusca } from '../hooks/useResultadoBusca'
 
 const DEBOUNCE_MS = 300
 const TODOS_OS_PROVEDORES = ''
-// Lista de provedores só serve pra popular o seletor — nenhuma paginação de
+// Lista de provedores só serve pra popular o seletor - nenhuma paginação de
 // verdade é necessária aqui, então busca um lote grande de uma vez.
 const TAMANHO_LOTE_PROVEDORES = 100
 
@@ -39,14 +39,14 @@ export interface BuscaPageProps {
   provedor?: string
   /**
    * Injetado pela rota fina (`src/routes/busca.tsx`), que usa
-   * `Route.useNavigate()` de verdade — manter como prop deixa a
+   * `Route.useNavigate()` de verdade - manter como prop deixa a
    * sincronização de URL testável sem montar a árvore de rotas gerada.
    */
   navigate: (opcoes: NavegarBuscaOpcoes) => void
 }
 
 /**
- * `/busca?q=&provedor=` — tela 2, "o coração do produto" (§7.1). Extraído do
+ * `/busca?q=&provedor=` - tela 2, "o coração do produto" (§7.1). Extraído do
  * arquivo de rota para ser testável isoladamente, seguindo o mesmo padrão de
  * `features/erros/routes/erros-index.tsx`.
  */
@@ -57,7 +57,7 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
 
   const termoComDebounce = useDebounce(termo, DEBOUNCE_MS)
 
-  // Sincroniza a URL só depois do debounce assentar — não empilha histórico a
+  // Sincroniza a URL só depois do debounce assentar - não empilha histórico a
   // cada tecla, e é isso que torna o resultado copiável/reenviável (§7.1).
   useEffect(() => {
     if (termoComDebounce === qDaUrl) return
@@ -72,7 +72,7 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
     refetch,
   } = useResultadoBusca({ q: termoComDebounce, provedor })
 
-  // A lista de provedores só alimenta o seletor de filtro — se não vier
+  // A lista de provedores só alimenta o seletor de filtro - se não vier
   // (loading ou erro), a busca continua funcionando sem filtro (P-01).
   const { data: provedoresPagina } = useProvedores({
     ordenarPor: 'nome',
@@ -143,8 +143,8 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
 
             {/*
               O texto descreve o RESULTADO, nunca a falha do motor. "Nenhum item bateu o termo
-              inteiro" dizia à pessoa que não encontramos o que ela pediu — inclusive quando o
-              item exibido era exatamente o caso dela —, e num público que já desconfia de
+              inteiro" dizia à pessoa que não encontramos o que ela pediu (inclusive quando o
+              item exibido era exatamente o caso dela), e num público que já desconfia de
               documentação isso convida a abrir o chamado assim mesmo, que é o desfecho que o
               portal existe para evitar. A segunda frase troca a narração por uma ação.
             */}

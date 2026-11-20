@@ -11,9 +11,9 @@ import { describe, expect, it } from 'vitest'
 import { EstadoErroIndisponivel, type EstadoErroIndisponivelProps } from './EstadoErroIndisponivel'
 
 // O caminho de recuperação usa `<Link>` do TanStack Router (Achado #2,
-// residual fechado nesta passada) — precisa de um `RouterProvider` de
+// residual fechado nesta passada) - precisa de um `RouterProvider` de
 // verdade, mesmo padrão de `erros-index.test.tsx`/`RodapeContextual.test.tsx`.
-// O `RouterProvider` resolve o match inicial de forma assíncrona — por isso
+// O `RouterProvider` resolve o match inicial de forma assíncrona - por isso
 // as asserções usam `findBy*`/`await`, condição observável em vez de
 // contagem de ticks (AP-FRONTEND-016).
 function renderComRouter(props: EstadoErroIndisponivelProps) {
@@ -45,7 +45,7 @@ describe('EstadoErroIndisponivel', () => {
     ).toBeInTheDocument()
   })
 
-  it('410 (despublicado) renderiza "Este erro saiu do ar." — nunca o texto do 404 (M7)', async () => {
+  it('410 (despublicado) renderiza "Este erro saiu do ar." - nunca o texto do 404 (M7)', async () => {
     renderComRouter({ variante: 'despublicado', slugTentado: 'e0117' })
 
     expect(
@@ -60,7 +60,7 @@ describe('EstadoErroIndisponivel', () => {
     ).toBeInTheDocument()
   })
 
-  it('404 e 410 nunca renderizam o mesmo título — telas distintas para o leitor', async () => {
+  it('404 e 410 nunca renderizam o mesmo título - telas distintas para o leitor', async () => {
     const { unmount } = renderComRouter({ variante: 'nao-encontrado', slugTentado: 'e0117' })
     const tituloNaoEncontrado = (await screen.findByRole('heading')).textContent
     unmount()

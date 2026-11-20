@@ -74,11 +74,11 @@ function CardComunicado({ comunicado, caminhoAtual }: CardComunicadoProps) {
 /**
  * Comunicados no ar para o contexto da página aberta (provedor, versão ou os provedores de um
  * erro), no topo do conteúdo. Mesma etiqueta de severidade, mesmos pares de cor e mesmo rótulo de
- * alvo da Home — não é um segundo visual para a mesma coisa.
+ * alvo da Home - não é um segundo visual para a mesma coisa.
  *
  * O comunicado complementa a página, nunca é o assunto dela, então este bloco não derruba nem
  * atrasa nada: enquanto carrega, e quando não há comunicado, não ocupa lugar. Se a leitura
- * falha, fica só uma linha discreta com "Tentar novamente" — calar o erro faria um incidente em
+ * falha, fica só uma linha discreta com "Tentar novamente" - calar o erro faria um incidente em
  * curso parecer ausência de incidente.
  */
 export function ComunicadosDoContexto({

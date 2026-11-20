@@ -6,7 +6,7 @@ import { limitarProvedoresDoContexto } from '../utils/limitarProvedoresDoContext
 import { comunicadosKeys } from './comunicadosKeys'
 
 /**
- * `GET /comunicados` — `ApiResponse<ComunicadoPublicoDto[]>`, **enveloped em `data`**
+ * `GET /comunicados` - `ApiResponse<ComunicadoPublicoDto[]>`, **enveloped em `data`**
  * (as listagens públicas de provedor e artigo vêm cruas; esta não).
  */
 interface EnvelopeComunicados {
@@ -32,7 +32,7 @@ function exigirComunicados(
 /**
  * Comunicados no ar para o contexto da página: globais, os do provedor e os das versões dele. Com
  * `versaoSlug`, só os da versão aberta. O parâmetro `provedor` se repete na URL
- * (`provedor=a&provedor=b`), formato que o servidor lê — por isso `URLSearchParams`, e não o
+ * (`provedor=a&provedor=b`), formato que o servidor lê - por isso `URLSearchParams`, e não o
  * `provedor[]=a` que o axios gera para um array.
  *
  * A versão só vai junto de exatamente um provedor: o slug dela é único por provedor, e o servidor

@@ -75,7 +75,7 @@ describe('ListaProvedoresHome', () => {
     expect(screen.queryByText(/outras?/i)).not.toBeInTheDocument()
   })
 
-  it('marca comunicado com ícone rotulado — nunca só por cor, e só em quem tem', async () => {
+  it('marca comunicado com ícone rotulado - nunca só por cor, e só em quem tem', async () => {
     renderLista([
       { categoria: 'Nacional', total: 1, provedores: [nacional] },
       { categoria: 'Proprio', total: 1, provedores: [ipm] },
@@ -101,10 +101,10 @@ describe('ListaProvedoresHome', () => {
 })
 
 /**
- * O total da categoria ficava como número solto encostado na borda direita da linha divisória —
+ * O total da categoria ficava como número solto encostado na borda direita da linha divisória -
  * lia-se como artefato de layout, e um leitor de tela anunciava apenas "2".
  */
-describe('ListaProvedoresHome — total da categoria', () => {
+describe('ListaProvedoresHome: total da categoria', () => {
   it('acompanha a unidade, no plural', async () => {
     renderLista([{ categoria: 'Proprio', total: 2, provedores: [ipm] }])
 
@@ -119,13 +119,13 @@ describe('ListaProvedoresHome — total da categoria', () => {
 })
 
 /**
- * A data aqui é dado de coluna, comparado linha a linha, e os artboards a escrevem numérica —
+ * A data aqui é dado de coluna, comparado linha a linha, e os artboards a escrevem numérica -
  * por extenso é o formato do selo de verificação em destaque, não o da tabela.
  *
  * O `12/08` importa tanto quanto o formato: `new Date('2026-08-12')` é lido como meia-noite UTC e
  * renderizava **11/08** em qualquer fuso a oeste de Greenwich, que é o de todo usuário do Codex.
  */
-describe('ListaProvedoresHome — data de verificação', () => {
+describe('ListaProvedoresHome: data de verificação', () => {
   it('escreve a data numérica, sem deslocar o dia', async () => {
     renderLista([{ categoria: 'Proprio', total: 1, provedores: [ipm] }])
 

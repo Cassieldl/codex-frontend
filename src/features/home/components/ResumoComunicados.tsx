@@ -21,12 +21,12 @@ const CLASSE_CHIP =
 
 /**
  * Linha de chips dos comunicados vigentes **não críticos** (`Alerta` e
- * `Informativo`) — os críticos já ocupam a faixa do topo e não se repetem
+ * `Informativo`) - os críticos já ocupam a faixa do topo e não se repetem
  * aqui. Sem nenhum deles, a linha inteira some: ausência de comunicado é boa
  * notícia, não um vazio a preencher com mensagem.
  *
  * O título vai no texto do chip, nunca só em `title=`: atributo de tooltip não
- * é alcançável por teclado e o comunicado global — o que o PRD §2.1 nomeia — é
+ * é alcançável por teclado e o comunicado global - o que o PRD §2.1 nomeia - é
  * exatamente o que não tem link para abrir. O corpo fica a um clique, no painel
  * abaixo da linha, porque nenhuma outra tela pública mostra comunicado.
  */
@@ -94,7 +94,7 @@ export function ResumoComunicados({ comunicados }: ResumoComunicadosProps) {
             <p className="min-w-0 flex-1">{comunicadoAberto.corpo}</p>
 
             {/*
-              `url` é `null` em comunicado global (PQ-15 — não há provedor para
+              `url` é `null` em comunicado global (PQ-15 - não há provedor para
               abrir). O saneamento vem junto do ramo, não junto do dado.
             */}
             {caminhoDoAberto && (

@@ -4,7 +4,7 @@ import { provedoresKeys } from '../../provedores/hooks/provedoresKeys'
 import { homeKeys } from './homeKeys'
 
 describe('homeKeys', () => {
-  it('é uma chave única para o agregador inteiro — sem parâmetro nenhum', () => {
+  it('é uma chave única para o agregador inteiro - sem parâmetro nenhum', () => {
     expect(homeKeys.all).toEqual(['home'])
   })
 
