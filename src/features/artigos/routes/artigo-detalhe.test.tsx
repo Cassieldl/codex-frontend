@@ -89,7 +89,7 @@ function renderPagina({ artigoSlug, caminhoAtual, reservado }: OpcoesRender) {
     path: '/erros/$erroSlug',
     component: () => null,
   })
-  // Destino da trilha de volta ao índice — o `<Link>` precisa da rota registrada na árvore.
+  // Destino da trilha de volta ao índice - o `<Link>` precisa da rota registrada na árvore.
   const rotaIndiceArtigos = createRoute({
     getParentRoute: () => rootRoute,
     path: '/artigos',
@@ -117,7 +117,7 @@ function handlerStatus(slug: string, status: number, code: string, message: stri
   )
 }
 
-describe('ArtigoDetalhePage — tela 8', () => {
+describe('ArtigoDetalhePage: tela 8', () => {
   it('renderiza tipo, título, selo de verificação, corpo em Markdown e referências', async () => {
     server.use(handlerArtigoDetalhe(artigo))
 
@@ -127,7 +127,7 @@ describe('ArtigoDetalhePage — tela 8', () => {
       await screen.findByRole('heading', { level: 1, name: 'Identificar a versão pelo retorno' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Procedimento')).toBeInTheDocument()
-    // Data pura formatada como o dia que está no contrato — `parseISO`, nunca
+    // Data pura formatada como o dia que está no contrato - `parseISO`, nunca
     // `new Date`, que em fuso negativo exibiria o dia anterior.
     expect(screen.getByText('14 de agosto de 2026')).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Antes de começar' })).toBeInTheDocument()
@@ -186,7 +186,7 @@ describe('ArtigoDetalhePage — tela 8', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('404 em slug comum mostra "não existe" — nunca o texto de despublicado', async () => {
+  it('404 em slug comum mostra "não existe" - nunca o texto de despublicado', async () => {
     server.use(
       handlerStatus('nunca-existiu', 404, 'ARTIGO_NAO_ENCONTRADO', 'Artigo não encontrado.'),
     )
@@ -197,7 +197,7 @@ describe('ArtigoDetalhePage — tela 8', () => {
     expect(screen.queryByText('Este artigo saiu do ar.')).not.toBeInTheDocument()
   })
 
-  it('410 mostra "saiu do ar" com o motivo da API — nunca colapsa com 404 (M7)', async () => {
+  it('410 mostra "saiu do ar" com o motivo da API - nunca colapsa com 404 (M7)', async () => {
     server.use(
       handlerStatus('saiu-do-ar', 410, 'ARTIGO_DESPUBLICADO', 'Este artigo não está publicado.'),
     )
@@ -234,7 +234,7 @@ describe('ArtigoDetalhePage — tela 8', () => {
   })
 })
 
-describe('ArtigoDetalhePage — tela 9 (/como-funciona)', () => {
+describe('ArtigoDetalhePage: tela 9 (/como-funciona)', () => {
   it('404 do slug reservado mostra "disponível em breve", nunca "não existe" (§4.2)', async () => {
     server.use(
       handlerStatus(SLUG_COMO_FUNCIONA, 404, 'ARTIGO_NAO_ENCONTRADO', 'Artigo não encontrado.'),
@@ -277,16 +277,16 @@ describe('ArtigoDetalhePage — tela 9 (/como-funciona)', () => {
 
 /**
  * A página do provedor e a da versão do layout sempre tiveram trilha de volta; o artigo era a
- * única página de detalhe pública sem nenhuma — a volta ao índice dependia do menu principal.
+ * única página de detalhe pública sem nenhuma - a volta ao índice dependia do menu principal.
  */
-describe('ArtigoDetalhePage — trilha de volta ao índice', () => {
+describe('ArtigoDetalhePage: trilha de volta ao índice', () => {
   it('liga "Artigos" ao índice e nomeia o tipo do artigo', async () => {
     server.use(handlerArtigoDetalhe(artigo))
 
     renderPagina({ artigoSlug: artigo.slug, caminhoAtual: artigo.urlCanonica })
 
     // Dentro do <article>: "Artigos" também é item do menu principal, e o teste tem de falhar
-    // quando a trilha some — não passar por causa do cabeçalho.
+    // quando a trilha some - não passar por causa do cabeçalho.
     const corpo = await screen.findByRole('article')
     const linkIndice = within(corpo).getByRole('link', { name: 'Artigos' })
 
@@ -294,11 +294,11 @@ describe('ArtigoDetalhePage — trilha de volta ao índice', () => {
     expect(linkIndice.parentElement).toHaveTextContent('Artigos / Procedimento')
 
     // `/artigos` é ancestral de `/artigos/{slug}`: sem `activeOptions={{ exact: true }}` o Link
-    // se marca sozinho como página atual por casamento de prefixo — o defeito reincidente desta
+    // se marca sozinho como página atual por casamento de prefixo - o defeito reincidente desta
     // base. A asserção CONTA, porque "o item certo está marcado" passa com dois marcados.
     //
     // Hoje o search divergente (`{ pagina: 1 }` contra o search vazio do detalhe) já impediria a
-    // marcação sozinho, então remover só o `exact` não derruba este caso — a mutação que o
+    // marcação sozinho, então remover só o `exact` não derruba este caso - a mutação que o
     // derruba é alinhar o search E tirar o `exact`. O `exact` fica como a defesa explícita, que
     // continua valendo se o search da trilha mudar.
     // Conta `page`, não todo `aria-current`: o sumário marca a seção em leitura com `location`.

@@ -18,7 +18,7 @@ describe('useDebounce', () => {
     rerender({ valor: 'e011' })
     rerender({ valor: 'e0117' })
 
-    // Nenhum timer disparou ainda — condição observável logo após as trocas.
+    // Nenhum timer disparou ainda - condição observável logo após as trocas.
     expect(result.current).toBe('e')
 
     await waitFor(() => expect(result.current).toBe('e0117'))

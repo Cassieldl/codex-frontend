@@ -53,7 +53,7 @@ describe('EstadoArtigoIndisponivel', () => {
     expect(link.getAttribute('href')).toContain('q=artigo-que-nunca-existiu')
   })
 
-  it('410 diz que o artigo saiu do ar — texto distinto do 404 (M7)', async () => {
+  it('410 diz que o artigo saiu do ar - texto distinto do 404 (M7)', async () => {
     renderComRouter('despublicado', 'artigo-antigo', 'Este artigo não está mais publicado.')
 
     expect(await screen.findByText('Este artigo saiu do ar.')).toBeInTheDocument()
@@ -78,7 +78,7 @@ describe('EstadoArtigoIndisponivel', () => {
     renderComRouter('reservado-ausente', 'como-funciona')
 
     const link = await screen.findByRole('link', { name: 'Ir para a busca' })
-    // `/busca` exige `q` no schema, então o termo vai vazio — nunca o slug
+    // `/busca` exige `q` no schema, então o termo vai vazio - nunca o slug
     // reservado, que não significa nada para quem chegou pelo menu.
     const busca = new URL(link.getAttribute('href') ?? '', 'https://codex.local')
     expect(busca.pathname).toBe('/busca')

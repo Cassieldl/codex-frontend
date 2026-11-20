@@ -25,7 +25,7 @@ describe('EtiquetaTipoArtigo', () => {
     }
   })
 
-  it('o glifo é decorativo — o tipo é legível por texto, nunca só por ícone/cor', () => {
+  it('o glifo é decorativo - o tipo é legível por texto, nunca só por ícone/cor', () => {
     const { container } = render(<EtiquetaTipoArtigo tipo="Conceito" />)
 
     const svg = container.querySelector('svg')

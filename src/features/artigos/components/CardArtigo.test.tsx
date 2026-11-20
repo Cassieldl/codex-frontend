@@ -52,20 +52,20 @@ describe('CardArtigo', () => {
     )
   })
 
-  it('mostra o selo com a data do contrato — sem deslocar o dia por fuso', async () => {
+  it('mostra o selo com a data do contrato - sem deslocar o dia por fuso', async () => {
     renderCard(artigo)
 
     expect(await screen.findByText('14 de agosto de 2026')).toBeInTheDocument()
   })
 
-  it('sem verificadoEm não inventa data nem mostra "—"', async () => {
+  it('sem verificadoEm não inventa data nem mostra travessão', async () => {
     renderCard({ ...artigo, verificadoEm: null })
 
     await screen.findByRole('heading', { level: 2 })
     expect(screen.queryByText(/Verificado em/)).not.toBeInTheDocument()
   })
 
-  it('sem resumo, renderiza só o título — `null` é valor válido do contrato', async () => {
+  it('sem resumo, renderiza só o título - `null` é valor válido do contrato', async () => {
     renderCard({ ...artigo, resumo: null })
 
     await screen.findByRole('heading', { level: 2 })

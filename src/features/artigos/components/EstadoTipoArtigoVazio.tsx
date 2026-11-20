@@ -6,9 +6,9 @@ export type VarianteTipoArtigoVazio = 'sem-acervo' | 'sem-resultado'
 
 export interface EstadoTipoArtigoVazioProps {
   /**
-   * `sem-acervo` — a aba do tipo existe, mas nenhum artigo desse tipo foi
+   * `sem-acervo` - a aba do tipo existe, mas nenhum artigo desse tipo foi
    * publicado ainda (estado **nomeado**, não é busca sem resultado).
-   * `sem-resultado` — há acervo do tipo, mas nada casa com o termo buscado.
+   * `sem-resultado` - há acervo do tipo, mas nada casa com o termo buscado.
    */
   variante: VarianteTipoArtigoVazio
   tipo: TipoArtigo

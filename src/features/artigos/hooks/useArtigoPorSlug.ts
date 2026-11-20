@@ -9,10 +9,10 @@ interface EnvelopeArtigoDetalhe {
 }
 
 /**
- * `GET /artigos/{slug}` (P8) — `ApiResponse<ArtigoDetalhe>`, com envelope
+ * `GET /artigos/{slug}` (P8) - `ApiResponse<ArtigoDetalhe>`, com envelope
  * `data` (ao contrário de P7, que é paginado cru).
  *
- * `404`/`410` propagam como `AxiosError` sem tratamento aqui — quem distingue
+ * `404`/`410` propagam como `AxiosError` sem tratamento aqui - quem distingue
  * "nunca existiu" de "saiu do ar" é a página (`artigo-detalhe.tsx`), lendo
  * `error.response?.status`. `retry: false` porque nenhum dos dois é transiente.
  */

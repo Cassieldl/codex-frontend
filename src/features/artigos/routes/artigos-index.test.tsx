@@ -44,7 +44,7 @@ const searchSchema = z.object({
 
 /**
  * Replica a rota fina real (`src/routes/artigos/index.tsx`): mesmo schema de
- * `search`, mesma navegação por `search` — é o que torna a troca de aba
+ * `search`, mesma navegação por `search` - é o que torna a troca de aba
  * observável pela URL, e não só pelo mock de uma função.
  */
 function renderPagina(urlInicial = '/artigos') {
@@ -85,7 +85,7 @@ function renderPagina(urlInicial = '/artigos') {
         pagina={pagina}
         navegar={(busca) => {
           // A rota de teste é montada fora da árvore registrada, então
-          // `navigate` não infere o schema — o cast existe só aqui, não na
+          // `navigate` não infere o schema - o cast existe só aqui, não na
           // rota real (`src/routes/artigos/index.tsx`), que é tipada.
           const opcoes = {
             search: (anterior: Record<string, unknown>) => ({ ...anterior, ...busca }),
@@ -126,7 +126,7 @@ function registrarHandler(responder: (url: URL) => { items: object[]; totalCount
   return urlsChamadas
 }
 
-describe('ArtigosIndexPage — tela 7', () => {
+describe('ArtigosIndexPage: tela 7', () => {
   it('lista os artigos do acervo com tipo, título e selo', async () => {
     registrarHandler(() => ({ items: artigos }))
 
@@ -135,7 +135,7 @@ describe('ArtigosIndexPage — tela 7', () => {
     expect(
       await screen.findByRole('link', { name: 'Identificar a versão pelo retorno' }),
     ).toBeInTheDocument()
-    // 'Procedimento' aparece na aba e na etiqueta do card — escopar no card
+    // 'Procedimento' aparece na aba e na etiqueta do card - escopar no card
     // evita casar com a aba e dar falso positivo.
     const cards = screen.getAllByRole('article')
     expect(within(cards[0]).getByText('Procedimento')).toBeInTheDocument()

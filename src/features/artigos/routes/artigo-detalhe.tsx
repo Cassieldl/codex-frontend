@@ -31,12 +31,12 @@ export interface ArtigoDetalhePageProps {
   artigoSlug: string
   /**
    * Caminho em que a página está sendo servida (`/artigos/{slug}` ou
-   * `/como-funciona`) — injetado pela rota fina. É o que se compara com
+   * `/como-funciona`) - injetado pela rota fina. É o que se compara com
    * `urlCanonica` para decidir o redirecionamento (§3.1).
    */
   caminhoAtual: string
   /**
-   * `true` só na rota fixa do artigo reservado (D2) — muda **apenas** a
+   * `true` só na rota fixa do artigo reservado (D2) - muda **apenas** a
    * variante do 404 (`reservado-ausente` em vez de `nao-encontrado`).
    */
   reservado?: boolean
@@ -118,7 +118,7 @@ function ArtigoCarregado({ artigo }: { artigo: ArtigoDetalhe }) {
 }
 
 /**
- * `/artigos/{slug}` (tela 8) e `/como-funciona` (tela 9) — a mesma página,
+ * `/artigos/{slug}` (tela 8) e `/como-funciona` (tela 9) - a mesma página,
  * porque o artigo reservado é um artigo em posição fixa, não uma tela própria
  * (D2). `404`/`410` são tratados distintos (§3.4), nunca colapsados.
  */
@@ -133,11 +133,11 @@ export function ArtigoDetalhePage({
   const status = isAxiosError(error) ? error.response?.status : undefined
   const mensagemErro = isAxiosError(error) ? handleApiError(error) : undefined
 
-  // §3.1 — `urlCanonica` é a fonte única: quem decide o endereço do artigo é o
+  // §3.1 - `urlCanonica` é a fonte única: quem decide o endereço do artigo é o
   // backend (`RotaCanonica`), o frontend só obedece. Cobre o caso de alguém
   // abrir `/artigos/como-funciona` e precisar cair em `/como-funciona`.
   // `corrigirUrlCanonica` (FRONT-A) valida o destino via `caminhoInternoSeguro`
-  // por baixo — mesmo mecanismo compartilhado com provedor e erro (F-4).
+  // por baixo - mesmo mecanismo compartilhado com provedor e erro (F-4).
   const correcao = artigo ? corrigirUrlCanonica(caminhoAtual, artigo.urlCanonica) : null
   const precisaRedirecionar = Boolean(correcao)
 

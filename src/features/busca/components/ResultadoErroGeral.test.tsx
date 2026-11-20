@@ -13,7 +13,7 @@ describe('ResultadoErroGeral', () => {
   it('nunca renderiza um travessão nem célula vazia no lugar do selo', () => {
     render(<ResultadoErroGeral provedorNome={null} versaoRotulo={null} versoes={null} />)
 
-    expect(screen.queryByText('—')).not.toBeInTheDocument()
+    expect(screen.queryByText('\u2014')).not.toBeInTheDocument()
   })
 
   it('renderiza provedor e versão quando há contexto aplicável, nunca o selo "Geral"', () => {
@@ -38,8 +38,8 @@ describe('ResultadoErroGeral', () => {
 
 // P-09: com `provedorNome` nulo e `versoes` preenchido (erro que vale para
 // versões de provedores diferentes), o separador abria a linha sozinho.
-describe('ResultadoErroGeral — separador só entre partes presentes (P-09)', () => {
-  it('sem provedor, mostra só as versões — sem separador órfão no início', () => {
+describe('ResultadoErroGeral: separador só entre partes presentes (P-09)', () => {
+  it('sem provedor, mostra só as versões - sem separador órfão no início', () => {
     render(
       <ResultadoErroGeral provedorNome={null} versaoRotulo={null} versoes={['2.01', '2.02']} />,
     )
@@ -55,7 +55,7 @@ describe('ResultadoErroGeral — separador só entre partes presentes (P-09)', (
     expect(screen.queryByText(/^\s*·/)).not.toBeInTheDocument()
   })
 
-  it('com provedor e sem versão, mostra só o provedor — sem separador sobrando no fim', () => {
+  it('com provedor e sem versão, mostra só o provedor - sem separador sobrando no fim', () => {
     render(<ResultadoErroGeral provedorNome="IPM Sistemas" versaoRotulo={null} versoes={null} />)
 
     expect(screen.getByText('IPM Sistemas')).toBeInTheDocument()

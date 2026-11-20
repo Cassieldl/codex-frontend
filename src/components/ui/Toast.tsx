@@ -67,7 +67,7 @@ export function Toast({ tone, message, onClose }: ToastProps) {
           aria-label="Fechar aviso"
           className={clsx(
             // Caixa visual pequena (p-1), mas alvo de toque 44×44 via ::after
-            // com preenchimento invisível — mesmo padrão de `BotaoCopiar`.
+            // com preenchimento invisível - mesmo padrão de `BotaoCopiar`.
             "relative shrink-0 rounded p-1 after:absolute after:top-1/2 after:left-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
             'hover:shadow-hover',
           )}

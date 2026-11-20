@@ -32,7 +32,7 @@ describe('useResultadoBusca', () => {
     expect(buscaKeys.resultado({ q: 'e0117' })).toEqual(['busca', 'resultado', { q: 'e0117' }])
   })
 
-  it('parseia o campo `.data` do envelope ApiResponse — nunca `.items`', async () => {
+  it('parseia o campo `.data` do envelope ApiResponse - nunca `.items`', async () => {
     const requisicaoCapturada: { url: URL | null } = { url: null }
     server.use(
       http.get(`${API_URL}/busca`, ({ request }) => {
@@ -51,7 +51,7 @@ describe('useResultadoBusca', () => {
     expect(requisicaoCapturada.url?.searchParams.get('q')).toBe('e0117')
   })
 
-  it('usa apiPublico — nunca injeta Authorization', async () => {
+  it('usa apiPublico - nunca injeta Authorization', async () => {
     const requisicaoCapturada: { authorization: string | null } = { authorization: 'valor-inicial' }
     server.use(
       http.get(`${API_URL}/busca`, ({ request }) => {

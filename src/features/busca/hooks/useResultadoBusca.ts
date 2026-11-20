@@ -11,8 +11,8 @@ interface EnvelopeResultadoBusca {
 const TERMO_MINIMO = 2
 
 /**
- * `GET /busca` (P1, `analise-backend.md` §4.1) — `ApiResponse<ResultadoBusca>`,
- * superfície pública. Usa sempre `apiPublico`, nunca `apiInterno` — a busca da
+ * `GET /busca` (P1, `analise-backend.md` §4.1) - `ApiResponse<ResultadoBusca>`,
+ * superfície pública. Usa sempre `apiPublico`, nunca `apiInterno` - a busca da
  * área interna (M15/M21) tem hook próprio (`useResultadoBuscaInterna`, fora
  * desta unidade) que aponta para `GET /interno/busca`.
  */

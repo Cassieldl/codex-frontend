@@ -32,7 +32,7 @@ describe('TrechosDestacados', () => {
   })
 
   /**
-   * O util tem teste próprio, mas ele não prova que ESTE componente o chama — a função poderia
+   * O util tem teste próprio, mas ele não prova que ESTE componente o chama - a função poderia
    * existir, estar correta e nunca ser usada, e a tela seguiria mostrando `##` e `**`.
    */
   it('não deixa a marcação Markdown chegar à tela', () => {

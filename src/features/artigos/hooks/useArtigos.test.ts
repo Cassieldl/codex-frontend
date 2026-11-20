@@ -33,7 +33,7 @@ function envolverComQueryClient() {
 }
 
 describe('useArtigos', () => {
-  it('lê o PaginatedResponse cru da raiz — nunca o envelope `data` de P8', async () => {
+  it('lê o PaginatedResponse cru da raiz - nunca o envelope `data` de P8', async () => {
     server.use(
       http.get(`${API_URL}/artigos`, () =>
         HttpResponse.json({
@@ -77,7 +77,7 @@ describe('useArtigos', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(urlChamada?.searchParams.get('q')).toBe('nota fiscal')
-    // Valor ASCII exato do contrato (M-5) — "Mudança" com cedilha não existe no wire.
+    // Valor ASCII exato do contrato (M-5) - "Mudança" com cedilha não existe no wire.
     expect(urlChamada?.searchParams.get('tipo')).toBe('Mudanca')
     expect(urlChamada?.searchParams.get('pagina')).toBe('2')
     expect(urlChamada?.searchParams.get('tamanhoPagina')).toBe('50')
@@ -107,7 +107,7 @@ describe('useArtigos', () => {
     expect(urlChamada?.searchParams.has('q')).toBe(false)
   })
 
-  it('filtro de tipo sem acervo é 200 com lista vazia — nunca erro', async () => {
+  it('filtro de tipo sem acervo é 200 com lista vazia - nunca erro', async () => {
     server.use(
       http.get(`${API_URL}/artigos`, () =>
         HttpResponse.json({

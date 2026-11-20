@@ -44,7 +44,7 @@ function renderRota(entradas: string[], portao = criarPortao()) {
   return { ...utils, portao }
 }
 
-describe('ArtigoDetalheRota — sair da página não é desfeito pela correção de URL', () => {
+describe('ArtigoDetalheRota: sair da página não é desfeito pela correção de URL', () => {
   it('ao navegar para outra tela enquanto ela carrega, a URL termina no destino', async () => {
     server.use(handlerArtigoDetalhe(artigoComSlug('identificar-a-versao')))
     const { router, portao } = renderRota(['/artigos/identificar-a-versao'])
@@ -72,7 +72,7 @@ describe('ArtigoDetalheRota — sair da página não é desfeito pela correção
   })
 })
 
-describe('ArtigoDetalheRota — slug desatualizado', () => {
+describe('ArtigoDetalheRota: slug desatualizado', () => {
   it('troca a entrada do histórico pelo slug canônico, sem empilhar o endereço morto', async () => {
     server.use(
       http.get(`${API_URL}/artigos/slug-antigo`, () =>

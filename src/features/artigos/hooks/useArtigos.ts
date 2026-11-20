@@ -12,11 +12,11 @@ export interface PaginaDeArtigos {
 }
 
 /**
- * `GET /artigos` (P7) — `PaginatedResponse<T>` **cru, na raiz**, sem envelope
+ * `GET /artigos` (P7) - `PaginatedResponse<T>` **cru, na raiz**, sem envelope
  * `data`. P8 (`useArtigoPorSlug`) é enveloped; os dois convivem no mesmo
  * recurso e confundir um com o outro é exatamente o erro de AP-ARQUITETURA-001.
  *
- * Filtro de tipo sem acervo devolve `200` com lista vazia — nunca `404`/`422`;
+ * Filtro de tipo sem acervo devolve `200` com lista vazia - nunca `404`/`422`;
  * quem nomeia esse vazio é a página (`EstadoTipoArtigoVazio`, §2.1).
  */
 export function useArtigos(params: ListarArtigosParams) {

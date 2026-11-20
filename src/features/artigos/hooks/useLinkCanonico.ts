@@ -5,7 +5,7 @@ import { useEffect } from 'react'
  * estiver montada (PQ-15/§3.1). Mesmo padrão de `useNoIndex`: cria a tag no
  * efeito e remove no cleanup, sem depender de nenhuma lib de head.
  *
- * `href` vem sempre de `ArtigoDetalhe.urlCanonica` — nunca de
+ * `href` vem sempre de `ArtigoDetalhe.urlCanonica` - nunca de
  * `window.location`, que carregaria parâmetros de origem/telemetria (PQ-10)
  * para dentro do canonical.
  */

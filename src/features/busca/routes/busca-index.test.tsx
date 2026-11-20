@@ -63,7 +63,7 @@ function respostaBusca(resultado: object) {
   return HttpResponse.json({ data: resultado, message: null })
 }
 
-// `BuscaPage` embute `CabecalhoPublico`, que usa `<Link>` do TanStack Router —
+// `BuscaPage` embute `CabecalhoPublico`, que usa `<Link>` do TanStack Router -
 // precisa de um `RouterProvider` de verdade, não só `QueryClientProvider`.
 // `navigate` continua injetado por prop (mesmo padrão de `erros-index.test.tsx`),
 // o que mantém a asserção de sincronização de URL simples: basta inspecionar
@@ -101,7 +101,7 @@ function configurarUsuarioComClipboard() {
   return { usuario, escreverNaAreaDeTransferencia }
 }
 
-describe('BuscaPage — filtro por provedor (P-01)', () => {
+describe('BuscaPage: filtro por provedor (P-01)', () => {
   it('escolher um provedor no seletor propaga a mudança para a URL (search.provedor)', async () => {
     server.use(
       http.get(`${API_URL}/provedores`, () => respostaProvedores([IPM, BETHA])),
@@ -146,7 +146,7 @@ describe('BuscaPage — filtro por provedor (P-01)', () => {
     )
   })
 
-  it('lista de provedores indisponível não quebra a busca — segue funcionando sem filtro', async () => {
+  it('lista de provedores indisponível não quebra a busca - segue funcionando sem filtro', async () => {
     server.use(
       http.get(`${API_URL}/provedores`, () => HttpResponse.json(null, { status: 500 })),
       http.get(`${API_URL}/busca`, () =>
@@ -163,7 +163,7 @@ describe('BuscaPage — filtro por provedor (P-01)', () => {
                     tipo: 'erro',
                     rotulo: 'Erro',
                     chave: 'e0117',
-                    titulo: 'E0117 — CNPJ inválido',
+                    titulo: 'E0117 - CNPJ inválido',
                     url: '/erros/e0117',
                     provedorNome: null,
                     versaoRotulo: null,
@@ -184,7 +184,7 @@ describe('BuscaPage — filtro por provedor (P-01)', () => {
 
     renderPagina('e0117')
 
-    expect(await screen.findByText('E0117 — CNPJ inválido')).toBeInTheDocument()
+    expect(await screen.findByText('E0117 - CNPJ inválido')).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 
     const seletor = screen.getByRole('combobox', { name: 'Provedor' })
@@ -195,7 +195,7 @@ describe('BuscaPage — filtro por provedor (P-01)', () => {
   })
 })
 
-describe('BuscaPage — resultados fora do filtro (Achado #2, residual)', () => {
+describe('BuscaPage: resultados fora do filtro (Achado #2, residual)', () => {
   it('"Buscar em todos os provedores" é um <Link> client-side para /busca?q=, não um <a href> cru', async () => {
     server.use(
       http.get(`${API_URL}/provedores`, () => respostaProvedores([IPM])),
@@ -216,8 +216,8 @@ describe('BuscaPage — resultados fora do filtro (Achado #2, residual)', () => 
   })
 })
 
-describe('BuscaPage — BotaoCopiar no estado vazio (P-02)', () => {
-  it('termo sem resultado fica pronto para copiar, com aria-label específico — nunca "Copiar" genérico', async () => {
+describe('BuscaPage: BotaoCopiar no estado vazio (P-02)', () => {
+  it('termo sem resultado fica pronto para copiar, com aria-label específico - nunca "Copiar" genérico', async () => {
     server.use(
       http.get(`${API_URL}/provedores`, () => respostaProvedores([])),
       http.get(`${API_URL}/busca`, () =>
@@ -244,8 +244,8 @@ describe('BuscaPage — BotaoCopiar no estado vazio (P-02)', () => {
     await usuario.click(botaoCopiar)
     expect(escreverNaAreaDeTransferencia).toHaveBeenCalledWith('foobar123')
 
-    // U2 — sem botão de "avisar o Codex"/registrar, só o caminho de suporte por e-mail
-    // (a mesma ação aparece na área vazia e no rodapé contextual — nunca uma escrita anônima).
+    // U2: sem botão de "avisar o Codex"/registrar, só o caminho de suporte por e-mail
+    // (a mesma ação aparece na área vazia e no rodapé contextual - nunca uma escrita anônima).
     const linksSuporte = screen.getAllByRole('link', { name: 'Falar com o suporte' })
     expect(linksSuporte.length).toBeGreaterThan(0)
     for (const link of linksSuporte) {
@@ -258,10 +258,10 @@ describe('BuscaPage — BotaoCopiar no estado vazio (P-02)', () => {
 
 /**
  * O filtro fica dentro do cabeçalho em gradiente escuro, ao lado do campo de busca. Com o rótulo
- * na cor padrão de superfície clara ele media 1,1:1 contra a ponta escura do gradiente — texto
+ * na cor padrão de superfície clara ele media 1,1:1 contra a ponta escura do gradiente - texto
  * presente no DOM e invisível na tela.
  */
-describe('BuscaPage — filtro legível sobre o cabeçalho escuro', () => {
+describe('BuscaPage: filtro legível sobre o cabeçalho escuro', () => {
   it('declara o Select do cabeçalho na superfície escura', async () => {
     server.use(
       http.get(`${API_URL}/provedores`, () => respostaProvedores([IPM, BETHA])),
@@ -277,7 +277,7 @@ describe('BuscaPage — filtro legível sobre o cabeçalho escuro', () => {
   })
 })
 
-describe('BuscaPage — título da página', () => {
+describe('BuscaPage: título da página', () => {
   it('tem um único h1, para quem navega por títulos com leitor de tela', async () => {
     server.use(
       http.get(`${API_URL}/provedores`, () => respostaProvedores([IPM])),

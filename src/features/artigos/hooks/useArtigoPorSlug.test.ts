@@ -46,7 +46,7 @@ function envolverComQueryClient() {
 }
 
 describe('useArtigoPorSlug', () => {
-  it('lê o campo `.data` do envelope ApiResponse — nunca a raiz de P7', async () => {
+  it('lê o campo `.data` do envelope ApiResponse - nunca a raiz de P7', async () => {
     server.use(
       http.get(`${API_URL}/artigos/${artigo.slug}`, () =>
         HttpResponse.json({ data: artigo, message: null }),

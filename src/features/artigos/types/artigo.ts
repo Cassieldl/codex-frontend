@@ -5,7 +5,7 @@
 
 export type TipoArtigo = 'Conceito' | 'Procedimento' | 'Mudanca' | 'Configuracao'
 
-/** Ordem de exibição das abas/filtros do índice — nunca alfabética. */
+/** Ordem de exibição das abas/filtros do índice - nunca alfabética. */
 export const TIPOS_ARTIGO: readonly TipoArtigo[] = [
   'Conceito',
   'Procedimento',
@@ -17,19 +17,19 @@ export interface ArtigoListaItem {
   slug: string
   tipo: TipoArtigo
   titulo: string
-  /** Derivado no backend (primeiro parágrafo, texto puro). `null` é válido — nunca "—". */
+  /** Derivado no backend (primeiro parágrafo, texto puro). `null` é válido, nunca travessão. */
   resumo: string | null
-  /** Data pura (`AAAA-MM-DD`), sem hora nem offset — nunca texto já formatado (P-12). */
+  /** Data pura (`AAAA-MM-DD`), sem hora nem offset - nunca texto já formatado (P-12). */
   verificadoEm: string | null
 }
 
-/** `rotulo` é literal fixo no DTO — nomeia a natureza da referência (§7.5 do escopo). */
+/** `rotulo` é literal fixo no DTO - nomeia a natureza da referência (§7.5 do escopo). */
 export interface ReferenciaCampoLayout {
   rotulo: 'CAMPO DO LAYOUT'
   slug: string
   nome: string
   caminhoXml: string
-  /** O que o campo é — aparece quando o leitor abre a tag do campo no artigo. */
+  /** O que o campo é - aparece quando o leitor abre a tag do campo no artigo. */
   significado: string
   /** `/layout/campos/{slug}`. A tela navega pela rota tipada a partir do `slug`. */
   url: string
@@ -47,10 +47,10 @@ export interface ArtigoDetalhe {
   slug: string
   tipo: TipoArtigo
   titulo: string
-  /** Markdown restrito, cru — nunca HTML (D11/E9). Renderizado por `ConteudoArtigo`. */
+  /** Markdown restrito, cru - nunca HTML (D11/E9). Renderizado por `ConteudoArtigo`. */
   corpo: string
   verificadoEm: string | null
-  /** `/artigos/{slug}` ou `/como-funciona` quando `reservado` — a URL a exibir/redirecionar. */
+  /** `/artigos/{slug}` ou `/como-funciona` quando `reservado` - a URL a exibir/redirecionar. */
   urlCanonica: string
   reservado: boolean
   camposLayoutRelacionados: ReferenciaCampoLayout[]

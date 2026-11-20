@@ -10,7 +10,7 @@ describe('artigosKeys', () => {
     ])
   })
 
-  it('separa cache por tipo — trocar de aba nunca reaproveita a lista anterior', () => {
+  it('separa cache por tipo - trocar de aba nunca reaproveita a lista anterior', () => {
     const conceito = artigosKeys.list({ tipo: 'Conceito', pagina: 1 })
     const procedimento = artigosKeys.list({ tipo: 'Procedimento', pagina: 1 })
     const todos = artigosKeys.list({ pagina: 1 })

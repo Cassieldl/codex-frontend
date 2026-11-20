@@ -4,7 +4,7 @@ export interface BlocoAutocorrecaoProps {
 
 /**
  * Autocorreção **explícita** (§7.1): quando a API corrige o termo, mostra os
- * dois — o usuário nunca vê só o termo corrigido silenciosamente substituindo
+ * dois - o usuário nunca vê só o termo corrigido silenciosamente substituindo
  * o que ele digitou. Quando `correcao` é `null`, não renderiza nada.
  */
 export function BlocoAutocorrecao({ correcao }: BlocoAutocorrecaoProps) {

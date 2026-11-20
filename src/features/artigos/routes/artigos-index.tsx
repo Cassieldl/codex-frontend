@@ -33,11 +33,11 @@ export interface ArtigosIndexPageProps extends BuscaArtigos {
 }
 
 /**
- * `/artigos` — índice do acervo editorial (tela 7).
+ * `/artigos` - índice do acervo editorial (tela 7).
  *
  * **Desvio deliberado do artboard (§2.1):** os três tipos viram **abas por
  * URL** em vez de seções simultâneas. O contrato de P7 devolve uma única
- * página paginada com filtro por tipo — renderizar as três seções juntas com
+ * página paginada com filtro por tipo - renderizar as três seções juntas com
  * contagem total exigiria 3+ requisições por carga. A aba preserva a
  * exigência de "tipo é estrutura" e ainda deixa o filtro copiável no link.
  */
@@ -111,7 +111,7 @@ export function ArtigosIndexPage({ q, tipo, pagina, navegar }: ArtigosIndexPageP
         {isError && <ErrorState onRetry={() => refetch()} />}
 
         {!isLoading && !isError && listaVazia && tipo && (
-          // §2.1 — o acervo de um tipo estar vazio é um estado **nomeado**, não
+          // §2.1 - o acervo de um tipo estar vazio é um estado **nomeado**, não
           // um "nenhum item encontrado" genérico: o leitor precisa saber que o
           // tipo existe. Com termo buscado, aí sim é busca sem resultado.
           <EstadoTipoArtigoVazio variante={q ? 'sem-resultado' : 'sem-acervo'} tipo={tipo} />

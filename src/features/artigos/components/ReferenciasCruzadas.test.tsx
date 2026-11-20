@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest'
 import { grupoDoCampo } from './grupoDoCampo'
 import { ReferenciasCruzadas } from './ReferenciasCruzadas'
 
-// Transcrito da resposta real de GET /api/v1/artigos/{slug} — sem anotação de tipo do cliente,
+// Transcrito da resposta real de GET /api/v1/artigos/{slug} - sem anotação de tipo do cliente,
 // para o compilador não forçar o mock a ter a forma que a tela acredita.
 const campoNaRaiz = {
   rotulo: 'CAMPO DO LAYOUT',
@@ -81,7 +81,7 @@ describe('grupoDoCampo', () => {
   })
 })
 
-describe('ReferenciasCruzadas — campos do Layout InvoiCy', () => {
+describe('ReferenciasCruzadas: campos do Layout InvoiCy', () => {
   it('campo na raiz mostra só o nome; o campo dentro de um grupo mostra o grupo antes', async () => {
     const { tagRaiz, tagGrupo } = await renderCampos()
 
@@ -156,7 +156,7 @@ describe('ReferenciasCruzadas — campos do Layout InvoiCy', () => {
   })
 })
 
-describe('ReferenciasCruzadas — rejeições relacionadas', () => {
+describe('ReferenciasCruzadas: rejeições relacionadas', () => {
   it('cada rejeição é uma linha com código e título, ligando à página do erro', async () => {
     renderComRouter(<ReferenciasCruzadas camposLayout={[]} erros={[erro]} />)
 
