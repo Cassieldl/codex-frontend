@@ -31,7 +31,8 @@ export function agruparMudancas(mudancas: readonly MudancaDaVersaoLayout[]): Gru
   })).filter((grupo) => grupo.mudancas.length > 0)
 }
 
-export type ChaveDoContador = 'novos' | 'descontinuados' | 'mudaramDeLugar' | 'renomeados'
+export type ChaveDoContador =
+  'novos' | 'descontinuados' | 'mudaramDeLugar' | 'renomeados' | 'alterados'
 
 export interface ContadorDeMudanca {
   chave: ChaveDoContador
@@ -82,6 +83,11 @@ export function contarMudancasDaVersao(
     {
       chave: 'renomeados',
       quantidade: contarDosTipos(mudancas, 'renomeado'),
+      camposAfetados: null,
+    },
+    {
+      chave: 'alterados',
+      quantidade: contarDosTipos(mudancas, 'alterado'),
       camposAfetados: null,
     },
   ]

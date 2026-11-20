@@ -63,6 +63,8 @@ describe('contarMudancasDaVersao', () => {
         mudanca('campoNovo', null, 'nroDUIMP'),
         mudanca('saiu', 'ValServEst', null),
         mudanca('mudouDeLugar', 'tpOper', 'RPSSubs/tpOper'),
+        mudanca('alterado', 'Prestador/Endereco/CEP', 'Prestador/Endereco/CEP'),
+        mudanca('alterado', 'Tomador/Endereco/CEP', 'Tomador/Endereco/CEP'),
       ],
       { novos: 44, descontinuados: 1 },
     )
@@ -71,6 +73,7 @@ describe('contarMudancasDaVersao', () => {
       { chave: 'novos', quantidade: 3, camposAfetados: 44 },
       { chave: 'descontinuados', quantidade: 1, camposAfetados: null },
       { chave: 'mudaramDeLugar', quantidade: 1, camposAfetados: null },
+      { chave: 'alterados', quantidade: 2, camposAfetados: null },
     ])
   })
 

@@ -11,6 +11,7 @@ const ROTULO_DO_CONTADOR: Record<ChaveDoContador, { singular: string; plural: st
   descontinuados: { singular: 'saiu', plural: 'saíram' },
   mudaramDeLugar: { singular: 'mudou de lugar', plural: 'mudaram de lugar' },
   renomeados: { singular: 'renomeado', plural: 'renomeados' },
+  alterados: { singular: 'alterado', plural: 'alterados' },
 }
 
 const COR_DO_PONTO: Record<ChaveDoContador, string> = {
@@ -18,6 +19,7 @@ const COR_DO_PONTO: Record<ChaveDoContador, string> = {
   descontinuados: 'bg-error-texto',
   mudaramDeLugar: 'bg-primary-light',
   renomeados: 'bg-accent',
+  alterados: 'bg-muted',
 }
 
 /**
