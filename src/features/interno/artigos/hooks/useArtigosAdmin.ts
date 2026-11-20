@@ -13,11 +13,11 @@ interface PaginatedResponseCru<T> {
 }
 
 /**
- * `GET /interno/artigos` (I23) — `PaginatedResponse<T>` **cru na raiz** (I24 e
+ * `GET /interno/artigos` (I23) - `PaginatedResponse<T>` **cru na raiz** (I24 e
  * as demais respostas do recurso é que vêm enveloped em `data`), role
  * `artigos-buscar`. Enxerga rascunho.
  *
- * O `etag` de cada item sai do `versaoConcorrencia` do corpo — o header `ETag`
+ * O `etag` de cada item sai do `versaoConcorrencia` do corpo - o header `ETag`
  * é um por resposta e não alcança item de lista. É o que permite publicar,
  * despublicar e remover direto da listagem.
  */

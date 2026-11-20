@@ -36,7 +36,7 @@ describe('useResultadoBuscaInterna', () => {
     ])
   })
 
-  it('usa apiInterno — chama GET /interno/busca (nunca o endpoint público /busca)', async () => {
+  it('usa apiInterno - chama GET /interno/busca (nunca o endpoint público /busca)', async () => {
     const rotasChamadas: string[] = []
     server.use(
       http.get(`${API_URL}/interno/busca`, ({ request }) => {
@@ -73,7 +73,7 @@ describe('useResultadoBuscaInterna', () => {
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    // Sem sessão de teste ativa o header pode vir ausente — o que importa é
+    // Sem sessão de teste ativa o header pode vir ausente - o que importa é
     // que a chamada passou pelo interceptor de `apiInterno` (garantirAutenticacao
     // + injeção condicional), nunca pelo cliente público, já asserido acima.
     expect(

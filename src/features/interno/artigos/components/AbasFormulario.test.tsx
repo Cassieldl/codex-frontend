@@ -21,7 +21,7 @@ function AbasDeTeste() {
   )
 }
 
-describe('AbasFormulario — ARIA Tabs Pattern', () => {
+describe('AbasFormulario: ARIA Tabs Pattern', () => {
   it('exatamente uma aba fica selecionada e tabulável por vez', async () => {
     const usuario = userEvent.setup()
     render(<AbasDeTeste />)

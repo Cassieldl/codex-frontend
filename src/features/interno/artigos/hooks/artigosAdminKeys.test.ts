@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { artigosAdminKeys } from './artigosAdminKeys'
 
 describe('artigosAdminKeys', () => {
-  it('a chave de lista carrega os filtros — trocar de tipo é outra entrada de cache', () => {
+  it('a chave de lista carrega os filtros - trocar de tipo é outra entrada de cache', () => {
     const conceito = artigosAdminKeys.list({ tipo: 'Conceito', pagina: 1 })
     const mudanca = artigosAdminKeys.list({ tipo: 'Mudanca', pagina: 1 })
 
@@ -19,7 +19,7 @@ describe('artigosAdminKeys', () => {
     ])
     expect(artigosAdminKeys.lists()).toEqual(['artigosAdmin', 'list'])
 
-    // Invalidar pela raiz alcança os três ramos — é o que sustenta
+    // Invalidar pela raiz alcança os três ramos - é o que sustenta
     // `invalidateQueries({ queryKey: artigosAdminKeys.all })` nas mutations:
     // criar o artigo reservado muda a lista E a resposta de I36.
     for (const chave of [

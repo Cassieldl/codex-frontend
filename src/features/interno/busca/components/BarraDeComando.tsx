@@ -13,13 +13,13 @@ import { LinhaResultadoBuscaInterna } from './LinhaResultadoBuscaInterna'
 
 const DEBOUNCE_MS = 300
 const TERMO_MINIMO = 2
-/** Mesma duração do estado "Copiado" de `BotaoCopiar` — valor replicado, não vale extrair por isto. */
+/** Mesma duração do estado "Copiado" de `BotaoCopiar` - valor replicado, não vale extrair por isto. */
 const DURACAO_TOAST_MS = 2000
 
 export interface BarraDeComandoProps {
   /**
    * Como a paleta leva o usuário ao item. O destino publicado é uma rota
-   * PÚBLICA, fora da árvore autenticada — é navegação de verdade, não um push
+   * PÚBLICA, fora da árvore autenticada - é navegação de verdade, não um push
    * de router. Injetável para o teste observar o destino sem navegar de fato.
    */
   aoNavegar?: (caminho: string) => void
@@ -32,14 +32,14 @@ function navegarDeFato(caminho: string) {
 /**
  * Barra de comando da área interna (§5.D): `Ctrl+K`/`Cmd+K` abre, `Esc` fecha,
  * `↑`/`↓` andam pelos resultados, `Enter` abre o item e `Ctrl+Enter` copia o
- * link **sem fechar** — a "cópia em um passo" do escopo.
+ * link **sem fechar** - a "cópia em um passo" do escopo.
  *
  * Reúso quase total: o endpoint (I21), o hook, o debounce e a linha de
  * resultado são os mesmos da tela 11. O que é novo aqui é o diálogo e o
  * teclado.
  *
  * O diálogo é o `Modal` compartilhado por composição, para não duplicar foco
- * preso, `Escape` e devolução de foco — que ele já testa. O título fica só
+ * preso, `Escape` e devolução de foco - que ele já testa. O título fica só
  * para leitor de tela (`titleVisuallyHidden`), porque o lugar do cabeçalho é
  * do campo de busca.
  */
@@ -133,7 +133,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
         evento.preventDefault()
         if (!itemAtivo) return
 
-        // `Ctrl/Cmd+Enter` copia e a paleta CONTINUA aberta — quem copia link
+        // `Ctrl/Cmd+Enter` copia e a paleta CONTINUA aberta - quem copia link
         // no atendimento costuma copiar vários seguidos.
         if (evento.ctrlKey || evento.metaKey) {
           void copiarLinkDoItemAtivo(itemAtivo)
@@ -150,7 +150,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
   }
 
   // Sem a guarda de erro, quem usa leitor de tela ouve "0 resultados" quando a requisição falhou
-  // — a versão em áudio da mesma mentira que o texto da tela dava antes.
+  // - a versão em áudio da mesma mentira que o texto da tela dava antes.
   const contagem =
     buscando && !isError ? `${itens.length} resultado${itens.length === 1 ? '' : 's'}` : ''
 
@@ -209,7 +209,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
 
           {isError && buscando && (
             // Sem esta guarda o ramo de vazio absorveria a falha e a paleta AFIRMARIA que o acervo
-            // não tem o item — para quem está ao telefone com o parceiro. Erro de rede não é
+            // não tem o item - para quem está ao telefone com o parceiro. Erro de rede não é
             // resposta vazia.
             <div className="space-y-2 text-sm">
               <p className="text-ink">Não foi possível buscar agora.</p>

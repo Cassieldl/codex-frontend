@@ -39,7 +39,7 @@ const TERCEIRO = criarItem({
   publicado: false,
 })
 
-/** Resposta de I21 no shape real — `ApiResponse<ResultadoBusca>`, dois grupos. */
+/** Resposta de I21 no shape real - `ApiResponse<ResultadoBusca>`, dois grupos. */
 function handlerBuscaInterna(itens = [PRIMEIRO, SEGUNDO, TERCEIRO]) {
   const resultado = {
     termo: 'rps',
@@ -84,7 +84,7 @@ function renderizar(props: Partial<React.ComponentProps<typeof BarraDeComando>> 
   return { aoNavegar }
 }
 
-// `userEvent.setup()` sobrescreve `navigator.clipboard` — espionar só depois
+// `userEvent.setup()` sobrescreve `navigator.clipboard` - espionar só depois
 // dele (AP-FRONTEND-020).
 function configurarUsuarioComClipboard() {
   const usuario = userEvent.setup()
@@ -100,7 +100,7 @@ async function abrirComResultados(usuario: ReturnType<typeof userEvent.setup>) {
   await screen.findByText('Primeiro resultado')
 }
 
-describe('BarraDeComando — abertura e fechamento', () => {
+describe('BarraDeComando: abertura e fechamento', () => {
   it('Ctrl+K e Cmd+K abrem o diálogo de qualquer lugar da área interna', async () => {
     renderizar()
 
@@ -143,7 +143,7 @@ describe('BarraDeComando — abertura e fechamento', () => {
   })
 })
 
-describe('BarraDeComando — navegação por teclado', () => {
+describe('BarraDeComando: navegação por teclado', () => {
   it('↑/↓ movem o aria-activedescendant sobre a lista plana dos três resultados', async () => {
     server.use(handlerBuscaInterna())
     const usuario = userEvent.setup()
@@ -219,7 +219,7 @@ describe('BarraDeComando — navegação por teclado', () => {
   })
 })
 
-describe('BarraDeComando — Ctrl+Enter copia sem fechar', () => {
+describe('BarraDeComando: Ctrl+Enter copia sem fechar', () => {
   it('copia o link público do item ativo e mantém o diálogo aberto', async () => {
     server.use(handlerBuscaInterna())
     const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
@@ -256,7 +256,7 @@ describe('BarraDeComando — Ctrl+Enter copia sem fechar', () => {
   })
 })
 
-describe('BarraDeComando — estados da busca', () => {
+describe('BarraDeComando: estados da busca', () => {
   it('antes do termo mínimo, orienta em vez de mostrar lista vazia', async () => {
     const usuario = userEvent.setup()
     renderizar()
@@ -293,7 +293,7 @@ describe('BarraDeComando — estados da busca', () => {
 
   it('erro de rede mostra o retry e o contador anunciado não mente "0 resultados"', async () => {
     // Mesmo hook e mesmo padrão do bloco de erro da tela 11 (`inicio.test.tsx`): sem a guarda
-    // `!isError`, o leitor de tela ouviria "0 resultados" quando a busca falhou — a versão em
+    // `!isError`, o leitor de tela ouviria "0 resultados" quando a busca falhou - a versão em
     // áudio da mesma mentira que o texto já cometia antes de existir `ErrorState`.
     server.use(
       http.get(`${API_URL}/interno/busca`, () =>

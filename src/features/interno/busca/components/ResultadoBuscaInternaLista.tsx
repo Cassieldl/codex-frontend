@@ -6,7 +6,7 @@ export interface ResultadoBuscaInternaListaProps {
 }
 
 /**
- * §7.8 — resultados da busca interna agrupados por tipo. Só agrupa: a linha em
+ * §7.8 - resultados da busca interna agrupados por tipo. Só agrupa: a linha em
  * si (título, estado de publicação, botão de copiar e o saneamento de link)
  * vive em `LinhaResultadoBuscaInterna`, compartilhada com a barra de comando,
  * que exibe a mesma linha em lista plana.

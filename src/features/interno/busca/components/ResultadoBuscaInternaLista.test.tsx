@@ -37,7 +37,7 @@ function criarGrupo(itens: ResultadoItem[]): GrupoResultado[] {
   ]
 }
 
-// `userEvent.setup()` sobrescreve `navigator.clipboard` — espionar só depois
+// `userEvent.setup()` sobrescreve `navigator.clipboard` - espionar só depois
 // dele (AP-FRONTEND-020), mesmo padrão de `BotaoCopiar.test.tsx`.
 function configurarUsuarioComClipboard() {
   const usuario = userEvent.setup()
@@ -47,7 +47,7 @@ function configurarUsuarioComClipboard() {
   return { usuario, escreverNaAreaDeTransferencia }
 }
 
-describe('ResultadoBuscaInternaLista — BAIXO-03/BAIXO-04 após a extração da linha', () => {
+describe('ResultadoBuscaInternaLista: BAIXO-03/BAIXO-04 após a extração da linha', () => {
   it('item com url interna válida: link aponta pro caminho e "Copiar link" usa o mesmo caminho saneado', async () => {
     const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
     render(<ResultadoBuscaInternaLista grupos={criarGrupo([criarItem({})])} />)
@@ -58,7 +58,7 @@ describe('ResultadoBuscaInternaLista — BAIXO-03/BAIXO-04 após a extração da
     await usuario.click(screen.getByRole('button', { name: 'Copiar link de RPS inválido' }))
 
     // O caminho copiado é o saneado, agora marcado com a origem do atendimento
-    // (§9.3) — a mesma regra que a barra de comando usa.
+    // (§9.3) - a mesma regra que a barra de comando usa.
     expect(escreverNaAreaDeTransferencia).toHaveBeenCalledWith(
       `${window.location.origin}/erros/e0117-ipm?origem=atendimento`,
     )

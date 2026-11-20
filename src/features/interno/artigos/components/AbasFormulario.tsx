@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 
 export interface AbaFormulario {
-  /** Identificador estável da aba — vira parte do `id` do tab e do painel. */
+  /** Identificador estável da aba - vira parte do `id` do tab e do painel. */
   valor: string
   rotulo: string
   conteudo: ReactNode
@@ -18,12 +18,12 @@ export interface AbasFormularioProps {
 }
 
 /**
- * Abas de verdade do ARIA Tabs Pattern — `role="tablist"`/`"tab"`/`"tabpanel"`,
+ * Abas de verdade do ARIA Tabs Pattern - `role="tablist"`/`"tab"`/`"tabpanel"`,
  * seta esquerda/direita circulando, `Home`/`End`, e foco móvel (só a aba ativa
  * é tabulável).
  *
  * **Não** é o `AbasNavegaveis` de `components/ui/`: lá cada aba é uma URL de
- * verdade (`<Link>`), o que é certo para filtro de página e errado aqui —
+ * verdade (`<Link>`), o que é certo para filtro de página e errado aqui -
  * alternar "Editar"/"Pré-visualizar" troca de painel dentro do mesmo
  * formulário, sem navegar. Trocar a URL no meio de um formulário preenchido
  * mudaria o significado do botão "voltar" do navegador.

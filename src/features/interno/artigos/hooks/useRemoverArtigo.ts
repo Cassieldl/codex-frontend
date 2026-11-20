@@ -9,7 +9,7 @@ interface VariaveisRemoverArtigo {
 }
 
 /**
- * `DELETE /interno/artigos/{id}` (I27) — role `artigos-remover`, `If-Match`
+ * `DELETE /interno/artigos/{id}` (I27) - role `artigos-remover`, `If-Match`
  * obrigatório, responde `204` sem corpo.
  *
  * Artigo reservado responde `422 ARTIGO_RESERVADO`, propagado sem tratamento

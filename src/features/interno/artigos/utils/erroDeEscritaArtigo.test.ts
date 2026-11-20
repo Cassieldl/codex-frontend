@@ -30,7 +30,7 @@ describe('interpretarErroDeEscritaArtigo', () => {
     expect(conflito.orientacao).not.toBe(semIfMatch.orientacao)
   })
 
-  it('422 ARTIGO_RESERVADO explica a reserva e não oferece ação — nenhum gesto faz a remoção passar', () => {
+  it('422 ARTIGO_RESERVADO explica a reserva e não oferece ação - nenhum gesto faz a remoção passar', () => {
     const mensagemDoBackend =
       'O artigo "como-funciona" é obrigatório e não pode ser removido nem despublicado.'
 

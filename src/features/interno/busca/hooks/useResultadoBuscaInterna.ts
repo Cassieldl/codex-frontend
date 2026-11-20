@@ -11,11 +11,11 @@ interface EnvelopeResultadoBusca {
 const TERMO_MINIMO = 2
 
 /**
- * `GET /interno/busca` (I21, M15/M21) — `ApiResponse<ResultadoBusca>`,
+ * `GET /interno/busca` (I21, M15/M21) - `ApiResponse<ResultadoBusca>`,
  * superfície interna. Mesmo tipo de `useResultadoBusca` (público), mas
- * **enxerga rascunho** e usa `apiInterno` (nunca `apiPublico` — endpoint
+ * **enxerga rascunho** e usa `apiInterno` (nunca `apiPublico` - endpoint
  * próprio, não reusa `/busca`). Role `indicebusca-buscar`, checada só no
- * backend — este hook não valida permissão, apenas chama a rota.
+ * backend - este hook não valida permissão, apenas chama a rota.
  */
 export function useResultadoBuscaInterna({ q, provedor }: ParametrosBuscaInterna) {
   return useQuery({

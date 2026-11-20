@@ -16,7 +16,7 @@ interface VariaveisAtualizarArtigo {
 }
 
 /**
- * `PUT /interno/artigos/{id}` (I26) — role `artigos-atualizar`, `If-Match`
+ * `PUT /interno/artigos/{id}` (I26) - role `artigos-atualizar`, `If-Match`
  * obrigatório. Trocar o `tipo` é permitido (`decisoes.md` B-2) e dispara
  * reindexação no backend; o cliente não faz nada a mais por isso.
  *

@@ -25,7 +25,7 @@ function criarItem(sobrescritas: Partial<ResultadoItem> = {}): ResultadoItem {
   }
 }
 
-// `userEvent.setup()` sobrescreve `navigator.clipboard` — espionar só depois
+// `userEvent.setup()` sobrescreve `navigator.clipboard` - espionar só depois
 // dele (AP-FRONTEND-020), mesmo padrão de `BotaoCopiar.test.tsx`.
 function configurarUsuarioComClipboard() {
   const usuario = userEvent.setup()
@@ -43,7 +43,7 @@ function renderizar(item: ResultadoItem) {
   )
 }
 
-describe('LinhaResultadoBuscaInterna — PQ-09 (publicado por ITEM)', () => {
+describe('LinhaResultadoBuscaInterna: PQ-09 (publicado por ITEM)', () => {
   it('item publicado oferece "Copiar link" com a URL pública', async () => {
     const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
     renderizar(criarItem())
@@ -131,7 +131,7 @@ describe('LinhaResultadoBuscaInterna — PQ-09 (publicado por ITEM)', () => {
   })
 })
 
-describe('LinhaResultadoBuscaInterna — F-3 (o link interno leva à lista, não ao registro)', () => {
+describe('LinhaResultadoBuscaInterna: F-3 (o link interno leva à lista, não ao registro)', () => {
   it('o rótulo visível do rascunho admite que o destino é a lista', () => {
     renderizar(criarItem({ titulo: 'RPS inválido', publicado: false }))
 
@@ -166,7 +166,7 @@ describe('LinhaResultadoBuscaInterna — F-3 (o link interno leva à lista, não
     ])
   })
 
-  it('item publicado não ganha a ressalva — o link dele é o registro público mesmo', () => {
+  it('item publicado não ganha a ressalva - o link dele é o registro público mesmo', () => {
     renderizar(criarItem({ titulo: 'RPS inválido' }))
 
     expect(screen.getByText('Copiar link')).toBeInTheDocument()

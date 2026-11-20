@@ -19,7 +19,7 @@ function novoQueryClient() {
 }
 
 describe('useArtigoExiste (I36)', () => {
-  it('pergunta pelo slug no endpoint dedicado — nunca varre a listagem paginada', async () => {
+  it('pergunta pelo slug no endpoint dedicado - nunca varre a listagem paginada', async () => {
     const capturado: { url: URL | null } = { url: null }
     server.use(
       http.get(`${API_URL}/interno/artigos/existe`, ({ request }) => {
@@ -43,7 +43,7 @@ describe('useArtigoExiste (I36)', () => {
     expect(result.current.data?.artigoId).toBe(5)
   })
 
-  it('ausência vem como existe:false com artigoId nulo — nunca 404', async () => {
+  it('ausência vem como existe:false com artigoId nulo - nunca 404', async () => {
     server.use(
       http.get(`${API_URL}/interno/artigos/existe`, () =>
         HttpResponse.json({
@@ -63,7 +63,7 @@ describe('useArtigoExiste (I36)', () => {
     expect(result.current.data?.artigoId).toBeNull()
   })
 
-  it('lê do envelope { data } — I36 não responde corpo cru', async () => {
+  it('lê do envelope { data } - I36 não responde corpo cru', async () => {
     server.use(
       http.get(`${API_URL}/interno/artigos/existe`, () =>
         HttpResponse.json({ slug: SLUG_COMO_FUNCIONA, existe: true, artigoId: 5 }),
@@ -75,7 +75,7 @@ describe('useArtigoExiste (I36)', () => {
     })
 
     // Corpo cru não tem `data`: a leitura enveloped falha em vez de produzir
-    // um "existe" acidental — a tela nunca deduz existência de shape errado.
+    // um "existe" acidental - a tela nunca deduz existência de shape errado.
     await waitFor(() => expect(result.current.isError).toBe(true))
     expect(result.current.data).toBeUndefined()
   })

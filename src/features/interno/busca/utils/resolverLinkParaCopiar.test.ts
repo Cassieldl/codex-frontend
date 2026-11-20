@@ -25,7 +25,7 @@ function criarItem(sobrescritas: Partial<ResultadoItem> = {}): ResultadoItem {
   }
 }
 
-describe('resolverLinkParaCopiar — PQ-09', () => {
+describe('resolverLinkParaCopiar: PQ-09', () => {
   it('item publicado copia a URL pública marcada com a origem do atendimento', () => {
     expect(resolverLinkParaCopiar(criarItem(), URL_BASE)).toBe(
       `${URL_BASE}/erros/e0117-ipm?origem=atendimento`,
@@ -43,7 +43,7 @@ describe('resolverLinkParaCopiar — PQ-09', () => {
     expect(link).toBe(`${URL_BASE}/interno/artigos?origem=atendimento`)
   })
 
-  it('rascunho de tipo sem rota de edição não copia nada — o chamador explica o motivo', () => {
+  it('rascunho de tipo sem rota de edição não copia nada - o chamador explica o motivo', () => {
     const aviso = criarItem({ tipo: 'aviso', url: '/provedores/x', publicado: false })
 
     expect(resolverLinkParaCopiar(aviso, URL_BASE)).toBeNull()

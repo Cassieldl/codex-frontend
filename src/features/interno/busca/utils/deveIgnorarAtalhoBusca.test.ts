@@ -43,7 +43,7 @@ describe('deveIgnorarAtalhoBusca', () => {
   })
 })
 
-describe('deveIgnorarAtalhoBusca — diálogo aberto tem precedência', () => {
+describe('deveIgnorarAtalhoBusca: diálogo aberto tem precedência', () => {
   function documentoCom(html: string): Document {
     const documento = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html')
     return documento
@@ -51,7 +51,7 @@ describe('deveIgnorarAtalhoBusca — diálogo aberto tem precedência', () => {
 
   it('bloqueia com um modal aberto, mesmo com o foco num botão do formulário', () => {
     // O caso que a guarda antiga deixava passar: o `Select` do projeto é
-    // `<button role="combobox">`, e "Salvar"/"Cancelar" também são botões — nenhum deles é
+    // `<button role="combobox">`, e "Salvar"/"Cancelar" também são botões - nenhum deles é
     // TAG_EDITAVEL, então o atalho abria a paleta por cima do formulário.
     const documento = documentoCom(
       '<div role="dialog" aria-modal="true"><form><button id="combo" role="combobox">Severidade</button></form></div>',
@@ -72,7 +72,7 @@ describe('deveIgnorarAtalhoBusca — diálogo aberto tem precedência', () => {
     expect(deveIgnorarAtalhoBusca(documento.querySelector('#acao'), documento)).toBe(false)
   })
 
-  it('deixa passar em campo de busca solto — não há contexto a perder (tela 11)', () => {
+  it('deixa passar em campo de busca solto - não há contexto a perder (tela 11)', () => {
     const documento = documentoCom('<input id="busca" type="search" />')
 
     expect(deveIgnorarAtalhoBusca(documento.querySelector('#busca'), documento)).toBe(false)

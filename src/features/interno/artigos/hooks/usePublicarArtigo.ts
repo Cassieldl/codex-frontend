@@ -3,9 +3,9 @@ import type { ArtigoAdminDetalhe } from '../types/artigoAdmin'
 import { artigosAdminKeys } from './artigosAdminKeys'
 
 /**
- * `PUT /interno/artigos/{id}/publicacao` (I28) — role `artigos-publicar`.
+ * `PUT /interno/artigos/{id}/publicacao` (I28) - role `artigos-publicar`.
  *
- * **Publicar é sempre permitido, inclusive o artigo reservado** — publicar
+ * **Publicar é sempre permitido, inclusive o artigo reservado** - publicar
  * nunca quebra link. Despublicar o reservado é que responde
  * `422 ARTIGO_RESERVADO`, porque derrubaria a rota `/como-funciona`, que o
  * cabeçalho público exibe incondicionalmente.

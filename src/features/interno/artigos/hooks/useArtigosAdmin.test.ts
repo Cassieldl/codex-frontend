@@ -10,7 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL
 
 /**
  * Corpo REAL de `GET /interno/artigos` (I23): `PaginatedResponse<T>` **cru na
- * raiz**, sem envelope `data`. Item de lista é compacto — sem `corpo`,
+ * raiz**, sem envelope `data`. Item de lista é compacto - sem `corpo`,
  * `campoLayoutIds` nem `erroIds` (`decisoes.md` B-1). Nenhum `etag` literal
  * aparece aqui de propósito: o valor tem de ser DERIVADO de
  * `versaoConcorrencia`.
@@ -78,7 +78,7 @@ describe('useArtigosAdmin (I23)', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(capturado.url?.searchParams.get('q')).toBe('abrasf')
-    // Valor de contrato em ASCII (M-5) — byte a byte, nunca "Mudança".
+    // Valor de contrato em ASCII (M-5) - byte a byte, nunca "Mudança".
     expect(capturado.url?.searchParams.get('tipo')).toBe('Mudanca')
     expect(capturado.url?.searchParams.get('publicado')).toBe('false')
     expect(capturado.url?.searchParams.get('pagina')).toBe('2')
@@ -99,7 +99,7 @@ describe('useArtigosAdmin (I23)', () => {
     expect(result.current.data?.items[1].etag).toBe('W/"3"')
   })
 
-  it('o corpo real não tem campo etag — o valor é derivado, nunca repassado', () => {
+  it('o corpo real não tem campo etag - o valor é derivado, nunca repassado', () => {
     expect(respostaListagem.items).not.toHaveLength(0)
     for (const item of respostaListagem.items) {
       expect(item).not.toHaveProperty('etag')
@@ -122,7 +122,7 @@ describe('useArtigosAdmin (I23)', () => {
     expect(rascunho?.publicado).toBe(false)
   })
 
-  it('lê o corpo CRU na raiz — o envelope { data } de I24 não se aplica a I23', async () => {
+  it('lê o corpo CRU na raiz - o envelope { data } de I24 não se aplica a I23', async () => {
     server.use(
       http.get(`${API_URL}/interno/artigos`, () =>
         HttpResponse.json({ data: respostaListagem, message: null }),

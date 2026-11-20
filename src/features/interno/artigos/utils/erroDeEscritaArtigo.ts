@@ -10,9 +10,9 @@ export type AcaoDeRecuperacaoArtigo = 'recarregar-registro' | 'recarregar-lista'
 export interface ErroDeEscritaArtigo {
   /** `code` do envelope `{ error: { code, message } }`; `null` fora desse formato. */
   codigo: string | null
-  /** Mensagem do backend, sempre — nunca substituída por texto fixo do cliente. */
+  /** Mensagem do backend, sempre - nunca substituída por texto fixo do cliente. */
   mensagem: string
-  /** Campos culpados no 422 de validação — vazio quando o erro não é de campo. */
+  /** Campos culpados no 422 de validação - vazio quando o erro não é de campo. */
   errosDeCampo: ErroDeCampoApi[]
   /** Orientação do cliente, somada à mensagem. `null` quando o backend já basta. */
   orientacao: string | null
@@ -30,7 +30,7 @@ interface Recuperacao {
  * `409 CONFLITO_CONCORRENCIA` e `400 IF_MATCH_OBRIGATORIO` chegam dos mesmos
  * endpoints e são fáceis de confundir, mas têm causas opostas: no primeiro o
  * `If-Match` foi enviado e está **desatualizado** (outra pessoa salvou antes);
- * no segundo ele **não foi enviado** — o registro em mãos veio sem validador
+ * no segundo ele **não foi enviado** - o registro em mãos veio sem validador
  * de versão. Recarregar o registro resolve um; recarregar a lista, o outro.
  *
  * `422 ARTIGO_RESERVADO` não tem ação de recuperação de propósito: não existe
@@ -53,7 +53,7 @@ const RECUPERACAO_POR_CODIGO: Record<string, Recuperacao> = {
   },
   ARTIGO_RESERVADO: {
     orientacao:
-      'Este artigo é obrigatório: a rota pública /como-funciona aponta para ele. Editar e publicar continuam liberados — remover e despublicar, não.',
+      'Este artigo é obrigatório: a rota pública /como-funciona aponta para ele. Editar e publicar continuam liberados. Remover e despublicar, não.',
     acao: null,
     rotuloAcao: null,
   },

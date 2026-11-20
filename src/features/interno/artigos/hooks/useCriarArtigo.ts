@@ -9,7 +9,7 @@ interface EnvelopeArtigoAdmin {
 }
 
 /**
- * `POST /interno/artigos` (I25) — role `artigos-adicionar`, responde `201` com
+ * `POST /interno/artigos` (I25) - role `artigos-adicionar`, responde `201` com
  * o detalhe enveloped em `data`.
  *
  * **Sem `If-Match`**: o recurso ainda não existe, logo não há versão a

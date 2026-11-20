@@ -14,7 +14,7 @@ import { useVerificarArtigo } from './useVerificarArtigo'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-/** Corpo de `GET /interno/artigos/{id}` (I24) — enveloped, com `versaoConcorrencia` e sem `etag`. */
+/** Corpo de `GET /interno/artigos/{id}` (I24) - enveloped, com `versaoConcorrencia` e sem `etag`. */
 const detalheDoServidor = {
   id: 42,
   slug: 'migrar-para-abrasf-204',
@@ -65,7 +65,7 @@ function novoQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } })
 }
 
-describe('escrita de artigo — If-Match derivado da leitura (I24 → I26/I27/I28/I29)', () => {
+describe('escrita de artigo: If-Match derivado da leitura (I24 → I26/I27/I28/I29)', () => {
   it('I24 traz corpo e os ids de referência cruzada, e deriva o etag do versaoConcorrencia', async () => {
     server.use(
       http.get(`${API_URL}/interno/artigos/42`, () =>
@@ -79,7 +79,7 @@ describe('escrita de artigo — If-Match derivado da leitura (I24 → I26/I27/I2
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    // Os três campos que a listagem NÃO tem — sem eles o modal abre vazio.
+    // Os três campos que a listagem NÃO tem - sem eles o modal abre vazio.
     expect(result.current.data?.corpo).toBe(detalheDoServidor.corpo)
     expect(result.current.data?.campoLayoutIds).toEqual([3, 8])
     expect(result.current.data?.erroIds).toEqual([17])
@@ -143,7 +143,7 @@ describe('escrita de artigo — If-Match derivado da leitura (I24 → I26/I27/I2
     expect(capturado.verificacao).toBe(etag)
   })
 
-  it('criar não envia If-Match — o recurso ainda não existe, não há versão a conferir', async () => {
+  it('criar não envia If-Match - o recurso ainda não existe, não há versão a conferir', async () => {
     const capturado: { ifMatch: string | null; corpo: unknown } = { ifMatch: null, corpo: null }
     server.use(
       http.post(`${API_URL}/interno/artigos`, async ({ request }) => {
@@ -192,7 +192,7 @@ describe('escrita de artigo — If-Match derivado da leitura (I24 → I26/I27/I2
     expect(capturado.corpo).toEqual({ verificadoEm: '2026-09-14' })
   })
 
-  it('publicar manda { publicado } no corpo — nunca o artigo inteiro', async () => {
+  it('publicar manda { publicado } no corpo - nunca o artigo inteiro', async () => {
     const capturado: { corpo: unknown } = { corpo: null }
     server.use(
       http.put(`${API_URL}/interno/artigos/42/publicacao`, async ({ request }) => {

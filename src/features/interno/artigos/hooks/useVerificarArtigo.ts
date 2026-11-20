@@ -11,13 +11,13 @@ interface EnvelopeArtigoAdmin {
 
 interface VariaveisVerificarArtigo {
   id: number
-  /** Data pura (`AAAA-MM-DD`), nunca no futuro — o backend recusa com `422`. */
+  /** Data pura (`AAAA-MM-DD`), nunca no futuro - o backend recusa com `422`. */
   verificadoEm: string
   etag?: string
 }
 
 /**
- * `PUT /interno/artigos/{id}/verificacao` (I29) — role `artigos-atualizar`,
+ * `PUT /interno/artigos/{id}/verificacao` (I29) - role `artigos-atualizar`,
  * `If-Match` obrigatório. Mesmo espírito de `useVerificarVersao`: registrar
  * que o conteúdo foi conferido é ação própria, separada de editar o texto.
  */

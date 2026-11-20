@@ -80,7 +80,7 @@ describe('ArtigoForm', () => {
 
     await usuario.click(screen.getByRole('tab', { name: 'Pré-visualizar' }))
 
-    // `## Antes de comecar` vira <h2> de verdade — é o mesmo renderizador da
+    // `## Antes de comecar` vira <h2> de verdade - é o mesmo renderizador da
     // página pública, não um <pre> com o texto cru.
     expect(screen.getByRole('heading', { level: 2, name: 'Antes de comecar' })).toBeInTheDocument()
   })
@@ -110,7 +110,7 @@ describe('ArtigoForm', () => {
     const usuario = userEvent.setup()
     const { onSubmit } = renderizar({ initialData: ARTIGO })
 
-    // Rótulo visível com acento, valor de contrato sem — M-5.
+    // Rótulo visível com acento, valor de contrato sem - M-5.
     await usuario.click(screen.getByRole('combobox', { name: /Tipo/ }))
     await usuario.click(screen.getByRole('option', { name: 'Mudança/Migração' }))
 
@@ -128,7 +128,7 @@ describe('ArtigoForm', () => {
     })
   })
 
-  it('nunca manda slug nem publicado no payload — derivados/alterados só no servidor', async () => {
+  it('nunca manda slug nem publicado no payload - derivados/alterados só no servidor', async () => {
     const usuario = userEvent.setup()
     const { onSubmit } = renderizar({ initialData: ARTIGO })
 
