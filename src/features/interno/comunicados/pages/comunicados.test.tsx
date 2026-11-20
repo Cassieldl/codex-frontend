@@ -116,7 +116,7 @@ afterEach(() => {
   keycloak.tokenParsed = undefined
 })
 
-describe('ComunicadosPage — estados de carregamento', () => {
+describe('ComunicadosPage: estados de carregamento', () => {
   it('anuncia o carregamento antes de a lista chegar', async () => {
     server.use(handlerProvedores(), handlerComunicadosLista([RASCUNHO_VIGENTE]))
 
@@ -150,7 +150,7 @@ describe('ComunicadosPage — estados de carregamento', () => {
   })
 })
 
-describe('ComunicadosPage — o filtro esconde o encerrado, nunca o rascunho', () => {
+describe('ComunicadosPage: o filtro esconde o encerrado, nunca o rascunho', () => {
   it('a visão padrão pede incluirEncerrados=false e exibe o rascunho vigente como "Rascunho"', async () => {
     const capturado: { url: URL | null } = { url: null }
     server.use(
@@ -172,7 +172,7 @@ describe('ComunicadosPage — o filtro esconde o encerrado, nunca o rascunho', (
     await screen.findByText('Rascunho ainda vigente')
     expect(capturado.url?.searchParams.get('incluirEncerrados')).toBe('false')
 
-    // O ponto: `incluirEncerrados=false` não esconde rascunho — esconde só o
+    // O ponto: `incluirEncerrados=false` não esconde rascunho, esconde só o
     // que ENCERROU. Um comunicado em preparação tem de aparecer na visão
     // padrão, com o badge que diz que ele ainda não está no ar.
     const linhaRascunho = linhaDoComunicado('Rascunho ainda vigente')
@@ -222,7 +222,7 @@ describe('ComunicadosPage — o filtro esconde o encerrado, nunca o rascunho', (
   })
 })
 
-describe('ComunicadosPage — colunas da tabela', () => {
+describe('ComunicadosPage: colunas da tabela', () => {
   it('descreve a abrangência de cada escopo com o texto certo', async () => {
     server.use(
       handlerProvedores(),
@@ -257,7 +257,7 @@ describe('ComunicadosPage — colunas da tabela', () => {
   })
 })
 
-describe('ComunicadosPage — permissões só de UX', () => {
+describe('ComunicadosPage: permissões só de UX', () => {
   it('sem comunicados-adicionar, o botão de criar não existe', async () => {
     autenticarCom(['comunicados-buscar', 'provedores-buscar'])
     server.use(handlerProvedores(), handlerComunicadosLista([RASCUNHO_VIGENTE]))
@@ -284,7 +284,7 @@ describe('ComunicadosPage — permissões só de UX', () => {
   })
 })
 
-describe('ComunicadosPage — edição carrega o detalhe (I31)', () => {
+describe('ComunicadosPage: edição carrega o detalhe (I31)', () => {
   it('abre o modal com corpo e escopo preenchidos, que a listagem não tem', async () => {
     const usuario = userEvent.setup()
     server.use(
@@ -306,11 +306,11 @@ describe('ComunicadosPage — edição carrega o detalhe (I31)', () => {
   })
 })
 
-describe('ComunicadosPage — publicar comunicado expirado (B-4)', () => {
+describe('ComunicadosPage: publicar comunicado expirado (B-4)', () => {
   const MENSAGEM_DO_BACKEND =
     'Não é possível publicar um comunicado cuja expiração já passou. Edite o comunicado para estender a data de expiração para o futuro e publique em seguida.'
 
-  it('mostra a mensagem do backend inteira — ela é o requisito, não decoração', async () => {
+  it('mostra a mensagem do backend inteira: ela é o requisito, não decoração', async () => {
     const usuario = userEvent.setup()
     const rascunhoEncerrado = {
       ...PUBLICADO_ENCERRADO,
@@ -373,7 +373,7 @@ describe('ComunicadosPage — publicar comunicado expirado (B-4)', () => {
   })
 })
 
-describe('ComunicadosPage — 409 e 400 não se confundem', () => {
+describe('ComunicadosPage: 409 e 400 não se confundem', () => {
   it('409 CONFLITO_CONCORRENCIA oferece recarregar o registro', async () => {
     const usuario = userEvent.setup()
     server.use(
@@ -406,7 +406,7 @@ describe('ComunicadosPage — 409 e 400 não se confundem', () => {
     )
   })
 
-  it('400 IF_MATCH_OBRIGATORIO oferece recarregar a lista — saída diferente', async () => {
+  it('400 IF_MATCH_OBRIGATORIO oferece recarregar a lista, saída diferente', async () => {
     const usuario = userEvent.setup()
     server.use(
       handlerProvedores(),
@@ -442,7 +442,7 @@ describe('ComunicadosPage — 409 e 400 não se confundem', () => {
   })
 })
 
-describe('ComunicadosPage — criação', () => {
+describe('ComunicadosPage: criação', () => {
   it('salvar com sucesso fecha o modal e recarrega a lista', async () => {
     const usuario = userEvent.setup()
     let criado = false
@@ -487,8 +487,8 @@ describe('ComunicadosPage — criação', () => {
  * publicado, sem pergunta e sem desfazer. O contrato está escrito no próprio `ModalConfirmacao`
  * ("nunca dispara direto do clique na lista") e cinco telas internas o violavam.
  */
-describe('ComunicadosPage — confirmação antes de remover', () => {
-  it('o clique na lixeira não remove nada — só abre a confirmação', async () => {
+describe('ComunicadosPage: confirmação antes de remover', () => {
+  it('o clique na lixeira não remove nada, só abre a confirmação', async () => {
     const usuario = userEvent.setup()
     const exclusoes: string[] = []
 
@@ -507,7 +507,7 @@ describe('ComunicadosPage — confirmação antes de remover', () => {
     const linha = linhaDoComunicado(PUBLICADO_VIGENTE.titulo)
     await usuario.click(within(linha).getByRole('button', { name: /remover comunicado/i }))
 
-    // Sincroniza no diálogo — sem âncora observável, a asserção de ausência passaria só porque a
+    // Sincroniza no diálogo: sem âncora observável, a asserção de ausência passaria só porque a
     // requisição ainda não tinha saído.
     expect(await screen.findByRole('heading', { name: 'Remover comunicado' })).toBeInTheDocument()
     expect(exclusoes).toHaveLength(0)

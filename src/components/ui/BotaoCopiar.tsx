@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Check, Copy, Link2 } from 'lucide-react'
+import { Check, Copy, Link2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 export type IconeCopiar = 'copiar' | 'link'
@@ -33,6 +33,19 @@ export interface BotaoCopiarProps {
 
 const DURACAO_ESTADO_COPIADO_MS = 2000
 
+type ResultadoDaCopia = 'nenhum' | 'copiado' | 'falhou'
+
+const ROTULO_DO_RESULTADO: Record<Exclude<ResultadoDaCopia, 'nenhum'>, string> = {
+  copiado: 'Copiado',
+  falhou: 'Não copiado',
+}
+
+const ANUNCIO_DO_RESULTADO: Record<ResultadoDaCopia, string> = {
+  nenhum: '',
+  copiado: 'Copiado',
+  falhou: 'Não foi possível copiar. Selecione o texto e copie manualmente.',
+}
+
 const CLASSE_DA_SUPERFICIE: Record<SuperficieDoBotaoCopiar, string> = {
   clara: 'border-border bg-white font-medium text-ink',
   escura: 'border-transparent bg-white/10 font-bold text-white',
@@ -52,7 +65,7 @@ export function BotaoCopiar({
   superficie = 'clara',
   className,
 }: BotaoCopiarProps) {
-  const [copiado, setCopiado] = useState(false)
+  const [resultado, setResultado] = useState<ResultadoDaCopia>('nenhum')
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
@@ -63,14 +76,24 @@ export function BotaoCopiar({
 
   async function handleClick() {
     const valorFinal = typeof valor === 'function' ? valor() : valor
-    await navigator.clipboard.writeText(valorFinal)
 
-    setCopiado(true)
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    timeoutRef.current = setTimeout(() => setCopiado(false), DURACAO_ESTADO_COPIADO_MS)
+    // Sem permissão, fora de contexto seguro ou sem a API, a cópia falha: nunca anunciar sucesso.
+    try {
+      await navigator.clipboard.writeText(valorFinal)
+      mostrarResultado('copiado')
+    } catch {
+      mostrarResultado('falhou')
+    }
   }
 
-  const Icone = copiado ? Check : ICONE[icone]
+  function mostrarResultado(novoResultado: ResultadoDaCopia) {
+    setResultado(novoResultado)
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(() => setResultado('nenhum'), DURACAO_ESTADO_COPIADO_MS)
+  }
+
+  const Icone = resultado === 'copiado' ? Check : resultado === 'falhou' ? X : ICONE[icone]
+  const textoVisivel = resultado === 'nenhum' ? rotulo : ROTULO_DO_RESULTADO[resultado]
 
   return (
     <button
@@ -88,7 +111,11 @@ export function BotaoCopiar({
       )}
     >
       <Icone
-        className={clsx('size-3.5 shrink-0', copiado && superficie === 'clara' && 'text-success')}
+        className={clsx(
+          'size-3.5 shrink-0',
+          superficie === 'clara' && resultado === 'copiado' && 'text-success',
+          superficie === 'clara' && resultado === 'falhou' && 'text-error-texto',
+        )}
         aria-hidden="true"
       />
 
@@ -104,16 +131,14 @@ export function BotaoCopiar({
           aria-hidden="true"
           className="pointer-events-none absolute right-0 bottom-full z-10 mb-1 rounded-[var(--radius-control)] bg-ink px-2 py-1 text-aux whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
         >
-          {copiado ? 'Copiado' : rotulo}
+          {textoVisivel}
         </span>
-      ) : copiado ? (
-        'Copiado'
       ) : (
-        rotulo
+        textoVisivel
       )}
 
       <span role="status" aria-live="polite" className="sr-only">
-        {copiado ? 'Copiado' : ''}
+        {ANUNCIO_DO_RESULTADO[resultado]}
       </span>
     </button>
   )

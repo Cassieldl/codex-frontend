@@ -92,6 +92,7 @@ export function FiltrosDoDicionario({
         {comAlternadorDeMudancas && (
           <AlternadorSegmentado
             rotulo="O que mostrar"
+            tamanho="barra"
             opcoes={ALCANCES}
             rotuloDaOpcao={ROTULO_DO_ALCANCE}
             selecionada={somenteNovos ? 'mudou' : 'completo'}

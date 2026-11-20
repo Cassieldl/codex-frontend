@@ -54,22 +54,42 @@ function coresDoLinkTexto(): string[] {
   )
 }
 
+/**
+ * Fundos de aviso lidos do CSS: `--color-alert-<tom>` sem sufixo. Um tom novo entra na conta
+ * sozinho; borda, texto e ícone (`-borda`, `-texto`, `-icone`) ficam de fora.
+ */
+function fundosDeAviso(): string[] {
+  return [...cssGlobal.matchAll(/--color-(alert-[a-z]+):\s*#/g)].map((achado) => achado[1])
+}
+
 // Fundos em que o portal põe texto com link: página, avisos, bloco realçado e linha da âncora.
-const FUNDOS_COM_LINK = [
-  'white',
-  'alert-info',
-  'alert-warning',
-  'alert-error',
-  'alert-success',
-  'surface-hover',
-  'highlight-anchor',
-]
+const FUNDOS_COM_LINK = ['white', 'surface-hover', 'highlight-anchor', ...fundosDeAviso()]
+
+// Pega `hover:`, `group-hover:`, `group-hover/nome:`, `peer-hover:` e `has-[...]:hover:`.
+const HOVER_PARA_PRIMARY_LIGHT =
+  /(?<![\w-])(?:(?:group|peer)-)?hover(?:\/[\w-]+)?:text-primary-light(?![\w-])/
 
 describe('links do portal', () => {
   const cores = coresDoLinkTexto()
 
   it('a utility link-texto pinta três estados: normal, visitado e hover', () => {
     expect(cores).toHaveLength(3)
+  })
+
+  it('os fundos de aviso vêm do CSS: os quatro tons atuais estão na conta', () => {
+    expect(fundosDeAviso()).toEqual(
+      expect.arrayContaining(['alert-info', 'alert-warning', 'alert-error', 'alert-success']),
+    )
+    expect(fundosDeAviso().every((fundo) => !/-(?:borda|texto|icone)$/.test(fundo))).toBe(true)
+  })
+
+  it.each([
+    'hover:text-primary-light',
+    'group-hover:text-primary-light',
+    'group-hover/linha:text-primary-light',
+    'has-[a:focus]:hover:text-primary-light',
+  ])('a varredura de hover reconhece `%s`', (classe) => {
+    expect(HOVER_PARA_PRIMARY_LIGHT.test(`className="${classe}"`)).toBe(true)
   })
 
   it.each(cores.flatMap((cor) => FUNDOS_COM_LINK.map((fundo) => [cor, fundo])))(
@@ -83,7 +103,7 @@ describe('links do portal', () => {
 
   it('nenhum texto vira primary-light no hover: ele dá 3,99:1 sobre o azul suave', () => {
     const comHoverFraco = fontesDoPortal
-      .filter(([, fonte]) => /(?<![\w-])hover:text-primary-light(?![\w-])/.test(fonte))
+      .filter(([, fonte]) => HOVER_PARA_PRIMARY_LIGHT.test(fonte))
       .map(([caminho]) => caminho)
 
     expect(comHoverFraco).toEqual([])
@@ -95,16 +115,19 @@ describe('avisos', () => {
     expect(cssGlobal).toMatch(/--radius-aviso:\s*12px;/)
   })
 
-  it.each(['../components/ui/AlertaMigrate.tsx', '../components/ui/Toast.tsx'])(
-    '%s usa o raio de aviso',
-    (caminho) => {
-      expect(fontes[caminho]).toContain('rounded-[var(--radius-aviso)]')
-    },
-  )
+  it.each([
+    '../components/ui/AlertaMigrate.tsx',
+    '../components/ui/Toast.tsx',
+    '../features/interno/provedores/components/TrocarSlugProvedor.tsx',
+    '../features/interno/artigos/pages/artigos.tsx',
+    '../features/interno/comunicados/pages/comunicados.tsx',
+  ])('%s usa o raio de aviso', (caminho) => {
+    expect(fontes[caminho]).toContain('rounded-[var(--radius-aviso)]')
+  })
 
-  it('caixa com fundo e borda de aviso não usa raio de controle nem raio solto', () => {
+  it('caixa com fundo e borda de aviso não usa raio de controle nem raio solto, nem na área interna', () => {
     const RAIOS_ACEITOS = /rounded-\[var\(--radius-(?:aviso|pill|card)\)\]/
-    const foraDoPadrao = fontesDoPortal.flatMap(([caminho, fonte]) =>
+    const foraDoPadrao = Object.entries(fontes).flatMap(([caminho, fonte]) =>
       [...fonte.matchAll(/["'`][^"'`]*\bborder-alert-[a-z]+-borda\b[^"'`]*["'`]/g)]
         .map((achado) => achado[0])
         .filter((classes) => /(?<![\w-])rounded\b/.test(classes))
@@ -148,9 +171,30 @@ describe('páginas públicas', () => {
   })
 })
 
-describe('cabeçalho escuro', () => {
+describe('cabeçalho e rodapé escuros', () => {
   const cabecalho = fontes['../components/layout/CabecalhoPublico.tsx']
   const pontosDeLuz = fontes['../components/layout/PontosDeLuz.tsx']
+  const sobrelinha = fontes['../components/ui/Sobrelinha.tsx']
+  const home = fontes['../features/home/routes/home.tsx']
+  const rodape = fontes['../components/layout/RodapeContextual.tsx']
+
+  const TEXTO_ACCENT = /(?<![\w-])(?:[\w[\]=-]+:)?text-accent(?![\w-])/
+  const TEXTO_ACCENT_SOBRE_ESCURO = /(?<![\w-])text-accent-sobre-escuro(?![\w-])/
+
+  it('a sobrelinha do hero usa o tom de texto sobre escuro, nunca o accent', () => {
+    expect(sobrelinha).toMatch(/'escura' \? 'text-accent-sobre-escuro'/)
+    expect(sobrelinha).not.toMatch(TEXTO_ACCENT)
+    expect(home).toMatch(/<Sobrelinha>Portal técnico de integração NFS-e<\/Sobrelinha>/)
+    expect(home).not.toMatch(TEXTO_ACCENT)
+  })
+
+  it('o título de coluna do rodapé usa o tom de texto sobre escuro, nunca o accent', () => {
+    const classeDoTitulo = rodape.match(/const CLASSE_TITULO_COLUNA\s*=\s*'([^']*)'/)?.[1] ?? ''
+
+    expect(classeDoTitulo).toMatch(TEXTO_ACCENT_SOBRE_ESCURO)
+    expect(classeDoTitulo).not.toMatch(TEXTO_ACCENT)
+    expect(rodape).toMatch(/<h2 className=\{CLASSE_TITULO_COLUNA\}>Migrate<\/h2>/)
+  })
 
   /** O fundo mais claro que os pontos de luz produzem: o azul-claro na maior opacidade, sem blur. */
   function fundoMaisClaroDoCabecalho(): string {
@@ -172,7 +216,7 @@ describe('cabeçalho escuro', () => {
     expect(cabecalho).not.toMatch(/(?<![\w-])(?:[\w[\]=-]+:)?text-accent(?![\w-])/)
   })
 
-  it('o laranja da nav atinge 4.5:1 no ponto mais claro dos pontos de luz', () => {
+  it('o laranja de texto sobre escuro atinge 4.5:1 no ponto mais claro dos pontos de luz', () => {
     expect(
       calcularContraste(corDoToken('accent-sobre-escuro'), fundoMaisClaroDoCabecalho()),
     ).toBeGreaterThanOrEqual(CONTRASTE_MINIMO.textoNormal)

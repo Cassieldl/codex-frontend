@@ -43,7 +43,7 @@
   --color-surface-disabled: #f8f8f8;
   --color-surface-hover: #f0f4f7;
 
-  /* Cor: tons de aviso: fundo, borda, texto e ícone. O fundo da dica é também o azul suave de
+  /* Cor: tons de aviso (fundo, borda, texto e ícone). O fundo da dica é também o azul suave de
      item selecionado e de etiqueta; o texto dela é `primary` e o ícone `primary-medium`. O ícone
      do erro é `error-texto` e o do sucesso é `success`. */
   --color-alert-info: #e6f0f8;

@@ -23,14 +23,14 @@ import { useHome } from '../hooks/useHome'
 export interface HomePageProps {
   /**
    * Injetado pela rota fina (`src/routes/index.tsx`), que usa
-   * `Route.useNavigate()` de verdade — manter como prop deixa o Enter da busca
+   * `Route.useNavigate()` de verdade. Manter como prop deixa o Enter da busca
    * testável sem montar a árvore de rotas gerada.
    */
   navegarParaBusca: (termo: string) => void
 }
 
 /**
- * `/` — Home (tela 1), servida por um único agregador (`GET /home`, P9).
+ * `/`: Home (tela 1), servida por um único agregador (`GET /home`, P9).
  *
  * **Decisão de composição:** o hero de busca fica FORA do `useHome()`. A busca
  * é a porta de entrada do produto e consome outro endpoint (P1); derrubá-la

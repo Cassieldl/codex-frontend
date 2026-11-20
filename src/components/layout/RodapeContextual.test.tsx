@@ -24,7 +24,7 @@ interface OpcoesDoRender {
 }
 
 // Contextos com ação para rota interna (`erro-com-contexto`/`layout`)
-// usam `<Link>` do TanStack Router — precisam de um `RouterProvider` de
+// usam `<Link>` do TanStack Router e precisam de um `RouterProvider` de
 // verdade, mesmo padrão de `erros-index.test.tsx`.
 async function renderComRouter(contexto: ContextoRodape, opcoes: OpcoesDoRender = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -145,7 +145,7 @@ describe('RodapeContextual', () => {
     await renderComRouter({ tipo: 'erro-com-contexto', provedorSlug: 'ipm' })
 
     // `Link` só monta depois que o `RouterProvider` resolve o match inicial
-    // (assíncrono) — condição observável, nunca contagem de ticks (AP-FRONTEND-016).
+    // (assíncrono): condição observável, nunca contagem de ticks (AP-FRONTEND-016).
     expect(await screen.findByRole('link', { name: 'Ver o provedor completo' })).toHaveAttribute(
       'href',
       '/provedores/ipm',
@@ -174,7 +174,7 @@ describe('RodapeContextual', () => {
     expect(linksProvedores).toEqual(linksHome)
   })
 
-  it('não declara o conteúdo como fictício — o acervo é real desde o Emissor Nacional', async () => {
+  it('não declara o conteúdo como fictício: o acervo é real desde o Emissor Nacional', async () => {
     await renderComRouter({ tipo: 'busca-com-resultado' })
     const rodape = screen.getByRole('contentinfo')
 
@@ -244,7 +244,7 @@ describe('RodapeContextual', () => {
   })
 })
 
-describe('RodapeContextual — bloco de atendimento', () => {
+describe('RodapeContextual: bloco de atendimento', () => {
   // Literais, não a constante: são os dados reais de contato que o leitor vai usar.
   it('mostra telefone discável, e-mail com link e horário de atendimento', async () => {
     await renderComRouter({ tipo: 'busca-com-resultado' })

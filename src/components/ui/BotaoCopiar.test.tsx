@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { BotaoCopiar } from './BotaoCopiar'
 
 // `userEvent.setup()` já stuba `navigator.clipboard` (Clipboard própria, com
-// `writeText`) para emular copiar/colar — sobrescrever a propriedade antes
+// `writeText`) para emular copiar/colar. Sobrescrever a propriedade antes
 // (`Object.defineProperty`) não sobrevive à chamada de `setup()`, que
 // substitui `navigator.clipboard` de novo. Por isso espionamos o método já
 // existente, sempre depois de `setup()`.
@@ -41,7 +41,7 @@ describe('BotaoCopiar', () => {
     )
   })
 
-  it('usa o aria-label específico informado — nunca "Copiar" genérico', () => {
+  it('usa o aria-label específico informado, nunca "Copiar" genérico', () => {
     render(<BotaoCopiar valor="x" ariaLabel="Copiar link do verbete RPS" rotulo="Copiar" />)
 
     expect(screen.getByRole('button', { name: 'Copiar link do verbete RPS' })).toBeInTheDocument()
@@ -65,11 +65,42 @@ describe('BotaoCopiar', () => {
   }, 6000)
 })
 
+/** Navegador sem permissão ou fora de contexto seguro rejeita a cópia: o botão não pode dizer "Copiado". */
+describe('BotaoCopiar quando a cópia falha', () => {
+  it('mostra o estado de falha quando o navegador rejeita a escrita', async () => {
+    const usuario = userEvent.setup()
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('NotAllowedError'))
+    render(<BotaoCopiar valor="x" ariaLabel="Copiar valor de teste" rotulo="Copiar" />)
+
+    await usuario.click(screen.getByRole('button', { name: 'Copiar valor de teste' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Não foi possível copiar')
+    expect(screen.getByRole('button')).toHaveTextContent('Não copiado')
+  })
+
+  it('mostra o estado de falha quando o navegador não tem a API de área de transferência', async () => {
+    const usuario = userEvent.setup()
+    const descritorOriginal = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+
+    try {
+      render(<BotaoCopiar compacto valor="x" ariaLabel="Copiar link" rotulo="Copiar link" />)
+
+      await usuario.click(screen.getByRole('button', { name: 'Copiar link' }))
+
+      expect(await screen.findByRole('status')).toHaveTextContent('Não foi possível copiar')
+      expect(screen.getByText('Não copiado')).toBeInTheDocument()
+    } finally {
+      if (descritorOriginal) Object.defineProperty(navigator, 'clipboard', descritorOriginal)
+    }
+  })
+})
+
 /**
  * O modo compacto existe para tabela densa: dois botões rotulados por linha competem com o
- * conteúdo. O rótulo não some — muda de lugar.
+ * conteúdo. O rótulo não some: muda de lugar.
  */
-describe('BotaoCopiar — modo compacto', () => {
+describe('BotaoCopiar no modo compacto', () => {
   it('mantém o rótulo no documento, como dica', () => {
     render(
       <BotaoCopiar
@@ -133,7 +164,7 @@ describe('BotaoCopiar — modo compacto', () => {
 
 /**
  * Guarda estrutural: dica que aparece só no hover deixa teclado e toque sem saber o que o botão
- * faz. Foi a razão de o modo compacto não virar o padrão — e é o tipo de detalhe que some numa
+ * faz. Foi a razão de o modo compacto não virar o padrão, e é o tipo de detalhe que some numa
  * "simplificação" de classes, sem nada acusar, porque jsdom não computa pseudo-classe.
  */
 describe('nenhuma dica aparece só no hover', () => {
@@ -193,7 +224,7 @@ describe('copiar link no portal público é só o ícone', () => {
     expect(botoesDeCopiarLink().length).toBeGreaterThanOrEqual(5)
   })
 
-  it('o modal do campo — o único copiar-link do dicionário do layout e da tabela do provedor — está na varredura', () => {
+  it('o modal do campo, o único copiar-link do dicionário do layout e da tabela do provedor, está na varredura', () => {
     const arquivos = botoesDeCopiarLink().map(({ arquivo }) => arquivo)
 
     expect(arquivos.some((arquivo) => arquivo.endsWith('/ModalDeCampoNavegavel.tsx'))).toBe(true)

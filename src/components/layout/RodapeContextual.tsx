@@ -22,7 +22,7 @@ export type ContextoRodape =
   | { tipo: 'busca-com-resultado' }
   | { tipo: 'busca-sem-resultado' }
   | { tipo: 'provedores' }
-  /** Índice de artigos (tela 7) e página do artigo (telas 8/9) — §2.2/§3.5. */
+  /** Índice de artigos (tela 7) e página do artigo (telas 8/9), §2.2/§3.5. */
   | { tipo: 'artigos' }
   | { tipo: 'provedor'; provedorSlug: string }
   | {
@@ -38,11 +38,11 @@ export type ContextoRodape =
   | { tipo: 'erro-varios-provedores'; codigoErro?: string }
   /** Páginas de erro sem erro carregado (carregando, falha, índice, 404): sem próximo passo. */
   | { tipo: 'erro-sem-contexto' }
-  /** Índice de versões do Layout InvoiCy (tela 6, `/layout`) — FRONT-C. */
+  /** Índice de versões do Layout InvoiCy (tela 6, `/layout`), FRONT-C. */
   | { tipo: 'layout' }
   /**
    * `/layout/campos/{campoSlug}` enquanto o skeleton de resolução está
-   * visível (A3) — na prática quase nunca aparece de fato, porque a rota
+   * visível (A3). Na prática quase nunca aparece de fato, porque a rota
    * redireciona antes de montar o rodapé; existe para o caso de erro
    * `404`/`410` nessa rota (FRONT-C).
    */
@@ -147,8 +147,8 @@ const CLASSE_ACAO_SECUNDARIA = `${CLASSE_ACAO_BASE} border border-white text-whi
 const CLASSE_LINK_RODAPE =
   'inline-flex items-center gap-2 text-sm text-white underline-offset-4 hover:underline'
 
-/** Laranja sobre o azul-profundo mede 5,66:1: passa como texto pequeno. */
-const CLASSE_TITULO_COLUNA = 'text-xs font-bold tracking-wider text-accent uppercase'
+/** Laranja de texto sobre escuro: passa de 4,5:1 até no ponto mais claro dos pontos de luz. */
+const CLASSE_TITULO_COLUNA = 'text-xs font-bold tracking-wider text-accent-sobre-escuro uppercase'
 
 const PAGINAS_DO_CODEX = [
   { rotulo: 'Provedores', para: '/provedores' },

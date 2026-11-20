@@ -71,3 +71,34 @@ describe('AlternadorSegmentado', () => {
     expect(screen.getByRole('radio', { name: 'JSON' })).toHaveAttribute('aria-checked', 'true')
   })
 })
+
+/**
+ * Guarda estrutural: a barra do dicionário põe os dois alternadores ao lado do botão "Só reforma
+ * tributária", que mede 44 px. jsdom não faz layout, então a guarda é o tamanho declarado: com o
+ * `padrao` o trilho volta a 52 px e a barra desalinha.
+ */
+describe('alternadores da barra do dicionário', () => {
+  const FONTES = import.meta.glob<string>(
+    [
+      '../../features/layout/components/FiltrosDoDicionario.tsx',
+      '../../features/layout/routes/layout-versao.tsx',
+    ],
+    { query: '?raw', import: 'default', eager: true },
+  )
+
+  const alternadores = Object.entries(FONTES).flatMap(([arquivo, fonte]) =>
+    (fonte.match(/<AlternadorSegmentado\b[\s\S]*?\/>/g) ?? []).map((bloco) => ({ arquivo, bloco })),
+  )
+
+  it('a varredura enxerga a visão e o alcance', () => {
+    expect(alternadores).toHaveLength(2)
+  })
+
+  it('todos usam o tamanho barra, de 44 px', () => {
+    const foraDaBarra = alternadores
+      .filter(({ bloco }) => !/\btamanho="barra"/.test(bloco))
+      .map(({ arquivo }) => arquivo)
+
+    expect(foraDaBarra).toEqual([])
+  })
+})

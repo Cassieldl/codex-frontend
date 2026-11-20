@@ -33,17 +33,17 @@ import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
-/** Título que produz o slug reservado no servidor — a UI sugere, nunca força o slug. */
+/** Título que produz o slug reservado no servidor: a UI sugere, nunca força o slug. */
 const TITULO_COMO_FUNCIONA = 'Como funciona'
 
-const MOTIVO_ARTIGO_RESERVADO = 'Artigo obrigatório — não pode ser removido nem despublicado'
+const MOTIVO_ARTIGO_RESERVADO = 'Artigo obrigatório: não pode ser removido nem despublicado'
 
 type ModalArtigo =
   { modo: 'novo' } | { modo: 'novo-como-funciona' } | { modo: 'editar'; id: number }
 
 interface ErroDeEscritaNaTela {
   info: ErroDeEscritaArtigo
-  /** Artigo afetado — `null` na criação, que ainda não tem id. */
+  /** Artigo afetado; `null` na criação, que ainda não tem id. */
   artigoId: number | null
 }
 
@@ -54,9 +54,9 @@ function chaveDoModal(modal: ModalArtigo | null): string | null {
 }
 
 function formatarVerificacao(iso: string | null): string {
-  if (!iso) return '—'
+  if (!iso) return '-'
   const data = parseISO(iso)
-  if (!Number.isFinite(data.getTime())) return '—'
+  if (!Number.isFinite(data.getTime())) return '-'
   return format(data, 'dd/MM/yyyy')
 }
 
@@ -160,7 +160,7 @@ export function ArtigosPage() {
   /**
    * `CONFLITO_CONCORRENCIA` recarrega só o registro (alguém salvou antes);
    * `IF_MATCH_OBRIGATORIO` recarrega a lista inteira (o item em mãos veio sem
-   * validador de versão). `ARTIGO_RESERVADO` não tem ação — nenhum gesto faz
+   * validador de versão). `ARTIGO_RESERVADO` não tem ação: nenhum gesto faz
    * a remoção passar, e o botão já nasce desabilitado.
    */
   function aoRecuperar() {
@@ -187,7 +187,7 @@ export function ArtigosPage() {
         <div>
           <h1 className="text-titulo font-bold text-ink">Artigos</h1>
           <p className="text-sm text-muted">
-            Conteúdo editorial do portal — conceitos, procedimentos e mudanças de layout.
+            Conteúdo editorial do portal: conceitos, procedimentos e mudanças de layout.
           </p>
         </div>
         {permissoes.artigos.adicionar && (
@@ -228,11 +228,11 @@ export function ArtigosPage() {
       )}
 
       {/* Fora do modal, o erro de publicar/remover/verificar precisa de lugar
-          próprio na página — dentro do modal ele vai para o formulário. */}
+          próprio na página; dentro do modal ele vai para o formulário. */}
       {erroDeEscrita && !erroNoModal && (
         <div
           role="alert"
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-alert-error-borda bg-alert-error p-4"
+          className="flex flex-col gap-2 rounded-[var(--radius-aviso)] border border-alert-error-borda bg-alert-error p-4"
         >
           <p className="text-sm text-error-texto">{erroDeEscrita.info.mensagem}</p>
           {erroDeEscrita.info.orientacao && (
@@ -321,7 +321,7 @@ export function ArtigosPage() {
                           size="sm"
                           // Publicar é sempre permitido, inclusive o reservado
                           // (publicar nunca quebra link). Despublicar é que
-                          // derrubaria /como-funciona — I28 responde 422, e a
+                          // derrubaria /como-funciona (I28 responde 422), e a
                           // UI evita a viagem em vez de deixar o editor
                           // descobrir por um toast de erro.
                           disabled={artigo.reservado && artigo.publicado}

@@ -64,7 +64,7 @@ const DETALHE_RASCUNHO = {
   camposLayout: [],
 }
 
-/** Fontes das opções de referência cruzada do formulário — I15a, I16 e I18. */
+/** Fontes das opções de referência cruzada do formulário: I15a, I16 e I18. */
 function handlersDeReferencia() {
   return [
     http.get(`${API_URL}/interno/layout/versoes`, () =>
@@ -150,7 +150,7 @@ afterEach(() => {
   keycloak.tokenParsed = undefined
 })
 
-describe('ArtigosPage — estados de carregamento', () => {
+describe('ArtigosPage: estados de carregamento', () => {
   it('anuncia o carregamento antes de a lista chegar', async () => {
     server.use(
       ...handlersDeReferencia(),
@@ -190,7 +190,7 @@ describe('ArtigosPage — estados de carregamento', () => {
   })
 })
 
-describe('ArtigosPage — aviso do artigo reservado ausente (I36)', () => {
+describe('ArtigosPage: aviso do artigo reservado ausente (I36)', () => {
   it('aparece quando I36 diz que o slug reservado não existe, com atalho de criação pré-preenchida', async () => {
     const usuario = userEvent.setup()
     server.use(
@@ -206,7 +206,7 @@ describe('ArtigosPage — aviso do artigo reservado ausente (I36)', () => {
 
     await usuario.click(within(aviso).getByRole('button', { name: 'Criar agora' }))
 
-    // Pré-preenche o título que produz o slug reservado no servidor — a UI
+    // Pré-preenche o título que produz o slug reservado no servidor; a UI
     // sugere o título, nunca força o slug.
     expect(screen.getByRole('textbox', { name: /Título/ })).toHaveValue('Como funciona')
   })
@@ -215,7 +215,7 @@ describe('ArtigosPage — aviso do artigo reservado ausente (I36)', () => {
     server.use(
       ...handlersDeReferencia(),
       // A listagem NÃO traz o reservado: se a detecção varresse a página, ela
-      // concluiria "ainda não existe" — é o falso negativo que I36 elimina.
+      // concluiria "ainda não existe", que é o falso negativo que I36 elimina.
       handlerArtigosAdminLista([RASCUNHO_COMUM]),
       handlerArtigoExiste(SLUG_COMO_FUNCIONA, 5),
     )
@@ -248,7 +248,7 @@ describe('ArtigosPage — aviso do artigo reservado ausente (I36)', () => {
   })
 })
 
-describe('ArtigosPage — artigo reservado bloqueia remover e despublicar', () => {
+describe('ArtigosPage: artigo reservado bloqueia remover e despublicar', () => {
   it('remover e despublicar nascem desabilitados com o motivo no title; o comum continua livre', async () => {
     server.use(
       ...handlersDeReferencia(),
@@ -278,7 +278,7 @@ describe('ArtigosPage — artigo reservado bloqueia remover e despublicar', () =
     expect(within(linhaComum).getByRole('button', { name: 'Publicar' })).toBeEnabled()
   })
 
-  it('publicar o reservado continua permitido — publicar nunca quebra link', async () => {
+  it('publicar o reservado continua permitido: publicar nunca quebra link', async () => {
     const usuario = userEvent.setup()
     const publicacoes: unknown[] = []
     server.use(
@@ -336,20 +336,20 @@ describe('ArtigosPage — artigo reservado bloqueia remover e despublicar', () =
     await screen.findByText('Como funciona')
     await usuario.click(screen.getByRole('button', { name: 'Remover artigo Como funciona' }))
 
-    // Remoção passou a exigir confirmação: o clique na lixeira abre o diálogo, e o DELETE — com
-    // ele o 422 que este caso exercita — só sai depois do "Remover" de dentro dele.
+    // Remoção passou a exigir confirmação: o clique na lixeira abre o diálogo, e o DELETE (com
+    // ele o 422 que este caso exercita) só sai depois do "Remover" de dentro dele.
     const dialogo = await screen.findByRole('dialog')
     await usuario.click(within(dialogo).getByRole('button', { name: 'Remover' }))
 
     const alerta = await screen.findByRole('alert')
     expect(alerta).toHaveTextContent(mensagemDoBackend)
     expect(alerta).toHaveTextContent(/rota pública \/como-funciona/i)
-    // Nenhum gesto faz a remoção passar — oferecer botão seria beco sem saída.
+    // Nenhum gesto faz a remoção passar: oferecer botão seria beco sem saída.
     expect(within(alerta).queryByRole('button')).not.toBeInTheDocument()
   })
 })
 
-describe('ArtigosPage — edição e permissões', () => {
+describe('ArtigosPage: edição e permissões', () => {
   it('editar busca o detalhe por id e abre o formulário com o corpo carregado', async () => {
     const usuario = userEvent.setup()
     server.use(

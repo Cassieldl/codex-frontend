@@ -137,6 +137,7 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
   const alternadorDeVisao = (
     <AlternadorSegmentado
       rotulo="Formas de ver o Layout InvoiCy"
+      tamanho="barra"
       opcoes={VISOES_DO_LAYOUT}
       rotuloDaOpcao={ROTULO_DA_VISAO}
       selecionada={visao}

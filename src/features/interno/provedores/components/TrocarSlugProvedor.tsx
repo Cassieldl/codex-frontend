@@ -156,7 +156,7 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
             {...register('novoSlug')}
           />
 
-          <p className="rounded-[var(--radius-input)] border border-alert-warning-borda bg-alert-warning px-3 py-2 text-xs text-ink">
+          <p className="rounded-[var(--radius-aviso)] border border-alert-warning-borda bg-alert-warning px-3 py-2 text-xs text-ink">
             Todo link com o endereço atual (/provedores/{slugAtual}) continua funcionando e
             redireciona automaticamente para o novo, mas isso pode levar minutos para propagar em
             buscadores externos.

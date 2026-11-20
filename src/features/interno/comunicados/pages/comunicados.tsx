@@ -46,7 +46,7 @@ type ModalComunicado = { modo: 'novo' } | { modo: 'editar'; id: number }
 
 interface ErroDeEscritaNaTela {
   info: ErroDeEscritaComunicado
-  /** Comunicado afetado — `null` na criação, que ainda não tem id. */
+  /** Comunicado afetado; `null` na criação, que ainda não tem id. */
   comunicadoId: number | null
 }
 
@@ -59,7 +59,7 @@ function descreverAbrangencia(comunicado: ComunicadoAdminListaItem): string {
 
 function formatarExpiracao(iso: string): string {
   const data = new Date(iso)
-  if (!Number.isFinite(data.getTime())) return '—'
+  if (!Number.isFinite(data.getTime())) return '-'
   return format(data, "dd/MM/yyyy 'às' HH:mm")
 }
 
@@ -70,7 +70,7 @@ export function ComunicadosPage() {
   const [pagina, setPagina] = useState(1)
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
   // Default desmarcado: o backend esconde só o que ENCERROU (expiraEm no
-  // passado). Rascunho vigente continua na visão padrão — é conteúdo em
+  // passado). Rascunho vigente continua na visão padrão: é conteúdo em
   // preparação, não histórico.
   const [incluirEncerrados, setIncluirEncerrados] = useState(false)
 
@@ -229,11 +229,11 @@ export function ComunicadosPage() {
       </label>
 
       {/* Fora do modal, o erro de publicar/remover precisa de lugar próprio na
-          página — dentro do modal ele vai para o formulário. */}
+          página; dentro do modal ele vai para o formulário. */}
       {erroDeEscrita && !erroNoModal && (
         <div
           role="alert"
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-alert-error-borda bg-alert-error p-4"
+          className="flex flex-col gap-2 rounded-[var(--radius-aviso)] border border-alert-error-borda bg-alert-error p-4"
         >
           <p className="text-sm text-error-texto">{erroDeEscrita.info.mensagem}</p>
           {erroDeEscrita.info.orientacao && (

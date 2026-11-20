@@ -35,7 +35,7 @@ const erroFake = {
       ancoras: [{ provedorSlug: 'ipm-sistemas', versaoSlug: '2-04' }],
     },
   ],
-  // Sempre presente no contrato (PQ-08) — `[]` quando o erro não tem artigo.
+  // Sempre presente no contrato (PQ-08): `[]` quando o erro não tem artigo.
   artigosRelacionados: [],
 }
 
@@ -54,7 +54,7 @@ describe('useErroPorSlug', () => {
     ])
   })
 
-  it('parseia o campo `.data` do envelope ApiResponse — nunca `.items`', async () => {
+  it('parseia o campo `.data` do envelope ApiResponse, nunca `.items`', async () => {
     server.use(
       http.get(`${API_URL}/erros/e0117-cnpj-tomador-invalido`, () =>
         HttpResponse.json({ data: erroFake, message: null }),
@@ -67,6 +67,23 @@ describe('useErroPorSlug', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data).toEqual(erroFake)
+  })
+
+  it('codifica o slug no caminho: barra e interrogação não mudam o endpoint chamado', async () => {
+    let caminhoPedido = ''
+    server.use(
+      http.get(`${API_URL}/erros/*`, ({ request }) => {
+        caminhoPedido = new URL(request.url).pathname
+        return HttpResponse.json({ data: erroFake, message: null })
+      }),
+    )
+
+    const { result } = renderHook(() => useErroPorSlug('a/b?c'), {
+      wrapper: envolverComQueryClient(),
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(caminhoPedido.endsWith('/erros/a%2Fb%3Fc')).toBe(true)
   })
 
   it('trata 404 (nunca existiu) e 410 (existiu e saiu do ar) como casos distintos', async () => {

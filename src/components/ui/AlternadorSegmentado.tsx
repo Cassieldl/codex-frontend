@@ -3,17 +3,23 @@ import { useRef } from 'react'
 import type { KeyboardEvent } from 'react'
 import { indiceDaTecla } from './teclasDeEscolha'
 
-/** `compacto` mede 36 px no total, a altura do Select, para os dois alinharem na mesma barra. */
-export type TamanhoDoAlternador = 'padrao' | 'compacto'
+/**
+ * `compacto` mede 36 px no total, a altura do Select, para os dois alinharem na mesma barra.
+ * `barra` mede 44 px, a altura dos botões de filtro ao lado: o trilho perde o respiro e a opção
+ * mantém o alvo de 44 px.
+ */
+export type TamanhoDoAlternador = 'padrao' | 'compacto' | 'barra'
 
 const CLASSES_DO_TRILHO: Record<TamanhoDoAlternador, string> = {
   padrao: 'p-1',
   compacto: 'p-0.5',
+  barra: 'p-0',
 }
 
 const CLASSES_DA_OPCAO: Record<TamanhoDoAlternador, string> = {
   padrao: 'min-h-11',
   compacto: 'min-h-8',
+  barra: 'min-h-11',
 }
 
 export interface AlternadorSegmentadoProps<T extends string> {
