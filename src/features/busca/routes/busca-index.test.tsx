@@ -196,7 +196,7 @@ describe('BuscaPage — filtro por provedor (P-01)', () => {
 })
 
 describe('BuscaPage — resultados fora do filtro (Achado #2, residual)', () => {
-  it('"repetir a busca sem o filtro" é um <Link> client-side para /busca?q=, não um <a href> cru', async () => {
+  it('"Buscar em todos os provedores" é um <Link> client-side para /busca?q=, não um <a href> cru', async () => {
     server.use(
       http.get(`${API_URL}/provedores`, () => respostaProvedores([IPM])),
       http.get(`${API_URL}/busca`, () =>
@@ -211,7 +211,7 @@ describe('BuscaPage — resultados fora do filtro (Achado #2, residual)', () => 
 
     renderPagina('e0117', 'ipm-sistemas')
 
-    const link = await screen.findByRole('link', { name: 'repetir a busca sem o filtro' })
+    const link = await screen.findByRole('link', { name: 'Buscar em todos os provedores' })
     expect(link).toHaveAttribute('href', '/busca?q=e0117')
   })
 })
@@ -230,7 +230,11 @@ describe('BuscaPage — BotaoCopiar no estado vazio (P-02)', () => {
     const { escreverNaAreaDeTransferencia, usuario } = configurarUsuarioComClipboard()
     renderPagina('foobar123')
 
-    expect(await screen.findByText('O Codex ainda não documenta "foobar123".')).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        'Nenhum resultado para "foobar123". Tente o código do erro ou o nome da tag.',
+      ),
+    ).toBeInTheDocument()
 
     const botaoCopiar = screen.getByRole('button', {
       name: 'Copiar termo buscado "foobar123"',
@@ -298,7 +302,9 @@ describe('BuscaPage: título da aba', () => {
     )
     renderPagina('valor')
 
-    await screen.findByText('O Codex ainda não documenta "valor".')
+    await screen.findByText(
+      'Nenhum resultado para "valor". Tente o código do erro ou o nome da tag.',
+    )
     expect(document.title).toBe('Busca: valor | Codex')
   })
 

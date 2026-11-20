@@ -95,20 +95,20 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
       return null
     case 'busca-sem-resultado':
       return {
-        mensagem: 'Buscou e não achou? Fale com o suporte levando o termo.',
+        mensagem: 'Precisa de ajuda com esta busca? Fale com o suporte e informe o termo buscado.',
         acao: montarAcaoSuporte('Codex · busca sem resultado'),
       }
     case 'erro-com-contexto':
       return {
         mensagem: contexto.temCampoRelacionado
-          ? 'Corrigiu este campo? Confira o resto do provedor.'
-          : 'Resolveu este erro? Confira o resto do provedor.',
+          ? 'Corrigiu este campo? Veja os demais campos e erros do provedor.'
+          : 'Resolveu este erro? Veja os demais campos e erros do provedor.',
         acao: { rotulo: 'Ver o provedor completo', href: `/provedores/${contexto.provedorSlug}` },
         acaoSecundaria: montarAcaoSuporteDeErro(contexto.codigoErro),
       }
     case 'erro-geral':
       return {
-        mensagem: 'Seguiu a orientação e o erro continua? Fale com o suporte levando o código.',
+        mensagem: 'O erro continua? Fale com o suporte e informe o código.',
         acao: montarAcaoSuporteDeErro(contexto.codigoErro),
       }
     case 'erro-varios-provedores':
@@ -122,13 +122,12 @@ function obterProximoPasso(contexto: ContextoRodape): ProximoPasso | null {
       }
     case 'layout':
       return {
-        mensagem: 'Sabe o campo, falta saber como o seu provedor trata ele.',
+        mensagem: 'Veja como cada provedor trata os campos do layout.',
         acao: { rotulo: 'Ver os provedores', href: '/provedores' },
       }
     case 'layout-campo':
       return {
-        mensagem:
-          'Um campo do layout está descrito de forma ambígua? Fale com o suporte com o nome do campo.',
+        mensagem: 'Dúvida sobre um campo do layout? Fale com o suporte e informe o nome do campo.',
         acao: montarAcaoSuporte('Codex · Layout InvoiCy'),
       }
   }
@@ -317,10 +316,8 @@ function FaixaDeChamado({ chamado }: { chamado: { rotulo: string; href: string }
   return (
     <div className="mx-auto flex max-w-pagina flex-col items-start justify-between gap-4 px-4 py-6 sm:flex-row sm:items-center lg:px-8">
       <div className="flex flex-col gap-1">
-        <h2 className="text-subtitulo font-extrabold">Não achou a resposta no Codex?</h2>
-        <p className="text-sm text-white">
-          Abra um chamado e mande o link da página em que você parou: o suporte começa dali.
-        </p>
+        <h2 className="text-subtitulo font-extrabold">Não encontrou o que procurava?</h2>
+        <p className="text-sm text-white">Abra um chamado e envie o link desta página.</p>
       </div>
       <LinkExterno href={chamado.href} className={CLASSE_ACAO_PRINCIPAL} classeDoIcone="size-4">
         {chamado.rotulo}

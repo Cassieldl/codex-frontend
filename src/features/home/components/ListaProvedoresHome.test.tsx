@@ -89,13 +89,13 @@ describe('ListaProvedoresHome', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('diz "Ainda não verificado" em vez de inventar data quando não houve verificação', async () => {
+  it('diz "Em verificação" em vez de inventar data quando não houve verificação', async () => {
     renderLista([
       { categoria: 'Nacional', total: 1, provedores: [nacional] },
       { categoria: 'Proprio', total: 1, provedores: [ipm] },
     ])
 
-    expect(await screen.findByText('Ainda não verificado')).toBeInTheDocument()
+    expect(await screen.findByText('Em verificação')).toBeInTheDocument()
     expect(screen.getByText('Verificado em 12/08/2026')).toBeInTheDocument()
   })
 })

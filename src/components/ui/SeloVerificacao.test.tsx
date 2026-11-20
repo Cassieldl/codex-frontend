@@ -21,6 +21,6 @@ describe('SeloVerificacao', () => {
   it('não mostra nota quando ausente', () => {
     render(<SeloVerificacao data={new Date(2026, 7, 5)} />)
 
-    expect(screen.queryByText(/—/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/·/)).not.toBeInTheDocument()
   })
 })

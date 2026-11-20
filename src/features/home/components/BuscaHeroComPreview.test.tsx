@@ -132,7 +132,7 @@ describe('BuscaHeroComPreview', () => {
     const aviso = await screen.findByText('Não foi possível buscar agora.')
     expect(aviso).toBeInTheDocument()
     expect(screen.queryByText(/0 resultado/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Não há conteúdo publicado/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Nenhum resultado para/)).not.toBeInTheDocument()
   })
 
   it('busca sem resultado diz que o acervo não cobre o termo — e isso não é erro', async () => {
@@ -150,7 +150,7 @@ describe('BuscaHeroComPreview', () => {
 
     await usuario.type(await screen.findByRole('searchbox'), 'xyz')
 
-    expect(await screen.findByText(/Não há conteúdo publicado para/)).toBeInTheDocument()
+    expect(await screen.findByText(/Nenhum resultado para/)).toBeInTheDocument()
     expect(screen.queryByText('Não foi possível buscar agora.')).not.toBeInTheDocument()
   })
 

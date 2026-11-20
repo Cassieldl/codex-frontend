@@ -50,7 +50,7 @@ export function CardsDeEntradaHome({ idSecaoProvedores }: { idSecaoProvedores: s
         <ConteudoDoCard
           icone={<TriangleAlert className="size-5" aria-hidden="true" />}
           titulo="Recebi um erro"
-          texto="Cole o código ou a mensagem na busca. O erro abre com o campo envolvido e, quando documentada, a correção."
+          texto="Busque pelo código ou pela mensagem e veja o campo envolvido e como corrigir."
           acao="Ver os erros conhecidos"
           seta="direita"
         />

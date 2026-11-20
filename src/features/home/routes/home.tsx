@@ -105,7 +105,9 @@ export function HomePage({ navegarParaBusca }: HomePageProps) {
               <div className="flex flex-wrap items-end justify-between gap-6">
                 <div className="flex flex-col gap-1">
                   <TituloSecao id="secao-provedores-home">Provedores</TituloSecao>
-                  <p className="text-sm text-muted">Abra o seu para ver erros, campos e avisos.</p>
+                  <p className="text-sm text-muted">
+                    Escolha o seu provedor para ver erros, campos e avisos.
+                  </p>
                 </div>
 
                 {totalProvedores > 0 && (
@@ -124,7 +126,7 @@ export function HomePage({ navegarParaBusca }: HomePageProps) {
               <ResumoComunicados comunicados={home.comunicados} />
 
               {semProvedores ? (
-                <EmptyState message="Nenhum provedor publicado ainda." />
+                <EmptyState message="Nenhum provedor disponível. Use a busca para encontrar erros e campos do Layout InvoiCy." />
               ) : (
                 <ListaProvedoresHome
                   categorias={home.provedoresPorCategoria}

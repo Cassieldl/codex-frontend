@@ -72,7 +72,7 @@ describe('RodapeContextual', () => {
   it('mostra o próximo passo de busca sem resultado, com ação de e-mail para o suporte', async () => {
     await renderComRouter({ tipo: 'busca-sem-resultado' })
 
-    expect(screen.getByText(/Buscou e não achou/)).toBeInTheDocument()
+    expect(screen.getByText(/Precisa de ajuda com esta busca/)).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Falar com o suporte' })
     expect(link.getAttribute('href')).toContain('mailto:supportbr@migrate.info')
   })
@@ -126,7 +126,7 @@ describe('RodapeContextual', () => {
       temCampoRelacionado: true,
     })
     expect(
-      await screen.findByText('Corrigiu este campo? Confira o resto do provedor.'),
+      await screen.findByText('Corrigiu este campo? Veja os demais campos e erros do provedor.'),
     ).toBeInTheDocument()
     comCampo.unmount()
 
@@ -136,7 +136,7 @@ describe('RodapeContextual', () => {
       temCampoRelacionado: false,
     })
     expect(
-      await screen.findByText('Resolveu este erro? Confira o resto do provedor.'),
+      await screen.findByText('Resolveu este erro? Veja os demais campos e erros do provedor.'),
     ).toBeInTheDocument()
     expect(screen.queryByText(/Corrigiu este campo/)).not.toBeInTheDocument()
   })
@@ -185,7 +185,7 @@ describe('RodapeContextual', () => {
     await renderComRouter({ tipo: 'layout' })
 
     expect(
-      await screen.findByText('Sabe o campo, falta saber como o seu provedor trata ele.'),
+      await screen.findByText('Veja como cada provedor trata os campos do layout.'),
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver os provedores' })).toHaveAttribute(
       'href',
@@ -198,7 +198,7 @@ describe('RodapeContextual', () => {
 
     expect(
       screen.getByText(
-        'Um campo do layout está descrito de forma ambígua? Fale com o suporte com o nome do campo.',
+        'Dúvida sobre um campo do layout? Fale com o suporte e informe o nome do campo.',
       ),
     ).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Falar com o suporte' })
@@ -210,13 +210,13 @@ describe('RodapeContextual', () => {
     const { unmount } = await renderComRouter({ tipo: 'home' })
 
     expect(
-      screen.getByRole('heading', { name: 'Não achou a resposta no Codex?' }),
+      screen.getByRole('heading', { name: 'Não encontrou o que procurava?' }),
     ).toBeInTheDocument()
     unmount()
 
     await renderComRouter({ tipo: 'busca-sem-resultado' })
 
-    expect(screen.queryByText('Não achou a resposta no Codex?')).not.toBeInTheDocument()
+    expect(screen.queryByText('Não encontrou o que procurava?')).not.toBeInTheDocument()
   })
 
   it('o link de chamado aparece mesmo sem próximo passo', async () => {

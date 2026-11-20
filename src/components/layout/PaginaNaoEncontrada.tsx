@@ -26,9 +26,9 @@ export function PaginaNaoEncontrada() {
       >
         <EstadoIndisponivel
           icone={Compass}
-          titulo="Esta página não existe."
+          titulo="Página não encontrada."
           tituloDaAba="Página não encontrada"
-          descricao="O endereço que você abriu não corresponde a nada no Codex. Ele pode ter mudado de lugar ou nunca ter existido."
+          descricao="Confira o endereço ou use a busca para encontrar o que procura."
         >
           <Link
             to="/busca"

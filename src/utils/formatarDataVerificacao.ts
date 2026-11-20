@@ -35,12 +35,12 @@ export function formatarDataCurta(data: Date | string): string {
 }
 
 /**
- * Frase inteira em cada ramo, nunca só a data: "Ainda não verificado" não é uma data e não pode
- * receber o prefixo "Verificado em" do chamador — a concatenação produzia "Verificado em Ainda não
- * verificado" na lista de provedores.
+ * Frase inteira em cada ramo, nunca só a data: "Em verificação" não é uma data e não pode receber
+ * o prefixo "Verificado em" do chamador, senão a lista de provedores mostra "Verificado em Em
+ * verificação".
  */
 export function rotuloVerificacao(data: string | null): string {
-  if (!data) return 'Ainda não verificado'
+  if (!data) return 'Em verificação'
 
   return `Verificado em ${formatarDataCurta(data)}`
 }

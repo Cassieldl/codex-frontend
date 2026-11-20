@@ -57,6 +57,6 @@ describe('rotuloVerificacao', () => {
 
   /** O texto de ausência não é uma data e não pode receber o prefixo do chamador. */
   it('devolve o texto de ausência sozinho, sem prefixo', () => {
-    expect(rotuloVerificacao(null)).toBe('Ainda não verificado')
+    expect(rotuloVerificacao(null)).toBe('Em verificação')
   })
 })

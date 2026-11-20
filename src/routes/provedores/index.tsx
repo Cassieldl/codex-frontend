@@ -82,8 +82,8 @@ function ProvedoresPage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-titulo font-bold text-ink">Provedores</h1>
           <p className="text-sm text-muted">
-            Catálogo de provedores de NFS-e integrados ao InvoiCy — todo provedor listado aqui já
-            está ativo, sem indicação de status.
+            Provedores de NFS-e integrados ao InvoiCy. Escolha o seu para ver erros, campos e
+            avisos.
           </p>
         </div>
 
@@ -117,7 +117,7 @@ function ProvedoresPage() {
         {isError && <ErrorState onRetry={() => refetch()} />}
 
         {!isLoading && !isError && data && data.items.length === 0 && (
-          <EmptyState message="Nenhum provedor encontrado com esse filtro." />
+          <EmptyState message="Nenhum provedor encontrado. Tente outro nome ou outra categoria." />
         )}
 
         {!isLoading && !isError && data && data.items.length > 0 && (

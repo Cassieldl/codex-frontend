@@ -42,7 +42,7 @@ describe('endereço que não corresponde a rota nenhuma', () => {
   it('explica em português, dentro do layout do portal', async () => {
     renderizarEndereco('/endereco-que-nunca-existiu')
 
-    await screen.findByRole('heading', { level: 1, name: 'Esta página não existe.' })
+    await screen.findByRole('heading', { level: 1, name: 'Página não encontrada.' })
 
     // O aviso cru da biblioteca não traz nem cabeçalho nem rodapé — a presença
     // dos dois é o que distingue "página do produto" de "tela da lib".
@@ -53,14 +53,14 @@ describe('endereço que não corresponde a rota nenhuma', () => {
   it('nomeia a aba "Página não encontrada | Codex"', async () => {
     renderizarEndereco('/endereco-que-nunca-existiu')
 
-    await screen.findByRole('heading', { level: 1, name: 'Esta página não existe.' })
+    await screen.findByRole('heading', { level: 1, name: 'Página não encontrada.' })
     expect(document.title).toBe('Página não encontrada | Codex')
   })
 
   it('oferece saída para a busca e para o início', async () => {
     renderizarEndereco('/endereco-que-nunca-existiu')
 
-    await screen.findByRole('heading', { level: 1, name: 'Esta página não existe.' })
+    await screen.findByRole('heading', { level: 1, name: 'Página não encontrada.' })
 
     const principal = screen.getByRole('main')
     expect(principal).toHaveTextContent('Buscar no Codex')

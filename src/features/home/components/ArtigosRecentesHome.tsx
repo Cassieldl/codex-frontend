@@ -45,7 +45,9 @@ export function ArtigosRecentesHome({ artigos }: ArtigosRecentesHomeProps) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <TituloSecao id="secao-artigos-home">Artigos</TituloSecao>
-          <p className="text-sm text-muted">O que o suporte explica sempre, escrito uma vez.</p>
+          <p className="text-sm text-muted">
+            Guias e explicações sobre emissão de NFS-e no InvoiCy.
+          </p>
         </div>
         <Link
           to="/artigos"

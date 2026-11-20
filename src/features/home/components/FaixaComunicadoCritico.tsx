@@ -20,7 +20,7 @@ function LinhaCritica({ comunicado }: { comunicado: ComunicadoVigenteHome }) {
       </span>
 
       <span className="shrink-0 text-xs text-ink">
-        Sai do ar em {formatarDataHora(comunicado.expiraEm)}
+        Vigente até {formatarDataHora(comunicado.expiraEm)}
       </span>
 
       {/*

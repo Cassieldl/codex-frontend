@@ -75,7 +75,7 @@ describe('FaixaComunicadoCritico', () => {
     expect(faixa).toHaveTextContent(
       'Nacional/ADN: transmissão indisponível em Produção desde 08h20',
     )
-    expect(faixa).toHaveTextContent('Sai do ar em 19/08/2026, 09:00')
+    expect(faixa).toHaveTextContent('Vigente até 19/08/2026, 09:00')
     expect(screen.getByRole('link', { name: 'Ver detalhe' })).toHaveAttribute(
       'href',
       '/provedores/nacional-adn',

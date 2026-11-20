@@ -50,10 +50,9 @@ function ConteudoDoCartao({ item }: CartaoResultadoBuscaProps) {
           </p>
         )}
 
-        {ehErro && (
+        {ehErro && item.solucaoResumo && (
           <p data-solucao-resumo="" className="text-sm text-ink [overflow-wrap:anywhere]">
-            <span className="font-semibold">Solução:</span>{' '}
-            {item.solucaoResumo ?? <span className="text-muted">ainda não documentada</span>}
+            <span className="font-semibold">Solução:</span> {item.solucaoResumo}
           </p>
         )}
 

@@ -135,12 +135,9 @@ export function BuscaHeroComPreview({ aoSubmeter }: BuscaHeroComPreviewProps) {
           ) : semResultado ? (
             <div className="px-4 py-5 text-sm text-muted">
               <p className="mb-1.5 font-semibold text-ink">
-                Não há conteúdo publicado para “{resultado.termoUsado}”.
+                Nenhum resultado para “{resultado.termoUsado}”.
               </p>
-              <p>
-                O termo pode ser novo para o Codex. Fale com o suporte levando esse texto — cuidamos
-                do resto.
-              </p>
+              <p>Tente o código do erro ou o nome da tag.</p>
             </div>
           ) : (
             resultado?.grupos.map((grupo) => <GrupoPreview key={grupo.tipo} grupo={grupo} />)

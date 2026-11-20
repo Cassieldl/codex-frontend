@@ -211,7 +211,11 @@ describe('HomePage', () => {
 
     renderHome()
 
-    expect(await screen.findByText('Nenhum provedor publicado ainda.')).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        'Nenhum provedor disponível. Use a busca para encontrar erros e campos do Layout InvoiCy.',
+      ),
+    ).toBeInTheDocument()
     // Sem provedor não há o que filtrar: o campo de filtro não aparece.
     expect(screen.queryByRole('searchbox', { name: 'Filtrar provedores' })).not.toBeInTheDocument()
   })

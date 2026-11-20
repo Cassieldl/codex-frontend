@@ -94,7 +94,7 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
 
   const mensagemErro =
     isAxiosError(error) && error.response?.status === 429
-      ? 'Muitas buscas em pouco tempo — aguarde alguns segundos.'
+      ? 'Muitas buscas em pouco tempo. Aguarde alguns segundos.'
       : undefined
 
   return (
@@ -150,14 +150,14 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
             */}
             {resultado.qualidade === 'parcial' && (
               <p className="rounded-[var(--radius-control)] border border-alert-info-borda bg-alert-info px-4 py-2 text-sm text-primary-medium">
-                Resultados aproximados — nenhum item reúne todos os termos que você digitou. Se
-                nenhum servir, tente o código do erro ou um trecho menor da mensagem.
+                Resultados aproximados. Se nenhum servir, busque pelo código do erro ou por um
+                trecho menor da mensagem.
               </p>
             )}
 
             {resultado.qualidade === 'vazia' ? (
               <EmptyState
-                message={`O Codex ainda não documenta "${resultado.termoUsado}".`}
+                message={`Nenhum resultado para "${resultado.termoUsado}". Tente o código do erro ou o nome da tag.`}
                 action={
                   <div className="flex flex-col items-center gap-2">
                     <BotaoCopiar
@@ -195,13 +195,13 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
               resultado.foraDoFiltro.total > 0 && (
                 <p className="text-xs text-muted">
                   {resultado.foraDoFiltro.total} resultados fora do filtro por{' '}
-                  {resultado.filtroProvedor.nome} —{' '}
+                  {resultado.filtroProvedor.nome}.{' '}
                   <Link
                     to="/busca"
                     search={{ q: resultado.termoUsado }}
                     className="font-semibold text-primary-medium hover:underline"
                   >
-                    repetir a busca sem o filtro
+                    Buscar em todos os provedores
                   </Link>
                 </p>
               )}

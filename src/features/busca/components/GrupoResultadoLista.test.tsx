@@ -108,10 +108,12 @@ describe('GrupoResultadoLista: cartão de erro', () => {
     expect(cartao).not.toHaveTextContent('casou com')
   })
 
-  it('sem solução documentada, diz isso em vez de esconder a linha', async () => {
+  it('sem solução, a linha de solução some e o cartão continua com o código', async () => {
     renderComRouter(criarGrupo([criarItem({ solucaoResumo: null })]))
 
-    expect(await screen.findByRole('link')).toHaveTextContent('Solução: ainda não documentada')
+    const cartao = await screen.findByRole('link')
+    expect(within(cartao).getByText('E157')).toBeInTheDocument()
+    expect(cartao).not.toHaveTextContent('Solução:')
   })
 
   it('mensagem e solução aparecem uma vez: o trecho que só repete o cartão sai', async () => {

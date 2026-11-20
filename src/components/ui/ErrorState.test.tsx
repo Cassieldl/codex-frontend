@@ -11,9 +11,9 @@ describe('ErrorState', () => {
   })
 
   it('mensagem customizada sobrescreve a padrão', () => {
-    render(<ErrorState message="Muitas buscas em pouco tempo — aguarde." onRetry={() => {}} />)
+    render(<ErrorState message="Muitas buscas em pouco tempo. Aguarde." onRetry={() => {}} />)
 
-    expect(screen.getByText('Muitas buscas em pouco tempo — aguarde.')).toBeInTheDocument()
+    expect(screen.getByText('Muitas buscas em pouco tempo. Aguarde.')).toBeInTheDocument()
   })
 
   it('chama onRetry ao clicar em "Tentar novamente"', async () => {

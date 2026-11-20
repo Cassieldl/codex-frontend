@@ -4,7 +4,7 @@ export interface ResultadoErroGeralProps {
   versoes: string[] | null
 }
 
-const ARIA_LABEL_GERAL = 'Geral: este erro não é específico de um provedor'
+const ARIA_LABEL_GERAL = 'Geral: este erro vale para qualquer provedor'
 
 const CLASSE_DO_CHIP =
   'inline-flex max-w-full shrink-0 sm:max-w-[45%] items-center rounded-[var(--radius-pill)] border px-2.5 py-0.5 text-xs [overflow-wrap:anywhere]'
@@ -25,7 +25,7 @@ export function ResultadoErroGeral({
     return (
       <span
         aria-label={ARIA_LABEL_GERAL}
-        title="Este erro não é específico de um provedor"
+        title="Este erro vale para qualquer provedor"
         className={`${CLASSE_DO_CHIP} border-border font-medium text-muted`}
       >
         Geral

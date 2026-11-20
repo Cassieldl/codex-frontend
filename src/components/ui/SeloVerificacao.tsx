@@ -24,7 +24,7 @@ export function SeloVerificacao({ data, nota, className }: SeloVerificacaoProps)
       <ShieldCheck className="size-3.5 shrink-0 text-primary-medium" aria-hidden="true" />
       <span>
         Verificado em <strong className="font-semibold text-ink">{dataFormatada}</strong>
-        {nota ? ` — ${nota}` : null}
+        {nota ? ` · ${nota}` : null}
       </span>
     </p>
   )

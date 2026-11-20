@@ -51,7 +51,7 @@ function CardProvedorHome({ provedor }: { provedor: ProvedorHomeDto }) {
           </span>
         ) : (
           <span className="self-start rounded-[var(--radius-pill)] bg-alert-warning px-2.5 py-0.5 text-xs font-bold text-alert-warning-texto">
-            Ainda não verificado
+            Em verificação
           </span>
         )}
       </Link>
