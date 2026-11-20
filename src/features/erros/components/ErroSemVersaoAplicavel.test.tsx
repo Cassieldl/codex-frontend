@@ -32,11 +32,7 @@ describe('ErroSemVersaoAplicavel', () => {
   it('sem versões aplicáveis, renderiza o texto de erro geral — nunca lista vazia nem "Aplicável a: —"', () => {
     render(<ErroSemVersaoAplicavel versoesAplicaveis={[]} />)
 
-    expect(
-      screen.getByText(
-        'Este erro é geral — não depende de um provedor específico, vale para qualquer integração.',
-      ),
-    ).toBeInTheDocument()
+    expect(screen.getByText('Este erro é geral: vale para qualquer provedor.')).toBeInTheDocument()
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
     expect(screen.queryByText('—')).not.toBeInTheDocument()
     expect(screen.queryByText(/Aplicável a/i)).not.toBeInTheDocument()

@@ -96,7 +96,7 @@ export function LayoutCampoResolucaoPage({ campoSlug, navegar }: LayoutCampoReso
             icone={ArchiveX}
             titulo="Este campo saiu do ar."
             tituloDaAba="Campo do Layout InvoiCy fora do ar"
-            descricao="O verbete deste campo não está mais disponível publicamente."
+            descricao="Procure o campo nas versões publicadas do Layout InvoiCy."
           >
             <Link
               to="/layout"

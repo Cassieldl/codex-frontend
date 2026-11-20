@@ -30,20 +30,19 @@ const CONTEUDO: Record<
     icone: CircleHelp,
     titulo: 'Este artigo não existe.',
     tituloDaAba: 'Artigo não encontrado',
-    descricao: 'Não encontramos nenhum artigo publicado neste endereço.',
+    descricao: 'Confira o endereço ou busque pelo assunto do artigo.',
   },
   despublicado: {
     icone: ArchiveX,
     titulo: 'Este artigo saiu do ar.',
     tituloDaAba: 'Artigo fora do ar',
-    descricao:
-      'Este artigo já foi publicado, mas não está mais disponível: pode ter sido substituído ou descontinuado.',
+    descricao: 'Busque pelo assunto para encontrar o conteúdo atual.',
   },
   'reservado-ausente': {
     icone: PencilRuler,
-    titulo: 'Este conteúdo ainda não foi publicado.',
-    tituloDaAba: 'Conteúdo ainda não publicado',
-    descricao: 'A página existe no menu, mas o texto ainda está sendo escrito.',
+    titulo: 'Este conteúdo estará disponível em breve.',
+    tituloDaAba: 'Conteúdo em breve',
+    descricao: 'Use a busca para encontrar erros, campos e provedores.',
   },
 }
 

@@ -175,6 +175,9 @@ describe('LayoutCampoResolucaoPage', () => {
       renderPagina('numero-do-rps')
 
       expect(await screen.findByText('Este campo saiu do ar.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Procure o campo nas versões publicadas do Layout InvoiCy.'),
+      ).toBeInTheDocument()
     },
   )
 

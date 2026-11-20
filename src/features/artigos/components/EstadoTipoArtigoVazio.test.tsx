@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { EstadoTipoArtigoVazio } from './EstadoTipoArtigoVazio'
 
 describe('EstadoTipoArtigoVazio', () => {
-  it('variante sem-acervo nomeia o tipo e explica como o acervo cresce', () => {
+  it('variante sem-acervo nomeia o tipo e aponta os outros tipos', () => {
     render(<EstadoTipoArtigoVazio variante="sem-acervo" tipo="Procedimento" />)
 
-    expect(screen.getByText('Ainda não há artigo de Procedimento publicado.')).toBeInTheDocument()
-    expect(screen.getByText(/O acervo cresce a partir dos chamados/)).toBeInTheDocument()
+    expect(screen.getByText('Nenhum artigo de Procedimento publicado.')).toBeInTheDocument()
+    expect(screen.getByText('Veja os artigos dos outros tipos na aba Todos.')).toBeInTheDocument()
     expect(screen.queryByText(/corresponde à sua busca/)).not.toBeInTheDocument()
   })
 
@@ -17,17 +17,13 @@ describe('EstadoTipoArtigoVazio', () => {
     expect(
       screen.getByText('Nenhum artigo de Conceito corresponde à sua busca.'),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('O tipo continua aqui para você saber que ele existe.'),
-    ).toBeInTheDocument()
-    expect(screen.queryByText(/Ainda não há artigo/)).not.toBeInTheDocument()
+    expect(screen.getByText('Tente outro termo ou busque em todos os tipos.')).toBeInTheDocument()
+    expect(screen.queryByText(/publicado[.]$/)).not.toBeInTheDocument()
   })
 
   it('usa o rótulo com acento de Mudança, não o valor ASCII do contrato', () => {
     render(<EstadoTipoArtigoVazio variante="sem-acervo" tipo="Mudanca" />)
 
-    expect(
-      screen.getByText('Ainda não há artigo de Mudança/Migração publicado.'),
-    ).toBeInTheDocument()
+    expect(screen.getByText('Nenhum artigo de Mudança/Migração publicado.')).toBeInTheDocument()
   })
 })

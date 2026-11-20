@@ -68,7 +68,9 @@ export function EstruturaDaVersao({
       )}
 
       {error instanceof ErroEstruturaIndisponivel && (
-        <EmptyState message="Estrutura desta versão ainda não está disponível." />
+        <EmptyState
+          message={`A estrutura ${rotuloDoFormato} desta versão estará disponível em breve. Consulte os campos na visão Dicionário.`}
+        />
       )}
 
       {error && !(error instanceof ErroEstruturaIndisponivel) && <ErrorState onRetry={onRetry} />}

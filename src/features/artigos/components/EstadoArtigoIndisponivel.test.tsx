@@ -46,6 +46,9 @@ describe('EstadoArtigoIndisponivel', () => {
     renderComRouter('nao-encontrado', 'artigo-que-nunca-existiu')
 
     expect(await screen.findByText('Este artigo não existe.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Confira o endereço ou busque pelo assunto do artigo.'),
+    ).toBeInTheDocument()
     const link = screen.getByRole('link', { name: /Buscar/ })
     expect(link.getAttribute('href')).toContain('q=artigo-que-nunca-existiu')
   })
@@ -55,13 +58,19 @@ describe('EstadoArtigoIndisponivel', () => {
 
     expect(await screen.findByText('Este artigo saiu do ar.')).toBeInTheDocument()
     expect(screen.getByText('Este artigo não está mais publicado.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Busque pelo assunto para encontrar o conteúdo atual.'),
+    ).toBeInTheDocument()
     expect(screen.queryByText('Este artigo não existe.')).not.toBeInTheDocument()
   })
 
-  it('reservado-ausente explica que o conteúdo ainda não foi escrito', async () => {
+  it('reservado-ausente diz que o conteúdo vem em breve e aponta a busca', async () => {
     renderComRouter('reservado-ausente', 'como-funciona')
 
-    expect(await screen.findByText('Este conteúdo ainda não foi publicado.')).toBeInTheDocument()
+    expect(await screen.findByText('Este conteúdo estará disponível em breve.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Use a busca para encontrar erros, campos e provedores.'),
+    ).toBeInTheDocument()
     expect(screen.queryByText('Este artigo não existe.')).not.toBeInTheDocument()
   })
 

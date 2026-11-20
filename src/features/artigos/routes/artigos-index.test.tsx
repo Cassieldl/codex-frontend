@@ -180,7 +180,7 @@ describe('ArtigosIndexPage — tela 7', () => {
     renderPagina('/artigos?tipo=Mudanca')
 
     expect(
-      await screen.findByText('Ainda não há artigo de Mudança/Migração publicado.'),
+      await screen.findByText('Nenhum artigo de Mudança/Migração publicado.'),
     ).toBeInTheDocument()
     expect(screen.queryByText('Nenhum item encontrado.')).not.toBeInTheDocument()
   })
@@ -193,7 +193,7 @@ describe('ArtigosIndexPage — tela 7', () => {
     expect(
       await screen.findByText('Nenhum artigo de Conceito corresponde à sua busca.'),
     ).toBeInTheDocument()
-    expect(screen.queryByText(/Ainda não há artigo/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Nenhum artigo de .* publicado[.]$/)).not.toBeInTheDocument()
   })
 
   it('aba "Todos" vazia cai no vazio genérico, sem nomear nenhum tipo', async () => {
@@ -201,8 +201,8 @@ describe('ArtigosIndexPage — tela 7', () => {
 
     renderPagina('/artigos')
 
-    expect(await screen.findByText(/Nenhum artigo publicado ainda/)).toBeInTheDocument()
-    expect(screen.queryByText(/Ainda não há artigo de/)).not.toBeInTheDocument()
+    expect(await screen.findByText('Os artigos estarão disponíveis em breve.')).toBeInTheDocument()
+    expect(screen.queryByText(/^Nenhum artigo de .* publicado[.]$/)).not.toBeInTheDocument()
   })
 
   it('buscar preserva o parâmetro origem na URL (PQ-10)', async () => {

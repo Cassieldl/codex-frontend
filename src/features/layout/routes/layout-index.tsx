@@ -39,9 +39,7 @@ export function LayoutIndicePage() {
             <div className="flex max-w-prose flex-col gap-2">
               <h1 className="text-titulo font-extrabold text-primary lg:text-h1">Layout InvoiCy</h1>
               <p className="text-sm text-muted">
-                O layout é o vocabulário comum do InvoiCy: nome, caminho e significado de cada campo
-                que você envia. É o que permite escrever a integração uma vez e transmitir para
-                qualquer provedor.
+                Consulte o nome, o caminho e o significado de cada campo que você envia ao InvoiCy.
               </p>
               <AvisoVocabulario />
             </div>
@@ -70,7 +68,7 @@ export function LayoutIndicePage() {
           {isError && <ErrorState onRetry={() => refetch()} />}
 
           {!isLoading && !isError && semVersoes && (
-            <EmptyState message="O Layout InvoiCy ainda não tem nenhuma versão publicada." />
+            <EmptyState message="As versões do Layout InvoiCy estarão disponíveis em breve." />
           )}
 
           {comVersoes && indice.vigente && (
@@ -85,8 +83,7 @@ export function LayoutIndicePage() {
                 Dicionário por versão
               </h2>
               <p className="text-sm text-muted">
-                Toda versão publicada continua acessível: provedores em produção seguem escritos
-                contra versões anteriores.
+                Versões anteriores continuam disponíveis para consulta.
               </p>
 
               <CartoesDeVersaoDoLayout indice={indice} />

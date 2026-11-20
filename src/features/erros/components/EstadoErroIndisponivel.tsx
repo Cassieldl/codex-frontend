@@ -26,14 +26,13 @@ const CONTEUDO: Record<
     icone: CircleHelp,
     titulo: 'Este erro não existe.',
     tituloDaAba: 'Erro não encontrado',
-    descricao: 'Não encontramos nenhum erro documentado neste endereço.',
+    descricao: 'Confira o endereço ou busque pelo código do erro.',
   },
   despublicado: {
     icone: ArchiveX,
     titulo: 'Este erro saiu do ar.',
     tituloDaAba: 'Erro fora do ar',
-    descricao:
-      'Este erro já foi documentado, mas não está mais publicado: pode ter sido substituído ou descontinuado.',
+    descricao: 'Busque pelo código do erro para ver o conteúdo atual.',
   },
 }
 

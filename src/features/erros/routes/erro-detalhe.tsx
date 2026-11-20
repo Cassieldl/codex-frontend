@@ -11,6 +11,7 @@ import { Skeleton } from '../../../components/ui/Skeleton'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
 import { handleApiError } from '../../../utils/handleApiError'
+import { montarLinkSuporte, ROTULO_FALAR_COM_SUPORTE } from '../../../utils/linkSuporte'
 import { ComunicadosDoContexto } from '../../comunicados/components/ComunicadosDoContexto'
 import { ArtigosRelacionados } from '../components/ArtigosRelacionados'
 import { BlocoMensagensObservadas } from '../components/BlocoMensagensObservadas'
@@ -134,6 +135,24 @@ function SolucaoDoErro({ solucao }: { solucao: string }) {
   )
 }
 
+/** Sem solução publicada, o leitor recebe o caminho para o suporte no lugar da seção. */
+function AjudaDoSuporte({ codigo }: { codigo: string }) {
+  const link = montarLinkSuporte(
+    `Codex · erro ${codigo}`,
+    `Código do erro: ${codigo}
+Página: ${window.location.href}`,
+  )
+
+  return (
+    <p className="text-sm text-ink">
+      Precisa de ajuda com este erro?{' '}
+      <a href={link} className="font-semibold text-primary-medium hover:underline">
+        {ROTULO_FALAR_COM_SUPORTE}
+      </a>
+    </p>
+  )
+}
+
 /**
  * `/erros/{erroSlug}`, a página que o suporte cola no chamado (§7.2). A ordem segue o que decide
  * o caso: código, contexto (origem e provedor), a mensagem uma vez e logo a solução. Seção sem
@@ -200,7 +219,11 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
           <>
             <CabecalhoDoErro erro={erro} versaoUnica={versaoUnica} />
 
-            {erro.solucaoSugerida && <SolucaoDoErro solucao={erro.solucaoSugerida} />}
+            {erro.solucaoSugerida ? (
+              <SolucaoDoErro solucao={erro.solucaoSugerida} />
+            ) : (
+              <AjudaDoSuporte codigo={erro.codigo} />
+            )}
 
             <ComunicadosDoContexto
               provedorSlugs={erro.versoesAplicaveis.map((versao) => versao.provedorSlug)}

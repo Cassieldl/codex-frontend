@@ -119,7 +119,7 @@ export function UsosDoCampo({ campoSlug, slugAssentado, nomeDoCampo }: UsosDoCam
           />
         </div>
       ) : usos.length === 0 ? (
-        <p className="mt-2 text-sm text-muted">Nenhum provedor publicado usa este campo ainda.</p>
+        <p className="mt-2 text-sm text-muted">Nenhum provedor usa este campo.</p>
       ) : (
         <ul className="mt-3 divide-y divide-border">
           {usos.map((uso) => (

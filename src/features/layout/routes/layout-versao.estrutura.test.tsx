@@ -340,7 +340,9 @@ describe('LayoutVersaoPage: estrutura XML e JSON', () => {
     renderPagina('/layout/8?visao=json')
 
     expect(
-      await screen.findByText('Estrutura desta versão ainda não está disponível.'),
+      await screen.findByText(
+        'A estrutura JSON (REST) desta versão estará disponível em breve. Consulte os campos na visão Dicionário.',
+      ),
     ).toBeInTheDocument()
 
     await usuario.click(screen.getByRole('radio', { name: 'Dicionário' }))

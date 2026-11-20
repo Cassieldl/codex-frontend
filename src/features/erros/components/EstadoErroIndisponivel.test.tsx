@@ -41,7 +41,7 @@ describe('EstadoErroIndisponivel', () => {
       await screen.findByRole('heading', { name: 'Este erro não existe.' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Não encontramos nenhum erro documentado neste endereço.'),
+      screen.getByText('Confira o endereço ou busque pelo código do erro.'),
     ).toBeInTheDocument()
   })
 
@@ -53,8 +53,11 @@ describe('EstadoErroIndisponivel', () => {
     ).toBeInTheDocument()
     expect(screen.queryByText('Este erro não existe.')).not.toBeInTheDocument()
     expect(
-      screen.queryByText('Não encontramos nenhum erro documentado neste endereço.'),
+      screen.queryByText('Confira o endereço ou busque pelo código do erro.'),
     ).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Busque pelo código do erro para ver o conteúdo atual.'),
+    ).toBeInTheDocument()
   })
 
   it('404 e 410 nunca renderizam o mesmo título — telas distintas para o leitor', async () => {

@@ -50,25 +50,25 @@ const ROTULO_DA_VISAO: Record<VisaoDoLayout, string> = {
 
 const ESTADO_POR_TIPO_DE_ERRO: Record<
   TipoErroLayoutVersao,
-  { icone: LucideIcon; titulo: string; tituloDaAba: string; descricao: string }
+  { icone: LucideIcon; titulo: string; tituloDaAba: string; descricao?: string }
 > = {
   nao_encontrada: {
     icone: CircleHelp,
     titulo: 'Esta versão do Layout InvoiCy não existe.',
     tituloDaAba: 'Versão do Layout InvoiCy não encontrada',
-    descricao: 'Não encontramos nenhuma versão publicada do Layout InvoiCy neste endereço.',
+    descricao: 'Confira o endereço ou escolha uma das versões publicadas.',
   },
   despublicada: {
     icone: ArchiveX,
     titulo: 'Esta versão saiu do ar.',
     tituloDaAba: 'Versão do Layout InvoiCy fora do ar',
-    descricao: 'O dicionário desta versão não está mais disponível publicamente.',
+    descricao: 'Escolha uma das versões publicadas do Layout InvoiCy.',
   },
   cap_excedido: {
     icone: Layers,
-    titulo: 'Esta versão tem mais campos do que esta página consegue exibir de uma vez.',
-    tituloDaAba: 'Versão do Layout InvoiCy grande demais para exibir',
-    descricao: 'Fale com o suporte.',
+    titulo: 'Não foi possível exibir esta versão.',
+    tituloDaAba: 'Versão do Layout InvoiCy não exibida',
+    descricao: 'Fale com o suporte para consultar esta versão.',
   },
 }
 

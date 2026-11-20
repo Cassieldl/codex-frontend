@@ -291,7 +291,9 @@ export function DicionarioDaVersao({
         onRecolherTodos={recolherTodos}
       />
 
-      {totalCampos === 0 && <EmptyState message={`A ${versao} ainda não tem campos publicados.`} />}
+      {totalCampos === 0 && (
+        <EmptyState message={`Os campos da ${versao} estarão disponíveis em breve.`} />
+      )}
 
       {totalCampos > 0 && totalVisivel === 0 && (
         <EmptyState
@@ -300,8 +302,8 @@ export function DicionarioDaVersao({
             <div className="flex flex-col items-center gap-3">
               {termoBuscado !== '' && (
                 <p className="max-w-prose text-sm text-muted">
-                  O nome pode ser o do provedor, não o do layout. A tabela do provedor mostra os
-                  dois lados lado a lado.
+                  Se você buscou pelo nome usado no provedor, consulte a tabela de campos do seu
+                  provedor.
                 </p>
               )}
               <button

@@ -406,11 +406,8 @@ describe('LayoutVersaoPage', () => {
     server.use(handlerLayoutIndiceSucesso(indiceFake), handlerLayoutVersaoCapExcedido('4-12'))
     renderPagina()
 
-    expect(
-      await screen.findByText(
-        'Esta versão tem mais campos do que esta página consegue exibir de uma vez.',
-      ),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível exibir esta versão.')).toBeInTheDocument()
+    expect(screen.getByText('Fale com o suporte para consultar esta versão.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Tentar novamente' })).not.toBeInTheDocument()
   })
 
@@ -419,6 +416,9 @@ describe('LayoutVersaoPage', () => {
     renderPagina()
 
     expect(await screen.findByText('Esta versão saiu do ar.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Escolha uma das versões publicadas do Layout InvoiCy.'),
+    ).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Tentar novamente' })).not.toBeInTheDocument()
   })
 

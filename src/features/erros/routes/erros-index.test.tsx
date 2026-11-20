@@ -11,6 +11,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { server } from '../../../test/mocks/server'
+import { montarLinkSuporte } from '../../../utils/linkSuporte'
 import { ErrosIndexPage } from './erros-index'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -119,14 +120,18 @@ describe('ErrosIndexPage — /erros?codigo=', () => {
     expect(screen.queryByText('—')).not.toBeInTheDocument()
   })
 
-  it('totalCount === 0 cai no estado "não documentado", sem navegar e sem aparência de erro', async () => {
+  it('totalCount === 0 cai no estado "não encontrado", sem navegar e sem aparência de erro', async () => {
     server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([])))
 
     const { navigate } = renderPagina('E9999')
 
     expect(
-      await screen.findByText('O Codex ainda não documenta o código "E9999".'),
+      await screen.findByText('Nenhum erro encontrado com o código "E9999".'),
     ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
+      'href',
+      montarLinkSuporte('Codex · código de erro não encontrado', 'Código buscado: E9999'),
+    )
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(navigate).not.toHaveBeenCalled()
   })
@@ -141,7 +146,8 @@ describe('ErrosIndexPage — sem código na URL', () => {
   it('explica o que a página faz e oferece a busca, em vez de tela vazia', async () => {
     renderPagina('')
 
-    expect(await screen.findByText(/nenhum código foi informado/i)).toBeInTheDocument()
+    expect(await screen.findByText('Nenhum código de erro foi informado.')).toBeInTheDocument()
+    expect(screen.getByText('Busque pelo código ou pela mensagem do erro.')).toBeInTheDocument()
 
     // O `search` explícito é exigido pelo tipo da rota, que valida `q` — daí o href sair com o
     // parâmetro vazio, que é o estado inicial da busca.
@@ -154,7 +160,7 @@ describe('ErrosIndexPage — sem código na URL', () => {
   it('tem exatamente um h1, que diz o que faltou no endereço', async () => {
     renderPagina('')
 
-    await screen.findByText(/nenhum código foi informado/i)
+    await screen.findByText('Nenhum código de erro foi informado.')
 
     const titulos = screen.getAllByRole('heading', { level: 1 })
     expect(titulos).toHaveLength(1)
@@ -169,7 +175,7 @@ describe('ErrosIndexPage — sem código na URL', () => {
 
     renderPagina('   ')
 
-    await screen.findByText(/nenhum código foi informado/i)
+    await screen.findByText('Nenhum código de erro foi informado.')
 
     expect(chamadas.filter((url) => url.includes('/erros'))).toHaveLength(0)
   })
@@ -194,7 +200,7 @@ describe('ErrosIndexPage: título da aba', () => {
   it('sem código, nomeia a aba pelo que faltou', async () => {
     renderPagina('')
 
-    await screen.findByText(/nenhum código foi informado/i)
+    await screen.findByText('Nenhum código de erro foi informado.')
     expect(document.title).toBe('Código de erro não informado | Codex')
   })
 
@@ -206,11 +212,11 @@ describe('ErrosIndexPage: título da aba', () => {
     expect(document.title).toBe('Código E0117 | Codex')
   })
 
-  it('código não documentado diz isso na aba', async () => {
+  it('código sem erro encontrado diz isso na aba', async () => {
     server.use(http.get(`${API_URL}/erros`, () => respostaPaginada([])))
     renderPagina('E9999')
 
-    await screen.findByText('O Codex ainda não documenta o código "E9999".')
-    expect(document.title).toBe('Código E9999 não documentado | Codex')
+    await screen.findByText('Nenhum erro encontrado com o código "E9999".')
+    expect(document.title).toBe('Código E9999 não encontrado | Codex')
   })
 })

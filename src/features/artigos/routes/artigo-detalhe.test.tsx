@@ -235,7 +235,7 @@ describe('ArtigoDetalhePage — tela 8', () => {
 })
 
 describe('ArtigoDetalhePage — tela 9 (/como-funciona)', () => {
-  it('404 do slug reservado mostra "ainda não publicado", nunca "não existe" (§4.2)', async () => {
+  it('404 do slug reservado mostra "disponível em breve", nunca "não existe" (§4.2)', async () => {
     server.use(
       handlerStatus(SLUG_COMO_FUNCIONA, 404, 'ARTIGO_NAO_ENCONTRADO', 'Artigo não encontrado.'),
     )
@@ -246,7 +246,7 @@ describe('ArtigoDetalhePage — tela 9 (/como-funciona)', () => {
       reservado: true,
     })
 
-    expect(await screen.findByText('Este conteúdo ainda não foi publicado.')).toBeInTheDocument()
+    expect(await screen.findByText('Este conteúdo estará disponível em breve.')).toBeInTheDocument()
     expect(screen.queryByText('Este artigo não existe.')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ir para a busca' })).toBeInTheDocument()
   })

@@ -83,8 +83,7 @@ export function ArtigosIndexPage({ q, tipo, pagina, navegar }: ArtigosIndexPageP
         <div className="flex flex-col gap-2">
           <h1 className="text-titulo font-bold text-ink">Índice de artigos</h1>
           <p className="max-w-2xl text-sm text-muted">
-            O que o suporte explica repetidamente, escrito uma vez. Artigo não tem prazo: a única
-            data é a verificação.
+            Guias e explicações sobre emissão de NFS-e no InvoiCy.
           </p>
         </div>
 
@@ -121,9 +120,7 @@ export function ArtigosIndexPage({ q, tipo, pagina, navegar }: ArtigosIndexPageP
         {!isLoading && !isError && listaVazia && !tipo && (
           <EmptyState
             message={
-              q
-                ? `Nenhum artigo corresponde a “${q}”.`
-                : 'Nenhum artigo publicado ainda. O acervo cresce a partir dos chamados.'
+              q ? `Nenhum artigo corresponde a “${q}”.` : 'Os artigos estarão disponíveis em breve.'
             }
           />
         )}

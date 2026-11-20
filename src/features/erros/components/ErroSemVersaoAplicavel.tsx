@@ -7,8 +7,7 @@ export interface ErroSemVersaoAplicavelProps {
   versoesAplicaveis: VersaoAplicavel[]
 }
 
-const TEXTO_ERRO_GERAL =
-  'Este erro é geral — não depende de um provedor específico, vale para qualquer integração.'
+const TEXTO_ERRO_GERAL = 'Este erro é geral: vale para qualquer provedor.'
 
 /** Um item por provedor: a página pública do provedor já mostra a versão dele. */
 function provedoresDistintos(versoes: VersaoAplicavel[]): VersaoAplicavel[] {

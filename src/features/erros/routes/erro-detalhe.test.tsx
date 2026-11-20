@@ -196,13 +196,41 @@ describe('ErroDetalhePage: o que decide o caso vem primeiro', () => {
     expect(screen.queryByText(/ainda não documentada/)).not.toBeInTheDocument()
   })
 
+  it('sem solução, o lugar dela oferece o suporte com o código e o link da página', async () => {
+    const erroSemSolucao = { ...erroComSolucao, solucaoSugerida: null }
+    servir(erroSemSolucao)
+    renderPagina({ erroSlug: erroSemSolucao.slug })
+
+    const main = within(await screen.findByRole('main'))
+    const ajuda = await main.findByText('Precisa de ajuda com este erro?', { exact: false })
+
+    expect(screen.getByRole('main').querySelector('header')?.nextElementSibling).toBe(ajuda)
+    expect(main.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
+      'href',
+      montarLinkSuporte(
+        'Codex · erro E0117',
+        `Código do erro: E0117\nPágina: ${window.location.href}`,
+      ),
+    )
+    expect(main.queryByRole('region', { name: 'Solução sugerida' })).not.toBeInTheDocument()
+  })
+
+  it('com solução, a página não repete o caminho ao suporte no conteúdo', async () => {
+    servir(erroComSolucao)
+    renderPagina({ erroSlug: erroComSolucao.slug })
+
+    const main = within(await screen.findByRole('main'))
+    await main.findByRole('region', { name: 'Solução sugerida' })
+    expect(main.queryByText(/Precisa de ajuda com este erro/)).not.toBeInTheDocument()
+  })
+
   it('sem campo relacionado, o rodapé não fala em corrigir campo', async () => {
     servir(erroComSolucao)
     renderPagina({ erroSlug: erroComSolucao.slug })
 
     const rodape = within(await screen.findByRole('contentinfo'))
     expect(
-      await rodape.findByText('Resolveu este erro? Confira o resto do provedor.'),
+      await rodape.findByText('Resolveu este erro? Veja os demais campos e erros do provedor.'),
     ).toBeInTheDocument()
   })
 })
@@ -296,7 +324,9 @@ describe('ErroDetalhePage — rodapé: próximo passo e caminho ao suporte (§7.
   it('erro geral: oferece só o caminho ao suporte, com o código do erro', async () => {
     const rodape = await renderComErro({ ...erroBase, versoesAplicaveis: [] })
 
-    expect(rodape.getByText(/Fale com o suporte levando o código/)).toBeInTheDocument()
+    expect(
+      rodape.getByText('O erro continua? Fale com o suporte e informe o código.'),
+    ).toBeInTheDocument()
     expect(rodape.queryByRole('link', { name: 'Buscar' })).not.toBeInTheDocument()
     expect(rodape.getByRole('link', { name: 'Falar com o suporte' })).toHaveAttribute(
       'href',

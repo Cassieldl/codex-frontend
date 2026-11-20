@@ -16,12 +16,12 @@ export interface EstadoTipoArtigoVazioProps {
 
 const CONTEUDO: Record<VarianteTipoArtigoVazio, (rotulo: string) => [string, string]> = {
   'sem-acervo': (rotulo) => [
-    `Ainda não há artigo de ${rotulo} publicado.`,
-    'O acervo cresce a partir dos chamados: quando uma explicação se repete, ela vira artigo.',
+    `Nenhum artigo de ${rotulo} publicado.`,
+    'Veja os artigos dos outros tipos na aba Todos.',
   ],
   'sem-resultado': (rotulo) => [
     `Nenhum artigo de ${rotulo} corresponde à sua busca.`,
-    'O tipo continua aqui para você saber que ele existe.',
+    'Tente outro termo ou busque em todos os tipos.',
   ],
 }
 

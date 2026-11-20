@@ -212,15 +212,13 @@ describe('UsosDoCampo — estados', () => {
     expect(within(secao).queryByRole('list')).toBeNull()
   })
 
-  it('vazio: diz que nenhum provedor publicado usa o campo', async () => {
+  it('vazio: diz que nenhum provedor usa o campo', async () => {
     server.use(responderUsos(CAMPO, []))
     renderizar()
 
     const secao = await secaoDeUsos()
 
-    expect(
-      await within(secao).findByText('Nenhum provedor publicado usa este campo ainda.'),
-    ).toBeInTheDocument()
+    expect(await within(secao).findByText('Nenhum provedor usa este campo.')).toBeInTheDocument()
     expect(within(secao).queryByRole('list')).toBeNull()
   })
 

@@ -27,7 +27,7 @@ export interface NavegarOpcoes {
  */
 function tituloDaAbaDoCodigo(codigo: string, totalEncontrado: number | undefined): string | null {
   if (totalEncontrado === undefined || totalEncontrado === 1) return null
-  if (totalEncontrado === 0) return `Código ${codigo.trim()} não documentado`
+  if (totalEncontrado === 0) return `Código ${codigo.trim()} não encontrado`
   return `Código ${codigo.trim()}`
 }
 
@@ -84,7 +84,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
             <span className="sr-only">
               {resolveDireto
-                ? 'Código encontrado — abrindo o erro…'
+                ? 'Código encontrado. Abrindo o erro…'
                 : `Buscando o código ${codigo}…`}
             </span>
             <Skeleton className="h-6 w-48" />
@@ -97,7 +97,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
             icone={CircleHelp}
             titulo="Nenhum código de erro foi informado."
             tituloDaAba="Código de erro não informado"
-            descricao="Esta página abre um erro pelo código, e nenhum código foi informado."
+            descricao="Busque pelo código ou pela mensagem do erro."
           >
             <Link
               to="/busca"
@@ -113,11 +113,11 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
 
         {!isLoading && !isError && data && data.totalCount === 0 && (
           <EmptyState
-            message={`O Codex ainda não documenta o código "${codigo}".`}
+            message={`Nenhum erro encontrado com o código "${codigo}".`}
             action={
               <a
                 href={montarLinkSuporte(
-                  'Codex · código de erro não documentado',
+                  'Codex · código de erro não encontrado',
                   `Código buscado: ${codigo}`,
                 )}
                 className="text-sm font-semibold text-primary-medium hover:underline"
@@ -133,7 +133,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
             <h1 className="text-subtitulo font-semibold text-ink">
               O código {codigo} existe em mais de um provedor
             </h1>
-            <p className="text-sm text-muted">Escolha qual delas corresponde ao seu caso.</p>
+            <p className="text-sm text-muted">Escolha o erro que corresponde ao seu caso.</p>
 
             <ul className="flex flex-col gap-2">
               {data.items.map((item) => {
@@ -149,12 +149,10 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
                         aria-label={
                           item.provedorNome
                             ? undefined
-                            : 'Geral — este erro não é específico de um provedor'
+                            : 'Geral: este erro vale para qualquer provedor'
                         }
                         title={
-                          item.provedorNome
-                            ? undefined
-                            : 'Este erro não é específico de um provedor'
+                          item.provedorNome ? undefined : 'Este erro vale para qualquer provedor'
                         }
                       >
                         {item.provedorNome ?? 'Geral'}

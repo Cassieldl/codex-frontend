@@ -373,7 +373,9 @@ describe('DicionarioDaVersao — frases e estados vazios', () => {
   it('versão sem campo algum diz isso, nomeado, e não mostra tabela em branco', () => {
     renderizar({ totalCampos: 0, camposPorGrupo: [] })
 
-    expect(screen.getByText('A versão 4.13 ainda não tem campos publicados.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Os campos da versão 4.13 estarão disponíveis em breve.'),
+    ).toBeInTheDocument()
     expect(screen.queryByRole('row')).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Blocos do layout' })).toBeNull()
   })
@@ -386,7 +388,7 @@ describe('DicionarioDaVersao — frases e estados vazios', () => {
     expect(
       screen.getByText('Nenhum campo da versão 4.13 corresponde a “zzz-inexistente”.'),
     ).toBeInTheDocument()
-    expect(screen.getByText(/O nome pode ser o do provedor, não o do layout\./)).toBeInTheDocument()
+    expect(screen.getByText(/Se você buscou pelo nome usado no provedor/)).toBeInTheDocument()
     expect(container.querySelector('details')).toBeNull()
 
     const botoes = screen.getAllByRole('button', { name: 'Limpar filtro' })
@@ -770,7 +772,7 @@ describe('DicionarioDaVersao — só campos da reforma tributária', () => {
     expect(
       screen.getByText('Nenhum campo da versão 4.13 é da reforma tributária.'),
     ).toBeInTheDocument()
-    expect(screen.queryByText(/O nome pode ser o do provedor/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Se você buscou pelo nome usado no provedor/)).not.toBeInTheDocument()
   })
 })
 

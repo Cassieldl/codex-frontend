@@ -263,7 +263,7 @@ describe('LayoutIndicePage', () => {
     renderPagina()
 
     expect(
-      await screen.findByText('O Layout InvoiCy ainda não tem nenhuma versão publicada.'),
+      await screen.findByText('As versões do Layout InvoiCy estarão disponíveis em breve.'),
     ).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
@@ -274,7 +274,7 @@ describe('LayoutIndicePage', () => {
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()
     expect(
-      screen.queryByText('O Layout InvoiCy ainda não tem nenhuma versão publicada.'),
+      screen.queryByText('As versões do Layout InvoiCy estarão disponíveis em breve.'),
     ).not.toBeInTheDocument()
   })
 
@@ -300,7 +300,7 @@ describe('LayoutIndicePage', () => {
     renderPagina()
 
     expect(
-      await screen.findByText(/Tipo e obrigatoriedade estão em cada provedor./),
+      await screen.findByText(/Tipo e obrigatoriedade de cada campo dependem do provedor[.]/),
     ).toBeInTheDocument()
   })
 
