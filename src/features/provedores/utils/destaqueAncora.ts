@@ -44,18 +44,39 @@ export function useCampoDestacadoPorAncora(): string | null {
     function aoMudarHash() {
       setHash(window.location.hash)
     }
+    function aoLimparAncora() {
+      setHash('')
+    }
     window.addEventListener('hashchange', aoMudarHash)
-    return () => window.removeEventListener('hashchange', aoMudarHash)
+    window.addEventListener(EVENTO_ANCORA_DE_CAMPO_LIMPA, aoLimparAncora)
+    return () => {
+      window.removeEventListener('hashchange', aoMudarHash)
+      window.removeEventListener(EVENTO_ANCORA_DE_CAMPO_LIMPA, aoLimparAncora)
+    }
   }, [])
 
   return extrairSlugDoHash(hash)
 }
 
-/** Tira `#campo-…` da URL e avisa os ouvintes, para que o mesmo link possa ser seguido de novo. */
-export function limparAncoraDeCampo(): void {
+/** Avisa só quem lê a âncora de campo; um `hashchange` acordaria os outros ouvintes da página. */
+export const EVENTO_ANCORA_DE_CAMPO_LIMPA = 'codex:ancora-de-campo-limpa'
+
+/** Troca a URL atual pela mesma sem o hash. */
+export type TrocarUrlSemAncora = (urlSemAncora: string) => void
+
+function trocarNoHistorico(urlSemAncora: string) {
+  window.history.replaceState(window.history.state, '', urlSemAncora)
+}
+
+/**
+ * Tira `#campo-…` da URL e avisa o leitor da âncora, para que o mesmo link possa ser seguido de
+ * novo. Com o router montado, a troca precisa ir por ele: o `replaceState` direto faz o router
+ * recarregar a rota e levar a página ao topo.
+ */
+export function limparAncoraDeCampo(trocarUrl: TrocarUrlSemAncora = trocarNoHistorico): void {
   if (extrairSlugDoHash(window.location.hash) === null) return
 
   const { pathname, search } = window.location
-  window.history.replaceState(window.history.state, '', pathname + search)
-  window.dispatchEvent(new HashChangeEvent('hashchange'))
+  trocarUrl(pathname + search)
+  window.dispatchEvent(new Event(EVENTO_ANCORA_DE_CAMPO_LIMPA))
 }

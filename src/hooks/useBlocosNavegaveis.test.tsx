@@ -447,7 +447,7 @@ describe('useBlocosNavegaveis — chegada por âncora', () => {
 })
 
 describe('useBlocosNavegaveis — fechar o campo', () => {
-  it('com âncora ativa tira o hash da URL e avisa os ouvintes', () => {
+  it('com âncora ativa tira o hash da URL sem disparar hashchange para a página', () => {
     ancoraNoHash('tomador-cnpj')
     const aoMudarHash = vi.fn()
     window.addEventListener('hashchange', aoMudarHash)
@@ -458,7 +458,7 @@ describe('useBlocosNavegaveis — fechar o campo', () => {
 
     expect(result.current.campoAberto).toBeNull()
     expect(window.location.hash).toBe('')
-    expect(aoMudarHash).toHaveBeenCalledTimes(1)
+    expect(aoMudarHash).not.toHaveBeenCalled()
   })
 
   it('sem âncora ativa só fecha: o hash da URL não é tocado', () => {

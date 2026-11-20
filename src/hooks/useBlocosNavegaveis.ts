@@ -1,11 +1,15 @@
+import { useRouter } from '@tanstack/react-router'
+import type { AnyRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 // O hook é compartilhado, mas o formato do id da linha e o limpador da âncora moram com a 1ª
 // feature que os usou; mover tocaria todos os importadores sem ganho visível.
 import {
   construirIdLinhaCampo,
+  extrairSlugDoHash,
   limparAncoraDeCampo,
 } from '../features/provedores/utils/destaqueAncora'
+import type { TrocarUrlSemAncora } from '../features/provedores/utils/destaqueAncora'
 import type { VizinhoDeCampo } from '../types/vizinhoDeCampo'
 import { sequenciaDosBlocos } from '../utils/blocosDoLayout'
 import type { BlocoDoLayout, CampoNaSequencia } from '../utils/blocosDoLayout'
@@ -62,15 +66,51 @@ function comRaiz(raizes: ReadonlySet<string>, raiz: string): ReadonlySet<string>
   return new Set([...raizes, raiz])
 }
 
-/** Quem tem o foco na chegada pela âncora, se for um elemento fora da lista de campos. */
+interface OrigemDaAncora {
+  slug: string
+  elemento: HTMLElement
+}
+
+/** Link `href="#campo-…"` fora da lista que recebeu o clique; o Enter no link também gera clique. */
+function linkDeCampoClicado(
+  evento: MouseEvent,
+  contenedor: HTMLElement | null,
+): OrigemDaAncora | null {
+  const link = evento.target instanceof Element ? evento.target.closest('a') : null
+  const href = link?.getAttribute('href')
+  if (!link || !href?.startsWith('#') || contenedor?.contains(link)) return null
+
+  const slug = extrairSlugDoHash(href)
+  return slug === null ? null : { slug, elemento: link }
+}
+
+/**
+ * Quem abriu o campo pela âncora, se estiver fora da lista. Vale primeiro o link clicado: no
+ * Chrome, seguir o href tira o foco dele antes do `hashchange`. Sem clique, vale quem tem o foco.
+ */
 function origemDaChegada(
   slug: string,
   contenedor: HTMLElement | null,
-): { slug: string; elemento: HTMLElement } | null {
+  clicado: OrigemDaAncora | null,
+): OrigemDaAncora | null {
+  if (clicado?.slug === slug && clicado.elemento.isConnected) return clicado
+
   const ativo = document.activeElement
   if (!(ativo instanceof HTMLElement) || ativo === document.body) return null
   if (contenedor?.contains(ativo)) return null
   return { slug, elemento: ativo }
+}
+
+/**
+ * Com a âncora na localização do router (histórico do navegador), a URL é limpa por ele e sem
+ * reiniciar a rolagem. Fora disso (sem router, ou histórico em memória) vale o histórico direto.
+ */
+function trocaPeloRouter(router: AnyRouter | undefined): TrocarUrlSemAncora | undefined {
+  if (!router || extrairSlugDoHash(`#${router.latestLocation.hash}`) === null) return undefined
+
+  return (urlSemAncora) => {
+    void router.navigate({ href: urlSemAncora, replace: true, resetScroll: false })
+  }
 }
 
 function raizesComCampoVisivel<TCampo>(blocos: BlocoDoLayout<TCampo>[]): string[] {
@@ -109,8 +149,11 @@ export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
   // Slug do campo no modal neste instante: o foco volta a ele, não ao campo que abriu o modal.
   const campoAtualRef = useRef<string | null>(null)
   const campoRoladoRef = useRef<string | null>(null)
-  // Link fora da lista que abriu o modal pela âncora (chip do "O que mudou"): o foco volta a ele.
-  const origemDaAncoraRef = useRef<{ slug: string; elemento: HTMLElement } | null>(null)
+  // Link fora da lista que abriu o modal pela âncora (aviso, envio modelo): o foco volta a ele.
+  const origemDaAncoraRef = useRef<OrigemDaAncora | null>(null)
+  const linkClicadoRef = useRef<OrigemDaAncora | null>(null)
+  // Fora do RouterProvider (testes de unidade) não há router: a âncora sai pelo histórico direto.
+  const router: AnyRouter | undefined = useRouter({ warn: false })
 
   const abrirCampo = useCallback((slug: string, secao?: TSecao) => {
     campoAtualRef.current = slug
@@ -129,8 +172,8 @@ export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
 
   const fecharCampo = useCallback(() => {
     setCampoAberto(null)
-    if (campoDestacado !== null) limparAncoraDeCampo()
-  }, [campoDestacado])
+    if (campoDestacado !== null) limparAncoraDeCampo(trocaPeloRouter(router))
+  }, [campoDestacado, router])
 
   // O alvo é procurado dentro da lista e só se ela ainda estiver na página: ao seguir um link para
   // outra tela o modal fecha no desmonte, e um id igual na página de destino não pode ganhar o foco.
@@ -190,6 +233,17 @@ export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
     setBlocosAbertos(new Set())
   }, [])
 
+  // Captura antes da navegação do link: é o único momento em que se sabe quem foi clicado.
+  useEffect(() => {
+    function aoClicar(evento: MouseEvent) {
+      const clicado = linkDeCampoClicado(evento, contenedorRef.current)
+      if (clicado) linkClicadoRef.current = clicado
+    }
+
+    document.addEventListener('click', aoClicar, true)
+    return () => document.removeEventListener('click', aoClicar, true)
+  }, [contenedorRef])
+
   // Chegar por `#campo-…` (aviso, campo relacionado, link copiado) abre o bloco, abre o modal do
   // campo e rola até a linha. Se um filtro esconde o campo, ele é limpo antes: o link prometeu
   // levar ao campo. A chegada acontece uma vez por slug; digitar um filtro depois não repete.
@@ -204,7 +258,12 @@ export function useBlocosNavegaveis<TCampo, TSecao extends string = never>({
     if (!destino) return
 
     campoRoladoRef.current = campoDestacado
-    origemDaAncoraRef.current = origemDaChegada(campoDestacado, contenedorRef.current)
+    origemDaAncoraRef.current = origemDaChegada(
+      campoDestacado,
+      contenedorRef.current,
+      linkClicadoRef.current,
+    )
+    linkClicadoRef.current = null
 
     if (!passaNoFiltroAtual(destino.campo)) limparFiltros()
     setBlocosAbertos((abertos) => comRaiz(abertos, destino.raiz))

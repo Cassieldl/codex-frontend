@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   construirIdLinhaCampo,
+  EVENTO_ANCORA_DE_CAMPO_LIMPA,
   extrairSlugDoHash,
   limparAncoraDeCampo,
   useCampoDestacadoPorAncora,
@@ -63,15 +64,19 @@ describe('limparAncoraDeCampo', () => {
     window.history.replaceState(null, '', '/')
   })
 
-  it('tira o hash e o hook volta a devolver null', () => {
+  it('tira o hash e o hook volta a devolver null, sem hashchange para os outros ouvintes', () => {
     window.history.replaceState(null, '', '/#campo-x')
     const { result } = renderHook(() => useCampoDestacadoPorAncora())
     expect(result.current).toBe('x')
+    const aoMudarHash = vi.fn()
+    window.addEventListener('hashchange', aoMudarHash)
 
     act(() => limparAncoraDeCampo())
+    window.removeEventListener('hashchange', aoMudarHash)
 
     expect(window.location.hash).toBe('')
     expect(result.current).toBeNull()
+    expect(aoMudarHash).not.toHaveBeenCalled()
   })
 
   it('permite seguir de novo o mesmo link de campo', () => {
@@ -100,13 +105,26 @@ describe('limparAncoraDeCampo', () => {
 
   it('não faz nada, nem dispara evento, quando o hash não é de campo', () => {
     window.history.replaceState(null, '', '/provedores/emissor?pagina=2#aviso-3')
-    const aoMudarHash = vi.fn()
-    window.addEventListener('hashchange', aoMudarHash)
+    const aoLimpar = vi.fn()
+    const trocarUrl = vi.fn()
+    window.addEventListener(EVENTO_ANCORA_DE_CAMPO_LIMPA, aoLimpar)
 
-    limparAncoraDeCampo()
-    window.removeEventListener('hashchange', aoMudarHash)
+    limparAncoraDeCampo(trocarUrl)
+    window.removeEventListener(EVENTO_ANCORA_DE_CAMPO_LIMPA, aoLimpar)
 
     expect(window.location.hash).toBe('#aviso-3')
-    expect(aoMudarHash).not.toHaveBeenCalled()
+    expect(trocarUrl).not.toHaveBeenCalled()
+    expect(aoLimpar).not.toHaveBeenCalled()
+  })
+
+  it('com troca de URL própria (a do router), entrega a URL sem hash a ela e avisa o leitor', () => {
+    window.history.replaceState(null, '', '/provedores/emissor?pagina=2#campo-x')
+    const { result } = renderHook(() => useCampoDestacadoPorAncora())
+    const trocarUrl = vi.fn()
+
+    act(() => limparAncoraDeCampo(trocarUrl))
+
+    expect(trocarUrl).toHaveBeenCalledWith('/provedores/emissor?pagina=2')
+    expect(result.current).toBeNull()
   })
 })
