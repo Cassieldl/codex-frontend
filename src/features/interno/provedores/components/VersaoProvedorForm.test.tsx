@@ -40,7 +40,7 @@ async function salvarComRotulo(rotulo: string) {
   await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 }
 
-describe('VersaoProvedorForm — rótulo', () => {
+describe('VersaoProvedorForm: rótulo', () => {
   // Literais, não a constante do schema: 80 é contrato com a coluna do banco e o validator do backend.
   it('aceita 80 caracteres', async () => {
     const { onSubmit } = renderizarEdicao()
@@ -59,7 +59,7 @@ describe('VersaoProvedorForm — rótulo', () => {
   })
 })
 
-describe('VersaoProvedorForm — edição', () => {
+describe('VersaoProvedorForm: edição', () => {
   it('nunca envia versaoLayoutId: o PUT passaria a trocar o layout de verdade', async () => {
     const { onSubmit } = renderizarEdicao()
     await salvarComRotulo('0.21')

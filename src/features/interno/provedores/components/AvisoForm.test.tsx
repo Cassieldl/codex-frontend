@@ -105,7 +105,7 @@ function renderizarEdicaoDeAvisoDeVersao(onSubmit = vi.fn<AvisoFormProps['onSubm
   return onSubmit
 }
 
-describe('AvisoForm — edição de aviso com campos afetados gravados', () => {
+describe('AvisoForm: edição de aviso com campos afetados gravados', () => {
   it('pré-seleciona exatamente os campos já gravados', () => {
     renderizarEdicaoDeAvisoDeVersao()
 

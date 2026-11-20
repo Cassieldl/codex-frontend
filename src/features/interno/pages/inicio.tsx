@@ -58,7 +58,7 @@ export function InicioPage() {
         <div>
           <h1 className="text-titulo font-bold text-ink">Início</h1>
           <p className="text-sm text-muted">
-            Ache o conteúdo certo e copie o link em segundos — o índice interno enxerga rascunho.
+            Ache o conteúdo certo e copie o link em segundos. O índice interno enxerga rascunho.
           </p>
         </div>
 

@@ -59,7 +59,7 @@ function usarEstadoCapturando(
   )
 }
 
-describe('FilaLacunasBusca — leitura', () => {
+describe('FilaLacunasBusca: leitura', () => {
   it('consulta o endpoint agrupado, só as abertas, das mais recorrentes para as menos', async () => {
     const capturado: { params: Record<string, string> | null } = { params: null }
     server.use(
@@ -106,7 +106,7 @@ describe('FilaLacunasBusca — leitura', () => {
     const linha = await screen.findByRole('row', { name: /cancelamento fora do prazo/ })
     expect(within(linha).getByText('1 ocorrência')).toBeInTheDocument()
     expect(within(linha).getByText('Nome não informado')).toBeInTheDocument()
-    expect(within(linha).getAllByText('—')).toHaveLength(2)
+    expect(within(linha).getAllByText('-')).toHaveLength(2)
     expect(within(linha).queryByText(/^\+\d+$/)).not.toBeInTheDocument()
   })
 
@@ -253,7 +253,7 @@ describe('FilaLacunasBusca — leitura', () => {
   })
 })
 
-describe('FilaLacunasBusca — resolver e descartar o termo', () => {
+describe('FilaLacunasBusca: resolver e descartar o termo', () => {
   it('resolver envia a ocorrência de referência, o If-Match do termo e incluirMesmoTermo true', async () => {
     const usuario = userEvent.setup()
     const pedidos: PedidoEstado[] = []

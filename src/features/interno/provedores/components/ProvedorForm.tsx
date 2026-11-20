@@ -62,7 +62,7 @@ export interface ProvedorFormDto {
 
 export interface ProvedorFormProps {
   initialData?: ProvedorAdminDetalhe
-  /** Só aparece na criação — I4 (`AtualizarProvedorDto`) não tem este campo. */
+  /** Só aparece na criação - I4 (`AtualizarProvedorDto`) não tem este campo. */
   permiteEditarIdentificador?: boolean
   onSubmit: (dto: ProvedorFormDto) => void
   onCancel: () => void
@@ -144,7 +144,7 @@ export function ProvedorForm({
 
       <Textarea
         label="Aliases"
-        hint="Um por linha — outros nomes pelos quais este provedor é conhecido."
+        hint="Um por linha: outros nomes pelos quais este provedor é conhecido."
         rows={3}
         error={errors.aliasesTexto?.message}
         {...register('aliasesTexto')}

@@ -3,14 +3,14 @@ import { extrairErrosDeCampo, handleApiError } from '../../../../utils/handleApi
 import { extrairCodigoDeErroApi } from '../../utils/codigoDeErroApi'
 
 export interface ErroDeEscritaLacunaBusca {
-  /** Mensagem do backend — nos conflitos ela já diz o que aconteceu. */
+  /** Mensagem do backend - nos conflitos ela já diz o que aconteceu. */
   mensagem: string
   /** Campos culpados no `422 VALIDATION_ERROR`; vazio quando o erro não é de campo. */
   errosDeCampo: ErroDeCampoApi[]
   /**
    * A linha em tela está velha: outra pessoa já mexeu nela (`409`), ou ela já está no estado pedido
    * (`422 VALIDACAO_NEGOCIO`), ou veio sem validador de versão (`400`). Retentar com os mesmos
-   * dados falharia de novo — o caminho é recarregar a fila.
+   * dados falharia de novo - o caminho é recarregar a fila.
    */
   precisaRecarregarFila: boolean
 }

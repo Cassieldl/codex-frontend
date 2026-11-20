@@ -38,7 +38,7 @@ async function preencherESalvar({
   await usuario.click(screen.getByRole('button', { name: 'Salvar' }))
 }
 
-describe('ProvedorForm — tetos', () => {
+describe('ProvedorForm: tetos', () => {
   it('aceita nome de 160, identificador de 80 e alias de 160 caracteres', async () => {
     const { onSubmit } = renderizar()
     await preencherESalvar({
@@ -79,7 +79,7 @@ describe('ProvedorForm — tetos', () => {
   })
 })
 
-describe('ProvedorForm — aliases repetidos', () => {
+describe('ProvedorForm: aliases repetidos', () => {
   it('recusa o mesmo alias duas vezes, inclusive com espaço nas pontas', async () => {
     const { onSubmit } = renderizar()
     await preencherESalvar({ aliases: 'ADN\nSefin Nacional\n  ADN  ' })

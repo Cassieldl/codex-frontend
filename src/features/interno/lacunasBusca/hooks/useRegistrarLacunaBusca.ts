@@ -9,7 +9,7 @@ interface EnvelopeLacunaBusca {
 }
 
 /**
- * `POST /interno/lacunas-busca` — role `lacunasbusca-adicionar`, `201` com a lacuna criada.
+ * `POST /interno/lacunas-busca` - role `lacunasbusca-adicionar`, `201` com a lacuna criada.
  * O corpo carrega só termo, parceiro e chamado: quem registrou e quando o servidor tira do token.
  */
 export function useRegistrarLacunaBusca() {

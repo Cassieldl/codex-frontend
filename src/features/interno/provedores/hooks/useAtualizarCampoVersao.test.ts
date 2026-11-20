@@ -61,7 +61,7 @@ describe('useAtualizarCampoVersao', () => {
     expect(requisicaoCapturada.ifMatch).toBe('W/"3"')
   })
 
-  it('em 409, não limpa o payload — mutation.variables continua com o que foi digitado', async () => {
+  it('em 409, não limpa o payload - mutation.variables continua com o que foi digitado', async () => {
     server.use(
       http.put(`${API_URL}/interno/campos-versao/99`, () =>
         HttpResponse.json(
@@ -85,7 +85,7 @@ describe('useAtualizarCampoVersao', () => {
     await waitFor(() => expect(result.current.isError).toBe(true))
 
     // O payload inteiro (inclusive o texto longo digitado) continua acessível
-    // via `variables` — nada foi descartado pela mutation (M9).
+    // via `variables` - nada foi descartado pela mutation (M9).
     expect(result.current.variables?.dto).toEqual(dtoFake)
     expect(result.current.variables?.dto.notaPreenchimento).toBe(dtoFake.notaPreenchimento)
   })

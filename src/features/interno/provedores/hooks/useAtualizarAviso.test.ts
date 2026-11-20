@@ -51,7 +51,7 @@ describe('useAtualizarAviso', () => {
     expect(capturado.ifMatch).toBe('W/"9"')
   })
 
-  it('envia a lista vazia como lista vazia — é o que apaga os vínculos, e não pode sumir', async () => {
+  it('envia a lista vazia como lista vazia - é o que apaga os vínculos, e não pode sumir', async () => {
     const capturado = capturarPut(7)
     const { result } = renderHook(() => useAtualizarAviso(versoesAdminKeys.detail(5)), {
       wrapper: envolverComQueryClient(),

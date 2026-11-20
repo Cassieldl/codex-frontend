@@ -15,9 +15,9 @@ interface VariaveisAtualizarAviso {
 }
 
 /**
- * `PUT /interno/avisos/{id}` (I14b) — única rota de atualização para os dois
+ * `PUT /interno/avisos/{id}` (I14b) - única rota de atualização para os dois
  * escopos (o `id` já identifica um aviso com escopo fixo, nunca muda). Quem
- * chama passa a `queryKey` do pai (provedor ou versão) a invalidar — o hook
+ * chama passa a `queryKey` do pai (provedor ou versão) a invalidar - o hook
  * não conhece o escopo, só o `id` do aviso. O aviso vive dentro desse detalhe,
  * então é ele que o `409` de concorrência relê para a segunda tentativa.
  */

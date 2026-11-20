@@ -13,7 +13,7 @@ interface PaginatedResponseCru<T> {
 }
 
 /**
- * `GET /interno/lacunas-busca/termos` — uma linha por termo, paginada por GRUPOS; `PaginatedResponse<T>`
+ * `GET /interno/lacunas-busca/termos` - uma linha por termo, paginada por GRUPOS; `PaginatedResponse<T>`
  * **cru na raiz**, sem envelope `data` (role `lacunasbusca-buscar`). A fila priorizada é
  * `estado=Aberta&sortBy=ocorrencias`.
  *

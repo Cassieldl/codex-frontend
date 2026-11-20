@@ -16,8 +16,8 @@ export interface VariaveisAtualizarCampoVersao {
 }
 
 /**
- * `PUT /interno/campos-versao/{id}` (I13a) — role `camposversao-atualizar`,
- * `If-Match` obrigatório (M9). Em `409`, esta mutation **não** limpa nada —
+ * `PUT /interno/campos-versao/{id}` (I13a) - role `camposversao-atualizar`,
+ * `If-Match` obrigatório (M9). Em `409`, esta mutation **não** limpa nada -
  * `mutation.variables` continua com o payload submetido, e quem chama
  * (`CampoVersaoForm`) nunca reseta o formulário em erro, só em sucesso real.
  * No `409` de concorrência relê a lista, de onde sai o etag da segunda tentativa.

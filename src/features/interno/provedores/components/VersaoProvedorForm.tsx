@@ -29,7 +29,7 @@ export interface VersaoProvedorFormProps {
   opcoesVersaoLayout: SelectOption[]
   /**
    * Só aparece na criação. O PUT aceita trocar o layout, mas recusa com 422 se a versão já tiver
-   * campos — e na edição ela quase sempre tem —, então a edição nunca envia `versaoLayoutId`.
+   * campos (e na edição ela quase sempre tem), então a edição nunca envia `versaoLayoutId`.
    */
   permiteEscolherVersaoLayout?: boolean
   onSubmit: (dto: VersaoProvedorFormDto) => void

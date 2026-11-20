@@ -16,8 +16,8 @@ interface VariaveisAtualizarProvedor {
 }
 
 /**
- * `PUT /interno/provedores/{id}` (I4) — role `provedores-atualizar`, `If-Match`
- * obrigatório (M9). `409` propaga como `AxiosError` — quem chama decide como
+ * `PUT /interno/provedores/{id}` (I4) - role `provedores-atualizar`, `If-Match`
+ * obrigatório (M9). `409` propaga como `AxiosError` - quem chama decide como
  * avisar e **nunca** reseta o formulário (o formulário só é limpo depois de
  * um sucesso real, nunca automaticamente em erro). No `409` de concorrência o
  * hook relê detalhe e lista, para a segunda tentativa levar o etag novo.

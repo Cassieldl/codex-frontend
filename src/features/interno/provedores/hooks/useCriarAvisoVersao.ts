@@ -9,8 +9,8 @@ interface EnvelopeAvisoAdmin {
 }
 
 /**
- * `POST /interno/versoes/{id}/avisos` (I14a) — escopo **versão**, aceita
- * `campoVersaoIds`. Escopo é implícito na rota — o formulário nunca tem um
+ * `POST /interno/versoes/{id}/avisos` (I14a) - escopo **versão**, aceita
+ * `campoVersaoIds`. Escopo é implícito na rota - o formulário nunca tem um
  * seletor "provedor ou versão" (§5.7).
  */
 export function useCriarAvisoVersao(versaoId: number) {

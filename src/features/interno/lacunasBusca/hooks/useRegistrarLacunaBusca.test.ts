@@ -16,7 +16,7 @@ function criarWrapper(queryClient: QueryClient) {
 }
 
 describe('useRegistrarLacunaBusca', () => {
-  it('envia só termo, parceiro e chamado — nada de identidade, nada de If-Match', async () => {
+  it('envia só termo, parceiro e chamado - nada de identidade, nada de If-Match', async () => {
     const capturado: { corpo: unknown; ifMatch: string | null } = { corpo: null, ifMatch: null }
     server.use(
       http.post(`${API_URL}/interno/lacunas-busca`, async ({ request }) => {

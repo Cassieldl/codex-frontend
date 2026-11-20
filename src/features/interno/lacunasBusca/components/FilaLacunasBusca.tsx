@@ -45,7 +45,7 @@ const TEXTOS_DA_DECISAO: Record<EstadoDecidido, TextosDaDecisao> = {
     verbo: 'Resolver',
     termoNoParticipio: 'resolvido',
     ocorrenciasNoParticipio: 'resolvidas',
-    dicaDaNota: 'O que foi documentado, ou onde — ajuda quem buscar o mesmo termo depois.',
+    dicaDaNota: 'O que foi documentado, ou onde. Ajuda quem buscar o mesmo termo depois.',
   },
   Descartada: {
     titulo: 'Descartar termo',
@@ -88,7 +88,7 @@ interface ListaComRestoProps {
 
 /** Os distintos mais recentes, e um "+N" para os que o teto cortou. */
 function ListaComResto({ itens, total }: ListaComRestoProps) {
-  if (itens.length === 0) return <>—</>
+  if (itens.length === 0) return <>-</>
 
   const resto = total - itens.length
 
@@ -107,7 +107,7 @@ function ListaComResto({ itens, total }: ListaComRestoProps) {
 /**
  * Fila editorial (escopo §9.2): termos de busca interna sem resultado, uma linha por termo, os
  * mais recorrentes primeiro. Resolver e descartar passam por um diálogo e valem para o termo
- * inteiro — todas as ocorrências abertas dele saem da fila juntas.
+ * inteiro - todas as ocorrências abertas dele saem da fila juntas.
  */
 export function FilaLacunasBusca({ podeAtualizar }: FilaLacunasBuscaProps) {
   const [pagina, setPagina] = useState(1)

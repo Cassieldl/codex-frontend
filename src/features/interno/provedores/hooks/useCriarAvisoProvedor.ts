@@ -9,8 +9,8 @@ interface EnvelopeAvisoAdmin {
 }
 
 /**
- * `POST /interno/provedores/{id}/avisos` (I14a2) — escopo **provedor**. O DTO
- * não tem `campoVersaoIds` (não existe campo fora de uma versão, §5.7) — a
+ * `POST /interno/provedores/{id}/avisos` (I14a2) - escopo **provedor**. O DTO
+ * não tem `campoVersaoIds` (não existe campo fora de uma versão, §5.7) - a
  * estrutura do próprio tipo impede a violação, sem depender de disciplina.
  */
 export function useCriarAvisoProvedor(provedorId: number) {

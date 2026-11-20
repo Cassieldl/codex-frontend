@@ -85,7 +85,7 @@ afterEach(() => {
   keycloak.tokenParsed = undefined
 })
 
-describe('Início interno — busca sem resultado vira lacuna registrada', () => {
+describe('Início interno: busca sem resultado vira lacuna registrada', () => {
   it('registra no servidor o termo buscado com o parceiro e o chamado digitados', async () => {
     const usuario = userEvent.setup()
     const corpos: unknown[] = []
@@ -138,7 +138,7 @@ describe('Início interno — busca sem resultado vira lacuna registrada', () =>
     expect(await screen.findByText('E0117 ipm')).toBeInTheDocument()
   })
 
-  it('sem a role de registrar não há parceiro, chamado nem botão — a busca vazia só informa', async () => {
+  it('sem a role de registrar não há parceiro, chamado nem botão - a busca vazia só informa', async () => {
     const usuario = userEvent.setup()
     autenticarCom(['lacunasbusca-buscar'])
     usarBuscaSemResultado()

@@ -3,7 +3,7 @@ export type EstadoLacunaBusca = 'Aberta' | 'Resolvida' | 'Descartada'
 export type OrdenacaoTermoLacunaBusca = 'ocorrencias' | 'recente' | 'termo'
 
 /**
- * `LacunaBuscaDto` do backend — uma ocorrência registrada, como volta do `POST` e das escritas de
+ * `LacunaBuscaDto` do backend - uma ocorrência registrada, como volta do `POST` e das escritas de
  * estado. As datas chegam em ISO-8601 com offset (`DateTimeOffset`).
  */
 export interface LacunaBusca {
@@ -24,7 +24,7 @@ export interface LacunaBusca {
 }
 
 /**
- * `LacunaBuscaTermoDto`: todas as ocorrências de um termo normalizado, numa linha só — a unidade
+ * `LacunaBuscaTermoDto`: todas as ocorrências de um termo normalizado, numa linha só - a unidade
  * da fila editorial. As datas chegam em ISO-8601 com offset (`DateTimeOffset`).
  */
 export interface LacunaBuscaTermo {
@@ -45,7 +45,7 @@ export interface LacunaBuscaTermo {
   ultimoRegistradoPorNome: string | null
   /** Ocorrência usada no `PUT /{id}/estado` para decidir o termo inteiro. */
   lacunaReferenciaId: number
-  /** Token de concorrência da ocorrência de referência — vira o `If-Match`. */
+  /** Token de concorrência da ocorrência de referência - vira o `If-Match`. */
   versaoConcorrencia: number
 }
 

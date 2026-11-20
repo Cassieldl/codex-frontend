@@ -20,7 +20,7 @@ const ESTADOS_OPTIONS: SelectOption[] = [
   { value: 'Condicional', label: 'Condicional' },
 ]
 
-// U4 — campo canônico é FK obrigatória, nunca texto livre: por isso
+// U4: campo canônico é FK obrigatória, nunca texto livre: por isso
 // `campoLayoutId` é `Select` alimentado por `opcoesCampoLayout`, nunca `Input`.
 const campoVersaoSchema = z
   .object({
@@ -52,7 +52,7 @@ const campoVersaoSchema = z
   })
   .superRefine((valores, ctx) => {
     // Condição obrigatória só quando o estado de preenchimento é Condicional
-    // (§7.9) — validação no submit, nunca retroativa a cada tecla.
+    // (§7.9) - validação no submit, nunca retroativa a cada tecla.
     if (valores.estadoPreenchimento === 'Condicional' && !valores.condicao?.trim()) {
       ctx.addIssue({
         code: 'custom',

@@ -7,14 +7,14 @@ import { Input } from '../../../components/ui/Input'
 
 /**
  * A tela 11 é busca **ao vivo**: o erro chega enquanto o usuário ainda digita. Quando ela passou a
- * renderizar `ErrorState` no lugar da seção em branco, herdou o `autoFocus` do botão de retry — o
+ * renderizar `ErrorState` no lugar da seção em branco, herdou o `autoFocus` do botão de retry - o
  * foco saltava para "Tentar novamente" e os caracteres seguintes se perdiam. Corrigir o estado
  * ausente introduziu um defeito pior que o estado ausente.
  *
  * Estes casos exercitam a forma da tela (campo de busca + bloco de erro) em vez da página inteira,
- * que exigiria router e sessão — o que importa aqui é a interação entre o campo e o erro.
+ * que exigiria router e sessão - o que importa aqui é a interação entre o campo e o erro.
  */
-describe('Tela 11 — o bloco de erro não pode roubar o foco da busca ao vivo', () => {
+describe('Tela 11: o bloco de erro não pode roubar o foco da busca ao vivo', () => {
   function BuscaComErro() {
     const [termo, setTermo] = useState('')
 

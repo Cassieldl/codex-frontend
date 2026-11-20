@@ -8,14 +8,14 @@ interface EnvelopeAlteracaoEstado {
 }
 
 interface VariaveisAlterarEstadoLacunaBusca {
-  /** Ocorrência a alterar — na fila agrupada, a `lacunaReferenciaId` do termo. */
+  /** Ocorrência a alterar - na fila agrupada, a `lacunaReferenciaId` do termo. */
   id: number
   dto: AlterarEstadoLacunaBuscaDto
   etag?: string
 }
 
 /**
- * `PUT /interno/lacunas-busca/{id}/estado` — role `lacunasbusca-atualizar`, `If-Match` obrigatório.
+ * `PUT /interno/lacunas-busca/{id}/estado` - role `lacunasbusca-atualizar`, `If-Match` obrigatório.
  * Resolve, descarta ou reabre; com `incluirMesmoTermo` as demais ocorrências abertas do mesmo
  * termo mudam junto, na mesma transação.
  *

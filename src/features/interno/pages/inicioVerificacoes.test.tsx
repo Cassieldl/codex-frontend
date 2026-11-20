@@ -63,7 +63,7 @@ afterEach(() => {
   keycloak.tokenParsed = undefined
 })
 
-describe('Início interno — verificações vencidas', () => {
+describe('Início interno: verificações vencidas', () => {
   it('com a role de buscar versões, mostra a lista de verificações vencidas', async () => {
     autenticarCom(['versoesprovedor-buscar'])
     usarListaContandoPedidos()

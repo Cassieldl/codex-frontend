@@ -10,9 +10,9 @@ interface EnvelopeCamposVersao {
 }
 
 /**
- * `GET /interno/versoes/{id}/campos` (I11) — shape exato `{ campos, camposLayoutAusentes }`
- * (nome de campo `campos`, não `camposVersao` — atenção do próprio contrato).
- * `incluirAusentes=true` **só aqui** (área interna) — nunca na superfície pública (R2).
+ * `GET /interno/versoes/{id}/campos` (I11) - shape exato `{ campos, camposLayoutAusentes }`
+ * (nome de campo `campos`, não `camposVersao` - atenção do próprio contrato).
+ * `incluirAusentes=true` **só aqui** (área interna) - nunca na superfície pública (R2).
  *
  * O `etag` de cada campo preenchido vem do `versaoConcorrencia` do corpo (o
  * agregado é uma coleção aninhada, fora do alcance do header `ETag`) e é o que

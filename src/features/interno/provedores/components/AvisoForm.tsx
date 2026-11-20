@@ -46,7 +46,7 @@ export interface OpcaoCampoAfetado {
 }
 
 export interface AvisoFormProps {
-  /** Determina a própria estrutura do formulário (§5.7) — nunca um campo de seleção dentro dele. */
+  /** Determina a própria estrutura do formulário (§5.7) - nunca um campo de seleção dentro dele. */
   escopo: EscopoAviso
   initialData?: AvisoAdmin
   /** Só relevante quando `escopo === 'Versao'`. */
@@ -100,7 +100,7 @@ export function AvisoForm({
       titulo: valores.titulo,
       corpo: valores.corpo,
       vigenciaInicio: valores.vigenciaInicio || undefined,
-      // Estrutural: só monta a lista quando o escopo é versão — o formulário
+      // Estrutural: só monta a lista quando o escopo é versão - o formulário
       // de aviso de provedor nem renderiza o campo (não é "desabilitado").
       campoVersaoIds: escopo === 'Versao' ? valores.camposAfetadosIds.map(Number) : [],
     })
@@ -156,7 +156,7 @@ export function AvisoForm({
         {...register('vigenciaInicio')}
       />
 
-      {/* U8 — "campos afetados" só existe no escopo de versão; o formulário de
+      {/* U8: "campos afetados" só existe no escopo de versão; o formulário de
           aviso de provedor nem chega a renderizar este bloco. */}
       {escopo === 'Versao' && (
         <fieldset className="flex flex-col gap-1.5">
