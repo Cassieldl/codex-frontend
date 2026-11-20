@@ -93,7 +93,7 @@ function renderizarLinha(
   return { ...resultado, linha, celula, onAbrir }
 }
 
-describe('LinhaDoCampo — células', () => {
+describe('LinhaDoCampo: células', () => {
   it('mostra nome, estado, tag, tipo e exemplo em suas colunas, sem coluna de tamanho', () => {
     const { linha, celula } = renderizarLinha(CAMPO_SEM_DESTINO_COM_EXEMPLO)
     const comDestino = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO)
@@ -175,7 +175,7 @@ describe('LinhaDoCampo — células', () => {
   })
 })
 
-describe('LinhaDoCampo — destinos no XML do provedor', () => {
+describe('LinhaDoCampo: destinos no XML do provedor', () => {
   it('dois destinos viram dois nomes de tag, cada um com o caminho completo como dica', () => {
     const { celula } = renderizarLinha(CAMPO_DOIS_DESTINOS_E_TRES_REJEICOES)
 
@@ -199,7 +199,7 @@ describe('LinhaDoCampo — destinos no XML do provedor', () => {
   })
 })
 
-describe('LinhaDoCampo — botões', () => {
+describe('LinhaDoCampo: botões', () => {
   it('sem rejeição, a linha tem exatamente um botão: o do nome', () => {
     const { linha } = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO)
 
@@ -248,7 +248,7 @@ describe('LinhaDoCampo — botões', () => {
   })
 })
 
-describe('LinhaDoCampo — campo ativo', () => {
+describe('LinhaDoCampo: campo ativo', () => {
   it('marca o botão do nome com aria-current e o filete na primeira célula visível', () => {
     const { celula, linha } = renderizarLinha(CAMPO_SEM_TAMANHO_SEM_REJEICAO, { ativo: true })
 

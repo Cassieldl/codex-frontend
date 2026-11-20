@@ -13,7 +13,7 @@ function textoDasLinhas(container: HTMLElement) {
   return linhasDoXml(container).map((linha) => linha.textContent)
 }
 
-describe('XmlDoDestino — o caminho lido como XML aninhado', () => {
+describe('XmlDoDestino: o caminho lido como XML aninhado', () => {
   it('abre os ancestrais, põe o exemplo na folha e fecha na ordem inversa', () => {
     const { container } = render(
       <XmlDoDestino caminho={CAMINHO_DO_VALOR_DO_SERVICO} exemplo={EXEMPLO_DO_VALOR_DO_SERVICO} />,

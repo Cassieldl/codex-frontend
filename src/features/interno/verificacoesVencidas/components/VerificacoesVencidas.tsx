@@ -32,7 +32,7 @@ function descreverSituacao(versao: VerificacaoVencida): string {
 
 /**
  * Lista de rotina editorial (escopo §9.1 e §11): versões cuja verificação passou do prazo, as
- * nunca verificadas e as mais antigas primeiro — a ordem vem do servidor e não é refeita aqui.
+ * nunca verificadas e as mais antigas primeiro - a ordem vem do servidor e não é refeita aqui.
  * Cada linha leva à tela da versão, onde a verificação é registrada.
  */
 export function VerificacoesVencidas() {
@@ -133,7 +133,7 @@ export function VerificacoesVencidas() {
                   </TableCell>
                   <TableCell>{descreverSituacao(versao)}</TableCell>
                   <TableCell>
-                    {versao.verificadoEm ? formatarDataCurta(versao.verificadoEm) : '—'}
+                    {versao.verificadoEm ? formatarDataCurta(versao.verificadoEm) : '-'}
                   </TableCell>
                 </TableRow>
               ))}

@@ -73,7 +73,7 @@ describe('useVerificacoesVencidas', () => {
    * resposta enveloped seria aceita e o teste de contrato acima continuaria verde com o mock
    * errado. Aqui o envelope invertido tem de FALHAR, nomeando a coleção que faltou.
    */
-  it('recusa a lista enveloped em data — o contrato é cru na raiz', async () => {
+  it('recusa a lista enveloped em data - o contrato é cru na raiz', async () => {
     server.use(
       http.get(URL_LISTA, () =>
         HttpResponse.json({

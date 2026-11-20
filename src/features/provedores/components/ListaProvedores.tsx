@@ -29,7 +29,7 @@ function LinhaProvedor({ provedor }: { provedor: ProvedorListaItem }) {
   )
 }
 
-/** Lista de provedores agrupada por categoria (§7.4) — sem badge de status (PRD explícito). */
+/** Lista de provedores agrupada por categoria (§7.4) - sem badge de status (PRD explícito). */
 export function ListaProvedores({ provedores }: ListaProvedoresProps) {
   const agrupados = new Map<ProvedorListaItem['categoria'], ProvedorListaItem[]>()
   for (const provedor of provedores) {

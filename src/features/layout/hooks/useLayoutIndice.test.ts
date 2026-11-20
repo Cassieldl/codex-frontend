@@ -44,7 +44,7 @@ describe('useLayoutIndice', () => {
     const { result } = renderHook(() => useLayoutIndice(), { wrapper: envolverComQueryClient() })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    // Ordem de chegada: prevista, vigente, anterior — nem alfabética, nem o
+    // Ordem de chegada: prevista, vigente, anterior - nem alfabética, nem o
     // inverso dela: uma reordenação acidental no cliente cai aqui.
     expect(result.current.data?.versoes.map((versao) => versao.slug)).toEqual([
       '4-13',

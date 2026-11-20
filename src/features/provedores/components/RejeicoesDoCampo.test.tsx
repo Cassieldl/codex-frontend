@@ -82,7 +82,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('RejeicoesDoCampo — cada rejeição', () => {
+describe('RejeicoesDoCampo: cada rejeição', () => {
   it('mostra código e título e leva à página do erro', async () => {
     renderizar()
 
@@ -115,7 +115,7 @@ describe('RejeicoesDoCampo — cada rejeição', () => {
   })
 })
 
-describe('RejeicoesDoCampo — rejeição do campo ausente do resumo da versão', () => {
+describe('RejeicoesDoCampo: rejeição do campo ausente do resumo da versão', () => {
   it('não some: mostra só o código, sem link, e acusa o slug no console', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     renderizar({
@@ -143,7 +143,7 @@ describe('RejeicoesDoCampo — rejeição do campo ausente do resumo da versão'
   })
 })
 
-describe('RejeicoesDoCampo — slug que o saneador recusa', () => {
+describe('RejeicoesDoCampo: slug que o saneador recusa', () => {
   it('mostra o item como texto, sem link', async () => {
     const slugComTabulacao = 'e0001\t//evil.com'
     renderizar({
@@ -165,7 +165,7 @@ describe('RejeicoesDoCampo — slug que o saneador recusa', () => {
   })
 })
 
-describe('RejeicoesDoCampo — a seção', () => {
+describe('RejeicoesDoCampo: a seção', () => {
   it('leva o id da âncora e a contagem no título', async () => {
     renderizar()
 

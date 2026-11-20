@@ -15,7 +15,7 @@ export type TipoErroLayoutVersao = 'nao_encontrada' | 'despublicada' | 'cap_exce
 /**
  * Erro tipado de P11. Os três desfechos pedem telas com textos diferentes, e a
  * diferença importa: `404` é "nunca existiu", `410` é "existe e saiu do ar" e
- * `422` é um limite estrutural do agregado (cap de campos por versão) — este
+ * `422` é um limite estrutural do agregado (cap de campos por versão) - este
  * último jamais pode cair no `ErrorState` genérico, porque "tentar novamente"
  * nunca vai funcionar.
  */
@@ -51,7 +51,7 @@ export interface OpcoesLayoutVersao {
   manterAnterior?: boolean
 }
 
-/** `GET /layout/versoes/{versaoSlug}` (P11) — dicionário denso de uma versão. */
+/** `GET /layout/versoes/{versaoSlug}` (P11) - dicionário denso de uma versão. */
 export function useLayoutVersao(
   versaoSlug: string,
   { manterAnterior = false }: OpcoesLayoutVersao = {},

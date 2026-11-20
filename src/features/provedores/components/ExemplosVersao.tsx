@@ -20,7 +20,7 @@ export interface ExemplosVersaoProps {
  * página própria, tem âncora dentro da página do provedor).
  *
  * Sem `EmptyState`: provedor sem exemplo simplesmente não mostra a seção, mesma
- * regra de `AvisosVersao`/`ErrosConhecidos` — a página já disputa espaço com
+ * regra de `AvisosVersao`/`ErrosConhecidos` - a página já disputa espaço com
  * Avisos, Campos e Erros, e "nenhum exemplo" não é informação de negócio aqui.
  *
  * O XML é bloco de código opaco, sem realce de "linha alterada": o artboard
@@ -33,7 +33,7 @@ export function ExemplosVersao({ exemplos, provedorSlug }: ExemplosVersaoProps) 
   const exemploNaAncora = useExemploDestacadoPorAncora()
   const [exemploAberto, setExemploAberto] = useState<string | null>(exemploNaAncora)
 
-  // Chegar por `#exemplo-{slug}` abre aquele cenário e rola até ele — um link
+  // Chegar por `#exemplo-{slug}` abre aquele cenário e rola até ele - um link
   // copiável que entrega um acordeão fechado não cumpre o que prometeu.
   useEffect(() => {
     if (!exemploNaAncora) return
@@ -103,7 +103,7 @@ export function ExemplosVersao({ exemplos, provedorSlug }: ExemplosVersaoProps) 
               {/* O painel existe sempre no DOM para que `aria-controls` aponte
                   para um alvo real; só o conteúdo é montado ao abrir. A região
                   rolável recebe foco para ser percorrida por teclado (WCAG
-                  2.1.1) — daí o `tabIndex` e o rótulo no `<pre>`. */}
+                  2.1.1) - daí o `tabIndex` e o rótulo no `<pre>`. */}
               <div id={idPainel} hidden={!aberto} className="px-4 pb-4">
                 {aberto && (
                   <pre

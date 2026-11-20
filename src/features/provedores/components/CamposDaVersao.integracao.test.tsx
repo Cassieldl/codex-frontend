@@ -14,7 +14,7 @@ import { CamposDaVersao } from './CamposDaVersao'
 import { ID_SECAO_REJEICOES } from './RejeicoesDoCampo'
 
 /**
- * Componente real, modal real, sob roteador — o que os testes de `CamposDaVersao` (modal falso) não
+ * Componente real, modal real, sob roteador - o que os testes de `CamposDaVersao` (modal falso) não
  * enxergam: a devolução do foco depois do fechamento, a âncora na URL e a rolagem para a seção de
  * rejeições. Registros copiados da resposta da API (Emissor Nacional 0.20), sem anotação com o tipo
  * do cliente; o caminho no XML nunca é igual ao destino.
@@ -158,7 +158,7 @@ afterEach(() => {
   window.history.replaceState(null, '', window.location.pathname)
 })
 
-describe('CamposDaVersao com o modal real — foco ao fechar', () => {
+describe('CamposDaVersao com o modal real: foco ao fechar', () => {
   it('abrir o campo 1, avançar 2 vezes para um bloco fechado e fechar com Esc leva o foco à linha do campo 3, com o bloco aberto', async () => {
     const usuario = userEvent.setup()
     await renderizar()
@@ -182,7 +182,7 @@ describe('CamposDaVersao com o modal real — foco ao fechar', () => {
   })
 })
 
-describe('CamposDaVersao com o modal real — âncora de aviso', () => {
+describe('CamposDaVersao com o modal real: âncora de aviso', () => {
   function irParaAncora(slug: string) {
     window.location.hash = `#campo-${slug}`
   }
@@ -208,7 +208,7 @@ describe('CamposDaVersao com o modal real — âncora de aviso', () => {
   })
 })
 
-describe('CamposDaVersao com o modal real — contador de rejeições', () => {
+describe('CamposDaVersao com o modal real: contador de rejeições', () => {
   it('o contador abre o modal rolando até a seção de rejeições; o botão de uma linha sem rejeição, não', async () => {
     const usuario = userEvent.setup()
     await renderizar()
@@ -237,7 +237,7 @@ describe('CamposDaVersao com o modal real — contador de rejeições', () => {
   })
 })
 
-describe('CamposDaVersao com o modal real — busca, blocos e setas', () => {
+describe('CamposDaVersao com o modal real: busca, blocos e setas', () => {
   it('a busca com resultado só num bloco fechado o abre, e "Recolher todos" fecha', async () => {
     const usuario = userEvent.setup()
     await renderizar()
@@ -276,9 +276,9 @@ describe('CamposDaVersao com o modal real — busca, blocos e setas', () => {
 
 /**
  * O botão de copiar entrega exatamente o que está à vista: o caminho no Layout InvoiCy, nunca o
- * destino no XML do provedor — que é nulo na maioria dos campos e copiava string vazia.
+ * destino no XML do provedor - que é nulo na maioria dos campos e copiava string vazia.
  */
-describe('CamposDaVersao com o modal real — copiar o caminho à vista', () => {
+describe('CamposDaVersao com o modal real: copiar o caminho à vista', () => {
   it('campo sem destino no provedor copia o caminho do InvoiCy, nunca vazio', async () => {
     const usuario = userEvent.setup()
     const escrever = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)

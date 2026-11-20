@@ -77,7 +77,7 @@ describe('useLayoutVersao', () => {
     expect(result.current.data).toBeUndefined()
   })
 
-  it('404 vira "nao_encontrada" — a versão nunca existiu', async () => {
+  it('404 vira "nao_encontrada" - a versão nunca existiu', async () => {
     server.use(
       http.get(`${API_URL}/layout/versoes/inexistente`, () =>
         HttpResponse.json(
@@ -98,7 +98,7 @@ describe('useLayoutVersao', () => {
     expect(erro.status).toBe(404)
   })
 
-  it('410 vira "despublicada" — a versão existe e saiu do ar', async () => {
+  it('410 vira "despublicada" - a versão existe e saiu do ar', async () => {
     server.use(handlerLayoutVersaoDespublicada('4-13'))
 
     const { result } = renderHook(() => useLayoutVersao('4-13'), {
@@ -111,7 +111,7 @@ describe('useLayoutVersao', () => {
     expect(erro.status).toBe(410)
   })
 
-  it('422 vira "cap_excedido" — limite estrutural, distinto dos outros dois', async () => {
+  it('422 vira "cap_excedido" - limite estrutural, distinto dos outros dois', async () => {
     server.use(handlerLayoutVersaoCapExcedido('4-13'))
 
     const { result } = renderHook(() => useLayoutVersao('4-13'), {

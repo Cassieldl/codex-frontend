@@ -15,7 +15,7 @@ export type TipoErroCampoLayout = 'nao_encontrado' | 'campo_despublicado'
 /**
  * Erro tipado de P12. O `410` tem uma única causa observável: o campo não está
  * visível, seja porque saiu do ar, seja porque a versão que o exibia saiu. O
- * backend emite `CAMPO_LAYOUT_DESPUBLICADO` nos dois casos — `VERSAO_LAYOUT_DESPUBLICADA`
+ * backend emite `CAMPO_LAYOUT_DESPUBLICADO` nos dois casos - `VERSAO_LAYOUT_DESPUBLICADA`
  * só sai em P11, sobre a versão inteira. Um ramo para ele aqui seria inalcançável.
  */
 export class ErroCampoLayoutHttp extends Error {
@@ -54,7 +54,7 @@ export async function buscarCampoLayout(campoSlug: string): Promise<CampoLayoutV
 /**
  * Resolve a URL canônica do campo (A3). A página de resolução usa só `versaoExibicao`, para
  * decidir **em qual versão** abrir o campo; ela redireciona e nunca renderiza o verbete nem lê
- * `ondeEUsado` — quem o lê é o modal do campo (`useUsosDoCampoLayout`).
+ * `ondeEUsado` - quem o lê é o modal do campo (`useUsosDoCampoLayout`).
  */
 export function useCampoLayoutPorSlug(campoSlug: string) {
   return useQuery({

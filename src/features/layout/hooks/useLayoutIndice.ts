@@ -11,9 +11,9 @@ interface EnvelopeLayoutIndice {
 const DEZ_MINUTOS_MS = 1000 * 60 * 10
 
 /**
- * `GET /layout` (P10) — índice de versões do Layout InvoiCy. Conteúdo estável
+ * `GET /layout` (P10) - índice de versões do Layout InvoiCy. Conteúdo estável
  * (uma versão nova é evento raro), mesmo `staleTime` dos demais GETs públicos
- * de conteúdo. A lista já vem ordenada por `ordem` DESC do backend — o
+ * de conteúdo. A lista já vem ordenada por `ordem` DESC do backend - o
  * frontend nunca reordena.
  *
  * `buscar: false` só lê o que já está no cache, sem pedir à API: serve a quem mostra o índice

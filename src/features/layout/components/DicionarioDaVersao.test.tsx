@@ -225,7 +225,7 @@ beforeEach(() => {
   propsDoModal.length = 0
 })
 
-describe('DicionarioDaVersao — conteúdo', () => {
+describe('DicionarioDaVersao: conteúdo', () => {
   it('sem filtro mostra um bloco por vez, o primeiro, na ordem devolvida pelo backend', () => {
     const { container } = renderizar()
 
@@ -338,7 +338,7 @@ describe('DicionarioDaVersao — conteúdo', () => {
   })
 })
 
-describe('DicionarioDaVersao — frases e estados vazios', () => {
+describe('DicionarioDaVersao: frases e estados vazios', () => {
   it('sem filtro, conta os campos da versão numa região que se anuncia sozinha', () => {
     renderizar()
 
@@ -411,7 +411,7 @@ describe('DicionarioDaVersao — frases e estados vazios', () => {
   })
 })
 
-describe('DicionarioDaVersao — busca', () => {
+describe('DicionarioDaVersao: busca', () => {
   it('acha pelo nome, pelo caminho e pelo significado, sem diferenciar acento nem caixa', () => {
     const { container } = renderizar()
 
@@ -466,7 +466,7 @@ describe('DicionarioDaVersao — busca', () => {
   })
 })
 
-describe('DicionarioDaVersao — blocos e índice', () => {
+describe('DicionarioDaVersao: blocos e índice', () => {
   it('o rodapé leva ao bloco vizinho, rola até ele e põe o foco no título', () => {
     const { container } = renderizar()
     expect(screen.queryByRole('button', { name: /Bloco anterior/ })).toBeNull()
@@ -552,7 +552,7 @@ describe('DicionarioDaVersao — blocos e índice', () => {
   })
 })
 
-describe('DicionarioDaVersao — modal do campo', () => {
+describe('DicionarioDaVersao: modal do campo', () => {
   it('clicar no nome abre o modal com o significado completo e a posição na ordem do DOM', () => {
     renderizar()
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -651,7 +651,7 @@ describe('DicionarioDaVersao — modal do campo', () => {
   })
 })
 
-describe('DicionarioDaVersao — campo ativo', () => {
+describe('DicionarioDaVersao: campo ativo', () => {
   function linhasAtivas() {
     return document.querySelectorAll('[aria-current="true"]')
   }
@@ -680,7 +680,7 @@ describe('DicionarioDaVersao — campo ativo', () => {
   })
 })
 
-describe('DicionarioDaVersao — campo apontado por âncora', () => {
+describe('DicionarioDaVersao: campo apontado por âncora', () => {
   it('abre o bloco, rola até a linha, abre o modal e marca a linha', () => {
     const { container } = renderizar({ campoDestacado: 'prestador-im' })
 
@@ -727,7 +727,7 @@ describe('DicionarioDaVersao — campo apontado por âncora', () => {
   })
 })
 
-describe('DicionarioDaVersao — só campos da reforma tributária', () => {
+describe('DicionarioDaVersao: só campos da reforma tributária', () => {
   const COM_REFORMA = CAMPOS_POR_GRUPO.map((grupo) => ({
     ...grupo,
     campos: grupo.campos.map((campo) =>

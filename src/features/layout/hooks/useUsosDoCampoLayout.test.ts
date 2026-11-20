@@ -102,7 +102,7 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('useUsosDoCampoLayout — leitura', () => {
+describe('useUsosDoCampoLayout: leitura', () => {
   it('devolve os usos na ordem da resposta, com as 6 chaves e o destino nulo preservado', async () => {
     responderUsos({
       'valor-servicos': [USO_COM_DOIS_DESTINOS, USO_SEM_DESTINO, USO_COM_DESTINOS_OMITIDOS],
@@ -212,7 +212,7 @@ describe('useUsosDoCampoLayout — leitura', () => {
   })
 })
 
-describe('useUsosDoCampoLayout — contrato (D-1)', () => {
+describe('useUsosDoCampoLayout: contrato (D-1)', () => {
   it('item sem a chave destinoXml vira erro nomeado, nunca lista sem destino', async () => {
     const { destinoXml: _ausente, ...usoSemDestinoXml } = USO_COM_DOIS_DESTINOS
     responderVerbeteComOndeEUsado([usoSemDestinoXml])
@@ -288,7 +288,7 @@ describe('useUsosDoCampoLayout — contrato (D-1)', () => {
   })
 })
 
-describe('useUsosDoCampoLayout — atraso da navegação (250 ms)', () => {
+describe('useUsosDoCampoLayout: atraso da navegação (250 ms)', () => {
   /** Só `setTimeout` é falso: o resto do ambiente (MSW, Promises) segue real. */
   function usarRelogioFalso() {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })

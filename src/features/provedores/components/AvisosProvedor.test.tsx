@@ -68,7 +68,7 @@ describe('AvisosProvedor', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('nunca mistura com os avisos de versão — títulos de seção distintos', () => {
+  it('nunca mistura com os avisos de versão - títulos de seção distintos', () => {
     render(
       <>
         <AvisosProvedor nomeProvedor="Prefeitura de Exemplo" avisos={[avisoDeProvedor]} />
@@ -220,7 +220,7 @@ describe('AvisosVersao', () => {
   })
 })
 
-describe('AvisoPublicoItem — recolhido até ser aberto', () => {
+describe('AvisoPublicoItem: recolhido até ser aberto', () => {
   function detalhesDo(container: HTMLElement, id: number) {
     return container.querySelector(`#aviso-${id} details`) as HTMLDetailsElement
   }

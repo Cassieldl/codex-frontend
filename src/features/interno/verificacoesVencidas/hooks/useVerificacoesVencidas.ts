@@ -15,12 +15,12 @@ interface PaginatedResponseCru<T> {
 }
 
 /**
- * `GET /interno/versoes/verificacoes-vencidas` — `PaginatedResponse<T>` **cru na raiz**, sem
+ * `GET /interno/versoes/verificacoes-vencidas` - `PaginatedResponse<T>` **cru na raiz**, sem
  * envelope `data` (role `versoesprovedor-buscar`). O servidor já entrega a ordem: nunca
  * verificadas primeiro, depois da mais antiga à mais nova.
  *
  * `items` é obrigatório no contrato. Resposta lida no nível errado do envelope falha nomeando a
- * coleção, em vez de virar lista vazia — que a tela exibiria como "nada vencido".
+ * coleção, em vez de virar lista vazia - que a tela exibiria como "nada vencido".
  */
 export function useVerificacoesVencidas(params: ListarVerificacoesVencidasParams) {
   return useQuery({

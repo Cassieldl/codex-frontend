@@ -64,7 +64,7 @@ describe('ListaProvedores', () => {
  * "Verificado em Em verificação" na lista, enquanto a home e a página do provedor, que
  * montam a frase inteira em cada ramo, sempre estiveram certas.
  */
-describe('ListaProvedores — rótulo de verificação', () => {
+describe('ListaProvedores: rótulo de verificação', () => {
   it('não prefixa o texto de ausência com "Verificado em"', async () => {
     renderizar([{ ...RESPOSTA_DO_SERVIDOR[0], verificadoEm: null }])
 

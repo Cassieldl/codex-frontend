@@ -91,7 +91,7 @@ describe('LayoutCampoResolucaoPage', () => {
 
   /**
    * Mutação-alvo (`analise-frontend.md` §4.8): se a implementação passar a
-   * derivar o destino de `ondeEUsado`, este teste cai — `versaoExibicao` é a
+   * derivar o destino de `ondeEUsado`, este teste cai - `versaoExibicao` é a
    * ÚNICA fonte da decisão (F-2), e a regra de qual versão abrir é do backend.
    */
   it('a decisão de destino ignora `ondeEUsado`, mesmo quando ele aponta outra versão', async () => {
@@ -133,7 +133,7 @@ describe('LayoutCampoResolucaoPage', () => {
       hash: 'campo-numero-do-rps',
       replace: true,
     })
-    // E nada de `ondeEUsado` chega à tela — a página é um trampolim.
+    // E nada de `ondeEUsado` chega à tela - a página é um trampolim.
     expect(screen.queryByText('Prefeitura de Exemplo')).not.toBeInTheDocument()
   })
 

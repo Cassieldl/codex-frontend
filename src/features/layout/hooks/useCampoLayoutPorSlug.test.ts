@@ -91,7 +91,7 @@ describe('useCampoLayoutPorSlug', () => {
   })
 
   // P12 tem uma única causa observável de `410`. O backend emite CAMPO_LAYOUT_DESPUBLICADO
-  // mesmo quando a origem é a versão — VERSAO_LAYOUT_DESPUBLICADA só sai em P11. Este teste
+  // mesmo quando a origem é a versão - VERSAO_LAYOUT_DESPUBLICADA só sai em P11. Este teste
   // impede que alguém reintroduza um ramo que o backend nunca alcança.
   it('410 com VERSAO_LAYOUT_DESPUBLICADA continua sendo campo despublicado', async () => {
     server.use(handlerCampoLayoutDespublicado('numero-do-rps', 'VERSAO_LAYOUT_DESPUBLICADA'))

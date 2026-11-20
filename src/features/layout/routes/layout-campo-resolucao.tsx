@@ -29,7 +29,7 @@ export interface LayoutCampoResolucaoPageProps {
 }
 
 /**
- * `/layout/campos/{campoSlug}` — a URL **canônica e estável** de um campo
+ * `/layout/campos/{campoSlug}` - a URL **canônica e estável** de um campo
  * (A3). A página não tem conteúdo próprio: pergunta ao backend em que versão o
  * verbete deve ser aberto e redireciona para
  * `/layout/{versaoExibicao.slug}#campo-{campoSlug}`.

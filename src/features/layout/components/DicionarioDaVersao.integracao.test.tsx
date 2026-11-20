@@ -16,7 +16,7 @@ import { useCampoDestacadoPorAncora } from '../../provedores/utils/destaqueAncor
 import { DicionarioDaVersao } from './DicionarioDaVersao'
 
 /**
- * Dicionário real, modal real e consulta real (MSW) sob roteador — o que os testes de
+ * Dicionário real, modal real e consulta real (MSW) sob roteador - o que os testes de
  * `DicionarioDaVersao` (modal falso) não enxergam: a devolução do foco depois do fechamento, a
  * âncora na URL, o atraso da consulta ao navegar e o que acontece ao seguir "Ver no provedor".
  * Registros transcritos da resposta da API (versão 8), sem anotação com o tipo do cliente.
@@ -221,7 +221,7 @@ afterEach(() => {
   window.history.replaceState(null, '', window.location.pathname)
 })
 
-describe('DicionarioDaVersao com o modal real — foco ao fechar', () => {
+describe('DicionarioDaVersao com o modal real: foco ao fechar', () => {
   it('abrir o campo 1, avançar 2 vezes para outro bloco e fechar com Esc leva o foco à linha do campo 3, com o bloco dele na tela', async () => {
     const usuario = userEvent.setup()
     await renderizar()
@@ -245,7 +245,7 @@ describe('DicionarioDaVersao com o modal real — foco ao fechar', () => {
   })
 })
 
-describe('DicionarioDaVersao com o modal real — âncora', () => {
+describe('DicionarioDaVersao com o modal real: âncora', () => {
   it('o hash abre o modal com uma só linha atual; Esc limpa o hash e o mesmo link reabre', async () => {
     const usuario = userEvent.setup()
     await renderizar()
@@ -268,7 +268,7 @@ describe('DicionarioDaVersao com o modal real — âncora', () => {
   })
 })
 
-describe('DicionarioDaVersao com o modal real — copiar o link do campo', () => {
+describe('DicionarioDaVersao com o modal real: copiar o link do campo', () => {
   it('copia a origem da aplicação mais a `urlCanonica` do campo, nunca um caminho montado à mão', async () => {
     const usuario = userEvent.setup()
     const escrever = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)
@@ -285,7 +285,7 @@ describe('DicionarioDaVersao com o modal real — copiar o link do campo', () =>
   })
 })
 
-describe('DicionarioDaVersao com o modal real — "Ver no provedor"', () => {
+describe('DicionarioDaVersao com o modal real: "Ver no provedor"', () => {
   it('o link leva à linha do campo na página do provedor, com o hash da âncora', async () => {
     const usuario = userEvent.setup()
     await renderizar()
@@ -317,7 +317,7 @@ describe('DicionarioDaVersao com o modal real — "Ver no provedor"', () => {
   })
 })
 
-describe('DicionarioDaVersao com o modal real — atraso da consulta ao navegar', () => {
+describe('DicionarioDaVersao com o modal real: atraso da consulta ao navegar', () => {
   it('atravessar campos em sequência consulta só o de onde se parou, e a abertura não espera', async () => {
     await renderizar()
 

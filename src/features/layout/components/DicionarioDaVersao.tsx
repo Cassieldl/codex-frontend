@@ -25,7 +25,7 @@ export interface DicionarioDaVersaoProps {
   totalCampos: number
   camposPorGrupo: GrupoCamposLayout[]
   /**
-   * Origem absoluta da aplicação (`https://…`) — o link copiável do campo é ela + `urlCanonica`.
+   * Origem absoluta da aplicação (`https://…`) - o link copiável do campo é ela + `urlCanonica`.
    * O caminho nunca é montado aqui: a fonte única é `urlCanonica`.
    */
   origemUrl: string

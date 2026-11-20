@@ -161,7 +161,7 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('ModalDoVerbete — conteúdo', () => {
+describe('ModalDoVerbete: conteúdo', () => {
   it('mostra, nesta ordem, o significado, o caminho no Layout InvoiCy e os usos por provedor', async () => {
     responderCampos()
     renderizar()
@@ -247,7 +247,7 @@ describe('ModalDoVerbete — conteúdo', () => {
   })
 })
 
-describe('ModalDoVerbete — selos', () => {
+describe('ModalDoVerbete: selos', () => {
   it('"novo na versão 8" aparece só no campo novo; "Descontinuado nesta versão" só no descontinuado', async () => {
     responderCampos([])
     renderizar()
@@ -268,7 +268,7 @@ describe('ModalDoVerbete — selos', () => {
   })
 })
 
-describe('ModalDoVerbete — navegação e consulta dos usos', () => {
+describe('ModalDoVerbete: navegação e consulta dos usos', () => {
   async function avancar(ms: number) {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(ms)

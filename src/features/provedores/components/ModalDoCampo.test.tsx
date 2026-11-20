@@ -176,7 +176,7 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = rolagem
 })
 
-describe('ModalDoCampo — identificação', () => {
+describe('ModalDoCampo: identificação', () => {
   it('é um diálogo com o nome do campo, a trilha e a posição na sequência', async () => {
     renderizar(propsBase())
 
@@ -232,7 +232,7 @@ describe('ModalDoCampo: selos do topo', () => {
   })
 })
 
-describe('ModalDoCampo — navegação', () => {
+describe('ModalDoCampo: navegação', () => {
   it('Próximo campo e Campo anterior chamam onNavegar com o slug do vizinho', async () => {
     const onNavegar = vi.fn()
     const usuario = userEvent.setup()
@@ -335,7 +335,7 @@ describe('ModalDoCampo — navegação', () => {
   })
 })
 
-describe('ModalDoCampo — anúncio da troca', () => {
+describe('ModalDoCampo: anúncio da troca', () => {
   it('fica vazio na abertura e diz exatamente em que campo se está depois de trocar', async () => {
     const usuario = userEvent.setup()
     const { trocarProps } = renderizar(
@@ -363,7 +363,7 @@ describe('ModalDoCampo — anúncio da troca', () => {
   })
 })
 
-describe('ModalDoCampo — copiar link do campo', () => {
+describe('ModalDoCampo: copiar link do campo', () => {
   it('copia a URL da versão com a âncora do campo', async () => {
     const usuario = userEvent.setup()
     const escreverNaAreaDeTransferencia = vi
@@ -380,7 +380,7 @@ describe('ModalDoCampo — copiar link do campo', () => {
   })
 })
 
-describe('ModalDoCampo — seção inicial', () => {
+describe('ModalDoCampo: seção inicial', () => {
   it('"rejeicoes" rola uma vez, até o topo da seção de rejeições', async () => {
     renderizar(propsBase({ secaoInicial: 'rejeicoes' }))
     await screen.findByRole('region', { name: 'Rejeições registradas (1)' })
@@ -409,7 +409,7 @@ describe('ModalDoCampo — seção inicial', () => {
   })
 })
 
-describe('ModalDoCampo — fechar', () => {
+describe('ModalDoCampo: fechar', () => {
   it('Esc chama onFechar', async () => {
     const onFechar = vi.fn()
     const usuario = userEvent.setup()
@@ -440,7 +440,7 @@ describe('ModalDoCampo — fechar', () => {
   })
 })
 
-describe('ModalDoCampo — natureza da operação', () => {
+describe('ModalDoCampo: natureza da operação', () => {
   const NATUREZAS = [
     {
       codigoInvoicy: 1,
@@ -470,7 +470,7 @@ describe('ModalDoCampo — natureza da operação', () => {
   })
 })
 
-describe('ModalDoCampo — conversão do valor', () => {
+describe('ModalDoCampo: conversão do valor', () => {
   const NATOP_COM_CONVERSAO = {
     ...CAMPO_SEGUINTE,
     campoLayoutSlug: 'natop',
@@ -528,7 +528,7 @@ describe('ModalDoCampo: atalho para os erros', () => {
   })
 })
 
-describe('ModalDoCampo — links para fora do modal', () => {
+describe('ModalDoCampo: links para fora do modal', () => {
   it('na aba Campos, leva ao verbete no dicionário e ao envio modelo do provedor', async () => {
     renderizar(propsBase(), { rotaDaAba: true })
 

@@ -136,7 +136,7 @@ describe('mensagensQueAcrescentam', () => {
   })
 })
 
-describe('ErrosConhecidos — cada erro', () => {
+describe('ErrosConhecidos: cada erro', () => {
   it('abre a linha com a correção, o link do erro e o campo na tabela', async () => {
     server.use(
       http.get(`${import.meta.env.VITE_API_URL}/erros/:slug`, () =>
@@ -276,7 +276,7 @@ describe('ErrosConhecidos — cada erro', () => {
   })
 })
 
-describe('ErrosConhecidos — busca', () => {
+describe('ErrosConhecidos: busca', () => {
   async function buscar(termo: string) {
     renderizar()
     fireEvent.change(await screen.findByRole('searchbox'), { target: { value: termo } })
@@ -356,7 +356,7 @@ describe('ErrosConhecidos: ordem e paginação', () => {
   })
 })
 
-describe('ErrosConhecidos — vazio', () => {
+describe('ErrosConhecidos: vazio', () => {
   it('não renderiza a seção quando a versão não tem erro', () => {
     const { container } = render(
       <ErrosConhecidos

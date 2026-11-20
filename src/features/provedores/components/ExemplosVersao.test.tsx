@@ -28,7 +28,7 @@ function renderizar(lista: ExemploPublico[] = exemplos) {
 // O jsdom não implementa `scrollIntoView`; o componente o chama ao abrir por âncora.
 Element.prototype.scrollIntoView = vi.fn()
 
-// `userEvent.setup()` substitui `navigator.clipboard` por uma Clipboard própria — por isso
+// `userEvent.setup()` substitui `navigator.clipboard` por uma Clipboard própria - por isso
 // espionamos o método já existente, sempre DEPOIS do setup (mesmo padrão de `BotaoCopiar.test.tsx`).
 function configurarUsuarioComClipboard() {
   const usuario = userEvent.setup()
@@ -38,7 +38,7 @@ function configurarUsuarioComClipboard() {
   return { usuario, escreverNaAreaDeTransferencia }
 }
 
-// `getByText` normaliza whitespace, e o XML é multilinha: buscar pela string crua não casa — e a
+// `getByText` normaliza whitespace, e o XML é multilinha: buscar pela string crua não casa - e a
 // asserção de AUSÊNCIA correspondente passaria por acidente, sempre. Lemos o bloco pelo elemento.
 function xmlVisivel(): string[] {
   return Array.from(document.querySelectorAll('code')).map((bloco) => bloco.textContent ?? '')
@@ -49,7 +49,7 @@ afterEach(() => {
 })
 
 describe('ExemplosVersao (tela 5)', () => {
-  it('com `exemplos: []` não renderiza a seção — nem título, nem estado vazio', () => {
+  it('com `exemplos: []` não renderiza a seção - nem título, nem estado vazio', () => {
     renderizar([])
 
     expect(screen.queryByRole('heading', { name: 'Exemplos' })).not.toBeInTheDocument()
@@ -102,7 +102,7 @@ describe('ExemplosVersao (tela 5)', () => {
     window.location.hash = '#exemplo-iss-retido'
     renderizar()
 
-    // Exatamente um bloco aberto, e é o da âncora — não basta afirmar que o certo apareceu.
+    // Exatamente um bloco aberto, e é o da âncora - não basta afirmar que o certo apareceu.
     expect(xmlVisivel()).toEqual([exemplos[1].xml])
   })
 

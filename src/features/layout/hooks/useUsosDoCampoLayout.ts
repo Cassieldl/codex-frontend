@@ -56,7 +56,7 @@ function exigirUsosDoCampo(verbete: CampoLayoutVerbete): UsoCampoLayout[] {
 /**
  * Slug do campo depois de parado por 250 ms. Tem de ser chamado por quem **não** remonta ao
  * navegar: o conteúdo do modal remonta a cada campo, e um atraso guardado lá dentro recomeçaria
- * com o valor novo já assentado — a requisição sairia na hora, sem atraso nenhum.
+ * com o valor novo já assentado - a requisição sairia na hora, sem atraso nenhum.
  */
 export function useSlugAssentadoDoCampo(campoSlug: string): string {
   return useDebounce(campoSlug, ATRASO_DA_NAVEGACAO_MS)

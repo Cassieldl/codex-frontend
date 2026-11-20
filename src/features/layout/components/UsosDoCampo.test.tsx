@@ -122,7 +122,7 @@ async function itensDaLista() {
   return await within(secao).findAllByRole('listitem')
 }
 
-describe('UsosDoCampo — lista', () => {
+describe('UsosDoCampo: lista', () => {
   it('lista os provedores na ordem exata da resposta', async () => {
     server.use(responderUsos(CAMPO, USOS_FORA_DA_ORDEM_ALFABETICA))
     renderizar()
@@ -194,7 +194,7 @@ describe('UsosDoCampo — lista', () => {
   })
 })
 
-describe('UsosDoCampo — estados', () => {
+describe('UsosDoCampo: estados', () => {
   it('carregando: região de status com o texto para leitor de tela, dentro da seção', async () => {
     server.use(
       http.get(`${API_URL}/layout/campos/${CAMPO}`, async () => {
@@ -266,7 +266,7 @@ describe('UsosDoCampo — estados', () => {
   })
 })
 
-describe('UsosDoCampo — troca de campo (R4)', () => {
+describe('UsosDoCampo: troca de campo (R4)', () => {
   it('com o campo A em cache e o B pendente, os usos de A não aparecem sob o B', async () => {
     const requisitados: string[] = []
     server.use(
