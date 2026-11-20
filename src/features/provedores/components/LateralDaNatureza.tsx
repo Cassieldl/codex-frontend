@@ -36,7 +36,7 @@ export function LateralDaNatureza({
         </h2>
         <p className="text-sm leading-relaxed text-ink">
           Só {totalDeCodigos === 1 ? 'este código tem' : `estes ${totalDeCodigos} códigos têm`}{' '}
-          conversão neste provedor. E o município pode aceitar menos: confira em{' '}
+          conversão neste provedor. O município pode aceitar menos códigos: confira em{' '}
           <strong>Painel de Controle, NFS-e, Natureza da Operação</strong>.
         </p>
       </section>

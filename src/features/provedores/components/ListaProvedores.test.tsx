@@ -61,15 +61,15 @@ describe('ListaProvedores', () => {
 
 /**
  * O texto de ausência não é uma data: prefixá-lo com "Verificado em" produzia
- * "Verificado em Ainda não verificado" na lista — enquanto a home e a página do provedor, que
+ * "Verificado em Em verificação" na lista, enquanto a home e a página do provedor, que
  * montam a frase inteira em cada ramo, sempre estiveram certas.
  */
 describe('ListaProvedores — rótulo de verificação', () => {
   it('não prefixa o texto de ausência com "Verificado em"', async () => {
     renderizar([{ ...RESPOSTA_DO_SERVIDOR[0], verificadoEm: null }])
 
-    expect(await screen.findByText('Ainda não verificado')).toBeInTheDocument()
-    expect(screen.queryByText(/Verificado em Ainda/)).not.toBeInTheDocument()
+    expect(await screen.findByText('Em verificação')).toBeInTheDocument()
+    expect(screen.queryByText(/Verificado em Em/)).not.toBeInTheDocument()
   })
 
   it('escreve a data quando existe verificação', async () => {

@@ -15,7 +15,7 @@ export interface FonteDoProvedor {
 
 export interface FatosDoProvedorProps {
   categoria: CategoriaProvedor
-  /** Ausentes quando o provedor ainda não tem versão publicada. */
+  /** Ausentes quando o provedor não tem versão publicada. */
   versaoRotulo?: string
   verificadoEm?: string | null
   /** Vem do conteúdo da versão: o chip do layout só aparece depois que ele carrega. */

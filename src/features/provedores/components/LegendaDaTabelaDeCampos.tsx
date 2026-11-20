@@ -12,7 +12,7 @@ export interface LegendaDaTabelaDeCamposProps {
 }
 
 function descreverCamposComRejeicao(quantidade: number): string {
-  return quantidade === 1 ? '1 campo' : `${quantidade} campos`
+  return quantidade === 1 ? '1 campo com rejeição' : `${quantidade} campos com rejeição`
 }
 
 function itensDaLegenda({
@@ -30,7 +30,7 @@ function itensDaLegenda({
           <TriangleAlert className="size-3 shrink-0" />n
         </span>
       ),
-      significado: `campo com rejeição registrada nesta versão, n é a quantidade (${descreverCamposComRejeicao(camposComRejeicao)})`,
+      significado: `número de rejeições registradas no campo nesta versão (${descreverCamposComRejeicao(camposComRejeicao)})`,
     })
   }
 

@@ -32,7 +32,7 @@ function NotasDaNatureza({ natureza }: { natureza: NaturezaOperacaoPublica }) {
       )}
       {natureza.aConfirmar && (
         <AlertaMigrate tipo="alerta" titulo="A confirmar" compacto>
-          <p>Conversão ainda não confirmada na fonte do provedor.</p>
+          <p>Conversão em validação com o provedor.</p>
         </AlertaMigrate>
       )}
     </div>

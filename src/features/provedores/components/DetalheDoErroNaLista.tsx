@@ -63,7 +63,7 @@ function QuadrosDoCampo({ campo, provedorSlug }: { campo: CampoDoErro; provedorS
 }
 
 /**
- * O que aparece ao abrir um erro na lista: o campo ligado a ele, a correção, quando documentada, e
+ * O que aparece ao abrir um erro na lista: o campo ligado a ele, a correção, quando existe, e
  * os caminhos para a página do erro e para o campo na tabela. O detalhe só é buscado quando a linha
  * abre; os quadros do campo saem da página da versão, que já está carregada.
  */
@@ -95,21 +95,21 @@ export function DetalheDoErroNaLista({
 
       {isError && (
         <p className="text-sm text-muted">
-          Não deu para carregar a correção agora. Abra a página do erro.
+          Não foi possível carregar a correção. Abra a página do erro.
         </p>
       )}
 
-      {erro && (
+      {erro?.solucaoSugerida && (
         <div className="flex flex-col gap-1">
           <h3 className="text-card-titulo font-bold text-primary">Como corrigir</h3>
-          {erro.solucaoSugerida ? (
-            <p className="text-sm leading-relaxed whitespace-pre-line text-ink">
-              {erro.solucaoSugerida}
-            </p>
-          ) : (
-            <p className="text-sm text-muted">A correção deste erro ainda não foi documentada.</p>
-          )}
+          <p className="text-sm leading-relaxed whitespace-pre-line text-ink">
+            {erro.solucaoSugerida}
+          </p>
         </div>
+      )}
+
+      {erro && !erro.solucaoSugerida && (
+        <p className="text-sm text-muted">Precisa de ajuda com este erro? Fale com o suporte.</p>
       )}
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">

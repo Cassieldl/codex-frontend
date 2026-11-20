@@ -14,7 +14,7 @@ export function AvisosVersao({ avisos }: AvisosVersaoProps) {
     <CartaoDeAvisos
       idDoTitulo="avisos-versao-titulo"
       titulo="Avisos desta versão"
-      subtitulo="Leia antes de abrir chamado: muitos erros vêm daqui."
+      subtitulo="Leia antes de abrir um chamado: eles explicam muitos erros."
       avisos={avisos}
     />
   )

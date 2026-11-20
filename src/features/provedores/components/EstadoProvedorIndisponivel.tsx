@@ -32,7 +32,7 @@ const CONTEUDO: Record<VarianteProvedorIndisponivel, ConteudoDaVariante> = {
     icone: CircleHelp,
     titulo: 'Este provedor não existe.',
     tituloDaAba: 'Provedor não encontrado',
-    descricao: 'Não encontramos nenhum provedor publicado neste endereço.',
+    descricao: 'Confira o endereço ou escolha seu provedor na lista.',
   },
   'provedor-despublicado': {
     icone: ArchiveX,
@@ -44,7 +44,7 @@ const CONTEUDO: Record<VarianteProvedorIndisponivel, ConteudoDaVariante> = {
     icone: CircleHelp,
     titulo: 'Esta versão não existe.',
     tituloDaAba: 'Versão não encontrada',
-    descricao: 'Não encontramos nenhuma versão publicada deste provedor neste endereço.',
+    descricao: 'Confira o endereço ou abra a versão atual do provedor.',
   },
   'versao-despublicada': {
     icone: ArchiveX,
@@ -56,8 +56,7 @@ const CONTEUDO: Record<VarianteProvedorIndisponivel, ConteudoDaVariante> = {
     icone: Layers,
     titulo: 'Esta versão é grande demais para abrir aqui.',
     tituloDaAba: 'Versão grande demais para exibir',
-    descricao:
-      'Ela passou do número de campos que esta página monta de uma vez. Fale com o atendimento para receber o conteúdo completo.',
+    descricao: 'Fale com o suporte para receber o conteúdo completo desta versão.',
   },
 }
 

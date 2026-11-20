@@ -242,11 +242,12 @@ describe('ConteudoDoCampo: exemplo', () => {
     expect(escreverNaAreaDeTransferencia).toHaveBeenLastCalledWith('29155.75')
   })
 
-  it('sem exemplo, diz "sem exemplo real" e não oferece copiar exemplo', async () => {
+  it('sem exemplo, mostra só o caminho, sem anunciar a falta, e não oferece copiar exemplo', async () => {
     renderizar(CAMPO_COM_DOIS_DESTINOS)
     const voceEnvia = await aguardarMontagem()
 
-    expect(voceEnvia).toHaveTextContent('sem exemplo real')
+    expect(voceEnvia).toHaveTextContent('Caminho no InvoiCy: //Servico/PaiPreServico')
+    expect(voceEnvia).not.toHaveTextContent(/exemplo/i)
     expect(screen.queryByRole('button', { name: /^Copiar exemplo/ })).toBeNull()
   })
 
@@ -343,11 +344,11 @@ describe('ConteudoDoCampo: você envia e provedor recebe', () => {
     expect(screen.queryByText('exemplo real')).toBeNull()
   })
 
-  it('sem destino, diz que o campo não tem destino e não desenha XML do provedor', async () => {
+  it('sem destino, diz que o campo não é enviado ao provedor e não desenha XML do provedor', async () => {
     renderizar({ ...CAMPO_COM_EXEMPLO, destinoXml: null })
     await aguardarMontagem()
 
-    expect(screen.getByText('Este campo não tem destino no XML do provedor.')).toBeInTheDocument()
+    expect(screen.getByText('Este campo não é enviado ao provedor.')).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: /^Caminho no XML do provedor:/ })).toBeNull()
   })
 
@@ -355,7 +356,7 @@ describe('ConteudoDoCampo: você envia e provedor recebe', () => {
     renderizar({ ...CAMPO_COM_EXEMPLO, destinoXml: '…' })
     await aguardarMontagem()
 
-    expect(screen.getByText('e mais destinos (ver Transformação).')).toBeInTheDocument()
+    expect(screen.getByText('Outros destinos em Transformação.')).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: /^Caminho no XML do provedor:/ })).toBeNull()
     expect(screen.queryByRole('button', { name: /^Copiar caminho do destino / })).toBeNull()
   })
@@ -369,7 +370,7 @@ describe('ConteudoDoCampo: você envia e provedor recebe', () => {
 
     expect(screen.getAllByRole('group', { name: /^Caminho no XML do provedor:/ })).toHaveLength(1)
     expect(screen.getAllByRole('button', { name: /^Copiar caminho do destino / })).toHaveLength(1)
-    expect(screen.getByText('e mais destinos (ver Transformação).')).toBeInTheDocument()
+    expect(screen.getByText('Outros destinos em Transformação.')).toBeInTheDocument()
     expect(screen.queryByText(/alimenta \d+ tags/)).toBeNull()
   })
 })

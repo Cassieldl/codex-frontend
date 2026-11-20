@@ -203,12 +203,12 @@ describe('ErrosConhecidos — cada erro', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /E1235/ }))
 
-    await screen.findByText('A correção deste erro ainda não foi documentada.')
+    await screen.findByText('Precisa de ajuda com este erro? Fale com o suporte.')
     expect(screen.queryByText('Você envia')).not.toBeInTheDocument()
     expect(screen.queryByText('Rejeições nesta versão')).not.toBeInTheDocument()
   })
 
-  it('erro sem correção documentada diz isso em vez de inventar uma', async () => {
+  it('erro sem correção esconde "Como corrigir" e aponta o suporte, sem inventar uma', async () => {
     server.use(
       http.get(`${import.meta.env.VITE_API_URL}/erros/:slug`, () =>
         HttpResponse.json({ data: { ...ERRO_SEM_CAMPO, solucaoSugerida: null }, message: null }),
@@ -219,8 +219,9 @@ describe('ErrosConhecidos — cada erro', () => {
     fireEvent.click(await screen.findByRole('button', { name: /E1235/ }))
 
     expect(
-      await screen.findByText('A correção deste erro ainda não foi documentada.'),
+      await screen.findByText('Precisa de ajuda com este erro? Fale com o suporte.'),
     ).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Como corrigir' })).not.toBeInTheDocument()
   })
 
   it('mostra a mensagem observada só quando ela diz algo além do título', async () => {

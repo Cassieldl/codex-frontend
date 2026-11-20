@@ -339,6 +339,39 @@ describe('VersaoProvedorPage: seções da versão', () => {
     expect(within(secao).getByRole('cell', { name: 'Exportação de serviço' })).toBeInTheDocument()
   })
 
+  it('aba Erros sem erro conhecido não fica em branco: oferece a aba Campos', async () => {
+    server.use(
+      handlerStatus(200, {
+        ...RESPOSTA_DA_VERSAO,
+        data: { ...RESPOSTA_DA_VERSAO.data, errosResumo: { total: 0, itens: [] } },
+      }),
+    )
+
+    renderPagina({ aba: 'erros' })
+
+    expect(await screen.findByText('Nenhum erro conhecido para este provedor.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver os campos' })).toHaveAttribute(
+      'href',
+      `${CAMINHO}/campos`,
+    )
+  })
+
+  it('aba Natureza sem tabela não anuncia a falta: leva à aba Campos', async () => {
+    server.use(handlerStatus(200, RESPOSTA_DA_VERSAO))
+
+    renderPagina({ aba: 'natureza' })
+
+    expect(
+      await screen.findByText(
+        'Veja como este provedor recebe a natureza da operação na aba Campos.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver os campos' })).toHaveAttribute(
+      'href',
+      `${CAMINHO}/campos`,
+    )
+  })
+
   it('cada aba mostra só o próprio conteúdo', async () => {
     server.use(handlerStatus(200, RESPOSTA_COM_NATUREZA))
 

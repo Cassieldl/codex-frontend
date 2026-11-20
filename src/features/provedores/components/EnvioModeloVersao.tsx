@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { useId, useMemo, useState } from 'react'
 import { AlternadorSegmentado } from '../../../components/ui/AlternadorSegmentado'
 import type { AlternadorSegmentadoProps } from '../../../components/ui/AlternadorSegmentado'
@@ -20,6 +21,7 @@ import {
 } from '../types/envioModelo'
 import type { AlcanceDoEnvioModelo, CenarioDoEnvioModelo } from '../types/envioModelo'
 import type { GrupoCampoVersao } from '../types/versaoProvedorPagina'
+import { ROTA_DA_ABA } from '../utils/abasDoProvedor'
 import { cenariosParaEscolha, mesmosCenarios } from '../utils/cenariosDoEnvioModelo'
 import { construirIdLinhaCampo } from '../utils/destaqueAncora'
 import { ID_SECAO_ENVIO_MODELO } from '../utils/secoesDoProvedor'
@@ -162,16 +164,18 @@ export function EnvioModeloVersao({
         </div>
       )}
 
-      <div className="flex max-w-[100ch] flex-col gap-0.5 text-sm text-muted">
-        <p>
-          {NOME_CURTO_DO_FORMATO[formato]} de exemplo do {provedorNome} {versaoRotulo}, preenchido
-          com valores fictícios.
-        </p>
-        <p>
-          O mínimo traz só o que o esquema do provedor obriga. A prefeitura pode exigir outros
-          campos por regra própria.
-        </p>
-      </div>
+      {!indisponivel && (
+        <div className="flex max-w-[100ch] flex-col gap-0.5 text-sm text-muted">
+          <p>
+            {NOME_CURTO_DO_FORMATO[formato]} de exemplo do {provedorNome} {versaoRotulo}, preenchido
+            com valores fictícios.
+          </p>
+          <p>
+            O mínimo traz só o que o esquema do provedor obriga. A prefeitura pode exigir outros
+            campos por regra própria.
+          </p>
+        </div>
+      )}
 
       {isLoading && (
         <div aria-live="polite" aria-busy="true" className="flex flex-col gap-2">
@@ -181,7 +185,20 @@ export function EnvioModeloVersao({
         </div>
       )}
 
-      {indisponivel && <EmptyState message="Envio modelo indisponível para esta versão." />}
+      {indisponivel && (
+        <EmptyState
+          message="Consulte os campos desta versão na aba Campos."
+          action={
+            <Link
+              to={ROTA_DA_ABA.campos}
+              params={{ provedorSlug }}
+              className="text-sm font-semibold text-primary-medium hover:underline"
+            >
+              Ver os campos
+            </Link>
+          }
+        />
+      )}
 
       {error && !indisponivel && <ErrorState onRetry={() => void refetch()} />}
 
@@ -190,7 +207,7 @@ export function EnvioModeloVersao({
           role="note"
           className="flex flex-col gap-1 rounded-[var(--radius-control)] border border-alert-info-borda bg-alert-info px-3 py-2 text-sm text-ink"
         >
-          <p>Estes campos da versão não têm posição no envio modelo e ficam fora do texto:</p>
+          <p>Campos desta versão que não aparecem no envio modelo:</p>
           <ul className="flex flex-wrap gap-x-3 gap-y-1">
             {camposSemPosicao.map((slug) => {
               const nome = nomePorSlug.get(slug)

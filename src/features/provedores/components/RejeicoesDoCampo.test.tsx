@@ -116,7 +116,7 @@ describe('RejeicoesDoCampo — cada rejeição', () => {
 })
 
 describe('RejeicoesDoCampo — rejeição do campo ausente do resumo da versão', () => {
-  it('não some: mostra o código, sem link, avisa que faltam detalhes e acusa o slug no console', async () => {
+  it('não some: mostra só o código, sem link, e acusa o slug no console', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     renderizar({
       errosResumo: [ERRO_COM_MENSAGEM_IGUAL, ERRO_PROIBIDO_FORA_DO_CENARIO],
@@ -127,7 +127,7 @@ describe('RejeicoesDoCampo — rejeição do campo ausente do resumo da versão'
       .getAllByRole('listitem')
       .find((li) => li.textContent?.includes('E0590'))!
 
-    expect(item).toHaveTextContent('detalhes indisponíveis')
+    expect(item).toHaveTextContent(/^E0590$/)
     expect(within(item).queryByRole('link')).toBeNull()
     expect(within(secao).getAllByRole('link')).toHaveLength(2)
     expect(consoleError).toHaveBeenCalledTimes(1)

@@ -209,8 +209,7 @@ const ERROS_RESUMO = [
 
 const URL_DA_VERSAO = 'https://codex.migrate.info/provedores/emissor-nacional/0-20'
 
-const FRASE_SEM_FILTRO =
-  'Esta tabela é exaustiva: o que não está aqui não se aplica a Emissor Nacional 0.20.'
+const FRASE_SEM_FILTRO = 'Campos aceitos pelo Emissor Nacional nesta versão.'
 
 function propsDaVersao(sobrescritas: Partial<CamposDaVersaoProps> = {}): CamposDaVersaoProps {
   return {
@@ -265,7 +264,7 @@ beforeEach(() => {
 })
 
 describe('CamposDaVersao: topo da aba', () => {
-  it('sem filtro, afirma a exaustividade da versão inteira, numa região que se anuncia sozinha', () => {
+  it('sem filtro, diz que a tabela traz os campos aceitos, numa região que se anuncia sozinha', () => {
     renderizar()
 
     const frase = screen.getByText(FRASE_SEM_FILTRO)
@@ -274,16 +273,12 @@ describe('CamposDaVersao: topo da aba', () => {
     expect(frase).toHaveAttribute('aria-atomic', 'true')
   })
 
-  it('com filtro, diz quantos campos aparecem e que a exaustividade vale para a versão', () => {
+  it('com filtro, diz quantos campos aparecem do total da versão', () => {
     renderizar()
 
     digitarBusca('cnpj')
 
-    expect(
-      screen.getByText(
-        'Mostrando 2 de 8 campos. A exaustividade vale para os 8 campos desta versão, não para este filtro.',
-      ),
-    ).toBeInTheDocument()
+    expect(screen.getByText('Mostrando 2 de 8 campos.')).toBeInTheDocument()
     expect(screen.queryByText(FRASE_SEM_FILTRO)).toBeNull()
   })
 
@@ -294,7 +289,7 @@ describe('CamposDaVersao: topo da aba', () => {
     expect(screen.queryByText(/Verificado/)).toBeNull()
   })
 
-  it('mostra o atalho recebido ao lado da frase de exaustividade', () => {
+  it('mostra o atalho recebido ao lado do resumo da tabela', () => {
     renderizar({ atalhoDoTopo: <a href="/envio">Ver como XML montado</a> })
 
     const cabecalho = screen.getByText(FRASE_SEM_FILTRO).parentElement!
@@ -388,10 +383,15 @@ describe('CamposDaVersao: filtros', () => {
     expect(screen.getByRole('button', { name: 'Discriminacao' })).toBeInTheDocument()
   })
 
-  it('versão sem campo algum diz isso, sem oferecer limpar filtros', () => {
+  it('versão sem campo algum mostra só o estado vazio, sem filtros nem resumo da tabela', () => {
     renderizar({ totalCampos: 0, camposPorGrupo: [] })
 
-    expect(screen.getByText('Esta versão ainda não tem campos publicados.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Os campos desta versão estarão disponíveis em breve.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('searchbox')).toBeNull()
+    expect(screen.queryByRole('group', { name: 'Filtrar por obrigatoriedade' })).toBeNull()
+    expect(screen.queryByText(FRASE_SEM_FILTRO)).toBeNull()
     expect(screen.queryByRole('button', { name: 'Limpar filtros' })).toBeNull()
     expect(screen.queryByText('Nenhum campo encontrado para esse filtro.')).toBeNull()
   })
@@ -822,7 +822,7 @@ describe('CamposDaVersao: legenda da tabela', () => {
       within(legenda)
         .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual(['ncampo com rejeição registrada nesta versão, n é a quantidade (2 campos)'])
+    ).toEqual(['nnúmero de rejeições registradas no campo nesta versão (2 campos com rejeição)'])
   })
 
   it('com campo da reforma tributária, a legenda explica o selo RT', () => {
@@ -840,6 +840,6 @@ describe('CamposDaVersao: legenda da tabela', () => {
     const legenda = screen.getByRole('list', { name: 'Legenda:' })
     expect(within(legenda).getByText('campo da reforma tributária (IBS/CBS)')).toBeInTheDocument()
     // Sem campo com rejeição, a marca do triângulo não entra.
-    expect(within(legenda).queryByText(/rejeição registrada/)).not.toBeInTheDocument()
+    expect(within(legenda).queryByText(/rejeições registradas/)).not.toBeInTheDocument()
   })
 })

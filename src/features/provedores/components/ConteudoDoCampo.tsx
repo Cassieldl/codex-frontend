@@ -115,7 +115,6 @@ function VoceEnvia({ campo, valor }: { campo: CampoVersaoPublico; valor: string 
       </p>
       <p className="mt-1 text-xs text-alert-info-borda [overflow-wrap:anywhere]">
         Caminho no InvoiCy: <code className="font-mono text-white">{campo.caminhoXml}</code>
-        {!valor && <span> · sem exemplo real</span>}
       </p>
     </section>
   )
@@ -141,7 +140,7 @@ function ProvedorRecebe({ destinos, valor }: ProvedorRecebeProps) {
       </h4>
 
       {destinos.length === 0 ? (
-        <p className="mt-1 text-sm text-white">Este campo não tem destino no XML do provedor.</p>
+        <p className="mt-1 text-sm text-white">Este campo não é enviado ao provedor.</p>
       ) : (
         <>
           {quantidadeDeTags >= 2 && (
@@ -154,7 +153,7 @@ function ProvedorRecebe({ destinos, valor }: ProvedorRecebeProps) {
             {destinos.map((destino, indice) =>
               destino.tipo === 'omitidos' ? (
                 <li key={`omitidos-${indice}`} className="text-sm text-white">
-                  e mais destinos (ver Transformação).
+                  Outros destinos em Transformação.
                 </li>
               ) : (
                 <li key={destino.caminho} className="flex items-start gap-2">
@@ -180,7 +179,7 @@ function ProvedorRecebe({ destinos, valor }: ProvedorRecebeProps) {
 function descreverConversao(conversao: ConversaoDeValor): string {
   const nota = `O InvoiCy converte: ${conversao.valorEnviado} (${conversao.descricao}) chega como ${conversao.valorRecebido}.`
   if (!conversao.aConfirmar) return nota
-  return `${nota} Conversão ainda não confirmada na fonte do provedor.`
+  return `${nota} Conversão em validação com o provedor.`
 }
 
 interface ExemploDoCampoProps {

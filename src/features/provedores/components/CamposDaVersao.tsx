@@ -40,7 +40,7 @@ export interface CamposDaVersaoProps {
   campoDestacado?: string | null
   /** De-para mostrado no modal do campo `natOp`. */
   naturezasOperacao?: NaturezaOperacaoPublica[]
-  /** Atalho à direita da frase de exaustividade; na página, o "Ver como XML montado". */
+  /** Atalho à direita do resumo da tabela; na página, o "Ver como XML montado". */
   atalhoDoTopo?: ReactNode
 }
 
@@ -61,10 +61,9 @@ function paraVizinhoDoCampo(vizinho: VizinhoDeCampo | null): VizinhoDoCampo | nu
 }
 
 /**
- * Lista exaustiva de campos da versão, em blocos recolhíveis por raiz do layout, com filtros,
- * índice lateral e o detalhe de cada campo num modal. A ausência de um campo aqui é informação de
- * negócio ("não se aplica"), por isso a afirmação de exaustividade abre a aba. A data de
- * verificação fica só no cabeçalho do provedor.
+ * Campos aceitos pela versão, em blocos recolhíveis por raiz do layout, com filtros, índice
+ * lateral e o detalhe de cada campo num modal. A data de verificação fica só no cabeçalho do
+ * provedor. Versão sem campo mostra só o estado vazio, sem filtros sem o que filtrar.
  */
 export function CamposDaVersao({
   provedorNome,
@@ -173,9 +172,9 @@ export function CamposDaVersao({
     abrirBlocos(raizesDoNovoFiltro)
   }
 
-  const fraseExaustividade = filtroAtivo
-    ? `Mostrando ${totalVisivel} de ${totalCampos} campos. A exaustividade vale para os ${totalCampos} campos desta versão, não para este filtro.`
-    : `Esta tabela é exaustiva: o que não está aqui não se aplica a ${provedorNome} ${versaoRotulo}.`
+  const resumoDaTabela = filtroAtivo
+    ? `Mostrando ${totalVisivel} de ${totalCampos} campos.`
+    : `Campos aceitos pelo ${provedorNome} nesta versão.`
 
   const botaoLimparFiltros = (
     <button type="button" onClick={limparFiltros} className={CLASSE_DO_BOTAO_DE_TEXTO}>
@@ -189,36 +188,43 @@ export function CamposDaVersao({
       aria-labelledby={tituloId}
       className="flex scroll-mt-24 flex-col gap-4"
     >
-      <header className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
-        {/* A aba já diz onde se está; o título fica para o leitor de tela nomear a região. */}
-        <h2 id={tituloId} className="sr-only">
-          Campos e mapeamento
-        </h2>
-        <p aria-live="polite" aria-atomic="true" className="text-sm text-muted">
-          {fraseExaustividade}
-        </p>
-        {atalhoDoTopo && <div className="shrink-0">{atalhoDoTopo}</div>}
-      </header>
+      {/* A aba já diz onde se está; o título fica para o leitor de tela nomear a região. */}
+      <h2 id={tituloId} className="sr-only">
+        Campos e mapeamento
+      </h2>
 
-      <FiltrosDeCampos
-        estado={filtroEstado}
-        termo={termo}
-        contagens={contagens}
-        somenteReformaTributaria={somenteReformaTributaria}
-        contagemDaReforma={contagemDaReforma}
-        filtroAtivo={filtroAtivo}
-        buscaRef={buscaRef}
-        onEstadoChange={(estado) => aplicarFiltro({ ...filtroAtual, estado })}
-        onTermoChange={(novoTermo) => aplicarFiltro({ ...filtroAtual, termo: novoTermo })}
-        onAlternarReformaTributaria={() =>
-          aplicarFiltro({ ...filtroAtual, somenteReformaTributaria: !somenteReformaTributaria })
-        }
-        onLimpar={limparFiltros}
-        onExpandirTodos={expandirTodos}
-        onRecolherTodos={recolherTodos}
-      />
+      {totalCampos === 0 && (
+        <EmptyState message="Os campos desta versão estarão disponíveis em breve." />
+      )}
 
-      {totalCampos === 0 && <EmptyState message="Esta versão ainda não tem campos publicados." />}
+      {totalCampos > 0 && (
+        <>
+          <header className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+            <p aria-live="polite" aria-atomic="true" className="text-sm text-muted">
+              {resumoDaTabela}
+            </p>
+            {atalhoDoTopo && <div className="shrink-0">{atalhoDoTopo}</div>}
+          </header>
+
+          <FiltrosDeCampos
+            estado={filtroEstado}
+            termo={termo}
+            contagens={contagens}
+            somenteReformaTributaria={somenteReformaTributaria}
+            contagemDaReforma={contagemDaReforma}
+            filtroAtivo={filtroAtivo}
+            buscaRef={buscaRef}
+            onEstadoChange={(estado) => aplicarFiltro({ ...filtroAtual, estado })}
+            onTermoChange={(novoTermo) => aplicarFiltro({ ...filtroAtual, termo: novoTermo })}
+            onAlternarReformaTributaria={() =>
+              aplicarFiltro({ ...filtroAtual, somenteReformaTributaria: !somenteReformaTributaria })
+            }
+            onLimpar={limparFiltros}
+            onExpandirTodos={expandirTodos}
+            onRecolherTodos={recolherTodos}
+          />
+        </>
+      )}
 
       {totalCampos > 0 && totalVisivel === 0 && (
         <EmptyState

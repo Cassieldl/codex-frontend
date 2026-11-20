@@ -84,12 +84,7 @@ export function RejeicoesDoCampo({ erros, errosResumo }: RejeicoesDoCampoProps) 
           if (!resumo) {
             return (
               <li key={erroDoCampo.slug} className="px-2 py-2.5">
-                <p className="text-sm text-ink">
-                  <span className="mr-2 font-mono text-xs font-semibold text-muted">
-                    {erroDoCampo.codigo}
-                  </span>
-                  <span className="text-xs text-muted">detalhes indisponíveis</span>
-                </p>
+                <p className="font-mono text-xs font-semibold text-muted">{erroDoCampo.codigo}</p>
               </li>
             )
           }

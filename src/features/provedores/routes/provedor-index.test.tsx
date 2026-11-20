@@ -189,8 +189,9 @@ describe('ProvedorIndexConteudo: provedor sem versão publicada', () => {
     renderComRouter([])
 
     expect(
-      await screen.findByText('Este provedor ainda não tem conteúdo publicado.'),
+      await screen.findByText('O conteúdo deste provedor estará disponível em breve.'),
     ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver todos os provedores' })).toBeInTheDocument()
     expect(pedidas).toHaveLength(0)
     expect(document.title).toBe('Prefeitura Exemplo | Codex')
   })

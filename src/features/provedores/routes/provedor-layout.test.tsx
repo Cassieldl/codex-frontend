@@ -483,7 +483,7 @@ describe('ProvedorLayoutPage: fatos abaixo do nome', () => {
     const link = await screen.findByRole('link', { name: 'O que muda na versão 9' })
     expect(link).toHaveAttribute('href', '/layout/v9')
     expect(link.parentElement).toHaveTextContent(
-      'Este mapeamento ainda segue o Layout InvoiCy versão 8. A versão 9 é obrigatória em produção em 01/12/2026.',
+      'Este mapeamento segue o Layout InvoiCy versão 8. A versão 9 é obrigatória em produção em 01/12/2026.',
     )
     expect(textosDosFatos()).toEqual(['Nacional', 'Versão 1', 'Verificado em 01/07/2026·fonte'])
   })
@@ -498,7 +498,7 @@ describe('ProvedorLayoutPage: fatos abaixo do nome', () => {
     })
 
     await screen.findByText('Layout InvoiCy versão 8')
-    expect(screen.queryByText(/Este mapeamento ainda segue/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Este mapeamento segue/)).not.toBeInTheDocument()
     expect(textosDosFatos()).toEqual([
       'Nacional',
       'Versão 1',

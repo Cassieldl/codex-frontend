@@ -24,7 +24,7 @@ export function FaixaLayoutDesatualizado({ versaoLayoutRotulo }: FaixaLayoutDesa
       <Clock className="size-5 shrink-0 text-alert-warning-icone" aria-hidden="true" />
 
       <p className="min-w-0 flex-[1_1_400px] text-sm text-alert-warning-texto">
-        Este mapeamento ainda segue o{' '}
+        Este mapeamento segue o{' '}
         <strong>Layout InvoiCy {formatarVersaoLayout(versaoLayoutRotulo)}</strong>.{' '}
         {vigente.obrigatoriaEm ? (
           <>

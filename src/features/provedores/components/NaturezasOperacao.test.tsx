@@ -110,7 +110,7 @@ describe('NaturezasOperacao', () => {
     ).toHaveTextContent('Este provedor não recebe o tipo de imunidade.')
     expect(
       within(notas[2] as HTMLElement).getByRole('note', { name: 'A confirmar' }),
-    ).toHaveTextContent('Conversão ainda não confirmada na fonte do provedor.')
+    ).toHaveTextContent('Conversão em validação com o provedor.')
     expect((notas[1] as HTMLElement).closest('td')).toHaveAttribute('colspan', '3')
   })
 

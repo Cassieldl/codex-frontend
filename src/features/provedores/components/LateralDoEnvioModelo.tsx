@@ -24,12 +24,12 @@ export function LateralDoEnvioModelo({
   codigosDeNatureza,
   totalDeErros,
 }: LateralDoEnvioModeloProps) {
-  const itens: ReactNode[] = ['Os valores são fictícios: troque pelos da sua nota antes de enviar.']
+  const itens: ReactNode[] = ['Troque os valores fictícios pelos dados da sua nota.']
 
   if (totalDeAvisos > 0) {
     itens.push(
       <>
-        Leia os avisos desta versão: muitas rejeições vêm deles.{' '}
+        Leia os avisos: eles explicam as rejeições mais comuns.{' '}
         <Link
           to={ROTA_DA_ABA.erros}
           params={{ provedorSlug }}
@@ -62,7 +62,7 @@ export function LateralDoEnvioModelo({
         className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-white p-5 shadow-card"
       >
         <h2 id="antes-da-homologacao" className="text-card-titulo font-bold text-primary">
-          Antes de mandar para homologação
+          Antes de enviar para homologação
         </h2>
         <ol className="flex flex-col gap-3">
           {itens.map((item, indice) => (
@@ -85,14 +85,12 @@ export function LateralDoEnvioModelo({
           className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-white p-5 shadow-card"
         >
           <h2 id="deu-rejeicao" className="text-card-titulo font-bold text-primary">
-            Deu rejeição?
+            Recebeu uma rejeição?
           </h2>
           <p className="text-sm text-muted">
-            Cole o código do erro na busca: {totalDeErros}{' '}
             {totalDeErros === 1
-              ? 'erro deste provedor está documentado'
-              : 'erros deste provedor estão documentados'}
-            .
+              ? 'Compare o código recebido com o erro conhecido deste provedor.'
+              : `Busque pelo código do erro entre os ${totalDeErros} erros conhecidos deste provedor.`}
           </p>
           <Link
             to={ROTA_DA_ABA.erros}

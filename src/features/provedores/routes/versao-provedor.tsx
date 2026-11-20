@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { FileX } from 'lucide-react'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { ErrorState } from '../../../components/ui/ErrorState'
@@ -21,6 +22,7 @@ import { ErroVersaoProvedorHttp, useVersaoProvedor } from '../hooks/useVersaoPro
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { extrairNumeroDaVersao } from '../../../utils/versaoDoLayout'
 import type { AvisoPublico } from '../types/provedor'
+import { ROTA_DA_ABA } from '../utils/abasDoProvedor'
 import type { AbaProvedor } from '../utils/abasDoProvedor'
 import { ID_AREA_AVISOS, useRolarParaAreaDeAvisos } from '../utils/avisoAncora'
 import { caminhoDoProvedor } from '../utils/caminhoDoProvedor'
@@ -44,6 +46,25 @@ const VARIANTE_POR_TIPO_DE_ERRO: Record<string, VarianteProvedorIndisponivel | u
   versao_despublicada: 'versao-despublicada',
   provedor_despublicado: 'versao-despublicada',
   limite_excedido: 'versao-grande-demais',
+}
+
+interface LinkParaAbaProps {
+  provedorSlug: string
+  aba: AbaProvedor
+  rotulo: string
+}
+
+/** Saída do estado vazio de uma aba: leva para outra aba do mesmo provedor. */
+function LinkParaAba({ provedorSlug, aba, rotulo }: LinkParaAbaProps) {
+  return (
+    <Link
+      to={ROTA_DA_ABA[aba]}
+      params={{ provedorSlug }}
+      className="text-sm font-semibold text-primary-medium hover:underline"
+    >
+      {rotulo}
+    </Link>
+  )
 }
 
 /**
@@ -113,8 +134,9 @@ export function VersaoProvedorPage({
           />
         ) : (
           <EmptyState
-            message="Nenhum erro conhecido publicado para este provedor."
+            message="Nenhum erro conhecido para este provedor."
             icon={<FileX className="size-10" />}
+            action={<LinkParaAba provedorSlug={provedorSlug} aba="campos" rotulo="Ver os campos" />}
           />
         )}
 
@@ -156,8 +178,9 @@ export function VersaoProvedorPage({
     if (versaoPagina.naturezasOperacao.length === 0) {
       return (
         <EmptyState
-          message="Este provedor não tem tabela de natureza da operação publicada."
+          message="Veja como este provedor recebe a natureza da operação na aba Campos."
           icon={<FileX className="size-10" />}
+          action={<LinkParaAba provedorSlug={provedorSlug} aba="campos" rotulo="Ver os campos" />}
         />
       )
     }

@@ -464,7 +464,7 @@ describe('EnvioModeloVersao: destino da tag', () => {
     const aviso = await within(
       await screen.findByRole('region', { name: 'Envio modelo' }),
     ).findByRole('note')
-    expect(aviso).toHaveTextContent(/não têm posição no envio modelo/)
+    expect(aviso).toHaveTextContent(/Campos desta versão que não aparecem no envio modelo:/)
     expect(within(aviso).getByRole('link', { name: 'CodigoCnae' })).toHaveAttribute(
       'href',
       '#campo-servico-codigo-cnae',
@@ -544,8 +544,14 @@ describe('EnvioModeloVersao: estados', () => {
 
     const secao = await screen.findByRole('region', { name: 'Envio modelo' })
     expect(
-      await within(secao).findByText('Envio modelo indisponível para esta versão.'),
+      await within(secao).findByText('Consulte os campos desta versão na aba Campos.'),
     ).toBeInTheDocument()
+    expect(within(secao).getByRole('link', { name: 'Ver os campos' })).toHaveAttribute(
+      'href',
+      '/provedores/prefeitura-exemplo/campos',
+    )
+    // A descrição do XML de exemplo não aparece quando não há XML para descrever.
+    expect(within(secao).queryByText(/de exemplo do/)).toBeNull()
     expect(within(secao).queryByRole('button', { name: /tentar novamente/i })).toBeNull()
     expect(within(secao).queryByRole('radiogroup')).toBeNull()
     expect(tentativas).toBe(1)
