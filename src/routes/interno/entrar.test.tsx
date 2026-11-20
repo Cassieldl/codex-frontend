@@ -17,14 +17,14 @@ const ORIGEM = 'https://codex.migrate.info'
  * Reproduz a montagem exata de `redirectUri` em `entrar.tsx`:
  * `${window.location.origin}${caminhoDestino ?? ''}`. `destinoInternoSeguro`
  * foi eliminado (era cópia de `caminhoInternoSeguro`, mesmo racional, mesmo
- * furo de whitespace) — agora há um único saneador na base (AP-SECURITY-010).
+ * furo de whitespace) - agora há um único saneador na base (AP-SECURITY-010).
  */
 function redirectUriParaTeste(destino: string | undefined): string {
   const caminhoDestino = caminhoInternoSeguro(destino)
   return `${ORIGEM}${caminhoDestino ?? ''}`
 }
 
-describe('entrar — redirectUri usa caminhoInternoSeguro + concatenação com origin (BAIXO-01)', () => {
+describe('entrar: redirectUri usa caminhoInternoSeguro + concatenação com origin (BAIXO-01)', () => {
   it('sem destino, cai na própria origem', () => {
     expect(redirectUriParaTeste(undefined)).toBe(ORIGEM)
   })
@@ -43,7 +43,7 @@ describe('entrar — redirectUri usa caminhoInternoSeguro + concatenação com o
     'https://evil.com',
     '//evil.com',
     '/\\evil.com',
-    `/${String.fromCharCode(9)}/evil.com`, // TAB — bypass do BAIXO-03 (rodada 3)
+    `/${String.fromCharCode(9)}/evil.com`, // TAB - bypass do BAIXO-03 (rodada 3)
     `/${String.fromCharCode(10)}/evil.com`, // LF
     `/${String.fromCharCode(13)}/evil.com`, // CR
   ])('destino hostil (%s) nunca produz origem diferente da própria app', (destinoHostil) => {
@@ -52,7 +52,7 @@ describe('entrar — redirectUri usa caminhoInternoSeguro + concatenação com o
   })
 
   // Documenta o achado da rodada 2 (§BAIXO-01): quem fecha o vetor de fato é
-  // a concatenação com uma origem literal, não (só) o saneador — mesmo um
+  // a concatenação com uma origem literal, não (só) o saneador - mesmo um
   // caminho protocol-relative colado direto, sem passar pelo filtro, vira
   // apenas *path* dentro do host legítimo, nunca um host novo. Ver comentário
   // em `caminhoInternoSeguro.ts` e o "NÃO REMOVER" em `entrar.tsx`.
@@ -66,7 +66,7 @@ describe('entrar — redirectUri usa caminhoInternoSeguro + concatenação com o
 //
 // O bloco acima reproduz a montagem do `redirectUri` numa função local: ele
 // prova que `caminhoInternoSeguro` + concatenação com origem literal fecham o
-// vetor, mas NÃO prova que `entrar.tsx` faz isso — copiar a linha não copia a
+// vetor, mas NÃO prova que `entrar.tsx` faz isso - copiar a linha não copia a
 // garantia (AP-SECURITY-011). O bloco abaixo importa o módulo real e afirma o
 // argumento que `keycloak.login` recebe de fato: se a concatenação com
 // `window.location.origin` sumir de `entrar.tsx`, estes testes ficam vermelhos.
@@ -82,14 +82,14 @@ vi.mock('../../auth/keycloak', () => ({
 }))
 
 // Import dinâmico (padrão de `_autenticado.test.tsx`): a fábrica do `vi.mock`
-// referencia `mockLogin`, que só existe depois desta linha — um import
+// referencia `mockLogin`, que só existe depois desta linha - um import
 // estático de `./entrar` seria avaliado antes e cairia em TDZ.
 const { Route } = await import('./entrar')
 
 // A assinatura pública de `Route.update` só aceita `UpdatableRouteOptions`: o
 // vínculo com o pai (id/path/getParentRoute) é aplicado pelo gerador em
 // `routeTree.gen.ts`, que recorre a `as any`. Aqui o cast é o mesmo movimento,
-// porém estreitado ao tipo real do parâmetro — é a única forma de montar a
+// porém estreitado ao tipo real do parâmetro - é a única forma de montar a
 // rota de arquivo REAL num router de teste sem duplicar as opções dela (que,
 // duplicadas, reintroduziriam justamente o problema do "teste que copia a
 // linha em vez de importá-la").
@@ -121,7 +121,7 @@ function redirectUriDaChamada(indice: number): string {
   return opcoes.redirectUri
 }
 
-describe('entrar — redirectUri REAL entregue a keycloak.login (BAIXO-01 / P-07)', () => {
+describe('entrar: redirectUri REAL entregue a keycloak.login (BAIXO-01 / P-07)', () => {
   beforeEach(() => {
     mockLogin.mockClear()
     mockLogin.mockResolvedValue(undefined)
@@ -161,7 +161,7 @@ describe('entrar — redirectUri REAL entregue a keycloak.login (BAIXO-01 / P-07
 
   /**
    * A tela de login é hospedada pelo Keycloak, então o idioma dela é o que
-   * pedirmos aqui. Sem este pedido ela abre no padrão do realm — abriu em
+   * pedirmos aqui. Sem este pedido ela abre no padrão do realm - abriu em
    * inglês no meio de um portal em português, logo na porta da área interna.
    */
   it('pede a tela de login em português', async () => {

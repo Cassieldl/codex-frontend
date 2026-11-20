@@ -76,14 +76,14 @@ function handlerStatus(status: number, corpo?: unknown) {
 
 /**
  * O hook classifica quatro tipos por status; a tela tratava um. `nao_encontrado`
- * (404) e `limite_excedido` (422) caíam no `ErrorState` — "Não foi possível
- * carregar esta informação agora. / Tentar novamente" —, que promete que
+ * (404) e `limite_excedido` (422) caíam no `ErrorState` ("Não foi possível
+ * carregar esta informação agora. / Tentar novamente"), que promete que
  * insistir resolve. Nenhum dos dois melhora por insistência.
  *
  * A ausência do botão de nova tentativa é o que prova que o caso saiu do balde
  * genérico; só o título passaria se o `ErrorState` fosse renderizado junto.
  */
-describe('VersaoProvedorPage — respostas definitivas', () => {
+describe('VersaoProvedorPage: respostas definitivas', () => {
   it('404 explica que a versão não existe, sem oferecer nova tentativa', async () => {
     server.use(handlerStatus(404))
 
@@ -145,7 +145,7 @@ describe('VersaoProvedorPage — respostas definitivas', () => {
   })
 })
 
-describe('VersaoProvedorPage — retentativa só no que pode melhorar', () => {
+describe('VersaoProvedorPage: retentativa só no que pode melhorar', () => {
   function handlerContado(status: number) {
     let chamadas = 0
     const handler = http.get(
@@ -183,7 +183,7 @@ describe('VersaoProvedorPage — retentativa só no que pode melhorar', () => {
 /**
  * Resposta transcrita do envelope real de `GET /provedores/{slug}/versoes/{versao}` (campos e erros
  * do Emissor Nacional 0.20), **sem anotação do tipo do cliente**. O campo `PaiPreServico` tem duas
- * rejeições; `E1235` não está ligado a campo nenhum — é ele que a lista perderia se o contador
+ * rejeições; `E1235` não está ligado a campo nenhum - é ele que a lista perderia se o contador
  * voltasse a recortá-la.
  */
 const RESPOSTA_DA_VERSAO = {
@@ -280,7 +280,7 @@ const RESPOSTA_DA_VERSAO = {
   message: null,
 }
 
-describe('VersaoProvedorPage — campos da versão', () => {
+describe('VersaoProvedorPage: campos da versão', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn()
     server.use(handlerStatus(200, RESPOSTA_DA_VERSAO))

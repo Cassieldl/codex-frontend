@@ -115,7 +115,7 @@ afterEach(() => {
   ancoraNoHash(null)
 })
 
-describe('useBlocosNavegaveis — estado inicial', () => {
+describe('useBlocosNavegaveis: estado inicial', () => {
   it('abre só o primeiro bloco e não abre nenhum campo', () => {
     const { result } = renderizarHook(opcoes())
 
@@ -129,7 +129,7 @@ describe('useBlocosNavegaveis — estado inicial', () => {
   })
 })
 
-describe('useBlocosNavegaveis — devolver o foco (R1)', () => {
+describe('useBlocosNavegaveis: devolver o foco (R1)', () => {
   it('não toca na linha de mesmo id que está fora da lista quando a lista saiu da página', () => {
     const isca = criarLinha('servico-codigo')
     document.body.append(isca)
@@ -245,7 +245,7 @@ describe('useBlocosNavegaveis — devolver o foco (R1)', () => {
   })
 })
 
-describe('useBlocosNavegaveis — navegação entre campos', () => {
+describe('useBlocosNavegaveis: navegação entre campos', () => {
   it('navegar para um campo de bloco fechado abre o bloco e o campo', () => {
     const { result } = renderizarHook(opcoes())
     expect(raizesAbertas(result.current.blocosAbertos)).toEqual(['Servico'])
@@ -312,7 +312,7 @@ describe('useBlocosNavegaveis — navegação entre campos', () => {
   })
 })
 
-describe('useBlocosNavegaveis — blocos abertos', () => {
+describe('useBlocosNavegaveis: blocos abertos', () => {
   it('alterna um bloco para aberto e para fechado', () => {
     const { result } = renderizarHook(opcoes())
 
@@ -368,7 +368,7 @@ describe('useBlocosNavegaveis — blocos abertos', () => {
   })
 })
 
-describe('useBlocosNavegaveis — chegada por âncora', () => {
+describe('useBlocosNavegaveis: chegada por âncora', () => {
   it('abre o bloco, abre o campo e rola até a linha, sem limpar filtro que não esconde o campo', () => {
     const linha = criarLinha('prestador-cnpj')
     document.body.append(linha)
@@ -446,7 +446,7 @@ describe('useBlocosNavegaveis — chegada por âncora', () => {
   })
 })
 
-describe('useBlocosNavegaveis — fechar o campo', () => {
+describe('useBlocosNavegaveis: fechar o campo', () => {
   it('com âncora ativa tira o hash da URL sem disparar hashchange para a página', () => {
     ancoraNoHash('tomador-cnpj')
     const aoMudarHash = vi.fn()

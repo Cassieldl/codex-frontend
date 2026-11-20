@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { LayoutCampoResolucaoPage } from '../../../features/layout/routes/layout-campo-resolucao'
 
-// Rota fina (M2) — a resolução da URL canônica do campo (A3) vive em
+// Rota fina (M2) - a resolução da URL canônica do campo (A3) vive em
 // `features/layout/routes/layout-campo-resolucao.tsx`. O segmento estático
 // `campos` tem precedência sobre `/layout/$versaoSlug`.
 export const Route = createFileRoute('/layout/campos/$campoSlug')({

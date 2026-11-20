@@ -25,7 +25,7 @@ function envolverComQueryClient() {
 }
 
 describe('useProvedores', () => {
-  it('parseia `PaginatedResponse<T>` CRU — nunca `.data` (AP-ARQUITETURA-001)', async () => {
+  it('parseia `PaginatedResponse<T>` CRU - nunca `.data` (AP-ARQUITETURA-001)', async () => {
     server.use(
       http.get(`${API_URL}/provedores`, () =>
         HttpResponse.json({

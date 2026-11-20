@@ -3,7 +3,7 @@ import type { AvisoPublico } from './provedor'
 
 export type EstadoPreenchimentoCampo = 'Obrigatorio' | 'Opcional' | 'Condicional'
 
-/** `analise-backend.md` §4.3 — DTO composto de exibição (não viola R3). */
+/** `analise-backend.md` §4.3 - DTO composto de exibição (não viola R3). */
 export interface CampoVersaoPublico {
   campoLayoutSlug: string
   nome: string
@@ -23,7 +23,7 @@ export interface CampoVersaoPublico {
   notaTransformacao: string | null
   ordem: number
   /**
-   * Rejeições já registradas sobre este campo nesta versão. Sempre presente — `[]` quando não há
+   * Rejeições já registradas sobre este campo nesta versão. Sempre presente - `[]` quando não há
    * nenhuma, nunca ausente.
    */
   errosConhecidos: ErroDoCampo[]
@@ -51,23 +51,23 @@ export interface NaturezaOperacaoPublica {
   aConfirmar: boolean
 }
 
-/** Item de `errosResumo.itens` — o link é montado com o `slug`, pela rota do erro. */
+/** Item de `errosResumo.itens` - o link é montado com o `slug`, pela rota do erro. */
 export interface ErroResumoPublico {
   slug: string
   codigo: string
   titulo: string
   /**
    * Mensagens observadas, como o provedor as devolve. É por elas que o leitor reconhece o próprio
-   * caso — ele chega com o texto da prefeitura em mãos, não com o código nem com o nosso título.
+   * caso - ele chega com o texto da prefeitura em mãos, não com o código nem com o nosso título.
    * Sempre presente; `[]` quando o erro ainda não tem variante registrada.
    */
   variantes: string[]
 }
 
 /**
- * `GET /provedores/{provedorSlug}/versoes/{versaoSlug}` (P4) — agregado único
+ * `GET /provedores/{provedorSlug}/versoes/{versaoSlug}` (P4) - agregado único
  * da tela mais densa do portal (`analise-backend.md` §4.3). `avisos` aqui é
- * **só de versão** — os de provedor vivem em `ProvedorDetalhe` e nunca são
+ * **só de versão** - os de provedor vivem em `ProvedorDetalhe` e nunca são
  * duplicados neste tipo (U8).
  */
 export interface VersaoProvedorPagina {
@@ -88,7 +88,7 @@ export interface VersaoProvedorPagina {
   totalCampos: number
   avisos: AvisoPublico[]
   errosResumo: { total: number; itens: ErroResumoPublico[] }
-  /** Cenários de XML da versão (C4) — **sempre presente**, `[]` quando não há nenhum. */
+  /** Cenários de XML da versão (C4) - **sempre presente**, `[]` quando não há nenhum. */
   exemplos: ExemploPublico[]
   /** De-para do `natOp` do InvoiCy para o valor no layout do provedor. Sempre presente, `[]` sem tabela. */
   naturezasOperacao: NaturezaOperacaoPublica[]

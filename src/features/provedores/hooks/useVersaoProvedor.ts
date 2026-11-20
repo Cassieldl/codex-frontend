@@ -19,7 +19,7 @@ interface EnvelopeErroComCodigo {
 }
 
 /**
- * Erro tipado por status + código do envelope — P4 distingue **qual
+ * Erro tipado por status + código do envelope - P4 distingue **qual
  * ancestral** falhou no `410` (`VERSAO_DESPUBLICADA` vs `PROVEDOR_DESPUBLICADO`,
  * `analise-backend.md` §4.4/M7): o texto da página de "saiu do ar" depende
  * de qual dos dois aconteceu.
@@ -54,9 +54,9 @@ function classificarErro(error: unknown): ErroVersaoProvedorHttp | null {
 const DEZ_MINUTOS_MS = 1000 * 60 * 10
 
 /**
- * `GET /provedores/{provedorSlug}/versoes/{versaoSlug}` (P4) — agregado da
+ * `GET /provedores/{provedorSlug}/versoes/{versaoSlug}` (P4) - agregado da
  * tela mais densa do portal (`VersaoProvedorPagina`, `analise-backend.md`
- * §4.3). `queryKey` inclui os dois slugs — trocar de aba é navegação de
+ * §4.3). `queryKey` inclui os dois slugs - trocar de aba é navegação de
  * rota, nunca estado local (§7.6.1), e cada combinação é uma entrada de
  * cache própria.
  */

@@ -4,14 +4,14 @@ import { ArtigosIndexPage } from '../../features/artigos/routes/artigos-index'
 
 export const artigosSearchSchema = z.object({
   q: z.string().optional(),
-  /** Valor ASCII do contrato (M-5) — o rótulo "Mudança/Migração" é só exibição. */
+  /** Valor ASCII do contrato (M-5) - o rótulo "Mudança/Migração" é só exibição. */
   tipo: z.enum(['Conceito', 'Procedimento', 'Mudanca', 'Configuracao']).optional(),
   pagina: z.coerce.number().int().min(1).catch(1),
-  /** PQ-10 — nunca lido pela aplicação, só para o router não descartar o parâmetro. */
+  /** PQ-10: nunca lido pela aplicação, só para o router não descartar o parâmetro. */
   origem: z.string().optional(),
 })
 
-// Rota fina (§2) — toda a lógica mora em `features/artigos/routes/artigos-index.tsx`,
+// Rota fina (§2) - toda a lógica mora em `features/artigos/routes/artigos-index.tsx`,
 // testável isoladamente sem depender da árvore de rotas gerada.
 export const Route = createFileRoute('/artigos/')({
   validateSearch: artigosSearchSchema,

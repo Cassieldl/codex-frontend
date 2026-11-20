@@ -73,7 +73,7 @@ function renderRota(entradas: string[], portao = criarPortao()) {
   return { ...utils, portao }
 }
 
-describe('ProvedorLayoutRota — sair da página não é desfeito pela correção de URL', () => {
+describe('ProvedorLayoutRota: sair da página não é desfeito pela correção de URL', () => {
   it('"Layout InvoiCy" no cabeçalho termina em /layout', async () => {
     server.use(handlerProvedor('ipm', provedorComSlug('ipm')))
     const { router, portao } = renderRota(['/provedores/ipm'])
@@ -163,7 +163,7 @@ describe('ProvedorLayoutRota: endereço antigo com versão', () => {
   })
 })
 
-describe('ProvedorLayoutRota — slug desatualizado', () => {
+describe('ProvedorLayoutRota: slug desatualizado', () => {
   it('troca a entrada do histórico pelo slug canônico, sem empilhar o endereço morto', async () => {
     server.use(
       handlerProvedor('slug-antigo', provedorComSlug('slug-novo')),

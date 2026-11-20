@@ -7,13 +7,13 @@ import { describe, expect, it } from 'vitest'
  * O defeito que motivou isto não aparece em revisão: `useProvedorPorSlug`
  * declarava `TipoErroProvedor = 'nao_encontrado' | 'despublicado'`, construía os
  * dois, e a tela só tinha ramo para `despublicado`. Um provedor inexistente caía
- * no `ErrorState` genérico — "Não foi possível carregar esta informação agora. /
- * Tentar novamente" —, que promete que insistir resolve. A página de versão
+ * no `ErrorState` genérico ("Não foi possível carregar esta informação agora. /
+ * Tentar novamente"), que promete que insistir resolve. A página de versão
  * deixava DOIS tipos mortos assim (`nao_encontrado` e `limite_excedido`), e o
  * próprio repositório já trazia a regra escrita no componente irmão dos artigos:
  * "página que **explica**, nunca 404 mudo".
  *
- * Cada arquivo está coerente consigo mesmo — o hook classifica certo, a tela
+ * Cada arquivo está coerente consigo mesmo - o hook classifica certo, a tela
  * trata o que trata. Só a comparação entre os dois expõe o tipo órfão, e é isso
  * que esta varredura faz.
  */
@@ -33,7 +33,7 @@ const FONTES_TELAS = import.meta.glob(['./**/*.tsx', '../routes/**/*.tsx'], {
  * `export type TipoErroX = 'a' | 'b' | 'c'`, em uma linha ou quebrado em várias.
  *
  * O limite é a primeira linha em branco, não o `;`: o projeto não usa ponto e
- * vírgula, e `[^;]+` engolia o arquivo inteiro — a varredura passava a "achar"
+ * vírgula, e `[^;]+` engolia o arquivo inteiro - a varredura passava a "achar"
  * os literais de `classificarErro` como se fossem declarações.
  */
 const DECLARACAO_DE_TIPO_DE_ERRO = /export type Tipo\w*Erro\w*\s*=([\s\S]*?)\n\s*\n/g
@@ -67,7 +67,7 @@ function telasDeProducao(): string[] {
 /**
  * A fonte sem comentários.
  *
- * Citar o literal numa docstring não é tratá-lo — e justamente a docstring que
+ * Citar o literal numa docstring não é tratá-lo - e justamente a docstring que
  * EXPLICA o defeito cita os tipos envolvidos, então a guarda se dava por
  * satisfeita pelo texto que descreve o problema que ela existe para pegar. Só a
  * mutação mostrou.
@@ -82,7 +82,7 @@ function nomeDoModulo(caminho: string): string {
 }
 
 /**
- * As telas que importam AQUELE hook — e só elas.
+ * As telas que importam AQUELE hook - e só elas.
  *
  * Duas aproximações mais frouxas foram tentadas antes e as duas ficaram
  * inertes, cada uma provada pela mutação: buscar o literal em toda a base
@@ -104,7 +104,7 @@ function telasQueImportam(hook: string): string[] {
 describe('tipo de erro classificado tem tela que o trata', () => {
   it('a varredura enxerga os tipos de erro dos hooks', () => {
     // Sem contar o universo, um glob que parasse de casar deixaria o caso
-    // abaixo passar por vazio — a terceira guarda inerte desta base.
+    // abaixo passar por vazio - a terceira guarda inerte desta base.
     expect(tiposDeErroDeclarados().length).toBeGreaterThanOrEqual(8)
   })
 
@@ -115,7 +115,7 @@ describe('tipo de erro classificado tem tela que o trata', () => {
   it('nenhum tipo declarado fica sem consumidor entre as telas que usam o hook', () => {
     // Palavra inteira, não `'literal'`: a tela pode consumir o tipo comparando
     // (`tipo === 'nao_encontrado'`) ou como chave de um mapa de destinos
-    // (`nao_encontrado: 'versao-nao-encontrada'`) — as duas contam.
+    // (`nao_encontrado: 'versao-nao-encontrada'`) - as duas contam.
     const orfaos = tiposDeErroDeclarados()
       .filter(({ arquivo, literal }) => {
         const consumo = new RegExp(`\\b${literal}\\b`)

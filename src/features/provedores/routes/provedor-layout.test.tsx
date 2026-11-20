@@ -59,7 +59,7 @@ interface OpcoesRenderPagina {
   entradaInicial?: string
   /**
    * Deixa a política de retentativa do próprio hook valer. O padrão do harness
-   * é `retry: false`, que é o que os testes de conteúdo querem — mas ele
+   * é `retry: false`, que é o que os testes de conteúdo querem - mas ele
    * **mascara** o que o hook decide, então quem testa retentativa precisa
    * desligá-lo.
    */
@@ -79,7 +79,7 @@ function renderPagina({
   })
   const navegar = vi.fn()
 
-  // `<Link>`/`<Outlet>` exigem `RouterProvider` real — a árvore de teste só
+  // `<Link>`/`<Outlet>` exigem `RouterProvider` real - a árvore de teste só
   // precisa da rota que hospeda o componente (mesmo padrão de
   // `CabecalhoPublico.test.tsx`: os destinos dos `<Link>` não precisam estar
   // registrados para o `href` resolver).
@@ -116,7 +116,7 @@ function handlerProvedor(slugRequisitado: string, provedor: object) {
   )
 }
 
-describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => {
+describe('ProvedorLayoutPage: correção de URL canônica (PQ-01/F2)', () => {
   it('não redireciona quando o caminho atual já é o canônico', async () => {
     server.use(handlerProvedor('prefeitura-exemplo', provedorFake))
 
@@ -147,7 +147,7 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
   })
 
   // Mutação-alvo (`analise-frontend.md` §2.9): trocar `replace: true` por
-  // navegação normal empilharia histórico — "voltar" no navegador levaria de
+  // navegação normal empilharia histórico - "voltar" no navegador levaria de
   // volta ao slug morto. A asserção acima já cobre o valor exato de
   // `replace: true`; este teste reforça que `navegar` nunca é chamado com
   // outro valor além de `true`.
@@ -167,7 +167,7 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
 
 /**
  * `404` e `410` são respostas definitivas: o endereço não existe, ou existiu e
- * saiu do ar. Antes, só o `410` tinha ramo — o `404` caía no `ErrorState`
+ * saiu do ar. Antes, só o `410` tinha ramo - o `404` caía no `ErrorState`
  * genérico, que diz "Não foi possível carregar esta informação agora. / Tentar
  * novamente" e convida o leitor a insistir num provedor que não existe. O tipo
  * `'nao_encontrado'` era classificado pelo hook e consumido por ninguém.
@@ -175,7 +175,7 @@ describe('ProvedorLayoutPage — correção de URL canônica (PQ-01/F2)', () => 
  * A asserção de ausência do botão importa tanto quanto a presença do título: é
  * ela que prova que o caso não caiu no balde genérico.
  */
-describe('ProvedorLayoutPage — endereços que não levam a lugar nenhum', () => {
+describe('ProvedorLayoutPage: endereços que não levam a lugar nenhum', () => {
   function handlerStatus(slug: string, status: number) {
     return http.get(`${API_URL}/provedores/${slug}`, () => new HttpResponse(null, { status }))
   }
@@ -222,11 +222,11 @@ describe('ProvedorLayoutPage — endereços que não levam a lugar nenhum', () =
 })
 
 /**
- * Retentar um `404` não muda a resposta — só segura a tela em "Carregando
+ * Retentar um `404` não muda a resposta - só segura a tela em "Carregando
  * provedor…" durante o backoff. Medido no navegador antes da correção: quatro
  * requisições ao mesmo endereço inexistente.
  */
-describe('ProvedorLayoutPage — retentativa só no que pode melhorar', () => {
+describe('ProvedorLayoutPage: retentativa só no que pode melhorar', () => {
   function handlerContado(slug: string, status: number) {
     let chamadas = 0
     const handler = http.get(`${API_URL}/provedores/${slug}`, () => {
@@ -271,7 +271,7 @@ describe('ProvedorLayoutPage — retentativa só no que pode melhorar', () => {
  * está emitindo não pode existir só na Home. A página não tem versão no endereço: a consulta leva
  * a versão publicada que P3 entregou primeiro.
  */
-describe('ProvedorLayoutPage — comunicados do contexto', () => {
+describe('ProvedorLayoutPage: comunicados do contexto', () => {
   it('consulta o provedor e a versão publicada, e mostra a qual versão cada comunicado se refere', async () => {
     const { handler, chamadas } = handlerComunicadosRegistrandoChamadas([
       COMUNICADO_CRITICO_DO_PROVEDOR,

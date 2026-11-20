@@ -50,7 +50,7 @@ const ITENS_NAV = [
 ]
 
 /**
- * Marca toda a área interna como `noindex, nofollow` — checklist §9 de
+ * Marca toda a área interna como `noindex, nofollow` - checklist §9 de
  * acessibilidade/SEO. Insere a meta tag ao montar o layout e remove ao
  * desmontar, para não vazar para o portal público quando o usuário navega
  * de volta a uma rota fora de `/interno/**`.

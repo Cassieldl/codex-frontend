@@ -19,7 +19,7 @@ export function extrairIdDoAvisoNoHash(hash: string): number | null {
 /**
  * Link estável de um aviso, o valor que o botão "Copiar link" entrega. É o endereço da página onde
  * o leitor está mais a âncora do aviso: aviso de provedor aparece em todas as abas do provedor, e
- * aviso de versão só na própria — nos dois casos a página atual é a que contém o aviso.
+ * aviso de versão só na própria - nos dois casos a página atual é a que contém o aviso.
  */
 export function construirLinkAviso(origem: string, caminho: string, avisoId: number): string {
   return `${origem}${caminho}#${construirIdAviso(avisoId)}`
@@ -30,7 +30,7 @@ export function construirLinkAviso(origem: string, caminho: string, avisoId: num
  * listas (provedor e versão) e cada uma destaca e rola até o que é seu.
  *
  * Reage também a mudanças de hash depois da montagem. A lista só monta depois que a página
- * carregou, então o `id` já existe no DOM quando o efeito roda — chegar por link copiado entrega
+ * carregou, então o `id` já existe no DOM quando o efeito roda - chegar por link copiado entrega
  * o aviso na tela, não o topo da página.
  */
 export function useAvisoDestacadoPorAncora(avisos: readonly { id: number }[]): number | null {

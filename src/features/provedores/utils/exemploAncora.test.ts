@@ -20,7 +20,7 @@ describe('extrairSlugDoExemploNoHash', () => {
 
   it('devolve null para hash vazio, de outro prefixo ou sem slug', () => {
     expect(extrairSlugDoExemploNoHash('')).toBeNull()
-    // `#campo-…` é a âncora da tabela de campos — nunca abre um exemplo.
+    // `#campo-…` é a âncora da tabela de campos - nunca abre um exemplo.
     expect(extrairSlugDoExemploNoHash('#campo-razao-social')).toBeNull()
     expect(extrairSlugDoExemploNoHash('#exemplo-')).toBeNull()
   })

@@ -19,7 +19,7 @@ declare module '@tanstack/react-router' {
 }
 
 // Não bloqueante: o RouterProvider monta ANTES de qualquer resposta do
-// Keycloak. `keycloak.init()` REJEITA quando o check-sso falha — sem este
+// Keycloak. `keycloak.init()` REJEITA quando o check-sso falha - sem este
 // `.catch()`, o erro estoura no error boundary do router e derruba o
 // portal público inteiro.
 iniciarAutenticacao().catch((erro: unknown) => {

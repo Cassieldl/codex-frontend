@@ -102,7 +102,7 @@ describe('useProvedorPorSlug', () => {
     expect(result.current.error?.message).toContain('"avisos"')
   })
 
-  it('nunca marca nenhuma versão como "vigente" — só slug/rótulo/verificação/url', async () => {
+  it('nunca marca nenhuma versão como "vigente" - só slug/rótulo/verificação/url', async () => {
     server.use(
       http.get(`${API_URL}/provedores/prefeitura-exemplo`, () =>
         HttpResponse.json({ data: provedorFake, message: null }),
@@ -159,14 +159,14 @@ describe('useProvedorPorSlug', () => {
     expect(erro.status).toBe(410)
   })
 
-  // PQ-01 (`arquitetura.md` §5.F) — o `308` nunca chega ao cliente: o
+  // PQ-01 (`arquitetura.md` §5.F) - o `308` nunca chega ao cliente: o
   // `XMLHttpRequest` segue o redirect sozinho, e o que o hook recebe de
   // verdade é um `200` com o recurso do slug NOVO, ainda que a requisição
   // tenha sido feita para o slug antigo. Este mock simula exatamente o
   // efeito do auto-follow, não o `308` cru (que nenhum consumidor de browser
   // observa). Quem decide se a URL precisa ser corrigida é
-  // `corrigirUrlCanonica`, consumido por `route.tsx` — não este hook.
-  it('slug antigo respondido com 200 e o recurso do slug novo (PQ-01) — não é erro', async () => {
+  // `corrigirUrlCanonica`, consumido por `route.tsx` - não este hook.
+  it('slug antigo respondido com 200 e o recurso do slug novo (PQ-01) - não é erro', async () => {
     const provedorComSlugNovo = { ...provedorFake, slug: 'slug-novo' }
     server.use(
       http.get(`${API_URL}/provedores/slug-antigo`, () =>

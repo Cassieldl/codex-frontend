@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { HomePage } from '../features/home/routes/home'
 
 /**
- * `/` — Home (tela 1). Arquivo de rota fino, como o resto do portal: sem
+ * `/` - Home (tela 1). Arquivo de rota fino, como o resto do portal: sem
  * `validateSearch`, porque a Home não tem estado de URL nenhum (sem filtro,
  * sem paginação). Toda a tela vive em `features/home/routes/home.tsx`.
  */

@@ -31,7 +31,7 @@ export function construirLinkExemplo(
 
 /**
  * Slug do exemplo pedido pela âncora da URL, reagindo também a mudanças de
- * hash depois da montagem (`hashchange`) — espelha `useCampoDestacadoPorAncora`
+ * hash depois da montagem (`hashchange`) - espelha `useCampoDestacadoPorAncora`
  * de `destaqueAncora.ts`, que não é editado aqui (arquivo compartilhado).
  *
  * Quem chega por `#exemplo-{slug}` precisa ver o XML, não um acordeão fechado:
