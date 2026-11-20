@@ -20,7 +20,7 @@ export function FaixaLayoutDesatualizado({ versaoLayoutRotulo }: FaixaLayoutDesa
   if (!vigente) return null
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border border-alert-warning-borda bg-alert-warning px-4 py-3.5">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-[var(--radius-aviso)] border border-alert-warning-borda bg-alert-warning px-4 py-3.5">
       <Clock className="size-5 shrink-0 text-alert-warning-icone" aria-hidden="true" />
 
       <p className="min-w-0 flex-[1_1_400px] text-sm text-alert-warning-texto">

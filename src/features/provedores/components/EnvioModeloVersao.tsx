@@ -205,7 +205,7 @@ export function EnvioModeloVersao({
       {camposSemPosicao.length > 0 && (
         <div
           role="note"
-          className="flex flex-col gap-1 rounded-[var(--radius-control)] border border-alert-info-borda bg-alert-info px-3 py-2 text-sm text-ink"
+          className="flex flex-col gap-1 rounded-[var(--radius-aviso)] border border-alert-info-borda bg-alert-info px-3 py-2 text-sm text-ink"
         >
           <p>Campos desta versão que não aparecem no envio modelo:</p>
           <ul className="flex flex-wrap gap-x-3 gap-y-1">

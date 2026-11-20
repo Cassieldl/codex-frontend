@@ -149,7 +149,7 @@ export function BuscaPage({ q: qDaUrl, provedor, navigate }: BuscaPageProps) {
               portal existe para evitar. A segunda frase troca a narração por uma ação.
             */}
             {resultado.qualidade === 'parcial' && (
-              <p className="rounded-[var(--radius-control)] border border-alert-info-borda bg-alert-info px-4 py-2 text-sm text-primary-medium">
+              <p className="rounded-[var(--radius-aviso)] border border-alert-info-borda bg-alert-info px-4 py-2 text-sm text-primary-medium">
                 Resultados aproximados. Se nenhum servir, busque pelo código do erro ou por um
                 trecho menor da mensagem.
               </p>

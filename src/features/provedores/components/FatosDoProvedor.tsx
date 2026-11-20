@@ -69,7 +69,7 @@ function VerificacaoEFonte({
           aria-expanded={fonte.aberta}
           aria-controls={fonte.idDoPainel}
           onClick={fonte.aoAlternar}
-          className="rounded py-1 font-semibold text-primary-medium underline underline-offset-4 hover:text-primary-light hover:decoration-2"
+          className="rounded py-1 font-semibold text-primary-medium underline underline-offset-4 hover:text-link-hover hover:decoration-2"
         >
           {verificadoEm ? 'fonte' : 'Fonte'}
         </button>

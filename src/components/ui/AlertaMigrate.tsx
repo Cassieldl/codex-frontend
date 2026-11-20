@@ -71,7 +71,7 @@ export function AlertaMigrate({
       aria-label={titulo ? undefined : rotulo}
       data-alerta={tipo}
       className={clsx(
-        'flex items-start rounded-[var(--radius-control)] border',
+        'flex items-start rounded-[var(--radius-aviso)] border',
         tomClasse,
         compacto ? 'gap-2 px-2.5 py-1.5 text-sm' : 'min-h-[60px] gap-3 py-[18px] pr-5 pl-4',
         className,

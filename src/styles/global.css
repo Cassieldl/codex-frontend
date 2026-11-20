@@ -27,6 +27,8 @@
   --color-ink: #1b2633;
   --color-muted: #4f5b66;
   --color-link-visitado: #4a3b8c;
+  /* Link no hover: 4,9:1 sobre o azul suave e 5,7:1 sobre branco. `primary-light` dava 3,99:1. */
+  --color-link-hover: #166aab;
   /* Borda DECORATIVA: card, moldura de tabela, divisória. Não atinge os 3:1 de 1.4.11 e não
      precisa: ornamento está fora do alcance do critério. */
   --color-border: #dce5ec;
@@ -96,6 +98,7 @@
   --radius-input: 6px;
   --radius-control: 6px;
   --radius-check: 5px;
+  --radius-aviso: 12px;
   --radius-card: 16px;
   --radius-pill: 999px;
 
@@ -139,7 +142,7 @@ body {
   }
 
   &:hover {
-    color: var(--color-primary-light);
+    color: var(--color-link-hover);
     text-decoration-thickness: 2px;
   }
 }

@@ -53,7 +53,7 @@ export function Toast({ tone, message, onClose }: ToastProps) {
     <div
       role={role}
       className={clsx(
-        'flex min-h-[60px] items-center gap-3 rounded-[var(--radius-control)] border px-4 py-3 text-sm',
+        'flex min-h-[60px] items-center gap-3 rounded-[var(--radius-aviso)] border px-4 py-3 text-sm',
         superficie,
         texto,
       )}

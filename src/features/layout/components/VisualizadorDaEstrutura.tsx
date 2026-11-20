@@ -376,7 +376,7 @@ export function VisualizadorDaEstrutura({
   const avisoDaAncora = slugAncora !== null && linhaDaAncora === null && (
     <p
       role="status"
-      className="rounded-[var(--radius-control)] border border-alert-info-borda bg-alert-info px-3 py-2 text-sm text-ink"
+      className="rounded-[var(--radius-aviso)] border border-alert-info-borda bg-alert-info px-3 py-2 text-sm text-ink"
     >
       {nomeDaAncora} não aparece na estrutura {ROTULO_DO_FORMATO[formato]} desta versão.
     </p>
