@@ -6,8 +6,8 @@ export type OrigemDaEscrita = 'formulario' | 'acao'
 
 export const MENSAGEM_DE_CONFLITO: Record<OrigemDaEscrita, string> = {
   formulario:
-    'Outra pessoa salvou este registro enquanto você editava. Os dados foram atualizados; se salvar de novo, a sua versão substitui a dela.',
-  acao: 'Outra pessoa alterou este registro há pouco. Os dados foram atualizados; se tentar de novo, a sua ação vale sobre a versão dela.',
+    'Outra pessoa salvou este registro enquanto você editava. O que você digitou foi mantido; se salvar de novo, a sua versão substitui a dela.',
+  acao: 'Outra pessoa alterou este registro há pouco. A tela já mostra a versão dela; se repetir a ação, ela vale sobre essa versão.',
 }
 
 /**
