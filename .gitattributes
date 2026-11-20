@@ -1,3 +1,16 @@
+# Texto em LF na árvore de trabalho em qualquer sistema: sem isso, o autocrlf do Git para Windows
+# deixa o status cheio de arquivo modificado sem nenhuma linha diferente.
+* text=auto eol=lf
+
 # Script de shell roda dentro do container Linux: CRLF vindo de checkout no Windows quebra o
 # interpretador ("/bin/sh^M: not found").
 *.sh text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
