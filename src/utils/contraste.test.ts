@@ -3,7 +3,7 @@ import cssGlobal from '../styles/global.css?raw'
 import { calcularContraste, comporSobre, converterHexParaRgb, CONTRASTE_MINIMO } from './contraste'
 
 /**
- * Os tokens vêm do CSS **de produção** (`?raw` entrega o arquivo como texto) — nunca de uma cópia
+ * Os tokens vêm do CSS **de produção** (`?raw` entrega o arquivo como texto), nunca de uma cópia
  * no teste. Copiar os valores faria o teste medir a cópia: mudar o token no produto e esquecer de
  * atualizar aqui manteria a suíte verde com a cor nova nunca medida.
  */
@@ -23,7 +23,7 @@ describe('cálculo de contraste', () => {
     expect(calcularContraste('#ffffff', '#ffffff')).toBeCloseTo(1, 2)
   })
 
-  it('é simétrico — a ordem das cores não muda a razão', () => {
+  it('é simétrico: a ordem das cores não muda a razão', () => {
     expect(calcularContraste('#1b2633', '#ffffff')).toBeCloseTo(
       calcularContraste('#ffffff', '#1b2633'),
       5,
@@ -46,10 +46,10 @@ describe('cálculo de contraste', () => {
 
 /**
  * Conformidade do design system (005, D3). Cada par abaixo é uma combinação que o produto
- * realmente pinta — descobrir que um par medido não existe na tela é motivo para tirá-lo daqui,
+ * realmente pinta: descobrir que um par medido não existe na tela é motivo para tirá-lo daqui,
  * não para "corrigir" uma cor que ninguém vê.
  */
-describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
+describe('WCAG 2.1 AA: pares de cor que o produto usa', () => {
   const TEXTO_SOBRE_BRANCO: ReadonlyArray<readonly [string, string]> = [
     ['ink', 'texto principal'],
     ['muted', 'texto secundário e terciário'],
@@ -57,7 +57,8 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
     ['primary', 'texto de marca'],
     ['error-texto', 'mensagem de erro'],
     ['success', 'confirmação'],
-    ['primary-light', 'destaque e link no hover'],
+    ['primary-light', 'ícone de destaque'],
+    ['link-hover', 'link no hover'],
     ['link-visitado', 'link visitado'],
     ['alert-warning-texto', 'etiqueta e texto de cuidado fora do aviso'],
   ]
@@ -74,6 +75,7 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
     ['alert-error-texto', 'alert-error', 'texto do erro'],
     ['alert-success-texto', 'alert-success', 'texto do sucesso'],
     ['primary-medium', 'alert-info', 'link e etiqueta sobre o azul suave'],
+    ['link-hover', 'alert-info', 'link no hover sobre o azul suave'],
     ['primary-medium', 'alert-warning', 'link no aviso de cuidado'],
     ['primary-medium', 'alert-error', 'link no aviso de erro'],
     ['primary-medium', 'alert-success', 'link no aviso de sucesso'],
@@ -97,10 +99,19 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
     ['codigo-pontuacao', 'codigo-fundo', 'pontuação e número de linha no painel de código'],
     ['codigo-texto', 'primary', 'nome do arquivo e ações no cabeçalho do painel'],
     ['primary', 'accent', 'Baixar no cabeçalho do painel'],
+    ['codigo-valor', 'primary', 'valor de exemplo no bloco escuro do campo'],
   ]
 
   it.each(TEXTO_SOBRE_FAIXA)('texto `%s` sobre `%s` (%s) atinge 4.5:1', (frente, fundo) => {
     expect(calcularContraste(token(frente), token(fundo))).toBeGreaterThanOrEqual(
+      CONTRASTE_MINIMO.textoNormal,
+    )
+  })
+
+  it('valor de exemplo na linha realçada do bloco escuro (branco a 10% no azul) atinge 4.5:1', () => {
+    const fundoDaLinha = comporSobre(token('white'), token('primary'), 0.1)
+
+    expect(calcularContraste(token('codigo-valor'), fundoDaLinha)).toBeGreaterThanOrEqual(
       CONTRASTE_MINIMO.textoNormal,
     )
   })
@@ -120,7 +131,7 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
   })
 
   /**
-   * 1.4.11 — o que identifica um controle, e não apenas decora. Borda de card e divisória ficam
+   * 1.4.11: o que identifica um controle, e não apenas decora. Borda de card e divisória ficam
    * de fora: são ornamento, e exigir 3:1 delas mudaria o produto onde não há problema de uso.
    */
   it('a borda que delimita um campo de formulário atinge 3:1', () => {
@@ -129,7 +140,7 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
     )
   })
 
-  it('o anel de foco atinge 3:1 — é o que diz onde o teclado está', () => {
+  it('o anel de foco atinge 3:1, é o que diz onde o teclado está', () => {
     expect(calcularContraste(token('accent-hover'), token('white'))).toBeGreaterThanOrEqual(
       CONTRASTE_MINIMO.naoTextual,
     )
@@ -160,7 +171,7 @@ describe('WCAG 2.1 AA — pares de cor que o produto usa', () => {
 
 /**
  * Guarda da decisão D1: opacidade sobre o texto principal produz uma cor que ninguém mediu.
- * Abaixo de 70% ela reprova em texto normal — e o produto usa `text-xs`/`text-sm` em todos esses
+ * Abaixo de 70% ela reprova em texto normal, e o produto usa `text-xs`/`text-sm` em todos esses
  * lugares. Este teste existe para que a tentação volte com um número, não com uma impressão.
  */
 describe('opacidade sobre texto não substitui token', () => {

@@ -46,12 +46,12 @@ function ConteudoDoCard({ icone, titulo, texto, acao, seta }: CardDeEntradaProps
 export function CardsDeEntradaHome({ idSecaoProvedores }: { idSecaoProvedores: string }) {
   return (
     <>
-      <Link to="/erros" search={{ codigo: '' }} className={CLASSE_CARD_DE_ENTRADA}>
+      <Link to="/busca" search={{ q: '' }} className={CLASSE_CARD_DE_ENTRADA}>
         <ConteudoDoCard
           icone={<TriangleAlert className="size-5" aria-hidden="true" />}
           titulo="Recebi um erro"
           texto="Busque pelo código ou pela mensagem e veja o campo envolvido e como corrigir."
-          acao="Ver os erros conhecidos"
+          acao="Buscar o erro"
           seta="direita"
         />
       </Link>

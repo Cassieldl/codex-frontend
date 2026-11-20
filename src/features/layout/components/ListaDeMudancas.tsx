@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
-import { useId, useState } from 'react'
+import { Fragment, useId, useState } from 'react'
 import type { MudancaDaVersaoLayout, TipoDeMudanca } from '../types/layoutPublico'
 import { agruparMudancas, caminhoNaoMudou, campoDaMudanca } from '../utils/mudancasDaVersao'
 import type { CampoCitavel } from '../utils/mudancasDaVersao'
@@ -13,7 +13,7 @@ export interface ListaDeMudancasProps {
   limite?: number
 }
 
-const CLASSE_DO_CAMINHO = 'font-mono text-[13px] font-semibold [overflow-wrap:anywhere]'
+const CLASSE_DO_CAMINHO = 'font-mono text-[13px] font-semibold [overflow-wrap:break-word]'
 
 const CLASSE_DO_LINK =
   'rounded text-primary-medium underline decoration-dotted underline-offset-2 hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover'
@@ -32,8 +32,24 @@ interface CaminhoProps {
   slug: string | null
 }
 
+/** Quebra o caminho depois de cada barra, sem separar o `//` inicial da primeira tag. */
+function TextoDoCaminho({ texto }: { texto: string }) {
+  return texto.split(/(?<=[^/]\/)/).map((trecho, indice) => (
+    <Fragment key={indice}>
+      {indice > 0 && <wbr />}
+      {trecho}
+    </Fragment>
+  ))
+}
+
 function Caminho({ texto, slug }: CaminhoProps) {
-  if (!slug) return <span className={`${CLASSE_DO_CAMINHO} text-ink`}>{texto}</span>
+  if (!slug) {
+    return (
+      <span className={`${CLASSE_DO_CAMINHO} text-ink`}>
+        <TextoDoCaminho texto={texto} />
+      </span>
+    )
+  }
 
   return (
     <Link
@@ -41,7 +57,7 @@ function Caminho({ texto, slug }: CaminhoProps) {
       params={{ campoSlug: slug }}
       className={`${CLASSE_DO_CAMINHO} ${CLASSE_DO_LINK}`}
     >
-      {texto}
+      <TextoDoCaminho texto={texto} />
     </Link>
   )
 }

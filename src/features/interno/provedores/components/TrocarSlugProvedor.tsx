@@ -19,13 +19,13 @@ const DURACAO_TOAST_MS = 6000
 /**
  * 409 de unicidade (o endereço já é de outra entidade). Distinguido de
  * `CONFLITO_CONCORRENCIA`, que também é 409 e chega do mesmo endpoint: um é erro
- * do valor digitado, o outro é "alguém salvou antes de você" — misturar os dois
+ * do valor digitado, o outro é "alguém salvou antes de você"; misturar os dois
  * marcaria o campo errado.
  */
 const CODIGO_ENDERECO_JA_EXISTE = 'REGISTRO_DUPLICADO'
 
 /**
- * Teto do `AlterarSlugDtoValidator` do backend — 160, o MENOR entre as três
+ * Teto do `AlterarSlugDtoValidator` do backend: 160, o MENOR entre as três
  * entidades que compartilham o DTO (`provedores.slug` é `varchar(160)`). Não é
  * 180: um valor maior que 160 passaria aqui e voltaria 422 do servidor.
  */
@@ -60,8 +60,8 @@ export interface TrocarSlugProvedorProps {
  * aparece na tela.
  *
  * É uma ação sobre uma URL já indexada e compartilhada, por isso a confirmação
- * tem duas camadas — o modal mostra o endereço atual e um aviso não dispensável
- * sobre o redirecionamento — em vez de um campo solto na página.
+ * tem duas camadas: o modal mostra o endereço atual e um aviso não dispensável
+ * sobre o redirecionamento, em vez de um campo solto na página.
  */
 export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugProvedorProps) {
   const [aberto, setAberto] = useState(false)
@@ -158,7 +158,7 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
 
           <p className="rounded-[var(--radius-input)] border border-alert-warning-borda bg-alert-warning px-3 py-2 text-xs text-ink">
             Todo link com o endereço atual (/provedores/{slugAtual}) continua funcionando e
-            redireciona automaticamente para o novo — mas isso pode levar minutos para propagar em
+            redireciona automaticamente para o novo, mas isso pode levar minutos para propagar em
             buscadores externos.
           </p>
 

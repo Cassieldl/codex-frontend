@@ -11,7 +11,7 @@ import { ListaDeMudancas } from './ListaDeMudancas'
 import { NotaDaVersao } from './NotaDaVersao'
 
 // O hub mostra um resumo; a lista inteira fica a um clique.
-const MUDANCAS_VISIVEIS_NO_HUB = 4
+const MUDANCAS_VISIVEIS_NO_HUB = 6
 
 export interface NovidadesDaVigenteProps {
   novidades: NovidadesVersaoLayout
@@ -62,16 +62,6 @@ export function NovidadesDaVigente({ novidades }: NovidadesDaVigenteProps) {
           {titulo}
         </h2>
 
-        {anterior && (
-          <ContadoresDeMudanca
-            className="min-w-0 flex-1"
-            contadores={contarMudancasDaVersao(mudancas, {
-              novos: novidades.camposNovos,
-              descontinuados: novidades.camposDescontinuados,
-            })}
-          />
-        )}
-
         <LinkExterno
           href={LINK_PLANILHA_DO_LAYOUT}
           className="ml-auto inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold link-texto"
@@ -79,6 +69,16 @@ export function NovidadesDaVigente({ novidades }: NovidadesDaVigenteProps) {
           Baixar a planilha do layout
         </LinkExterno>
       </div>
+
+      {/* Linha própria abaixo do título: com a largura do card, as pílulas cabem numa linha só. */}
+      {anterior && (
+        <ContadoresDeMudanca
+          contadores={contarMudancasDaVersao(mudancas, {
+            novos: novidades.camposNovos,
+            descontinuados: novidades.camposDescontinuados,
+          })}
+        />
+      )}
 
       <NotaDaVersao descricao={novidades.descricao} somenteResumo={mudancas.length > 0} />
       <ListaDeMudancas mudancas={mudancas} campos={campos} limite={MUDANCAS_VISIVEIS_NO_HUB} />

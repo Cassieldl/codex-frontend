@@ -25,7 +25,7 @@ describe('IndicadorErrosDoCampo', () => {
     ).toBeInTheDocument()
   })
 
-  it('concorda no singular quando há uma rejeição só', () => {
+  it('no singular, o rótulo acessível traz o número que aparece no selo', () => {
     render(
       <IndicadorErrosDoCampo
         erros={ERROS.slice(0, 1)}
@@ -35,7 +35,7 @@ describe('IndicadorErrosDoCampo', () => {
     )
 
     expect(
-      screen.getByRole('button', { name: 'Ver a rejeição registrada no campo IntermCNPJ' }),
+      screen.getByRole('button', { name: 'Ver 1 rejeição registrada no campo IntermCNPJ' }),
     ).toBeInTheDocument()
   })
 

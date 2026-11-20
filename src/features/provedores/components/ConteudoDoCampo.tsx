@@ -73,7 +73,7 @@ function FatosDoCampo({ campo }: { campo: CampoVersaoPublico }) {
 
 function TagComValor({ tag, valor }: { tag: string; valor: string | null }) {
   const conteudo = valor ? (
-    <span className="font-semibold text-accent">{valor}</span>
+    <span className="font-semibold text-codigo-valor">{valor}</span>
   ) : (
     <span className="text-alert-info-borda">…</span>
   )

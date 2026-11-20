@@ -62,7 +62,7 @@ function EscolhaSegmentadaComRotulo<T extends string>(props: AlternadorSegmentad
       <span aria-hidden="true" className="text-xs font-normal text-ink lg:text-sm">
         {props.rotulo}
       </span>
-      <AlternadorSegmentado {...props} />
+      <AlternadorSegmentado tamanho="compacto" {...props} />
     </div>
   )
 }

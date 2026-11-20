@@ -46,7 +46,7 @@ function montarLinhas(niveis: string[], exemplo: string | null): LinhaDoXml[] {
       <>
         <Tag nome={tagDoAlvo} />
         {exemplo ? (
-          <span className="text-accent">{exemplo}</span>
+          <span className="text-codigo-valor">{exemplo}</span>
         ) : (
           <span className="text-alert-info-borda">…</span>
         )}

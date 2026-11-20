@@ -202,10 +202,18 @@ describe('LayoutIndicePage', () => {
     expect(secao.querySelector('dl')).toBeNull()
   })
 
-  it('no hub, a lista de mudanças vem cortada em 4, com botão para ver todas', async () => {
+  it('no hub, a lista de mudanças vem cortada em 6, múltiplo da grade, com botão para ver todas', async () => {
     const vigente = {
       ...indiceCompleto.vigente,
-      mudancas: ['DestIE', 'DestIM', 'DestCRT', 'nroContCambio', 'nroDUIMP'].map((nome) => ({
+      mudancas: [
+        'DestIE',
+        'DestIM',
+        'DestCRT',
+        'nroContCambio',
+        'nroDUIMP',
+        'cMotivo',
+        'xMotivo',
+      ].map((nome) => ({
         tipo: 'campoNovo',
         antes: null,
         depois: nome,
@@ -220,7 +228,7 @@ describe('LayoutIndicePage', () => {
           versao: vigente,
           anterior: indiceCompleto.versoes[2],
           descricao: null,
-          camposNovos: 5,
+          camposNovos: 7,
           camposDescontinuados: 0,
         },
       }),
@@ -231,8 +239,8 @@ describe('LayoutIndicePage', () => {
     const secao = await screen.findByRole('region', {
       name: 'O que mudou da versão 4.10 para a 4.12',
     })
-    expect(secao.querySelectorAll('[data-mudanca]')).toHaveLength(4)
-    expect(within(secao).getByRole('button', { name: 'Ver todas as 5 mudanças' })).toHaveAttribute(
+    expect(secao.querySelectorAll('[data-mudanca]')).toHaveLength(6)
+    expect(within(secao).getByRole('button', { name: 'Ver todas as 7 mudanças' })).toHaveAttribute(
       'aria-expanded',
       'false',
     )

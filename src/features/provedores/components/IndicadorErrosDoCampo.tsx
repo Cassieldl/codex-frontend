@@ -19,8 +19,9 @@ export interface IndicadorErrosDoCampoProps {
  * lista de etiquetas. O contador abre o detalhe do campo na seção de rejeições, onde cada erro
  * tem título e link. Deve ficar fora do botão do nome do campo: botão dentro de botão é inválido.
  *
- * A cor é a de severidade "alerta", reservada a risco, a mesma paleta dos avisos. Medido:
- * `#8a4b00` sobre `#fffbef` dá 6.6:1, acima de AA mesmo no tamanho auxiliar.
+ * A cor é a de severidade "alerta", reservada a risco, a mesma paleta dos avisos: o par
+ * `alert-warning-texto` sobre `alert-warning` é medido em `utils/contraste.test.ts`. O rótulo
+ * acessível sempre traz o número que aparece no selo.
  */
 export function IndicadorErrosDoCampo({
   erros,
@@ -30,7 +31,7 @@ export function IndicadorErrosDoCampo({
   if (erros.length === 0) return null
 
   const quantidade =
-    erros.length === 1 ? 'a rejeição registrada' : `as ${erros.length} rejeições registradas`
+    erros.length === 1 ? '1 rejeição registrada' : `as ${erros.length} rejeições registradas`
 
   return (
     <button

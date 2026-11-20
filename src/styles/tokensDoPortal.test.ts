@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcularContraste, CONTRASTE_MINIMO } from '../utils/contraste'
+import { calcularContraste, comporSobre, CONTRASTE_MINIMO } from '../utils/contraste'
 import cssGlobal from './global.css?raw'
 
 const fontes = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}'], {
@@ -126,6 +126,17 @@ describe('páginas públicas', () => {
     expect(cssGlobal).toMatch(/--container-pagina:\s*1264px/)
   })
 
+  it('o main com largura máxima usa max-w-pagina: texto longo limita a medida dentro dele', () => {
+    const mainsComLarguraPropria = fontesDoPortal.flatMap(([caminho, fonte]) =>
+      [...fonte.matchAll(/<main\b[^>]*?className="([^"]*)"/g)]
+        .map((achado) => achado[1])
+        .filter((classes) => /(?<![\w-])max-w-(?!pagina(?![\w-]))/.test(classes))
+        .map((classes) => `${caminho}: ${classes}`),
+    )
+
+    expect(mainsComLarguraPropria).toEqual([])
+  })
+
   it('nenhum texto abaixo de 12px', () => {
     const abaixoDoMinimo = fontesDoPortal.flatMap(([caminho, fonte]) =>
       [...fonte.matchAll(/text-\[(\d+(?:\.\d+)?)px\]/g)]
@@ -134,5 +145,36 @@ describe('páginas públicas', () => {
     )
 
     expect(abaixoDoMinimo).toEqual([])
+  })
+})
+
+describe('cabeçalho escuro', () => {
+  const cabecalho = fontes['../components/layout/CabecalhoPublico.tsx']
+  const pontosDeLuz = fontes['../components/layout/PontosDeLuz.tsx']
+
+  /** O fundo mais claro que os pontos de luz produzem: o azul-claro na maior opacidade, sem blur. */
+  function fundoMaisClaroDoCabecalho(): string {
+    const opacidades = [...pontosDeLuz.matchAll(/bg-primary-light\/(\d+)/g)].map((achado) =>
+      Number(achado[1]),
+    )
+    expect(opacidades.length).toBeGreaterThan(0)
+
+    return comporSobre(
+      corDoToken('primary-light'),
+      corDoToken('primary'),
+      Math.max(...opacidades) / 100,
+    )
+  }
+
+  it('o texto laranja da nav usa o tom de texto sobre escuro, nunca o accent', () => {
+    expect(cabecalho).toMatch(/data-\[secao=atual\]:text-accent-sobre-escuro(?![\w-])/)
+    expect(cabecalho).toMatch(/hover:text-accent-sobre-escuro(?![\w-])/)
+    expect(cabecalho).not.toMatch(/(?<![\w-])(?:[\w[\]=-]+:)?text-accent(?![\w-])/)
+  })
+
+  it('o laranja da nav atinge 4.5:1 no ponto mais claro dos pontos de luz', () => {
+    expect(
+      calcularContraste(corDoToken('accent-sobre-escuro'), fundoMaisClaroDoCabecalho()),
+    ).toBeGreaterThanOrEqual(CONTRASTE_MINIMO.textoNormal)
   })
 })

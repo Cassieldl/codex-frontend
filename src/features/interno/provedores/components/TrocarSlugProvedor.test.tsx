@@ -54,11 +54,13 @@ describe('TrocarSlugProvedor (I37)', () => {
 
     expect(screen.getByText('/provedores/prefeitura-de-exemplo')).toBeInTheDocument()
     expect(
-      screen.getByText(/continua funcionando e redireciona automaticamente para o novo/),
+      screen.getByText(
+        /redireciona automaticamente para o novo, mas isso pode levar minutos para propagar/,
+      ),
     ).toBeInTheDocument()
   })
 
-  it('formato inválido bloqueia o submit — nada chega ao servidor', async () => {
+  it('formato inválido bloqueia o submit: nada chega ao servidor', async () => {
     const usuario = userEvent.setup()
     renderizar()
     await abrirModal(usuario)
@@ -74,7 +76,7 @@ describe('TrocarSlugProvedor (I37)', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it('endereço só de hífen reprova aqui — normalizaria para vazio no servidor', async () => {
+  it('endereço só de hífen reprova aqui: normalizaria para vazio no servidor', async () => {
     const usuario = userEvent.setup()
     renderizar()
     await abrirModal(usuario)
@@ -88,7 +90,7 @@ describe('TrocarSlugProvedor (I37)', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it('endereço com 161 caracteres reprova aqui — é o teto real do backend, 160', async () => {
+  it('endereço com 161 caracteres reprova aqui: é o teto real do backend, 160', async () => {
     const usuario = userEvent.setup()
     renderizar()
     await abrirModal(usuario)
@@ -162,7 +164,7 @@ describe('TrocarSlugProvedor (I37)', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it('409 de concorrência NÃO é erro do campo — é faixa de formulário', async () => {
+  it('409 de concorrência NÃO é erro do campo: é faixa de formulário', async () => {
     const usuario = userEvent.setup()
     server.use(
       http.put(`${API_URL}/interno/provedores/${PROVEDOR_ID}/slug`, () =>

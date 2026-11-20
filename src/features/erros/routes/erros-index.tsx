@@ -35,24 +35,24 @@ export interface ErrosIndexPageProps {
   codigo: string
   /**
    * Injetado pela rota fina (`src/routes/erros/index.tsx`), que usa
-   * `Route.useNavigate()` de verdade — manter como prop deixa o
+   * `Route.useNavigate()` de verdade: manter como prop deixa o
    * redirecionamento automático testável sem montar um `RouterProvider`.
    */
   navigate: (opcoes: NavegarOpcoes) => void
 }
 
 /**
- * `/erros?codigo=` — atalho de desambiguação (M2, §7.3). O suporte cola um
+ * `/erros?codigo=`: atalho de desambiguação (M2, §7.3). O suporte cola um
  * link previsível a partir do código puro: resolve direto quando o código é
  * único, desambigua quando existe em mais de um provedor, e explica quando
- * não documentado — nunca aparência de erro de aplicação nos três casos.
+ * não documentado; nunca aparência de erro de aplicação nos três casos.
  */
 export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
   const { data, isLoading, isError, error, refetch } = useErrosPorCodigo(codigo)
 
   const resolveDireto = data?.totalCount === 1
 
-  // Sem código a query nem roda, então não há `data` para cair em nenhum dos estados abaixo —
+  // Sem código a query nem roda, então não há `data` para cair em nenhum dos estados abaixo,
   // sem este caso a rota renderiza um `<main>` vazio, que é o pior retorno possível para quem
   // chegou por um link do suporte com o parâmetro perdido.
   const semCodigo = !temCodigoParaBuscar(codigo)
@@ -60,7 +60,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
   useEffect(() => {
     if (!data || data.totalCount !== 1) return
     const [unico] = data.items
-    // O slug vem da API — o caminho montado com ele só navega se passar por
+    // O slug vem da API: o caminho montado com ele só navega se passar por
     // `caminhoInternoSeguro` (defesa em profundidade); se falhar, a página fica
     // no skeleton em vez de redirecionar para um destino não validado.
     const caminho = unico ? caminhoInternoSeguro(`/erros/${unico.slug}`) : undefined
@@ -78,7 +78,7 @@ export function ErrosIndexPage({ codigo, navigate }: ErrosIndexPageProps) {
       <main
         id={ID_CONTEUDO_PRINCIPAL}
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
+        className="mx-auto flex w-full max-w-pagina flex-1 flex-col gap-6 px-4 py-8 lg:px-8"
       >
         {(isLoading || resolveDireto) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">

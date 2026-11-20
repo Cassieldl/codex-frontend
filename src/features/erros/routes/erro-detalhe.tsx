@@ -186,7 +186,7 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
       <main
         id={ID_CONTEUDO_PRINCIPAL}
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8"
+        className="mx-auto flex w-full max-w-pagina flex-1 flex-col gap-8 px-4 py-8 lg:px-8"
       >
         {(isLoading || correcao) && (
           <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
@@ -236,7 +236,9 @@ export function ErroDetalhePage({ erroSlug, caminhoAtual, navegar }: ErroDetalhe
                   Causa provável
                 </h2>
                 {/* A causa chega em linhas: a regra da Sefin e, em seguida, onde ela se aplica. */}
-                <p className="whitespace-pre-line text-sm text-ink">{erro.causaProvavel}</p>
+                <p className="max-w-[100ch] whitespace-pre-line text-sm text-ink">
+                  {erro.causaProvavel}
+                </p>
               </section>
             )}
 

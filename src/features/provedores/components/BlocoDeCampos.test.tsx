@@ -108,7 +108,7 @@ function renderizarBloco(sobrescritas: Partial<BlocoDeCamposProps> = {}) {
   return { ...resultado, detalhes, props }
 }
 
-describe('BlocoDeCampos — cabeçalho', () => {
+describe('BlocoDeCampos: cabeçalho', () => {
   it('mostra o rótulo do bloco e a meta, sem filtro', () => {
     const { detalhes } = renderizarBloco()
 
@@ -134,7 +134,7 @@ describe('BlocoDeCampos — cabeçalho', () => {
   })
 })
 
-describe('BlocoDeCampos — abertura', () => {
+describe('BlocoDeCampos: abertura', () => {
   it('o <details> reflete a prop aberto', () => {
     const aberto = renderizarBloco({ aberto: true })
     expect(aberto.detalhes).toHaveAttribute('open')
@@ -169,7 +169,7 @@ describe('BlocoDeCampos — abertura', () => {
   })
 })
 
-describe('BlocoDeCampos — subgrupos e tabelas', () => {
+describe('BlocoDeCampos: subgrupos e tabelas', () => {
   it('cada subgrupo com título tem um h4 e uma tabela própria, com legenda de leitor de tela', () => {
     const { detalhes } = renderizarBloco()
 
@@ -244,7 +244,7 @@ describe('BlocoDeCampos — subgrupos e tabelas', () => {
   })
 })
 
-describe('BlocoDeCampos — colunas', () => {
+describe('BlocoDeCampos: colunas', () => {
   it('o colgroup e a linha de rótulos saem da mesma lista de seis colunas', () => {
     const { detalhes } = renderizarBloco()
 
@@ -325,7 +325,7 @@ describe('BlocoDeCampos — colunas', () => {
   })
 })
 
-describe('BlocoDeCampos — linhas', () => {
+describe('BlocoDeCampos: linhas', () => {
   it('renderiza uma linha por campo e marca só o campo ativo', () => {
     const { detalhes } = renderizarBloco({ slugAtivo: 'servico-ibscbs-cclasstrib' })
 
@@ -347,7 +347,7 @@ describe('BlocoDeCampos — linhas', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Discriminacao' }))
     fireEvent.click(
-      screen.getByRole('button', { name: 'Ver a rejeição registrada no campo cClassTrib' }),
+      screen.getByRole('button', { name: 'Ver 1 rejeição registrada no campo cClassTrib' }),
     )
 
     expect(props.onAbrirCampo).toHaveBeenNthCalledWith(1, 'servico-discriminacao')

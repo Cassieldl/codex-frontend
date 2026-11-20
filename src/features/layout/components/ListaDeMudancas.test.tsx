@@ -43,6 +43,19 @@ describe('ListaDeMudancas', () => {
     expect(container).toHaveTextContent('Passou a aceitar CEP estrangeiro.')
   })
 
+  it('caminho longo só pode quebrar depois de uma barra, sem separar o // inicial', () => {
+    const caminho = '//Servico/Valores/IBSCBS/ValAjusteBCIBSCBSComExt'
+    const { container } = render(<ListaDeMudancas mudancas={[campoNovo(caminho)]} />)
+
+    const linha = container.querySelector('[data-mudanca] [data-caminho]')
+    expect(linha).toHaveTextContent(caminho)
+    expect(
+      [...(linha?.querySelectorAll('wbr') ?? [])].map(
+        (quebra) => quebra.previousSibling?.textContent,
+      ),
+    ).toEqual(['//Servico/', 'Valores/', 'IBSCBS/'])
+  })
+
   it('com limite, mostra os primeiros na ordem da tela e expande e recolhe pelo botão', async () => {
     const usuario = userEvent.setup()
     const { container } = render(<ListaDeMudancas mudancas={SEIS_MUDANCAS} limite={4} />)

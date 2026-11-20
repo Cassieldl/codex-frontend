@@ -15,11 +15,12 @@ export interface CabecalhoPublicoProps {
 }
 
 /**
- * Item da nav: a seção aberta fica em laranja, com o traço embaixo (5,66:1 sobre o azul-profundo).
- * O hover usa o mesmo laranja, sem o traço.
+ * Item da nav: a seção aberta fica em laranja, com o traço embaixo. O texto usa
+ * `accent-sobre-escuro`, que passa de 4,5:1 até no ponto mais claro dos pontos de luz; o traço
+ * fica no `accent`. O hover usa o mesmo laranja do texto, sem o traço.
  */
 const CLASSE_ITEM_NAV =
-  'relative py-1 text-sm font-semibold text-white after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-pill after:bg-transparent hover:text-accent data-[secao=atual]:text-accent data-[secao=atual]:after:bg-accent'
+  'relative py-1 text-sm font-semibold text-white after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-pill after:bg-transparent hover:text-accent-sobre-escuro data-[secao=atual]:text-accent-sobre-escuro data-[secao=atual]:after:bg-accent'
 
 /** Marca o item da seção aberta por atributo de dado: `aria-current` fica só para a página exata. */
 function marcaDaSecao(secao: SecaoDoMenu, secaoAtual: SecaoDoMenu | null) {
@@ -50,7 +51,7 @@ export function CabecalhoPublico({ children }: CabecalhoPublicoProps) {
     <header className="relative isolate bg-primary text-white">
       <PontosDeLuz />
 
-      {/* Primeiro elemento focável do documento — depois do logo já não serve para pular nada. */}
+      {/* Primeiro elemento focável do documento: depois do logo já não serve para pular nada. */}
       <PularParaConteudo />
 
       {/*

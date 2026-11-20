@@ -3,6 +3,19 @@ import { useRef } from 'react'
 import type { KeyboardEvent } from 'react'
 import { indiceDaTecla } from './teclasDeEscolha'
 
+/** `compacto` mede 36 px no total, a altura do Select, para os dois alinharem na mesma barra. */
+export type TamanhoDoAlternador = 'padrao' | 'compacto'
+
+const CLASSES_DO_TRILHO: Record<TamanhoDoAlternador, string> = {
+  padrao: 'p-1',
+  compacto: 'p-0.5',
+}
+
+const CLASSES_DA_OPCAO: Record<TamanhoDoAlternador, string> = {
+  padrao: 'min-h-11',
+  compacto: 'min-h-8',
+}
+
 export interface AlternadorSegmentadoProps<T extends string> {
   /** Nome acessível do grupo, como "Alcance" ou "Formato". */
   rotulo: string
@@ -10,6 +23,7 @@ export interface AlternadorSegmentadoProps<T extends string> {
   rotuloDaOpcao: Record<T, string>
   selecionada: T
   onSelecionar: (opcao: T) => void
+  tamanho?: TamanhoDoAlternador
   className?: string
 }
 
@@ -24,6 +38,7 @@ export function AlternadorSegmentado<T extends string>({
   rotuloDaOpcao,
   selecionada,
   onSelecionar,
+  tamanho = 'padrao',
   className,
 }: AlternadorSegmentadoProps<T>) {
   const grupoRef = useRef<HTMLDivElement | null>(null)
@@ -44,7 +59,8 @@ export function AlternadorSegmentado<T extends string>({
       role="radiogroup"
       aria-label={rotulo}
       className={clsx(
-        'inline-flex gap-1 rounded-[var(--radius-control)] bg-surface-hover p-1',
+        'inline-flex gap-1 rounded-[var(--radius-control)] bg-surface-hover',
+        CLASSES_DO_TRILHO[tamanho],
         className,
       )}
     >
@@ -61,7 +77,8 @@ export function AlternadorSegmentado<T extends string>({
             onClick={() => onSelecionar(opcao)}
             onKeyDown={aoTeclar}
             className={clsx(
-              'min-h-11 rounded-[var(--radius-control)] px-4 text-sm font-bold text-primary transition-[background-color,box-shadow] duration-150',
+              'rounded-[var(--radius-control)] px-4 text-sm font-bold text-primary transition-[background-color,box-shadow] duration-150',
+              CLASSES_DA_OPCAO[tamanho],
               marcada ? 'bg-white shadow-hover' : 'hover:bg-white/60',
             )}
           >

@@ -206,6 +206,15 @@ describe('HomePage', () => {
     expect(screen.getByText(/Layout InvoiCy vigente: versão 4\.12$/)).toBeInTheDocument()
   })
 
+  it('o card "Recebi um erro" leva à busca, não à página de erro sem código', async () => {
+    server.use(handlerHomeSucesso(homeCompleta))
+
+    renderHome()
+
+    const card = await screen.findByRole('link', { name: /^Recebi um erro/ })
+    expect(card.getAttribute('href')).toMatch(/^\/busca(?:\?|$)/)
+  })
+
   it('acervo sem provedor nenhum mostra estado vazio, nunca uma lista muda', async () => {
     server.use(handlerHomeSucesso({ provedoresPorCategoria: [] }))
 

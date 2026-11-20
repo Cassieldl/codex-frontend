@@ -31,7 +31,7 @@ export function extrairSlugDaEstruturaDoHash(hash: string): string | null {
 /**
  * Hook de destaque de linha por âncora (§7.6.4, papel (d) do inventário
  * §3.3). O `versaoSlug` já está determinado pela própria rota antes de
- * qualquer render — a única lógica de frontend necessária é reagir ao
+ * qualquer render: a única lógica de frontend necessária é reagir ao
  * `location.hash`, inclusive quando ele muda depois da montagem
  * (`hashchange`), sem exigir novo fetch: a linha já está no DOM.
  */
