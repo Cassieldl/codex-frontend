@@ -5,7 +5,7 @@ export interface PermissoesEntidade {
   adicionar: boolean
   atualizar: boolean
   remover: boolean
-  /** Role `<entidade>-publicar` (M19) — inexistente para `camposVersao`, sempre `false` ali. */
+  /** Role `<entidade>-publicar` (M19) - inexistente para `camposVersao`, sempre `false` ali. */
   publicar: boolean
 }
 
@@ -13,7 +13,7 @@ export interface PermissoesInterno {
   provedores: PermissoesEntidade
   versoesProvedor: PermissoesEntidade
   camposVersao: PermissoesEntidade
-  /** `exemplos-*` — sem `publicar` (C1): exemplo herda a visibilidade da versão. */
+  /** `exemplos-*` - sem `publicar` (C1): exemplo herda a visibilidade da versão. */
   exemplos: PermissoesEntidade
   avisos: PermissoesEntidade
   versoesLayout: PermissoesEntidade
@@ -21,7 +21,7 @@ export interface PermissoesInterno {
   erros: PermissoesEntidade
   artigos: PermissoesEntidade
   comunicados: PermissoesEntidade
-  /** `lacunasbusca-*` — fila editorial (buscas internas sem resultado); sem `publicar`. */
+  /** `lacunasbusca-*` - fila editorial (buscas internas sem resultado); sem `publicar`. */
   lacunasBusca: PermissoesEntidade
   buscaInterna: { buscar: boolean }
 }
@@ -41,10 +41,10 @@ function agrupar(roles: string[], entidade: string): PermissoesEntidade {
 
 /**
  * Agrupa as roles do token Keycloak por entidade (`analise-frontend.md` §6.5,
- * M21). **Só UX** — esconde/desabilita botão. O backend é a fonte de verdade
+ * M21). **Só UX** - esconde/desabilita botão. O backend é a fonte de verdade
  * (`rules/keycloak.md`); nenhuma regra de negócio depende deste hook.
  *
- * Extrair no topo da página e propagar por prop — nunca espalhar a chamada
+ * Extrair no topo da página e propagar por prop - nunca espalhar a chamada
  * deste hook por componente (`rules/integracao-frontend-bms.md` § Permissões,
  * princípio geral reaproveitado aqui mesmo fora do BMS).
  */

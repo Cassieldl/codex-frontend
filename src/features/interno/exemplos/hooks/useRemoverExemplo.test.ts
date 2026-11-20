@@ -57,7 +57,7 @@ describe('useRemoverExemplo (I42)', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
 
-  it('renova o detalhe da versão pai (C5) — remover também toca a versão', async () => {
+  it('renova o detalhe da versão pai (C5) - remover também toca a versão', async () => {
     let leiturasDaVersao = 0
     server.use(
       http.get(`${API_URL}/interno/versoes/${VERSAO_ID}`, () => {

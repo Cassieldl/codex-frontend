@@ -35,7 +35,7 @@ export interface SecaoExemplosVersaoProps {
 
 /**
  * Seção "Exemplos" da versão na área interna (tela 13). Mesma forma das seções
- * "Avisos" e "Campos" de `idVersao.tsx` — tabela + modal —, mas em componente
+ * "Avisos" e "Campos" de `idVersao.tsx` (tabela + modal), mas em componente
  * próprio: a página já é longa, e a seção tem os três estados assíncronos dela.
  *
  * As permissões chegam por prop (a página checa uma vez e propaga), nunca por

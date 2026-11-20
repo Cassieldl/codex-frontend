@@ -44,7 +44,7 @@ describe('interpretarErroDeEscritaComunicado', () => {
 
     expect(resultado.mensagem).toBe(mensagemDoBackend)
     expect(resultado.codigo).toBe('COMUNICADO_EXPIRADO')
-    // B-4 — a instrução do próximo passo já está na mensagem do backend; o
+    // B-4: a instrução do próximo passo já está na mensagem do backend; o
     // cliente não acrescenta orientação própria para não competir com ela.
     expect(resultado.orientacao).toBeNull()
     expect(resultado.acao).toBe('editar-expiracao')

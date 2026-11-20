@@ -10,7 +10,7 @@ interface EnvelopeExemplosAdmin {
 }
 
 /**
- * `GET /interno/versoes/{id}/exemplos` (I38) — role `exemplos-buscar`. Lista
+ * `GET /interno/versoes/{id}/exemplos` (I38) - role `exemplos-buscar`. Lista
  * completa, enveloped em `data` (a coleção aninhada não usa `PaginatedResponse`).
  *
  * `podeBuscar` desliga a query em vez de deixá-la bater num `403` garantido: sem

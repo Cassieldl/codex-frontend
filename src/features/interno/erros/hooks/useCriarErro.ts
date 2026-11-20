@@ -9,8 +9,8 @@ interface EnvelopeErroAdminDetalhe {
 }
 
 /**
- * `POST /interno/erros` (I19) — role `erros-adicionar`. `versoesProvedorIds`
- * pode ser `[]` salvo quando `origem === 'Prefeitura'` (U9) — validado no
+ * `POST /interno/erros` (I19) - role `erros-adicionar`. `versoesProvedorIds`
+ * pode ser `[]` salvo quando `origem === 'Prefeitura'` (U9) - validado no
  * schema Zod de `ErroForm`, não aqui (o hook só transporta o payload já validado).
  */
 export function useCriarErro() {

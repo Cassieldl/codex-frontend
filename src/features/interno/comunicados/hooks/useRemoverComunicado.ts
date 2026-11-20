@@ -9,7 +9,7 @@ interface VariaveisRemoverComunicado {
 }
 
 /**
- * `DELETE /interno/comunicados/{id}` (I34) — role `comunicados-remover`,
+ * `DELETE /interno/comunicados/{id}` (I34) - role `comunicados-remover`,
  * `If-Match` obrigatório, responde `204` sem corpo.
  */
 export function useRemoverComunicado() {

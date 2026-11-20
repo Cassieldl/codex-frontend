@@ -18,7 +18,7 @@ export interface VariaveisAtualizarExemplo {
 }
 
 /**
- * `PUT /interno/exemplos/{id}` (I41) — role `exemplos-atualizar`, `If-Match`
+ * `PUT /interno/exemplos/{id}` (I41) - role `exemplos-atualizar`, `If-Match`
  * obrigatório. Como em I39, invalida também o detalhe da versão pai: C5 avança o
  * `xmin` dela a cada escrita de exemplo. No `409` de concorrência relê as duas,
  * para a segunda tentativa levar o etag novo.

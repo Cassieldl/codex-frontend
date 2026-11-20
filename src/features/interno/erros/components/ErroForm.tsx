@@ -20,9 +20,9 @@ const ORIGEM_OPTIONS: SelectOption[] = [
 const MENSAGEM_VERSOES_OBRIGATORIAS =
   'Erros de prefeitura precisam de ao menos um provedor/versão aplicável.'
 
-// U9 (`analise-backend.md` §5.1d) — espelha `CriarErroDtoValidator`/
+// U9 (`analise-backend.md` §5.1d) - espelha `CriarErroDtoValidator`/
 // `AtualizarErroDtoValidator`: `versoesProvedorIds` obrigatório só quando a
-// origem é Prefeitura. Roda no submit (`superRefine`), nunca a cada tecla —
+// origem é Prefeitura. Roda no submit (`superRefine`), nunca a cada tecla -
 // trocar a origem de Prefeitura para InvoiCy/Schema com o campo vazio não
 // dispara erro retroativo.
 const erroSchema = z
@@ -277,7 +277,7 @@ export function ErroForm({
         <p className="text-xs text-muted">
           {origemAtual === 'Prefeitura'
             ? 'Obrigatório para erros de origem Prefeitura.'
-            : 'Opcional — deixe vazio se o erro é geral (vale para qualquer integração).'}
+            : 'Opcional: deixe vazio se o erro é geral (vale para qualquer integração).'}
         </p>
 
         {errors.versoesProvedorIds?.message && (

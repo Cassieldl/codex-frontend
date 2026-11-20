@@ -3,7 +3,7 @@ import type { ComunicadoAdminDetalhe } from '../types/comunicadoAdmin'
 import { comunicadosAdminKeys } from './comunicadosAdminKeys'
 
 /**
- * `PUT /interno/comunicados/{id}/publicacao` (I35) — role `comunicados-publicar`.
+ * `PUT /interno/comunicados/{id}/publicacao` (I35) - role `comunicados-publicar`.
  *
  * Publicar um comunicado **já expirado** responde `422 COMUNICADO_EXPIRADO`
  * (decisoes.md B-4) e o hook propaga o erro sem tratamento: quem decide a UX é

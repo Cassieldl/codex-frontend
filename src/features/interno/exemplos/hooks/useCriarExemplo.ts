@@ -10,7 +10,7 @@ interface EnvelopeExemploAdmin {
 }
 
 /**
- * `POST /interno/versoes/{id}/exemplos` (I39) — role `exemplos-adicionar`, sem
+ * `POST /interno/versoes/{id}/exemplos` (I39) - role `exemplos-adicionar`, sem
  * `If-Match` (o recurso ainda não existe). `409` para nome duplicado na versão e
  * `422` para o 11º exemplo (cap de 10, C3) propagam como `AxiosError`.
  *

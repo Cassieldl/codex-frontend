@@ -11,7 +11,7 @@ export interface VariaveisRemoverExemplo {
 }
 
 /**
- * `DELETE /interno/exemplos/{id}` (I42) — role `exemplos-remover`, `If-Match`
+ * `DELETE /interno/exemplos/{id}` (I42) - role `exemplos-remover`, `If-Match`
  * obrigatório, `204` sem corpo. Invalida a lista e o detalhe da versão pai pelo
  * mesmo motivo de I39/I41 (C5).
  */

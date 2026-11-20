@@ -67,7 +67,7 @@ describe('usePermissoesInterno', () => {
   })
 })
 
-describe('usePermissoesInterno — exemplos (tela 13)', () => {
+describe('usePermissoesInterno: exemplos (tela 13)', () => {
   it('agrupa as roles exemplos-* nos quatro verbos; publicar nunca existe (C1)', () => {
     keycloak.tokenParsed = {
       resource_access: {
@@ -102,7 +102,7 @@ describe('usePermissoesInterno — exemplos (tela 13)', () => {
   })
 })
 
-describe('usePermissoesInterno — comunicados (tela 12)', () => {
+describe('usePermissoesInterno: comunicados (tela 12)', () => {
   it('agrupa as roles comunicados-* nos quatro verbos + publicar', () => {
     keycloak.tokenParsed = {
       resource_access: {
@@ -140,7 +140,7 @@ describe('usePermissoesInterno — comunicados (tela 12)', () => {
   })
 })
 
-describe('usePermissoesInterno — fila editorial (lacunasbusca)', () => {
+describe('usePermissoesInterno: fila editorial (lacunasbusca)', () => {
   it('agrupa as roles lacunasbusca-* pelo nome exato da role do backend', () => {
     keycloak.tokenParsed = {
       resource_access: {

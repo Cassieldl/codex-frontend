@@ -9,7 +9,7 @@ import { Textarea } from '../../../../components/ui/Textarea'
 import type { CriarExemploDto, ExemploAdmin } from '../types/exemploAdmin'
 
 /**
- * Teto de negócio do XML (C3), medido em **caracteres** — exatamente como o
+ * Teto de negócio do XML (C3), medido em **caracteres** - exatamente como o
  * `CriarExemploDtoValidator` do backend, que compara `xml.Length` de uma string
  * .NET (UTF-16).
  *
@@ -20,7 +20,7 @@ import type { CriarExemploDto, ExemploAdmin } from '../types/exemploAdmin'
  */
 export const TAMANHO_MAXIMO_XML_CARACTERES = 64 * 1024
 
-/** O slug do exemplo é derivado do nome — nome sem letra nem dígito normalizaria para vazio. */
+/** O slug do exemplo é derivado do nome - nome sem letra nem dígito normalizaria para vazio. */
 const NOME_COM_LETRA_OU_DIGITO = /[a-zA-Z0-9]/
 
 const LIMITE_DESCRICAO = 500
@@ -68,7 +68,7 @@ function valoresIniciais(dado?: ExemploAdmin): ExemploFormValores {
 
 /**
  * Formulário de exemplo (I39/I41). Burro: recebe `onSubmit` e não conhece
- * mutation nenhuma — quem orquestra é `SecaoExemplosVersao`.
+ * mutation nenhuma - quem orquestra é `SecaoExemplosVersao`.
  *
  * Sem campo de slug: na criação ele é derivado do nome pelo backend, e na edição
  * não muda nunca (renomear não recalcula slug). Oferecê-lo aqui prometeria um
@@ -111,7 +111,7 @@ export function ExemploForm({
 
       {initialData && (
         <p className="text-xs text-muted">
-          Endereço do exemplo: <code className="font-mono">#exemplo-{initialData.slug}</code> — não
+          Endereço do exemplo: <code className="font-mono">#exemplo-{initialData.slug}</code>. Não
           muda ao renomear, para não quebrar links já compartilhados.
         </p>
       )}

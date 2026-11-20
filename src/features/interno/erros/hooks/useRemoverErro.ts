@@ -8,7 +8,7 @@ interface VariaveisRemoverErro {
   etag?: string
 }
 
-/** `DELETE /interno/erros/{id}` (I20b) — role `erros-remover`, `If-Match` obrigatório. */
+/** `DELETE /interno/erros/{id}` (I20b) - role `erros-remover`, `If-Match` obrigatório. */
 export function useRemoverErro() {
   const queryClient = useQueryClient()
 

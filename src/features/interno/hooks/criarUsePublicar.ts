@@ -19,7 +19,7 @@ interface EnvelopePublicacao<T> {
  * porque aviso não tem query própria e invalida o detalhe do pai (`usePublicarAviso`).
  *
  * `chaveRaiz` é a `all` da keys factory da entidade (ex.: `provedoresAdminKeys.all`)
- * — invalidar pela raiz também invalida `detail(id)`/`lists()`, que são
+ * - invalidar pela raiz também invalida `detail(id)`/`lists()`, que são
  * sempre prefixados por ela, sem precisar conhecer a forma exata de cada
  * chave aqui dentro.
  */

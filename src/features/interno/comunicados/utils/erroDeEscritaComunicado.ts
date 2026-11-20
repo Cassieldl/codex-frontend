@@ -5,7 +5,7 @@ import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 import type { OrigemDaEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 /**
- * Como o editor sai do erro. Cada valor corresponde a um gesto distinto —
+ * Como o editor sai do erro. Cada valor corresponde a um gesto distinto -
  * dois códigos diferentes nunca compartilham a mesma recuperação, senão a
  * distinção entre eles não chega à tela.
  */
@@ -16,11 +16,11 @@ export interface ErroDeEscritaComunicado {
   codigo: string | null
   /**
    * Mensagem **do backend**, sempre. Em `COMUNICADO_EXPIRADO` ela é o próprio
-   * requisito (decisoes.md B-4: diz o próximo passo) — substituí-la por texto
+   * requisito (decisoes.md B-4: diz o próximo passo) - substituí-la por texto
    * fixo do cliente apagaria a instrução.
    */
   mensagem: string
-  /** Campos culpados no 422 de validação — vazio quando o erro não é de campo. */
+  /** Campos culpados no 422 de validação - vazio quando o erro não é de campo. */
   errosDeCampo: ErroDeCampoApi[]
   /** Orientação do cliente, somada à mensagem. `null` quando o backend já basta. */
   orientacao: string | null
@@ -38,7 +38,7 @@ interface Recuperacao {
  * `409 CONFLITO_CONCORRENCIA` e `400 IF_MATCH_OBRIGATORIO` chegam dos mesmos
  * endpoints e são fáceis de confundir, mas têm causas opostas: no primeiro o
  * `If-Match` foi enviado e está **desatualizado** (outra pessoa salvou antes);
- * no segundo ele **não foi enviado** — o registro em mãos veio sem validador de
+ * no segundo ele **não foi enviado** - o registro em mãos veio sem validador de
  * versão. Recarregar o registro resolve um; recarregar a lista, o outro.
  */
 const RECUPERACAO_POR_CODIGO: Record<string, Recuperacao> = {

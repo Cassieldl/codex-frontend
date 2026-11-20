@@ -16,8 +16,8 @@ interface VariaveisAtualizarErro {
 }
 
 /**
- * `PUT /interno/erros/{id}` (I20a) — role `erros-atualizar`, `If-Match`
- * obrigatório (M9). `409` nunca reseta o modal — a página mantém o formulário
+ * `PUT /interno/erros/{id}` (I20a) - role `erros-atualizar`, `If-Match`
+ * obrigatório (M9). `409` nunca reseta o modal - a página mantém o formulário
  * aberto com o que foi digitado, e o hook relê o detalhe para a segunda
  * tentativa levar o etag novo.
  */

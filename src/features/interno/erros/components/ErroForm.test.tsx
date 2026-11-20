@@ -29,7 +29,7 @@ describe('ErroForm', () => {
     const usuario = userEvent.setup()
     const { onSubmit } = renderForm()
 
-    // Origem padrão é Prefeitura — submeter vazio deve acusar código, título
+    // Origem padrão é Prefeitura - submeter vazio deve acusar código, título
     // e variante, todos em português.
     await usuario.click(screen.getByRole('button', { name: /salvar/i }))
 
@@ -57,7 +57,7 @@ describe('ErroForm', () => {
     const { onSubmit } = renderForm()
 
     await preencherCamposBase(usuario)
-    // Origem já é Prefeitura por padrão — não marca nenhuma versão aplicável.
+    // Origem já é Prefeitura por padrão - não marca nenhuma versão aplicável.
     await usuario.click(screen.getByRole('button', { name: /salvar/i }))
 
     expect(
@@ -77,7 +77,7 @@ describe('ErroForm', () => {
     })
   })
 
-  it('origem="InvoiCy": versoesProvedorIds é opcional — pode submeter vazio', async () => {
+  it('origem="InvoiCy": versoesProvedorIds é opcional - pode submeter vazio', async () => {
     const usuario = userEvent.setup()
     const { onSubmit } = renderForm()
 

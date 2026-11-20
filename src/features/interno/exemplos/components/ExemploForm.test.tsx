@@ -7,7 +7,7 @@ import { ExemploForm } from './ExemploForm'
 
 /**
  * Literal de propósito: é contrato com `TetosExemplo.XmlCaracteres` do backend. Importar a
- * constante da unidade sob teste provaria só que existe um teto — subir o valor nos dois lados
+ * constante da unidade sob teste provaria só que existe um teto - subir o valor nos dois lados
  * manteria a suíte verde e o cliente reprovaria conteúdo que o servidor aceita.
  */
 const TETO_XML_CARACTERES = 65536
@@ -15,7 +15,7 @@ const TETO_XML_CARACTERES = 65536
 /** Idem: o cap de descrição casa com `TetosExemplo.DescricaoCaracteres`. */
 const TETO_DESCRICAO_CARACTERES = 500
 
-/** XML com `total` CARACTERES, todos acentuados no miolo — 2 bytes cada em UTF-8. */
+/** XML com `total` CARACTERES, todos acentuados no miolo - 2 bytes cada em UTF-8. */
 function xmlAcentuadoCom(total: number): string {
   const abertura = '<nfse>'
   const fechamento = '</nfse>'
@@ -37,7 +37,7 @@ const exemploExistente: ExemploAdmin = {
   etag: 'W/"7"',
 }
 
-describe('ExemploForm — teto do XML (C3)', () => {
+describe('ExemploForm: teto do XML (C3)', () => {
   it('aceita XML acentuado de exatamente 65536 CARACTERES, ainda que passe de 65536 bytes', async () => {
     const usuario = userEvent.setup()
     const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
@@ -76,7 +76,7 @@ describe('ExemploForm — teto do XML (C3)', () => {
   })
 })
 
-describe('ExemploForm — teto do resumo', () => {
+describe('ExemploForm: teto do resumo', () => {
   it('aceita resumo de exatamente 500 caracteres', async () => {
     const usuario = userEvent.setup()
     const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
@@ -109,7 +109,7 @@ describe('ExemploForm — teto do resumo', () => {
   })
 })
 
-describe('ExemploForm — demais regras', () => {
+describe('ExemploForm: demais regras', () => {
   it('exige nome e XML antes de chamar o servidor', async () => {
     const usuario = userEvent.setup()
     const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
@@ -122,7 +122,7 @@ describe('ExemploForm — demais regras', () => {
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
-  it('reprova nome sem letra nem número — o slug seria derivado para vazio', async () => {
+  it('reprova nome sem letra nem número - o slug seria derivado para vazio', async () => {
     const usuario = userEvent.setup()
     const onSubmit = vi.fn<ExemploFormProps['onSubmit']>()
 

@@ -60,7 +60,7 @@ function renderizar(props?: Partial<Parameters<typeof SecaoExemplosVersao>[0]>) 
   )
 }
 
-describe('SecaoExemplosVersao — estados de UI', () => {
+describe('SecaoExemplosVersao: estados de UI', () => {
   it('anuncia o carregamento antes da lista chegar', async () => {
     server.use(handlerLista(1))
     renderizar()
@@ -102,7 +102,7 @@ describe('SecaoExemplosVersao — estados de UI', () => {
   })
 })
 
-describe('SecaoExemplosVersao — cap de 10 por versão (C3)', () => {
+describe('SecaoExemplosVersao: cap de 10 por versão (C3)', () => {
   it('no limite, o botão de criar fica desabilitado e diz por quê', async () => {
     server.use(handlerLista(CAP_EXEMPLOS_POR_VERSAO))
     renderizar()
@@ -129,7 +129,7 @@ describe('SecaoExemplosVersao — cap de 10 por versão (C3)', () => {
   })
 })
 
-describe('SecaoExemplosVersao — permissões', () => {
+describe('SecaoExemplosVersao: permissões', () => {
   it('sem exemplos-adicionar, não há botão de criar (mas a seção aparece)', async () => {
     server.use(handlerLista(1))
     renderizar({ podeAdicionar: false })
@@ -154,7 +154,7 @@ describe('SecaoExemplosVersao — permissões', () => {
   })
 
   /**
-   * Sem a role de leitura o `GET` volta `403` em toda tentativa — um `ErrorState`
+   * Sem a role de leitura o `GET` volta `403` em toda tentativa - um `ErrorState`
    * com "Tentar novamente" prometeria uma recuperação que não existe. E a query
    * nem sai: o handler de lista não é registrado, então uma chamada derrubaria o
    * teste (`onUnhandledRequest: 'error'`).
@@ -170,7 +170,7 @@ describe('SecaoExemplosVersao — permissões', () => {
   })
 })
 
-describe('SecaoExemplosVersao — escrita', () => {
+describe('SecaoExemplosVersao: escrita', () => {
   it('criar fecha o modal e a lista converge para o novo cenário', async () => {
     const usuario = userEvent.setup()
     let criados = 0
@@ -237,8 +237,8 @@ describe('SecaoExemplosVersao — escrita', () => {
   })
 })
 
-describe('SecaoExemplosVersao — remoção', () => {
-  it('pede confirmação antes de remover — o clique na lixeira não apaga nada', async () => {
+describe('SecaoExemplosVersao: remoção', () => {
+  it('pede confirmação antes de remover - o clique na lixeira não apaga nada', async () => {
     const usuario = userEvent.setup()
     let exclusoes = 0
 

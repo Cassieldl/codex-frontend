@@ -91,7 +91,7 @@ export function ErrosPage() {
     }
   }
 
-  /** A mutation só dispara depois da confirmação — nunca do clique na lista. */
+  /** A mutation só dispara depois da confirmação - nunca do clique na lista. */
   function confirmarRemocao() {
     if (!erroParaRemover) return
 
