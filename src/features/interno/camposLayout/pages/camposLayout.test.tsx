@@ -184,14 +184,26 @@ function linhaDaVersao(rotulo: string): HTMLElement {
   return screen.getByRole('row', { name: new RegExp(rotulo) })
 }
 
+/** O nome da linha leva aos campos da versão; editar os dados dela fica no menu de mais ações. */
+async function abrirMenuDaVersao(rotulo: string, usuario = userEvent.setup()) {
+  await usuario.click(
+    within(linhaDaVersao(rotulo)).getByRole('button', {
+      name: `Mais ações da versão do layout ${rotulo}`,
+    }),
+  )
+  await screen.findByRole('menu')
+  return usuario
+}
+
+async function abrirEdicaoDaVersao(rotulo: string, usuario = userEvent.setup()) {
+  await abrirMenuDaVersao(rotulo, usuario)
+  await usuario.click(screen.getByRole('menuitem', { name: 'Editar dados da versão' }))
+}
+
 async function editarRotulo(rotuloAtual: string, rotuloNovo: string) {
   const usuario = userEvent.setup()
   await screen.findByText(rotuloAtual)
-  await usuario.click(
-    within(linhaDaVersao(rotuloAtual)).getByRole('button', {
-      name: `Editar versão do layout ${rotuloAtual}`,
-    }),
-  )
+  await abrirEdicaoDaVersao(rotuloAtual, usuario)
   await screen.findByRole('heading', { name: 'Editar versão do Layout InvoiCy' })
 
   const campoRotulo = screen.getByRole('textbox', { name: /Rótulo/ })
@@ -253,8 +265,9 @@ describe('CamposLayoutPage: estados de carregamento', () => {
 describe('CamposLayoutPage: cada ação depende da própria role', () => {
   const BOTOES_POR_ACAO = {
     adicionar: /^nova versão do layout$/i,
-    atualizar: /^editar versão do layout/i,
-    publicar: /^(publicar|despublicar)$/i,
+    // Na versão em rascunho, editar os dados fica no menu e publicar fica visível.
+    atualizar: /^mais ações da versão do layout/i,
+    publicar: /^publicar$/i,
   }
 
   it('só com versoeslayout-buscar, nenhuma ação de escrita aparece', async () => {
@@ -366,11 +379,7 @@ describe('CamposLayoutPage: edição', () => {
 
     renderizarPagina()
     await screen.findByText('Layout 8.00')
-    await usuario.click(
-      within(linhaDaVersao('Layout 8.00')).getByRole('button', {
-        name: 'Editar versão do layout Layout 8.00',
-      }),
-    )
+    await abrirEdicaoDaVersao('Layout 8.00', usuario)
     await screen.findByRole('heading', { name: 'Editar versão do Layout InvoiCy' })
 
     const campoDescricao = screen.getByRole('textbox', { name: /Descrição/ })
@@ -401,8 +410,9 @@ describe('CamposLayoutPage: publicação', () => {
 
     await usuario.click(within(linha()).getByRole('button', { name: 'Publicar' }))
 
-    expect(await within(linha()).findByRole('button', { name: 'Despublicar' })).toBeInTheDocument()
-    expect(within(linha()).getByText('Publicado')).toBeInTheDocument()
+    expect(await within(linha()).findByText('Publicado')).toBeInTheDocument()
+    await abrirMenuDaVersao('Layout 8.00', usuario)
+    expect(screen.getByRole('menuitem', { name: 'Despublicar' })).toBeInTheDocument()
     await waitFor(() =>
       expect(escritas).toEqual([
         {
@@ -480,11 +490,7 @@ describe('CamposLayoutPage: 409 na edição', () => {
 
     renderizarPagina()
     await screen.findByText('Layout 8.00')
-    await usuario.click(
-      within(linhaDaVersao('Layout 8.00')).getByRole('button', {
-        name: 'Editar versão do layout Layout 8.00',
-      }),
-    )
+    await abrirEdicaoDaVersao('Layout 8.00', usuario)
     const campoRotulo = await screen.findByRole('textbox', { name: /Rótulo/ })
     await usuario.clear(campoRotulo)
     await usuario.type(campoRotulo, 'Layout 8.01')

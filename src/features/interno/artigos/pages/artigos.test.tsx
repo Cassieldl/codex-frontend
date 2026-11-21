@@ -142,6 +142,15 @@ function linhaDoArtigo(titulo: string): HTMLElement {
   return screen.getByRole('row', { name: new RegExp(titulo, 'i') })
 }
 
+/** Verificar, despublicar e remover moram no menu de mais ações da linha. */
+async function abrirMenuDoArtigo(titulo: string, usuario = userEvent.setup()) {
+  await usuario.click(
+    within(linhaDoArtigo(titulo)).getByRole('button', { name: `Mais ações do artigo ${titulo}` }),
+  )
+  await screen.findByRole('menu')
+  return usuario
+}
+
 beforeEach(() => {
   autenticarCom(TODAS_AS_ROLES)
 })
@@ -249,7 +258,8 @@ describe('ArtigosPage: aviso do artigo reservado ausente (I36)', () => {
 })
 
 describe('ArtigosPage: artigo reservado bloqueia remover e despublicar', () => {
-  it('remover e despublicar nascem desabilitados com o motivo no title; o comum continua livre', async () => {
+  it('remover e despublicar nascem indisponíveis com o motivo à vista; o comum continua livre', async () => {
+    const usuario = userEvent.setup()
     server.use(
       ...handlersDeReferencia(),
       handlerArtigoExiste(SLUG_COMO_FUNCIONA, 5),
@@ -260,22 +270,30 @@ describe('ArtigosPage: artigo reservado bloqueia remover e despublicar', () => {
 
     await screen.findByText('Como funciona')
 
-    const linhaReservada = linhaDoArtigo('Como funciona')
-    const remover = within(linhaReservada).getByRole('button', {
-      name: 'Remover artigo Como funciona',
-    })
-    const despublicar = within(linhaReservada).getByRole('button', { name: 'Despublicar' })
+    await abrirMenuDoArtigo('Como funciona', usuario)
+    const remover = screen.getByRole('menuitem', { name: 'Remover artigo Como funciona' })
+    const despublicar = screen.getByRole('menuitem', { name: /^Despublicar/ })
 
-    expect(remover).toBeDisabled()
-    expect(remover).toHaveAttribute('title', expect.stringContaining('não pode ser removido'))
-    expect(despublicar).toBeDisabled()
-    expect(despublicar).toHaveAttribute('title', expect.stringContaining('não pode ser removido'))
+    expect(remover).toHaveAttribute('aria-disabled', 'true')
+    expect(remover).toHaveAccessibleDescription(expect.stringContaining('não pode ser removido'))
+    expect(despublicar).toHaveAttribute('aria-disabled', 'true')
+    expect(despublicar).toHaveAccessibleDescription(
+      expect.stringContaining('não pode ser removido'),
+    )
 
-    const linhaComum = linhaDoArtigo('Migrar para ABRASF 2.04')
+    // Item indisponível não abre a confirmação.
+    await usuario.click(remover)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await usuario.keyboard('{Escape}')
+
+    await abrirMenuDoArtigo('Migrar para ABRASF 2.04', usuario)
     expect(
-      within(linhaComum).getByRole('button', { name: 'Remover artigo Migrar para ABRASF 2.04' }),
+      screen.getByRole('menuitem', { name: 'Remover artigo Migrar para ABRASF 2.04' }),
+    ).not.toHaveAttribute('aria-disabled')
+    await usuario.keyboard('{Escape}')
+    expect(
+      within(linhaDoArtigo('Migrar para ABRASF 2.04')).getByRole('button', { name: 'Publicar' }),
     ).toBeEnabled()
-    expect(within(linhaComum).getByRole('button', { name: 'Publicar' })).toBeEnabled()
   })
 
   it('publicar o reservado continua permitido: publicar nunca quebra link', async () => {
@@ -334,7 +352,8 @@ describe('ArtigosPage: artigo reservado bloqueia remover e despublicar', () => {
     renderizarPagina()
 
     await screen.findByText('Como funciona')
-    await usuario.click(screen.getByRole('button', { name: 'Remover artigo Como funciona' }))
+    await abrirMenuDoArtigo('Como funciona', usuario)
+    await usuario.click(screen.getByRole('menuitem', { name: 'Remover artigo Como funciona' }))
 
     // Remoção passou a exigir confirmação: o clique na lixeira abre o diálogo, e o DELETE (com
     // ele o 422 que este caso exercita) só sai depois do "Remover" de dentro dele.
@@ -362,9 +381,7 @@ describe('ArtigosPage: edição e permissões', () => {
     renderizarPagina()
 
     await screen.findByText('Migrar para ABRASF 2.04')
-    await usuario.click(
-      screen.getByRole('button', { name: 'Editar artigo Migrar para ABRASF 2.04' }),
-    )
+    await usuario.click(screen.getByRole('button', { name: 'Migrar para ABRASF 2.04' }))
 
     const corpo = await screen.findByRole('textbox', { name: /Corpo/ })
     expect(corpo).toHaveValue('## Antes de comecar')
@@ -383,8 +400,11 @@ describe('ArtigosPage: edição e permissões', () => {
     await screen.findByText('Migrar para ABRASF 2.04')
 
     expect(screen.queryByRole('button', { name: 'Novo artigo' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /^Editar artigo/ })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /^Remover artigo/ })).not.toBeInTheDocument()
+    // Sem role de atualizar, o título é texto: não abre edição.
+    expect(
+      screen.queryByRole('button', { name: 'Migrar para ABRASF 2.04' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Mais ações do artigo/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Publicar' })).not.toBeInTheDocument()
   })
 
@@ -408,11 +428,8 @@ describe('ArtigosPage: edição e permissões', () => {
     renderizarPagina()
 
     await screen.findByText('Migrar para ABRASF 2.04')
-    await usuario.click(
-      screen.getByRole('button', {
-        name: 'Marcar artigo Migrar para ABRASF 2.04 como verificado hoje',
-      }),
-    )
+    await abrirMenuDoArtigo('Migrar para ABRASF 2.04', usuario)
+    await usuario.click(screen.getByRole('menuitem', { name: 'Marcar como verificado hoje' }))
 
     await waitFor(() => expect(capturado.corpo).not.toBeNull())
     expect(capturado.ifMatch).toBe('W/"3"')
@@ -539,9 +556,7 @@ describe('ArtigosPage: vínculos do artigo', () => {
   async function abrirEdicao(usuario: ReturnType<typeof userEvent.setup>) {
     renderizarPagina()
     await screen.findByText('Migrar para ABRASF 2.04')
-    await usuario.click(
-      screen.getByRole('button', { name: 'Editar artigo Migrar para ABRASF 2.04' }),
-    )
+    await usuario.click(screen.getByRole('button', { name: 'Migrar para ABRASF 2.04' }))
     return screen.findByRole('dialog')
   }
 
@@ -612,5 +627,48 @@ describe('ArtigosPage: vínculos do artigo', () => {
 
     await waitFor(() => expect(corposEnviados).toHaveLength(1))
     expect(corposEnviados[0]).toMatchObject({ erroIds: [12, 99], campoLayoutIds: [40] })
+  })
+})
+
+describe('ArtigosPage: busca, filtros e ordenação', () => {
+  it('busca, tipo, publicação e coluna viram os parâmetros do contrato, sempre na página 1', async () => {
+    const usuario = userEvent.setup()
+    const leituras: URLSearchParams[] = []
+    server.use(
+      ...handlersDeReferencia(),
+      handlerArtigoExiste(SLUG_COMO_FUNCIONA, 5),
+      http.get(`${API_URL}/interno/artigos`, ({ request }) => {
+        leituras.push(new URL(request.url).searchParams)
+        return HttpResponse.json({
+          items: [RASCUNHO_COMUM],
+          totalCount: 1,
+          page: 1,
+          pageSize: 25,
+          totalPages: 1,
+        })
+      }),
+    )
+    const ultimaLeitura = () => leituras[leituras.length - 1]
+
+    renderizarPagina()
+    await screen.findByText('Migrar para ABRASF 2.04')
+
+    await usuario.click(screen.getByRole('button', { name: 'Verificado em' }))
+    await usuario.click(screen.getByRole('combobox', { name: 'Tipo' }))
+    await usuario.click(screen.getByRole('option', { name: 'Procedimento' }))
+    await usuario.click(screen.getByRole('radio', { name: 'Rascunhos' }))
+    await usuario.type(screen.getByRole('searchbox', { name: 'Buscar' }), 'abrasf')
+
+    await waitFor(() => expect(ultimaLeitura()?.get('q')).toBe('abrasf'))
+    const leitura = ultimaLeitura()
+    expect(leitura?.get('tipo')).toBe('Procedimento')
+    expect(leitura?.get('publicado')).toBe('false')
+    expect(leitura?.get('sortBy')).toBe('verificadoem')
+    expect(leitura?.get('sortDirection')).toBe('asc')
+    expect(leitura?.get('pagina')).toBe('1')
+    expect(screen.getByRole('columnheader', { name: /Verificado em/ })).toHaveAttribute(
+      'aria-sort',
+      'ascending',
+    )
   })
 })

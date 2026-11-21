@@ -1,5 +1,10 @@
 export type OrigemErro = 'Prefeitura' | 'InvoiCy' | 'Schema'
 
+export const ORIGENS_ERRO: readonly OrigemErro[] = ['Prefeitura', 'InvoiCy', 'Schema']
+
+/** Colunas que `GET /interno/erros` aceita em `sortBy`. */
+export type CampoDeOrdenacaoErro = 'codigo' | 'titulo' | 'origem' | 'publicado'
+
 /** Item de `GET /interno/erros` (`ErroAdminListaItemDto`): só o que a tabela mostra, sem o agregado. */
 export interface ErroAdminListaItem {
   id: number

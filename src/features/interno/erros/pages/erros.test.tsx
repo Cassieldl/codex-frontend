@@ -154,12 +154,19 @@ function linhaDoErro(codigo: string): HTMLElement {
   return screen.getByRole('row', { name: new RegExp(codigo) })
 }
 
-async function abrirConfirmacaoDeRemocao(codigo: string) {
-  const usuario = userEvent.setup()
-  await screen.findByText(codigo)
+/** Despublicar e remover moram no menu de mais ações da linha. */
+async function abrirMenuDoErro(codigo: string, usuario = userEvent.setup()) {
   await usuario.click(
-    within(linhaDoErro(codigo)).getByRole('button', { name: `Remover erro ${codigo}` }),
+    within(linhaDoErro(codigo)).getByRole('button', { name: `Mais ações do erro ${codigo}` }),
   )
+  await screen.findByRole('menu')
+  return usuario
+}
+
+async function abrirConfirmacaoDeRemocao(codigo: string) {
+  await screen.findByText(codigo)
+  const usuario = await abrirMenuDoErro(codigo)
+  await usuario.click(screen.getByRole('menuitem', { name: `Remover erro ${codigo}` }))
   await screen.findByRole('heading', { name: 'Remover erro' })
   return usuario
 }
@@ -213,10 +220,11 @@ describe('ErrosPage: estados de carregamento', () => {
 })
 
 describe('ErrosPage: cada ação depende da própria role', () => {
+  // No rascunho, editar é o título da linha, publicar fica visível e remover vive no menu.
   const BOTOES_POR_ACAO = {
-    atualizar: /^editar erro/i,
-    publicar: /^(publicar|despublicar)$/i,
-    remover: /^remover erro/i,
+    atualizar: ERRO_RASCUNHO.titulo,
+    publicar: /^publicar$/i,
+    remover: /^mais ações do erro/i,
   }
 
   it('só com erros-buscar, nenhuma ação de escrita aparece', async () => {
@@ -309,10 +317,12 @@ describe('ErrosPage: publicação', () => {
 
     await usuario.click(within(linhaDoErro('E0117')).getByRole('button', { name: 'Publicar' }))
 
+    expect(await within(linhaDoErro('E0117')).findByText('Publicado')).toBeInTheDocument()
     expect(
-      await within(linhaDoErro('E0117')).findByRole('button', { name: 'Despublicar' }),
-    ).toBeInTheDocument()
-    expect(within(linhaDoErro('E0117')).getByText('Publicado')).toBeInTheDocument()
+      within(linhaDoErro('E0117')).queryByRole('button', { name: 'Publicar' }),
+    ).not.toBeInTheDocument()
+    await abrirMenuDoErro('E0117', usuario)
+    expect(screen.getByRole('menuitem', { name: 'Despublicar' })).toBeInTheDocument()
     expect(escritas).toEqual([
       {
         metodo: 'PUT',
@@ -415,9 +425,9 @@ function servirEdicao({ portao, falhasAntesDeResponder = 0 }: OpcoesDoDetalhe = 
 async function abrirEdicao(codigo: string) {
   const usuario = userEvent.setup()
   await screen.findByText(codigo)
-  await usuario.click(
-    within(linhaDoErro(codigo)).getByRole('button', { name: `Editar erro ${codigo}` }),
-  )
+  // O título da linha é o gesto de editar.
+  const celulaDoTitulo = within(linhaDoErro(codigo)).getAllByRole('cell')[1]
+  await usuario.click(within(celulaDoTitulo).getByRole('button'))
   await screen.findByRole('heading', { name: 'Editar erro' })
   return usuario
 }
@@ -762,5 +772,126 @@ describe('ErrosPage: opções de versões só com o modal aberto', () => {
       await screen.findByRole('checkbox', { name: 'Emissor Nacional · 1.00' }),
     ).toBeInTheDocument()
     expect(leiturasDeProvedores).toHaveLength(2)
+  })
+})
+
+describe('ErrosPage: busca, filtros e ordenação', () => {
+  /** Lista de três páginas que guarda a query string de cada leitura. */
+  function criarServidorQueRegistraLeituras() {
+    const leituras: URLSearchParams[] = []
+    server.use(
+      handlerProvedoresVazio(),
+      http.get(`${API_URL}/interno/erros`, ({ request }) => {
+        leituras.push(new URL(request.url).searchParams)
+        return HttpResponse.json({
+          items: [ERRO_RASCUNHO, ERRO_PUBLICADO],
+          totalCount: 60,
+          page: 1,
+          pageSize: 25,
+          totalPages: 3,
+        })
+      }),
+    )
+    return { ultimaLeitura: () => leituras[leituras.length - 1] }
+  }
+
+  it('busca, origem, publicação e coluna viram os parâmetros do contrato', async () => {
+    const usuario = userEvent.setup()
+    const { ultimaLeitura } = criarServidorQueRegistraLeituras()
+
+    renderizarPagina()
+    await screen.findByText('E0117')
+
+    await usuario.click(screen.getByRole('button', { name: 'Código' }))
+    await usuario.click(screen.getByRole('button', { name: 'Código' }))
+    await usuario.click(screen.getByRole('combobox', { name: 'Origem' }))
+    await usuario.click(screen.getByRole('option', { name: 'Schema' }))
+    await usuario.click(screen.getByRole('radio', { name: 'Rascunhos' }))
+    await usuario.type(screen.getByRole('searchbox', { name: 'Buscar' }), 'cnpj')
+
+    await waitFor(() => expect(ultimaLeitura()?.get('q')).toBe('cnpj'))
+    const leitura = ultimaLeitura()
+    expect(leitura?.get('origem')).toBe('Schema')
+    expect(leitura?.get('publicado')).toBe('false')
+    expect(leitura?.get('sortBy')).toBe('codigo')
+    expect(leitura?.get('sortDirection')).toBe('desc')
+    expect(screen.getByRole('columnheader', { name: /Código/ })).toHaveAttribute(
+      'aria-sort',
+      'descending',
+    )
+  })
+
+  it('trocar um filtro volta para a página 1', async () => {
+    const usuario = userEvent.setup()
+    const { ultimaLeitura } = criarServidorQueRegistraLeituras()
+
+    renderizarPagina()
+    await screen.findByText('E0117')
+
+    await usuario.click(screen.getByRole('button', { name: 'Página 2' }))
+    await waitFor(() => expect(ultimaLeitura()?.get('pagina')).toBe('2'))
+
+    await usuario.click(screen.getByRole('radio', { name: 'Publicados' }))
+
+    await waitFor(() => expect(ultimaLeitura()?.get('publicado')).toBe('true'))
+    expect(ultimaLeitura()?.get('pagina')).toBe('1')
+  })
+
+  it('sem resultado com filtro, oferece limpar os filtros em vez de dizer que não há erros', async () => {
+    const usuario = userEvent.setup()
+    server.use(
+      handlerProvedoresVazio(),
+      http.get(`${API_URL}/interno/erros`, ({ request }) => {
+        const filtrado = new URL(request.url).searchParams.has('publicado')
+        return HttpResponse.json(paginaDeErros(filtrado ? [] : [ERRO_RASCUNHO]))
+      }),
+    )
+
+    renderizarPagina()
+    await screen.findByText('E0117')
+    await usuario.click(screen.getByRole('radio', { name: 'Publicados' }))
+
+    expect(await screen.findByText('Nenhum erro encontrado com estes filtros.')).toBeInTheDocument()
+    await usuario.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+
+    expect(await screen.findByText('E0117')).toBeInTheDocument()
+  })
+})
+
+describe('ErrosPage: o foco fica na linha depois de publicar ou despublicar', () => {
+  it('despublicar pelo menu com o teclado deixa o foco no botão de mais ações da linha', async () => {
+    const usuario = userEvent.setup()
+    const { escritas } = criarServidorDeErros([ERRO_PUBLICADO])
+
+    renderizarPagina()
+    await screen.findByText('E0118')
+
+    const gatilho = within(linhaDoErro('E0118')).getByRole('button', {
+      name: 'Mais ações do erro E0118',
+    })
+    gatilho.focus()
+    await usuario.keyboard('{Enter}')
+    expect(screen.getByRole('menuitem', { name: 'Despublicar' })).toHaveFocus()
+    await usuario.keyboard('{Enter}')
+
+    expect(await within(linhaDoErro('E0118')).findByText('Rascunho')).toBeInTheDocument()
+    expect(escritas).toHaveLength(1)
+    expect(document.activeElement).toBe(
+      within(linhaDoErro('E0118')).getByRole('button', { name: 'Mais ações do erro E0118' }),
+    )
+  })
+
+  it('publicar, cujo botão some da linha, devolve o foco ao botão de mais ações', async () => {
+    const usuario = userEvent.setup()
+    criarServidorDeErros([ERRO_RASCUNHO])
+
+    renderizarPagina()
+    await screen.findByText('E0117')
+    await usuario.click(within(linhaDoErro('E0117')).getByRole('button', { name: 'Publicar' }))
+
+    const gatilho = await within(linhaDoErro('E0117')).findByRole('button', {
+      name: 'Mais ações do erro E0117',
+    })
+    await waitFor(() => expect(gatilho).toHaveFocus())
   })
 })

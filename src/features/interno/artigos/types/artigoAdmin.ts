@@ -2,6 +2,9 @@ import type { TipoArtigo } from '../../../artigos/types/artigo'
 
 export type { TipoArtigo }
 
+/** Colunas que `GET /interno/artigos` aceita em `sortBy`. */
+export type CampoDeOrdenacaoArtigo = 'titulo' | 'tipo' | 'verificadoem' | 'publicado'
+
 /**
  * Item de `GET /interno/artigos` (I23) - compacto, **sem** `corpo` nem as
  * coleções de referência cruzada. Shape conferido contra

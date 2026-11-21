@@ -193,7 +193,10 @@ describe('IdVersaoLayoutPage: publicação de campo canônico', () => {
 
     await screen.findByText('Razão social do prestador')
     const linha = () => screen.getByRole('row', { name: /Razão social do prestador/ })
-    await usuario.click(within(linha()).getByRole('button', { name: 'Despublicar' }))
+    await usuario.click(
+      within(linha()).getByRole('button', { name: /^Mais ações do campo canônico/ }),
+    )
+    await usuario.click(screen.getByRole('menuitem', { name: 'Despublicar' }))
 
     expect(await within(linha()).findByRole('alert')).toHaveTextContent(MENSAGEM_DE_CONFLITO.acao)
   })

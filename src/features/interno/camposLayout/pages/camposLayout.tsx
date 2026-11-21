@@ -1,16 +1,22 @@
 import { Link } from '@tanstack/react-router'
-import { Pencil, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../../../components/ui/Button'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import { ErrorState } from '../../../../components/ui/ErrorState'
+import { ItemDoMenuDeAcoes, MenuDeAcoes } from '../../../../components/ui/MenuDeAcoes'
 import { Modal } from '../../../../components/ui/Modal'
 import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
+import { useFocoNaLinhaAposTroca } from '../../hooks/useFocoNaLinhaAposTroca'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarVersaoLayout } from '../../hooks/usePublicarVersaoLayout'
+import {
+  CLASSE_DAS_ACOES_DA_LINHA,
+  CLASSE_DO_NOME_EDITAVEL,
+} from '../../utils/classesDaTabelaInterna'
 import { etagNaColecao } from '../../utils/etagDeConcorrencia'
 import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { VersaoLayoutForm, type VersaoLayoutFormDto } from '../components/VersaoLayoutForm'
@@ -37,6 +43,7 @@ export function CamposLayoutPage() {
   const [erroDePublicacao, setErroDePublicacao] = useState<ErroDePublicacao | null>(null)
 
   const { data, isLoading, isError, refetch } = useVersoesLayout({ pagina, tamanhoPagina })
+  const devolverFocoNaLinha = useFocoNaLinhaAposTroca(data)
   const criarVersaoLayout = useCriarVersaoLayout()
   const atualizarVersaoLayout = useAtualizarVersaoLayout()
   const publicarVersaoLayout = usePublicarVersaoLayout()
@@ -86,6 +93,7 @@ export function CamposLayoutPage() {
     publicarVersaoLayout.mutate(
       { id: versaoLayout.id, publicado: !versaoLayout.publicado, etag: versaoLayout.etag },
       {
+        onSuccess: () => devolverFocoNaLinha(`linha-versaoLayout-${versaoLayout.id}`),
         onError: (falha) =>
           setErroDePublicacao({
             versaoLayoutId: versaoLayout.id,
@@ -132,17 +140,19 @@ export function CamposLayoutPage() {
                 <TableCell header>Rótulo</TableCell>
                 <TableCell header>Estado</TableCell>
                 <TableCell header>Publicação</TableCell>
-                <TableCell header>Ações</TableCell>
+                <TableCell header alinhamento="direita">
+                  Ações
+                </TableCell>
               </tr>
             </TableHeader>
             <tbody>
               {data.items.map((versaoLayout) => (
-                <TableRow key={versaoLayout.id}>
+                <TableRow key={versaoLayout.id} id={`linha-versaoLayout-${versaoLayout.id}`}>
                   <TableCell>
                     <Link
                       to="/interno/campos-layout/$versaoLayoutId"
                       params={{ versaoLayoutId: String(versaoLayout.id) }}
-                      className="font-medium text-primary-medium hover:underline"
+                      className={CLASSE_DO_NOME_EDITAVEL}
                     >
                       {versaoLayout.rotulo}
                     </Link>
@@ -154,19 +164,9 @@ export function CamposLayoutPage() {
                       publicadoEfetivo={versaoLayout.publicado}
                     />
                   </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {permissoes.versoesLayout.atualizar && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Editar versão do layout ${versaoLayout.rotulo}`}
-                          onClick={() => setModalAberto(versaoLayout)}
-                        >
-                          <Pencil className="size-4" aria-hidden="true" />
-                        </Button>
-                      )}
-                      {permissoes.versoesLayout.publicar && (
+                  <TableCell alinhamento="direita">
+                    <div className={CLASSE_DAS_ACOES_DA_LINHA}>
+                      {permissoes.versoesLayout.publicar && !versaoLayout.publicado && (
                         <Button
                           variant="secondary"
                           size="sm"
@@ -176,8 +176,32 @@ export function CamposLayoutPage() {
                           }
                           onClick={() => alternarPublicacao(versaoLayout)}
                         >
-                          {versaoLayout.publicado ? 'Despublicar' : 'Publicar'}
+                          Publicar
                         </Button>
+                      )}
+                      {(permissoes.versoesLayout.atualizar ||
+                        (permissoes.versoesLayout.publicar && versaoLayout.publicado)) && (
+                        <MenuDeAcoes
+                          rotulo={`Mais ações da versão do layout ${versaoLayout.rotulo}`}
+                          isLoading={
+                            versaoLayout.publicado &&
+                            publicarVersaoLayout.isPending &&
+                            publicarVersaoLayout.variables?.id === versaoLayout.id
+                          }
+                        >
+                          {permissoes.versoesLayout.atualizar && (
+                            <ItemDoMenuDeAcoes onSelecionar={() => setModalAberto(versaoLayout)}>
+                              Editar dados da versão
+                            </ItemDoMenuDeAcoes>
+                          )}
+                          {permissoes.versoesLayout.publicar && versaoLayout.publicado && (
+                            <ItemDoMenuDeAcoes
+                              onSelecionar={() => alternarPublicacao(versaoLayout)}
+                            >
+                              Despublicar
+                            </ItemDoMenuDeAcoes>
+                          )}
+                        </MenuDeAcoes>
                       )}
                     </div>
                     {erroDePublicacao?.versaoLayoutId === versaoLayout.id && (

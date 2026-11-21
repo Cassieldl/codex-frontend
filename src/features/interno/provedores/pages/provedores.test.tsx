@@ -315,8 +315,12 @@ describe('ProvedoresPage: publicação', () => {
 
     await usuario.click(within(linha()).getByRole('button', { name: 'Publicar' }))
 
-    expect(await within(linha()).findByRole('button', { name: 'Despublicar' })).toBeInTheDocument()
-    expect(within(linha()).getByText('Publicado')).toBeInTheDocument()
+    expect(await within(linha()).findByText('Publicado')).toBeInTheDocument()
+    // Publicado, despublicar sai da linha e vai para o menu de mais ações.
+    await usuario.click(
+      within(linha()).getByRole('button', { name: 'Mais ações do provedor Prefeitura de Exemplo' }),
+    )
+    expect(screen.getByRole('menuitem', { name: 'Despublicar' })).toBeInTheDocument()
     await waitFor(() =>
       expect(escritas).toEqual([
         {

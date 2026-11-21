@@ -1,16 +1,22 @@
 import { format } from 'date-fns'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useId, useState } from 'react'
 import { Button } from '../../../../components/ui/Button'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { EtiquetaSeveridade, type Severidade } from '../../../../components/ui/EtiquetaSeveridade'
+import { ItemDoMenuDeAcoes, MenuDeAcoes } from '../../../../components/ui/MenuDeAcoes'
 import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
+import { useFocoNaLinhaAposTroca } from '../../hooks/useFocoNaLinhaAposTroca'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
+import {
+  CLASSE_DAS_ACOES_DA_LINHA,
+  CLASSE_DO_NOME_EDITAVEL,
+} from '../../utils/classesDaTabelaInterna'
 import { useProvedoresAdmin } from '../../provedores/hooks/useProvedoresAdmin'
 import { ComunicadoForm, type OpcaoProvedorComunicado } from '../components/ComunicadoForm'
 import { EstadoComunicado } from '../components/EstadoComunicado'
@@ -89,6 +95,7 @@ export function ComunicadosPage() {
   const detalheEmEdicao = useComunicadoAdminPorId(idEmEdicao)
   const envioDaEdicao = useEtagDeEnvio(idEmEdicao, detalheEmEdicao.data?.etag)
 
+  const devolverFocoNaLinha = useFocoNaLinhaAposTroca(data)
   const { data: provedores } = useProvedoresAdmin({ tamanhoPagina: 200 })
   const opcoesProvedores: OpcaoProvedorComunicado[] = (provedores?.items ?? []).map((provedor) => ({
     id: provedor.id,
@@ -140,7 +147,10 @@ export function ComunicadosPage() {
     setErroDeEscrita(null)
     publicarComunicado.mutate(
       { id: comunicado.id, publicado: !comunicado.publicado, etag: comunicado.etag },
-      { onError: (erro) => registrarErro(erro, comunicado.id) },
+      {
+        onSuccess: () => devolverFocoNaLinha(`linha-comunicado-${comunicado.id}`),
+        onError: (erro) => registrarErro(erro, comunicado.id),
+      },
     )
   }
 
@@ -277,13 +287,30 @@ export function ComunicadosPage() {
                 <TableCell header>Abrangência</TableCell>
                 <TableCell header>Expira em</TableCell>
                 <TableCell header>Estado</TableCell>
-                <TableCell header>Ações</TableCell>
+                <TableCell header alinhamento="direita">
+                  Ações
+                </TableCell>
               </tr>
             </TableHeader>
             <tbody>
               {data.items.map((comunicado) => (
-                <TableRow key={comunicado.id}>
-                  <TableCell>{comunicado.titulo}</TableCell>
+                <TableRow key={comunicado.id} id={`linha-comunicado-${comunicado.id}`}>
+                  <TableCell>
+                    {permissoes.comunicados.atualizar ? (
+                      <button
+                        type="button"
+                        className={CLASSE_DO_NOME_EDITAVEL}
+                        onClick={() => {
+                          setErroDeEscrita(null)
+                          setModalAberto({ modo: 'editar', id: comunicado.id })
+                        }}
+                      >
+                        {comunicado.titulo}
+                      </button>
+                    ) : (
+                      comunicado.titulo
+                    )}
+                  </TableCell>
                   <TableCell>
                     <EtiquetaSeveridade severidade={SEVERIDADE_VISUAL[comunicado.severidade]} />
                   </TableCell>
@@ -295,22 +322,9 @@ export function ComunicadosPage() {
                       encerrado={comunicado.encerrado}
                     />
                   </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {permissoes.comunicados.atualizar && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Editar comunicado ${comunicado.titulo}`}
-                          onClick={() => {
-                            setErroDeEscrita(null)
-                            setModalAberto({ modo: 'editar', id: comunicado.id })
-                          }}
-                        >
-                          <Pencil className="size-4" aria-hidden="true" />
-                        </Button>
-                      )}
-                      {permissoes.comunicados.publicar && (
+                  <TableCell alinhamento="direita">
+                    <div className={CLASSE_DAS_ACOES_DA_LINHA}>
+                      {permissoes.comunicados.publicar && !comunicado.publicado && (
                         <Button
                           variant="secondary"
                           size="sm"
@@ -320,18 +334,36 @@ export function ComunicadosPage() {
                           }
                           onClick={() => aoAlternarPublicacao(comunicado)}
                         >
-                          {comunicado.publicado ? 'Despublicar' : 'Publicar'}
+                          Publicar
                         </Button>
                       )}
-                      {permissoes.comunicados.remover && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Remover comunicado ${comunicado.titulo}`}
-                          onClick={() => setComunicadoParaRemover(comunicado)}
+                      {((permissoes.comunicados.publicar && comunicado.publicado) ||
+                        permissoes.comunicados.remover) && (
+                        <MenuDeAcoes
+                          rotulo={`Mais ações do comunicado ${comunicado.titulo}`}
+                          isLoading={
+                            comunicado.publicado &&
+                            publicarComunicado.isPending &&
+                            publicarComunicado.variables?.id === comunicado.id
+                          }
                         >
-                          <Trash2 className="size-4" aria-hidden="true" />
-                        </Button>
+                          {permissoes.comunicados.publicar && comunicado.publicado && (
+                            <ItemDoMenuDeAcoes
+                              onSelecionar={() => aoAlternarPublicacao(comunicado)}
+                            >
+                              Despublicar
+                            </ItemDoMenuDeAcoes>
+                          )}
+                          {permissoes.comunicados.remover && (
+                            <ItemDoMenuDeAcoes
+                              destrutivo
+                              aria-label={`Remover comunicado ${comunicado.titulo}`}
+                              onSelecionar={() => setComunicadoParaRemover(comunicado)}
+                            >
+                              Remover
+                            </ItemDoMenuDeAcoes>
+                          )}
+                        </MenuDeAcoes>
                       )}
                     </div>
                   </TableCell>

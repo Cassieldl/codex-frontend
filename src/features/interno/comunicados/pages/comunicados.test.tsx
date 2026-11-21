@@ -108,6 +108,17 @@ function linhaDoComunicado(titulo: string): HTMLElement {
   return screen.getByRole('row', { name: new RegExp(titulo, 'i') })
 }
 
+/** Despublicar e remover moram no menu de mais ações da linha. */
+async function abrirMenuDoComunicado(titulo: string, usuario = userEvent.setup()) {
+  await usuario.click(
+    within(linhaDoComunicado(titulo)).getByRole('button', {
+      name: `Mais ações do comunicado ${titulo}`,
+    }),
+  )
+  await screen.findByRole('menu')
+  return usuario
+}
+
 beforeEach(() => {
   autenticarCom(TODAS_AS_ROLES)
 })
@@ -267,8 +278,11 @@ describe('ComunicadosPage: permissões só de UX', () => {
     await screen.findByText('Rascunho ainda vigente')
     expect(screen.queryByRole('button', { name: /novo comunicado/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^publicar$/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /editar comunicado/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /remover comunicado/i })).not.toBeInTheDocument()
+    // Sem role de atualizar, o título é texto; sem publicar nem remover, não há menu.
+    expect(screen.queryByRole('button', { name: 'Rascunho ainda vigente' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /^mais ações do comunicado/i }),
+    ).not.toBeInTheDocument()
   })
 
   it('com todas as roles, as quatro ações aparecem', async () => {
@@ -279,8 +293,9 @@ describe('ComunicadosPage: permissões só de UX', () => {
     await screen.findByText('Rascunho ainda vigente')
     expect(screen.getByRole('button', { name: /novo comunicado/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^publicar$/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /editar comunicado/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /remover comunicado/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Rascunho ainda vigente' })).toBeInTheDocument()
+    await abrirMenuDoComunicado('Rascunho ainda vigente')
+    expect(screen.getByRole('menuitem', { name: /remover comunicado/i })).toBeInTheDocument()
   })
 })
 
@@ -296,7 +311,7 @@ describe('ComunicadosPage: edição carrega o detalhe (I31)', () => {
     renderizarPagina()
 
     await screen.findByText('Publicado e já encerrado')
-    await usuario.click(screen.getByRole('button', { name: /editar comunicado/i }))
+    await usuario.click(screen.getByRole('button', { name: 'Publicado e já encerrado' }))
 
     const corpo = await screen.findByLabelText(/corpo/i)
     expect(corpo).toHaveValue('Este comunicado já venceu.')
@@ -395,7 +410,8 @@ describe('ComunicadosPage: 409 e 400 não se confundem', () => {
     renderizarPagina()
 
     await screen.findByText('Publicado e vigente')
-    await usuario.click(screen.getByRole('button', { name: /despublicar/i }))
+    await abrirMenuDoComunicado('Publicado e vigente', usuario)
+    await usuario.click(screen.getByRole('menuitem', { name: 'Despublicar' }))
 
     expect(
       await screen.findByRole('button', { name: 'Recarregar este comunicado' }),
@@ -427,7 +443,8 @@ describe('ComunicadosPage: 409 e 400 não se confundem', () => {
     renderizarPagina()
 
     await screen.findByText('Publicado e vigente')
-    await usuario.click(screen.getByRole('button', { name: /despublicar/i }))
+    await abrirMenuDoComunicado('Publicado e vigente', usuario)
+    await usuario.click(screen.getByRole('menuitem', { name: 'Despublicar' }))
 
     // A distinção precisa chegar à tela: se os dois códigos caíssem no mesmo
     // texto e no mesmo botão, o editor não saberia se o problema é dele
@@ -505,7 +522,8 @@ describe('ComunicadosPage: confirmação antes de remover', () => {
 
     await screen.findByText(PUBLICADO_VIGENTE.titulo)
     const linha = linhaDoComunicado(PUBLICADO_VIGENTE.titulo)
-    await usuario.click(within(linha).getByRole('button', { name: /remover comunicado/i }))
+    await usuario.click(within(linha).getByRole('button', { name: /^mais ações do comunicado/i }))
+    await usuario.click(await screen.findByRole('menuitem', { name: /remover comunicado/i }))
 
     // Sincroniza no diálogo: sem âncora observável, a asserção de ausência passaria só porque a
     // requisição ainda não tinha saído.
@@ -530,7 +548,8 @@ describe('ComunicadosPage: confirmação antes de remover', () => {
 
     await screen.findByText(PUBLICADO_VIGENTE.titulo)
     const linha = linhaDoComunicado(PUBLICADO_VIGENTE.titulo)
-    await usuario.click(within(linha).getByRole('button', { name: /remover comunicado/i }))
+    await usuario.click(within(linha).getByRole('button', { name: /^mais ações do comunicado/i }))
+    await usuario.click(await screen.findByRole('menuitem', { name: /remover comunicado/i }))
 
     expect(await screen.findByText(/está publicado e sai do portal agora/i)).toBeInTheDocument()
 
@@ -556,7 +575,8 @@ describe('ComunicadosPage: confirmação antes de remover', () => {
 
     await screen.findByText(PUBLICADO_VIGENTE.titulo)
     const linha = linhaDoComunicado(PUBLICADO_VIGENTE.titulo)
-    await usuario.click(within(linha).getByRole('button', { name: /remover comunicado/i }))
+    await usuario.click(within(linha).getByRole('button', { name: /^mais ações do comunicado/i }))
+    await usuario.click(await screen.findByRole('menuitem', { name: /remover comunicado/i }))
     await usuario.click(await screen.findByRole('button', { name: 'Cancelar' }))
 
     await waitFor(() =>

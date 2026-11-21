@@ -1,11 +1,14 @@
+import type { DirecaoDaOrdenacao } from '../../../../components/ui/ordenacaoDeTabela'
 import { criarFabricaDeChaves } from '../../../../utils/queryKeyFactory'
-import type { TipoArtigo } from '../types/artigoAdmin'
+import type { CampoDeOrdenacaoArtigo, TipoArtigo } from '../types/artigoAdmin'
 
 export interface ListarArtigosAdminParams {
   q?: string
   tipo?: TipoArtigo
   /** Filtro por estado de publicação (I23) - ausente traz rascunho e publicado. */
   publicado?: boolean
+  sortBy?: CampoDeOrdenacaoArtigo
+  sortDirection?: DirecaoDaOrdenacao
   pagina?: number
   tamanhoPagina?: number
 }

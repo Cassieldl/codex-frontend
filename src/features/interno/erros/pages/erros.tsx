@@ -1,17 +1,38 @@
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../../../components/ui/Button'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import { ErrorState } from '../../../../components/ui/ErrorState'
+import { ItemDoMenuDeAcoes, MenuDeAcoes } from '../../../../components/ui/MenuDeAcoes'
 import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
+import {
+  alternarOrdenacao,
+  type OrdenacaoDeTabela,
+} from '../../../../components/ui/ordenacaoDeTabela'
 import { Pagination } from '../../../../components/ui/Pagination'
+import { Select } from '../../../../components/ui/Select'
 import { Skeleton } from '../../../../components/ui/Skeleton'
-import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
+import {
+  TableCell,
+  TableHeader,
+  TableRoot,
+  TableRow,
+  TableSortableHeader,
+} from '../../../../components/ui/Table'
+import { useDebounce } from '../../../busca/hooks/useDebounce'
+import { BarraDeFiltrosDaListagem } from '../../components/BarraDeFiltrosDaListagem'
+import { usePaginaPorFiltros } from '../../hooks/usePaginaPorFiltros'
+import { useFocoNaLinhaAposTroca } from '../../hooks/useFocoNaLinhaAposTroca'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarErro } from '../../hooks/usePublicarErro'
+import {
+  CLASSE_DAS_ACOES_DA_LINHA,
+  CLASSE_DO_NOME_EDITAVEL,
+} from '../../utils/classesDaTabelaInterna'
 import { etagNaColecao } from '../../utils/etagDeConcorrencia'
+import { publicadoDoFiltro, type FiltroDePublicacao } from '../../utils/filtroDePublicacao'
 import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { ErroForm } from '../components/ErroForm'
 import { useAtualizarErro } from '../hooks/useAtualizarErro'
@@ -20,10 +41,25 @@ import { useErroAdminPorId } from '../hooks/useErroAdminPorId'
 import { useErrosAdmin } from '../hooks/useErrosAdmin'
 import { useOpcoesVersoesProvedorErro } from '../hooks/useOpcoesVersoesProvedorErro'
 import { useRemoverErro } from '../hooks/useRemoverErro'
-import type { AtualizarErroDto, ErroAdminListaItem, ErroFormDto } from '../types/erroAdmin'
+import {
+  ORIGENS_ERRO,
+  type AtualizarErroDto,
+  type CampoDeOrdenacaoErro,
+  type ErroAdminListaItem,
+  type ErroFormDto,
+  type OrigemErro,
+} from '../types/erroAdmin'
 import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 const TAMANHO_PAGINA_PADRAO = 25
+
+/** Espera depois da última tecla antes de buscar: uma requisição por termo, não por letra. */
+const ATRASO_DA_BUSCA_MS = 300
+
+const OPCOES_DE_ORIGEM = [
+  { value: '', label: 'Todas' },
+  ...ORIGENS_ERRO.map((origem) => ({ value: origem, label: origem })),
+]
 
 /** Falha ao publicar ou despublicar, mostrada na linha do erro que a causou. */
 interface ErroDePublicacao {
@@ -38,10 +74,29 @@ function paraAtualizacao({ codigo: _codigo, ...dto }: ErroFormDto): AtualizarErr
 
 export function ErrosPage() {
   const permissoes = usePermissoesInterno()
-  const [pagina, setPagina] = useState(1)
+  const [termo, setTermo] = useState('')
+  const termoComAtraso = useDebounce(termo.trim(), ATRASO_DA_BUSCA_MS)
+  const [origem, setOrigem] = useState<OrigemErro | null>(null)
+  const [publicacao, setPublicacao] = useState<FiltroDePublicacao>('todos')
+  const [ordenacao, setOrdenacao] = useState<OrdenacaoDeTabela<CampoDeOrdenacaoErro> | null>(null)
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
 
-  const { data, isLoading, isError, refetch } = useErrosAdmin({ pagina, tamanhoPagina })
+  const filtros = {
+    q: termoComAtraso || undefined,
+    origem: origem ?? undefined,
+    publicado: publicadoDoFiltro(publicacao),
+    sortBy: ordenacao?.sortBy,
+    sortDirection: ordenacao?.sortDirection,
+  }
+  const [pagina, setPagina] = usePaginaPorFiltros(JSON.stringify(filtros))
+  const temFiltro = Boolean(filtros.q || filtros.origem || filtros.publicado !== undefined)
+
+  const { data, isLoading, isError, isPlaceholderData, refetch } = useErrosAdmin({
+    ...filtros,
+    pagina,
+    tamanhoPagina,
+  })
+  const devolverFocoNaLinha = useFocoNaLinhaAposTroca(data)
 
   const publicarErro = usePublicarErro()
   const criarErro = useCriarErro()
@@ -113,6 +168,7 @@ export function ErrosPage() {
     publicarErro.mutate(
       { id: erro.id, publicado: !erro.publicado, etag: erro.etag },
       {
+        onSuccess: () => devolverFocoNaLinha(`linha-erro-${erro.id}`),
         onError: (falha) =>
           setErroDePublicacao({
             erroId: erro.id,
@@ -120,6 +176,16 @@ export function ErrosPage() {
           }),
       },
     )
+  }
+
+  function limparFiltros() {
+    setTermo('')
+    setOrigem(null)
+    setPublicacao('todos')
+  }
+
+  function ordenarPor(campo: CampoDeOrdenacaoErro) {
+    setOrdenacao((atual) => alternarOrdenacao(atual, campo))
   }
 
   const propsDoFormulario = {
@@ -147,6 +213,22 @@ export function ErrosPage() {
         )}
       </div>
 
+      <BarraDeFiltrosDaListagem
+        termo={termo}
+        onTermoChange={setTermo}
+        placeholderDaBusca="Ex.: E0621, alíquota"
+        publicacao={publicacao}
+        onPublicacaoChange={setPublicacao}
+      >
+        <Select
+          label="Origem"
+          options={OPCOES_DE_ORIGEM}
+          value={origem ?? ''}
+          onValueChange={(valor) => setOrigem(valor === '' ? null : (valor as OrigemErro))}
+          className="w-44"
+        />
+      </BarraDeFiltrosDaListagem>
+
       {isLoading && (
         <div aria-live="polite" aria-busy="true" className="flex flex-col gap-3">
           <span className="sr-only">Carregando erros…</span>
@@ -158,76 +240,124 @@ export function ErrosPage() {
       {isError && <ErrorState onRetry={() => refetch()} />}
 
       {!isLoading && !isError && data && data.items.length === 0 && (
-        <EmptyState message="Nenhum erro cadastrado ainda." />
+        <EmptyState
+          message={
+            temFiltro
+              ? 'Nenhum erro encontrado com estes filtros.'
+              : 'Nenhum erro cadastrado ainda.'
+          }
+          action={
+            temFiltro && (
+              <Button variant="secondary" size="sm" onClick={limparFiltros}>
+                Limpar filtros
+              </Button>
+            )
+          }
+        />
       )}
 
       {!isLoading && !isError && data && data.items.length > 0 && (
         <>
-          <TableRoot rotulo="Erros conhecidos">
+          <TableRoot
+            rotulo="Erros conhecidos"
+            className={isPlaceholderData ? 'opacity-60' : undefined}
+          >
             <TableHeader>
               <tr>
-                <TableCell header>Código</TableCell>
-                <TableCell header>Título</TableCell>
-                <TableCell header>Origem</TableCell>
-                <TableCell header>Publicação</TableCell>
-                <TableCell header>Ações</TableCell>
+                <TableSortableHeader campo="codigo" ordenacao={ordenacao} onOrdenar={ordenarPor}>
+                  Código
+                </TableSortableHeader>
+                <TableSortableHeader campo="titulo" ordenacao={ordenacao} onOrdenar={ordenarPor}>
+                  Título
+                </TableSortableHeader>
+                <TableSortableHeader campo="origem" ordenacao={ordenacao} onOrdenar={ordenarPor}>
+                  Origem
+                </TableSortableHeader>
+                <TableSortableHeader campo="publicado" ordenacao={ordenacao} onOrdenar={ordenarPor}>
+                  Publicação
+                </TableSortableHeader>
+                <TableCell header alinhamento="direita">
+                  Ações
+                </TableCell>
               </tr>
             </TableHeader>
             <tbody>
-              {data.items.map((erro) => (
-                <TableRow key={erro.id}>
-                  <TableCell className="font-mono">{erro.codigo}</TableCell>
-                  <TableCell>{erro.titulo}</TableCell>
-                  <TableCell>{erro.origem}</TableCell>
-                  <TableCell>
-                    <EtiquetaPublicacao
-                      publicadoProprio={erro.publicado}
-                      publicadoEfetivo={erro.publicado}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {permissoes.erros.atualizar && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Editar erro ${erro.codigo}`}
+              {data.items.map((erro) => {
+                const podeDespublicar = permissoes.erros.publicar && erro.publicado
+                const temMaisAcoes = podeDespublicar || permissoes.erros.remover
+
+                return (
+                  <TableRow key={erro.id} id={`linha-erro-${erro.id}`}>
+                    <TableCell className="font-mono">{erro.codigo}</TableCell>
+                    <TableCell>
+                      {permissoes.erros.atualizar ? (
+                        <button
+                          type="button"
+                          className={CLASSE_DO_NOME_EDITAVEL}
                           onClick={() => setModalAberto(erro.id)}
                         >
-                          <Pencil className="size-4" aria-hidden="true" />
-                        </Button>
+                          {erro.titulo}
+                        </button>
+                      ) : (
+                        erro.titulo
                       )}
-                      {permissoes.erros.publicar && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          isLoading={
-                            publicarErro.isPending && publicarErro.variables?.id === erro.id
-                          }
-                          onClick={() => alternarPublicacao(erro)}
-                        >
-                          {erro.publicado ? 'Despublicar' : 'Publicar'}
-                        </Button>
+                    </TableCell>
+                    <TableCell>{erro.origem}</TableCell>
+                    <TableCell>
+                      <EtiquetaPublicacao
+                        publicadoProprio={erro.publicado}
+                        publicadoEfetivo={erro.publicado}
+                      />
+                    </TableCell>
+                    <TableCell alinhamento="direita">
+                      <div className={CLASSE_DAS_ACOES_DA_LINHA}>
+                        {permissoes.erros.publicar && !erro.publicado && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            isLoading={
+                              publicarErro.isPending && publicarErro.variables?.id === erro.id
+                            }
+                            onClick={() => alternarPublicacao(erro)}
+                          >
+                            Publicar
+                          </Button>
+                        )}
+                        {temMaisAcoes && (
+                          <MenuDeAcoes
+                            rotulo={`Mais ações do erro ${erro.codigo}`}
+                            isLoading={
+                              erro.publicado &&
+                              publicarErro.isPending &&
+                              publicarErro.variables?.id === erro.id
+                            }
+                          >
+                            {podeDespublicar && (
+                              <ItemDoMenuDeAcoes onSelecionar={() => alternarPublicacao(erro)}>
+                                Despublicar
+                              </ItemDoMenuDeAcoes>
+                            )}
+                            {permissoes.erros.remover && (
+                              <ItemDoMenuDeAcoes
+                                destrutivo
+                                aria-label={`Remover erro ${erro.codigo}`}
+                                onSelecionar={() => setErroParaRemover(erro)}
+                              >
+                                Remover
+                              </ItemDoMenuDeAcoes>
+                            )}
+                          </MenuDeAcoes>
+                        )}
+                      </div>
+                      {erroDePublicacao?.erroId === erro.id && (
+                        <p role="alert" className="mt-1 text-sm text-error-texto">
+                          {erroDePublicacao.mensagem}
+                        </p>
                       )}
-                      {permissoes.erros.remover && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Remover erro ${erro.codigo}`}
-                          onClick={() => setErroParaRemover(erro)}
-                        >
-                          <Trash2 className="size-4" aria-hidden="true" />
-                        </Button>
-                      )}
-                    </div>
-                    {erroDePublicacao?.erroId === erro.id && (
-                      <p role="alert" className="mt-1 text-sm text-error-texto">
-                        {erroDePublicacao.mensagem}
-                      </p>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </tbody>
           </TableRoot>
 

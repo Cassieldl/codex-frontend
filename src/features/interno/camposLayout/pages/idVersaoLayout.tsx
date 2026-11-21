@@ -1,17 +1,23 @@
 import { Link } from '@tanstack/react-router'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../../../components/ui/Button'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import { ErrorState } from '../../../../components/ui/ErrorState'
+import { ItemDoMenuDeAcoes, MenuDeAcoes } from '../../../../components/ui/MenuDeAcoes'
 import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { formatarVersaoLayout } from '../../../../utils/versaoDoLayout'
+import { useFocoNaLinhaAposTroca } from '../../hooks/useFocoNaLinhaAposTroca'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarCampoLayout } from '../../hooks/usePublicarCampoLayout'
+import {
+  CLASSE_DAS_ACOES_DA_LINHA,
+  CLASSE_DO_NOME_EDITAVEL,
+} from '../../utils/classesDaTabelaInterna'
 import { etagNaColecao } from '../../utils/etagDeConcorrencia'
 import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { CampoLayoutForm, type CampoLayoutFormDto } from '../components/CampoLayoutForm'
@@ -37,6 +43,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
   const permissoes = usePermissoesInterno()
 
   const { data: campos, isLoading, isError, refetch } = useCamposLayoutPorVersao(versaoLayoutId)
+  const devolverFocoNaLinha = useFocoNaLinhaAposTroca(campos)
   // Opções de "versão de descontinuação" (§5.1b) - só versões posteriores à
   // atual fazem sentido; a lista completa é pequena o bastante (versões de
   // layout, não campos) para não precisar de busca/paginação aqui.
@@ -139,6 +146,7 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
     publicarCampo.mutate(
       { id: campo.id, publicado: !campo.publicado, etag: campo.etag },
       {
+        onSuccess: () => devolverFocoNaLinha(`linha-campo-${campo.id}`),
         onError: (falha) =>
           setErroDePublicacao({
             campoId: campo.id,
@@ -205,13 +213,27 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
               <TableCell header>Caminho no XML</TableCell>
               <TableCell header>Estado</TableCell>
               <TableCell header>Publicação</TableCell>
-              <TableCell header>Ações</TableCell>
+              <TableCell header alinhamento="direita">
+                Ações
+              </TableCell>
             </tr>
           </TableHeader>
           <tbody>
             {campos.map((campo) => (
-              <TableRow key={campo.id}>
-                <TableCell>{campo.nome}</TableCell>
+              <TableRow key={campo.id} id={`linha-campo-${campo.id}`}>
+                <TableCell>
+                  {permissoes.campoLayout.atualizar ? (
+                    <button
+                      type="button"
+                      className={CLASSE_DO_NOME_EDITAVEL}
+                      onClick={() => setModalAberto(campo)}
+                    >
+                      {campo.nome}
+                    </button>
+                  ) : (
+                    campo.nome
+                  )}
+                </TableCell>
                 <TableCell className="font-mono">{campo.caminhoXml}</TableCell>
                 <TableCell>{campo.estado}</TableCell>
                 <TableCell>
@@ -220,19 +242,9 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
                     publicadoEfetivo={campo.publicado}
                   />
                 </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    {permissoes.campoLayout.atualizar && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        aria-label={`Editar campo canônico ${campo.nome}`}
-                        onClick={() => setModalAberto(campo)}
-                      >
-                        <Pencil className="size-4" aria-hidden="true" />
-                      </Button>
-                    )}
-                    {permissoes.campoLayout.publicar && (
+                <TableCell alinhamento="direita">
+                  <div className={CLASSE_DAS_ACOES_DA_LINHA}>
+                    {permissoes.campoLayout.publicar && !campo.publicado && (
                       <Button
                         variant="secondary"
                         size="sm"
@@ -241,18 +253,34 @@ export function IdVersaoLayoutPage({ versaoLayoutId }: IdVersaoLayoutPageProps) 
                         }
                         onClick={() => alternarPublicacao(campo)}
                       >
-                        {campo.publicado ? 'Despublicar' : 'Publicar'}
+                        Publicar
                       </Button>
                     )}
-                    {permissoes.campoLayout.remover && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        aria-label={`Remover campo canônico ${campo.nome}`}
-                        onClick={() => setCampoParaRemover(campo)}
+                    {((permissoes.campoLayout.publicar && campo.publicado) ||
+                      permissoes.campoLayout.remover) && (
+                      <MenuDeAcoes
+                        rotulo={`Mais ações do campo canônico ${campo.nome}`}
+                        isLoading={
+                          campo.publicado &&
+                          publicarCampo.isPending &&
+                          publicarCampo.variables?.id === campo.id
+                        }
                       >
-                        <Trash2 className="size-4" aria-hidden="true" />
-                      </Button>
+                        {permissoes.campoLayout.publicar && campo.publicado && (
+                          <ItemDoMenuDeAcoes onSelecionar={() => alternarPublicacao(campo)}>
+                            Despublicar
+                          </ItemDoMenuDeAcoes>
+                        )}
+                        {permissoes.campoLayout.remover && (
+                          <ItemDoMenuDeAcoes
+                            destrutivo
+                            aria-label={`Remover campo canônico ${campo.nome}`}
+                            onSelecionar={() => setCampoParaRemover(campo)}
+                          >
+                            Remover
+                          </ItemDoMenuDeAcoes>
+                        )}
+                      </MenuDeAcoes>
                     )}
                   </div>
                   {erroDePublicacao?.campoId === campo.id && (

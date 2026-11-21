@@ -1,17 +1,35 @@
 import { format, parseISO } from 'date-fns'
-import { Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../../../components/ui/Button'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
+import { ItemDoMenuDeAcoes, MenuDeAcoes } from '../../../../components/ui/MenuDeAcoes'
 import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
+import {
+  alternarOrdenacao,
+  type OrdenacaoDeTabela,
+} from '../../../../components/ui/ordenacaoDeTabela'
 import { Pagination } from '../../../../components/ui/Pagination'
+import { Select } from '../../../../components/ui/Select'
 import { Skeleton } from '../../../../components/ui/Skeleton'
-import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
+import {
+  TableCell,
+  TableHeader,
+  TableRoot,
+  TableRow,
+  TableSortableHeader,
+} from '../../../../components/ui/Table'
+import { ROTULO_TIPO_ARTIGO } from '../../../artigos/components/rotulosTipoArtigo'
 import { EtiquetaTipoArtigo } from '../../../artigos/components/EtiquetaTipoArtigo'
+import { TIPOS_ARTIGO } from '../../../artigos/types/artigo'
 import { SLUG_COMO_FUNCIONA } from '../../../artigos/utils/slugsReservados'
+import { useDebounce } from '../../../busca/hooks/useDebounce'
+import { BarraDeFiltrosDaListagem } from '../../components/BarraDeFiltrosDaListagem'
+import { usePaginaPorFiltros } from '../../hooks/usePaginaPorFiltros'
+import { useFocoNaLinhaAposTroca } from '../../hooks/useFocoNaLinhaAposTroca'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { ArtigoForm } from '../components/ArtigoForm'
 import { useArtigoAdminPorId } from '../hooks/useArtigoAdminPorId'
@@ -23,15 +41,33 @@ import { useReferenciasDoArtigo } from '../hooks/useReferenciasDoArtigo'
 import { usePublicarArtigo } from '../hooks/usePublicarArtigo'
 import { useRemoverArtigo } from '../hooks/useRemoverArtigo'
 import { useVerificarArtigo } from '../hooks/useVerificarArtigo'
-import type { ArtigoAdminListaItem, ArtigoFormDto } from '../types/artigoAdmin'
+import type {
+  ArtigoAdminListaItem,
+  ArtigoFormDto,
+  CampoDeOrdenacaoArtigo,
+  TipoArtigo,
+} from '../types/artigoAdmin'
 import {
   interpretarErroDeEscritaArtigo,
   type ErroDeEscritaArtigo,
 } from '../utils/erroDeEscritaArtigo'
 import type { OrigemDaEscrita } from '../../utils/mensagemDeErroDeEscrita'
 import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
+import {
+  CLASSE_DAS_ACOES_DA_LINHA,
+  CLASSE_DO_NOME_EDITAVEL,
+} from '../../utils/classesDaTabelaInterna'
+import { publicadoDoFiltro, type FiltroDePublicacao } from '../../utils/filtroDePublicacao'
 
 const TAMANHO_PAGINA_PADRAO = 25
+
+/** Espera depois da última tecla antes de buscar: uma requisição por termo, não por letra. */
+const ATRASO_DA_BUSCA_MS = 300
+
+const OPCOES_DE_TIPO = [
+  { value: '', label: 'Todos' },
+  ...TIPOS_ARTIGO.map((tipo) => ({ value: tipo, label: ROTULO_TIPO_ARTIGO[tipo] })),
+]
 
 /** Título que produz o slug reservado no servidor: a UI sugere, nunca força o slug. */
 const TITULO_COMO_FUNCIONA = 'Como funciona'
@@ -67,13 +103,32 @@ function dataDeHoje(): string {
 export function ArtigosPage() {
   const permissoes = usePermissoesInterno()
 
-  const [pagina, setPagina] = useState(1)
+  const [termo, setTermo] = useState('')
+  const termoComAtraso = useDebounce(termo.trim(), ATRASO_DA_BUSCA_MS)
+  const [tipo, setTipo] = useState<TipoArtigo | null>(null)
+  const [publicacao, setPublicacao] = useState<FiltroDePublicacao>('todos')
+  const [ordenacao, setOrdenacao] = useState<OrdenacaoDeTabela<CampoDeOrdenacaoArtigo> | null>(null)
   const [tamanhoPagina, setTamanhoPagina] = useState(TAMANHO_PAGINA_PADRAO)
   const [modalAberto, setModalAberto] = useState<ModalArtigo | null>(null)
   const [artigoParaRemover, setArtigoParaRemover] = useState<ArtigoAdminListaItem | null>(null)
   const [erroDeEscrita, setErroDeEscrita] = useState<ErroDeEscritaNaTela | null>(null)
 
-  const { data, isLoading, isError, refetch } = useArtigosAdmin({ pagina, tamanhoPagina })
+  const filtros = {
+    q: termoComAtraso || undefined,
+    tipo: tipo ?? undefined,
+    publicado: publicadoDoFiltro(publicacao),
+    sortBy: ordenacao?.sortBy,
+    sortDirection: ordenacao?.sortDirection,
+  }
+  const [pagina, setPagina] = usePaginaPorFiltros(JSON.stringify(filtros))
+  const temFiltro = Boolean(filtros.q || filtros.tipo || filtros.publicado !== undefined)
+
+  const { data, isLoading, isError, isPlaceholderData, refetch } = useArtigosAdmin({
+    ...filtros,
+    pagina,
+    tamanhoPagina,
+  })
+  const devolverFocoNaLinha = useFocoNaLinhaAposTroca(data)
 
   // I36, nunca varredura da listagem: a página só mostra 25 itens, e procurar
   // o slug reservado entre eles mentiria em silêncio assim que o acervo
@@ -126,7 +181,10 @@ export function ArtigosPage() {
     setErroDeEscrita(null)
     publicarArtigo.mutate(
       { id: artigo.id, publicado: !artigo.publicado, etag: artigo.etag },
-      { onError: (erro) => registrarErro(erro, artigo.id) },
+      {
+        onSuccess: () => devolverFocoNaLinha(`linha-artigo-${artigo.id}`),
+        onError: (erro) => registrarErro(erro, artigo.id),
+      },
     )
   }
 
@@ -175,6 +233,21 @@ export function ArtigosPage() {
     }
 
     setErroDeEscrita(null)
+  }
+
+  function limparFiltros() {
+    setTermo('')
+    setTipo(null)
+    setPublicacao('todos')
+  }
+
+  function ordenarPor(campo: CampoDeOrdenacaoArtigo) {
+    setOrdenacao((atual) => alternarOrdenacao(atual, campo))
+  }
+
+  function abrirEdicao(id: number) {
+    setErroDeEscrita(null)
+    setModalAberto({ modo: 'editar', id })
   }
 
   const erroNoModal = modalAberto !== null && erroDeEscrita !== null
@@ -246,6 +319,22 @@ export function ArtigosPage() {
         </div>
       )}
 
+      <BarraDeFiltrosDaListagem
+        termo={termo}
+        onTermoChange={setTermo}
+        placeholderDaBusca="Ex.: cancelamento, ABRASF 2.04"
+        publicacao={publicacao}
+        onPublicacaoChange={setPublicacao}
+      >
+        <Select
+          label="Tipo"
+          options={OPCOES_DE_TIPO}
+          value={tipo ?? ''}
+          onValueChange={(valor) => setTipo(valor === '' ? null : (valor as TipoArtigo))}
+          className="w-56"
+        />
+      </BarraDeFiltrosDaListagem>
+
       {isLoading && (
         <div aria-live="polite" aria-busy="true" className="flex flex-col gap-3">
           <span className="sr-only">Carregando artigos…</span>
@@ -257,103 +346,139 @@ export function ArtigosPage() {
       {isError && <ErrorState onRetry={() => refetch()} />}
 
       {!isLoading && !isError && data && data.items.length === 0 && (
-        <EmptyState message="Nenhum artigo cadastrado ainda." />
+        <EmptyState
+          message={
+            temFiltro
+              ? 'Nenhum artigo encontrado com estes filtros.'
+              : 'Nenhum artigo cadastrado ainda.'
+          }
+          action={
+            temFiltro && (
+              <Button variant="secondary" size="sm" onClick={limparFiltros}>
+                Limpar filtros
+              </Button>
+            )
+          }
+        />
       )}
 
       {!isLoading && !isError && temArtigos && data && (
         <>
-          <TableRoot rotulo="Artigos">
+          <TableRoot rotulo="Artigos" className={isPlaceholderData ? 'opacity-60' : undefined}>
             <TableHeader>
               <tr>
-                <TableCell header>Título</TableCell>
-                <TableCell header>Tipo</TableCell>
-                <TableCell header>Verificado em</TableCell>
-                <TableCell header>Publicação</TableCell>
-                <TableCell header>Ações</TableCell>
+                <TableSortableHeader campo="titulo" ordenacao={ordenacao} onOrdenar={ordenarPor}>
+                  Título
+                </TableSortableHeader>
+                <TableSortableHeader campo="tipo" ordenacao={ordenacao} onOrdenar={ordenarPor}>
+                  Tipo
+                </TableSortableHeader>
+                <TableSortableHeader
+                  campo="verificadoem"
+                  ordenacao={ordenacao}
+                  onOrdenar={ordenarPor}
+                >
+                  Verificado em
+                </TableSortableHeader>
+                <TableSortableHeader campo="publicado" ordenacao={ordenacao} onOrdenar={ordenarPor}>
+                  Publicação
+                </TableSortableHeader>
+                <TableCell header alinhamento="direita">
+                  Ações
+                </TableCell>
               </tr>
             </TableHeader>
             <tbody>
-              {data.items.map((artigo) => (
-                <TableRow key={artigo.id}>
-                  <TableCell>{artigo.titulo}</TableCell>
-                  <TableCell>
-                    <EtiquetaTipoArtigo tipo={artigo.tipo} />
-                  </TableCell>
-                  <TableCell>{formatarVerificacao(artigo.verificadoEm)}</TableCell>
-                  <TableCell>
-                    <EtiquetaPublicacao
-                      publicadoProprio={artigo.publicado}
-                      publicadoEfetivo={artigo.publicado}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {permissoes.artigos.atualizar && (
-                        <>
+              {data.items.map((artigo) => {
+                const podeDespublicar = permissoes.artigos.publicar && artigo.publicado
+                const temMaisAcoes =
+                  permissoes.artigos.atualizar || podeDespublicar || permissoes.artigos.remover
+                const acaoDoMenuEmAndamento =
+                  (verificarArtigo.isPending && verificarArtigo.variables?.id === artigo.id) ||
+                  (artigo.publicado &&
+                    publicarArtigo.isPending &&
+                    publicarArtigo.variables?.id === artigo.id)
+
+                return (
+                  <TableRow key={artigo.id} id={`linha-artigo-${artigo.id}`}>
+                    <TableCell>
+                      {permissoes.artigos.atualizar ? (
+                        <button
+                          type="button"
+                          className={CLASSE_DO_NOME_EDITAVEL}
+                          onClick={() => abrirEdicao(artigo.id)}
+                        >
+                          {artigo.titulo}
+                        </button>
+                      ) : (
+                        artigo.titulo
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <EtiquetaTipoArtigo tipo={artigo.tipo} />
+                    </TableCell>
+                    <TableCell>{formatarVerificacao(artigo.verificadoEm)}</TableCell>
+                    <TableCell>
+                      <EtiquetaPublicacao
+                        publicadoProprio={artigo.publicado}
+                        publicadoEfetivo={artigo.publicado}
+                      />
+                    </TableCell>
+                    <TableCell alinhamento="direita">
+                      <div className={CLASSE_DAS_ACOES_DA_LINHA}>
+                        {permissoes.artigos.publicar && !artigo.publicado && (
                           <Button
                             variant="secondary"
                             size="sm"
-                            aria-label={`Editar artigo ${artigo.titulo}`}
-                            onClick={() => {
-                              setErroDeEscrita(null)
-                              setModalAberto({ modo: 'editar', id: artigo.id })
-                            }}
-                          >
-                            <Pencil className="size-4" aria-hidden="true" />
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            aria-label={`Marcar artigo ${artigo.titulo} como verificado hoje`}
                             isLoading={
-                              verificarArtigo.isPending &&
-                              verificarArtigo.variables?.id === artigo.id
+                              publicarArtigo.isPending && publicarArtigo.variables?.id === artigo.id
                             }
-                            onClick={() => aoVerificar(artigo)}
+                            onClick={() => aoAlternarPublicacao(artigo)}
                           >
-                            <ShieldCheck className="size-4" aria-hidden="true" />
+                            Publicar
                           </Button>
-                        </>
-                      )}
-                      {permissoes.artigos.publicar && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          // Publicar é sempre permitido, inclusive o reservado
-                          // (publicar nunca quebra link). Despublicar é que
-                          // derrubaria /como-funciona (I28 responde 422), e a
-                          // UI evita a viagem em vez de deixar o editor
-                          // descobrir por um toast de erro.
-                          disabled={artigo.reservado && artigo.publicado}
-                          title={
-                            artigo.reservado && artigo.publicado
-                              ? MOTIVO_ARTIGO_RESERVADO
-                              : undefined
-                          }
-                          isLoading={
-                            publicarArtigo.isPending && publicarArtigo.variables?.id === artigo.id
-                          }
-                          onClick={() => aoAlternarPublicacao(artigo)}
-                        >
-                          {artigo.publicado ? 'Despublicar' : 'Publicar'}
-                        </Button>
-                      )}
-                      {permissoes.artigos.remover && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Remover artigo ${artigo.titulo}`}
-                          disabled={artigo.reservado}
-                          title={artigo.reservado ? MOTIVO_ARTIGO_RESERVADO : undefined}
-                          onClick={() => setArtigoParaRemover(artigo)}
-                        >
-                          <Trash2 className="size-4" aria-hidden="true" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                        )}
+                        {temMaisAcoes && (
+                          <MenuDeAcoes
+                            rotulo={`Mais ações do artigo ${artigo.titulo}`}
+                            isLoading={acaoDoMenuEmAndamento}
+                          >
+                            {permissoes.artigos.atualizar && (
+                              <ItemDoMenuDeAcoes onSelecionar={() => aoVerificar(artigo)}>
+                                Marcar como verificado hoje
+                              </ItemDoMenuDeAcoes>
+                            )}
+                            {podeDespublicar && (
+                              // Despublicar o reservado derrubaria /como-funciona (I28 responde
+                              // 422): o item já nasce indisponível, com o motivo à vista.
+                              <ItemDoMenuDeAcoes
+                                motivoIndisponivel={
+                                  artigo.reservado ? MOTIVO_ARTIGO_RESERVADO : undefined
+                                }
+                                onSelecionar={() => aoAlternarPublicacao(artigo)}
+                              >
+                                Despublicar
+                              </ItemDoMenuDeAcoes>
+                            )}
+                            {permissoes.artigos.remover && (
+                              <ItemDoMenuDeAcoes
+                                destrutivo
+                                aria-label={`Remover artigo ${artigo.titulo}`}
+                                motivoIndisponivel={
+                                  artigo.reservado ? MOTIVO_ARTIGO_RESERVADO : undefined
+                                }
+                                onSelecionar={() => setArtigoParaRemover(artigo)}
+                              >
+                                Remover
+                              </ItemDoMenuDeAcoes>
+                            )}
+                          </MenuDeAcoes>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </tbody>
           </TableRoot>
 

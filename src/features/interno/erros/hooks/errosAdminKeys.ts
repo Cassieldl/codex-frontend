@@ -1,10 +1,14 @@
+import type { DirecaoDaOrdenacao } from '../../../../components/ui/ordenacaoDeTabela'
 import { criarFabricaDeChaves } from '../../../../utils/queryKeyFactory'
+import type { CampoDeOrdenacaoErro, OrigemErro } from '../types/erroAdmin'
 
 export interface ListarErrosAdminParams {
   q?: string
   provedor?: string
-  origem?: 'Prefeitura' | 'InvoiCy' | 'Schema'
+  origem?: OrigemErro
   publicado?: boolean
+  sortBy?: CampoDeOrdenacaoErro
+  sortDirection?: DirecaoDaOrdenacao
   pagina?: number
   tamanhoPagina?: number
 }

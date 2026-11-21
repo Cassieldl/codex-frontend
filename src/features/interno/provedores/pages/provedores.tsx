@@ -4,17 +4,23 @@ import { useState } from 'react'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import { ErrorState } from '../../../../components/ui/ErrorState'
+import { ItemDoMenuDeAcoes, MenuDeAcoes } from '../../../../components/ui/MenuDeAcoes'
 import { Modal } from '../../../../components/ui/Modal'
 import { Pagination } from '../../../../components/ui/Pagination'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
 import { Button } from '../../../../components/ui/Button'
+import { useFocoNaLinhaAposTroca } from '../../hooks/useFocoNaLinhaAposTroca'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarProvedor } from '../../hooks/usePublicarProvedor'
 import { ProvedorForm, type ProvedorFormDto } from '../components/ProvedorForm'
 import { useCriarProvedor } from '../hooks/useCriarProvedor'
 import { useProvedoresAdmin } from '../hooks/useProvedoresAdmin'
 import type { ProvedorAdminListaItem } from '../types/provedorAdmin'
+import {
+  CLASSE_DAS_ACOES_DA_LINHA,
+  CLASSE_DO_NOME_EDITAVEL,
+} from '../../utils/classesDaTabelaInterna'
 import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
 
 const TAMANHO_PAGINA_PADRAO = 25
@@ -34,6 +40,7 @@ export function ProvedoresPage() {
   const [erroDePublicacao, setErroDePublicacao] = useState<ErroDePublicacao | null>(null)
 
   const { data, isLoading, isError, refetch } = useProvedoresAdmin({ pagina, tamanhoPagina })
+  const devolverFocoNaLinha = useFocoNaLinhaAposTroca(data)
   const criarProvedor = useCriarProvedor()
   const publicarProvedor = usePublicarProvedor()
 
@@ -58,6 +65,7 @@ export function ProvedoresPage() {
     publicarProvedor.mutate(
       { id: provedor.id, publicado: !provedor.publicado, etag: provedor.etag },
       {
+        onSuccess: () => devolverFocoNaLinha(`linha-provedor-${provedor.id}`),
         onError: (falha) =>
           setErroDePublicacao({
             provedorId: provedor.id,
@@ -104,17 +112,19 @@ export function ProvedoresPage() {
                 <TableCell header>Categoria</TableCell>
                 <TableCell header>Identificador InvoiCy</TableCell>
                 <TableCell header>Publicação</TableCell>
-                <TableCell header>Ações</TableCell>
+                <TableCell header alinhamento="direita">
+                  Ações
+                </TableCell>
               </tr>
             </TableHeader>
             <tbody>
               {data.items.map((provedor) => (
-                <TableRow key={provedor.id}>
+                <TableRow key={provedor.id} id={`linha-provedor-${provedor.id}`}>
                   <TableCell>
                     <Link
                       to="/interno/provedores/$provedorId"
                       params={{ provedorId: String(provedor.id) }}
-                      className="font-medium text-primary-medium hover:underline"
+                      className={CLASSE_DO_NOME_EDITAVEL}
                     >
                       {provedor.nome}
                     </Link>
@@ -129,19 +139,35 @@ export function ProvedoresPage() {
                       publicadoEfetivo={provedor.publicado}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell alinhamento="direita">
                     {permissoes.provedores.publicar && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        isLoading={
-                          publicarProvedor.isPending &&
-                          publicarProvedor.variables?.id === provedor.id
-                        }
-                        onClick={() => alternarPublicacao(provedor)}
-                      >
-                        {provedor.publicado ? 'Despublicar' : 'Publicar'}
-                      </Button>
+                      <div className={CLASSE_DAS_ACOES_DA_LINHA}>
+                        {provedor.publicado ? (
+                          <MenuDeAcoes
+                            rotulo={`Mais ações do provedor ${provedor.nome}`}
+                            isLoading={
+                              publicarProvedor.isPending &&
+                              publicarProvedor.variables?.id === provedor.id
+                            }
+                          >
+                            <ItemDoMenuDeAcoes onSelecionar={() => alternarPublicacao(provedor)}>
+                              Despublicar
+                            </ItemDoMenuDeAcoes>
+                          </MenuDeAcoes>
+                        ) : (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            isLoading={
+                              publicarProvedor.isPending &&
+                              publicarProvedor.variables?.id === provedor.id
+                            }
+                            onClick={() => alternarPublicacao(provedor)}
+                          >
+                            Publicar
+                          </Button>
+                        )}
+                      </div>
                     )}
                     {erroDePublicacao?.provedorId === provedor.id && (
                       <p role="alert" className="mt-1 text-sm text-error-texto">
