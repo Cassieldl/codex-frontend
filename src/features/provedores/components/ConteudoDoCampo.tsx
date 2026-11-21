@@ -1,7 +1,7 @@
-import clsx from 'clsx'
 import { useId } from 'react'
 
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
+import { cn } from '../../../lib/cn'
 import type {
   CampoVersaoPublico,
   ErroResumoPublico,
@@ -58,7 +58,7 @@ function FatosDoCampo({ campo }: { campo: CampoVersaoPublico }) {
         >
           <dt className="text-xs font-medium text-muted">{rotulo}</dt>
           <dd
-            className={clsx(
+            className={cn(
               'mt-0.5 text-sm font-semibold [overflow-wrap:anywhere]',
               ehCodigo ? 'font-mono text-primary-medium' : 'text-ink',
             )}

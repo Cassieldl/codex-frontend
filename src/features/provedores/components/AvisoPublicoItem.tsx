@@ -1,9 +1,9 @@
-import clsx from 'clsx'
 import { ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { ConteudoArtigo } from '../../../components/ui/ConteudoArtigo'
 import { EtiquetaSeveridade } from '../../../components/ui/EtiquetaSeveridade'
+import { cn } from '../../../lib/cn'
 import { formatarDataVerificacao } from '../../../utils/formatarDataVerificacao'
 import type { AvisoPublico } from '../types/provedor'
 import { construirIdAviso, construirLinkAviso } from '../utils/avisoAncora'
@@ -37,7 +37,7 @@ export function AvisoPublicoItem({ aviso, destacado = false }: AvisoPublicoItemP
   return (
     <li
       id={construirIdAviso(aviso.id)}
-      className={clsx(
+      className={cn(
         'group/aviso -mx-2 scroll-mt-24 rounded border-t border-border px-2 py-2.5',
         destacado && 'bg-highlight-anchor',
       )}
@@ -101,7 +101,7 @@ export function AvisoPublicoItem({ aviso, destacado = false }: AvisoPublicoItemP
           }
           rotulo="Copiar link"
           ariaLabel={`Copiar link do aviso ${aviso.titulo}`}
-          className={clsx(
+          className={cn(
             'transition-opacity',
             aberto
               ? 'opacity-100'

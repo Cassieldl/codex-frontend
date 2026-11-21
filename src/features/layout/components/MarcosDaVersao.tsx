@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import { format } from 'date-fns'
+import { cn } from '../../../lib/cn'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { diasAteObrigatoria, rotuloDiasRestantes } from '../../home/utils/diasAteObrigatoria'
 import type { MarcosDaVersaoLayout } from '../types/layoutPublico'
@@ -63,12 +63,12 @@ function BarraDoTempo({ linhaDoTempo, hoje, versao }: BarraDoTempoProps) {
             key={ehHoje ? 'hoje' : entrada.marco.chave}
             data-marco={ehHoje ? undefined : entrada.marco.chave}
             aria-current={ehHoje ? 'date' : undefined}
-            className={clsx(
+            className={cn(
               'flex min-w-0 flex-col gap-1 border-l-4 py-1 pl-3 sm:border-t-4 sm:border-l-0 sm:pt-3 sm:pr-3 sm:pl-0',
               CLASSE_DO_TRECHO[estadoDoTrecho(entrada)],
             )}
           >
-            <span className={clsx('text-xs', ehHoje ? 'font-semibold text-accent' : 'text-white')}>
+            <span className={cn('text-xs', ehHoje ? 'font-semibold text-accent' : 'text-white')}>
               {ehHoje ? 'Hoje' : entrada.marco.rotulo}
             </span>
             <time
@@ -123,7 +123,7 @@ export function MarcosDaVersao({
   return (
     <section
       aria-label={`Origem e prazos da ${versao}`}
-      className={clsx(
+      className={cn(
         'grid gap-6 rounded-[var(--radius-card)] bg-primary px-8 py-7 text-white lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-center',
         className,
       )}

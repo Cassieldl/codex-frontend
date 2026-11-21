@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import type { ReactNode } from 'react'
 
+import { cn } from '../../../lib/cn'
 import { niveisDoCaminho } from '../utils/destinosXml'
 
 export interface XmlDoDestinoProps {
@@ -93,7 +93,7 @@ export function XmlDoDestino({ caminho, exemplo }: XmlDoDestinoProps) {
             data-nivel={linha.nivel}
             data-alvo={linha.ehAlvo ? '' : undefined}
             style={{ paddingLeft: `${linha.nivel + 1}rem` }}
-            className={clsx(
+            className={cn(
               'block border-l-[3px] pr-4 whitespace-pre-wrap [overflow-wrap:anywhere]',
               linha.ehAlvo ? 'border-l-accent bg-white/10 font-semibold' : 'border-l-transparent',
             )}

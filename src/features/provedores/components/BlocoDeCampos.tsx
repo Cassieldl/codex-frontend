@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import { cn } from '../../../lib/cn'
 import type { SecaoInicialDoModal } from '../types/modalDoCampo'
 import type { BlocoDeCampos as BlocoDeCamposDados, SubgrupoDeCampos } from '../utils/blocosDeCampos'
 import { recortarCamposDoBloco } from '../utils/recortarCamposDoBloco'
@@ -88,7 +88,7 @@ function RotulosDasColunas({ colunas }: { colunas: ColunaDoBloco[] }) {
       {colunas.map(({ chave, rotulo, rotuloVisivel, alinhadoADireita }) => (
         <span
           key={chave}
-          className={clsx(CLASSE_DA_CELULA_DE_ROTULO, alinhadoADireita && 'text-right')}
+          className={cn(CLASSE_DA_CELULA_DE_ROTULO, alinhadoADireita && 'text-right')}
         >
           {rotuloVisivel ?? rotulo}
         </span>

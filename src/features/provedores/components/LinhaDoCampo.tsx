@@ -1,7 +1,7 @@
-import clsx from 'clsx'
 import { memo } from 'react'
 import type { MouseEvent } from 'react'
 import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
+import { cn } from '../../../lib/cn'
 import type { SecaoInicialDoModal } from '../types/modalDoCampo'
 import type { CampoVersaoPublico } from '../types/versaoProvedorPagina'
 import { construirIdLinhaCampo } from '../utils/destaqueAncora'
@@ -86,14 +86,14 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
     <tr
       id={construirIdLinhaCampo(slug)}
       onClick={abrirPeloClique}
-      className={clsx(
+      className={cn(
         'scroll-mt-[calc(var(--topo-fixo,0px)_+_8rem)] cursor-pointer border-t border-border align-top hover:bg-surface-hover',
         ativo && 'bg-highlight-anchor',
       )}
     >
       <td
         data-coluna="uso"
-        className={clsx(
+        className={cn(
           CLASSE_SO_NO_DESKTOP,
           'border-l-[3px] px-3 py-2',
           ativo ? 'border-l-accent' : 'border-l-transparent',
@@ -104,7 +104,7 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
 
       <td
         data-coluna="campo"
-        className={clsx(
+        className={cn(
           'px-3 py-2 max-[859px]:border-l-[3px]',
           ativo ? 'max-[859px]:border-l-accent' : 'max-[859px]:border-l-transparent',
         )}
@@ -141,12 +141,12 @@ export const LinhaDoCampo = memo(function LinhaDoCampo({
         <DestinosDoCampo destinos={destinos} />
       </td>
 
-      <td data-coluna="tipo" className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2 text-xs text-ink')}>
+      <td data-coluna="tipo" className={cn(CLASSE_SO_NO_DESKTOP, 'px-3 py-2 text-xs text-ink')}>
         {campo.tipo}
       </td>
 
       {mostrarExemplo && (
-        <td data-coluna="exemplo" className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-2')}>
+        <td data-coluna="exemplo" className={cn(CLASSE_SO_NO_DESKTOP, 'px-3 py-2')}>
           {campo.exemplo && (
             <span
               className="line-clamp-2 font-mono text-xs text-ink [overflow-wrap:anywhere]"

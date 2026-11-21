@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import { TriangleAlert } from 'lucide-react'
+import { cn } from '../../../lib/cn'
 import type { ErroDoCampo } from '../types/versaoProvedorPagina'
 
 /** Visual do selo de rejeições, repetido na legenda da tabela de campos. */
@@ -39,7 +39,7 @@ export function IndicadorErrosDoCampo({
       onClick={onVerErros}
       aria-label={`Ver ${quantidade} no campo ${nomeDoCampo}`}
       title={`Ver ${quantidade} neste campo`}
-      className={clsx(
+      className={cn(
         CLASSE_DO_SELO_DE_REJEICOES,
         'ml-2 align-middle hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
       )}

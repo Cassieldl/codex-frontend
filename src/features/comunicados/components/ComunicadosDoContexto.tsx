@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import clsx from 'clsx'
 import { EtiquetaSeveridade } from '../../../components/ui/EtiquetaSeveridade'
+import { cn } from '../../../lib/cn'
 import type { SeveridadeComunicado } from '../../home/types/home'
 import { formatarDataHora } from '../../home/utils/formatarDatas'
 import { rotuloAlvoComunicado, SEVERIDADE_ETIQUETA } from '../../home/utils/severidadeComunicado'
@@ -44,7 +44,7 @@ function CardComunicado({ comunicado, caminhoAtual }: CardComunicadoProps) {
   return (
     <div
       role={comunicado.severidade === 'Critico' ? 'alert' : undefined}
-      className={clsx(
+      className={cn(
         'flex flex-col gap-2 rounded-[var(--radius-card)] border px-4 py-3',
         CLASSE_CARD[comunicado.severidade],
       )}

@@ -1,4 +1,3 @@
-import clsx from 'clsx'
 import { Check, Search } from 'lucide-react'
 import { useId } from 'react'
 import type { RefObject } from 'react'
@@ -8,6 +7,7 @@ import {
   CLASSE_DO_CHIP_PRESSIONADO,
   CLASSE_DO_CHIP_SOLTO,
 } from '../../../components/ui/classesDosFiltros'
+import { cn } from '../../../lib/cn'
 import type { FiltroDeEstado } from '../utils/blocosDeCampos'
 
 export interface FiltrosDeCamposProps {
@@ -66,7 +66,7 @@ export function FiltrosDeCampos({
   const buscaId = useId()
 
   return (
-    <div className={clsx('flex flex-col gap-3', CLASSE_DA_CAIXA_DE_FILTROS)}>
+    <div className={cn('flex flex-col gap-3', CLASSE_DA_CAIXA_DE_FILTROS)}>
       <div className="relative">
         <label htmlFor={buscaId} className="sr-only">
           Buscar campo do InvoiCy, tag do provedor ou caminho no XML
@@ -97,7 +97,7 @@ export function FiltrosDeCampos({
                 type="button"
                 aria-pressed={pressionado}
                 onClick={() => onEstadoChange(valor)}
-                className={clsx(
+                className={cn(
                   CLASSE_DO_CHIP,
                   pressionado ? CLASSE_DO_CHIP_PRESSIONADO : CLASSE_DO_CHIP_SOLTO,
                 )}
@@ -114,7 +114,7 @@ export function FiltrosDeCampos({
             type="button"
             aria-pressed={somenteReformaTributaria}
             onClick={onAlternarReformaTributaria}
-            className={clsx(
+            className={cn(
               CLASSE_DO_CHIP,
               somenteReformaTributaria ? CLASSE_DO_CHIP_PRESSIONADO : CLASSE_DO_CHIP_SOLTO,
             )}

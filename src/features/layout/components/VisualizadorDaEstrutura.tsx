@@ -1,4 +1,3 @@
-import clsx from 'clsx'
 import { ChevronsDownUp, ChevronsUpDown, Download } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -6,6 +5,7 @@ import { BotaoCopiar } from '../../../components/ui/BotaoCopiar'
 import { LegendaDeMarcas } from '../../../components/ui/LegendaDeMarcas'
 import type { ItemDaLegendaDeMarcas } from '../../../components/ui/LegendaDeMarcas'
 import { SeloReformaTributaria } from '../../../components/ui/SeloReformaTributaria'
+import { cn } from '../../../lib/cn'
 import type { VizinhoDeCampo } from '../../../types/vizinhoDeCampo'
 import { baixarArquivoDeTexto } from '../../../utils/baixarArquivoDeTexto'
 import type { CampoNaSequencia } from '../../../utils/blocosDoLayout'
@@ -396,7 +396,7 @@ export function VisualizadorDaEstrutura({
       // Região rolável na horizontal precisa ser alcançável pelo teclado.
       tabIndex={0}
       // `relative` prende o `sr-only` absoluto dos marcadores dentro da rolagem: sem ele, estoura a página.
-      className={clsx(
+      className={cn(
         'relative overflow-x-auto font-mono text-[13px] leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
         escura
           ? 'bg-codigo-fundo py-4'

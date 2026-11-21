@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { useMemo } from 'react'
 import { CLASSE_CARD } from '../../../components/ui/classesDeCard'
+import { cn } from '../../../lib/cn'
 import type { AvisoPublico } from '../types/provedor'
 import { useAvisoDestacadoPorAncora } from '../utils/avisoAncora'
 import { ordenarAvisosPorGravidade } from '../utils/resumoDoAviso'
@@ -24,7 +24,7 @@ export function CartaoDeAvisos({ idDoTitulo, titulo, subtitulo, avisos }: Cartao
   if (avisos.length === 0) return null
 
   return (
-    <section aria-labelledby={idDoTitulo} className={clsx(CLASSE_CARD, 'p-5 shadow-card')}>
+    <section aria-labelledby={idDoTitulo} className={cn(CLASSE_CARD, 'p-5 shadow-card')}>
       <h2 id={idDoTitulo} className="text-card-titulo font-bold text-primary">
         {titulo}
       </h2>

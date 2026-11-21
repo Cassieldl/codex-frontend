@@ -1,8 +1,8 @@
-import clsx from 'clsx'
 import { ChevronRight } from 'lucide-react'
 import { memo } from 'react'
 import type { MouseEvent } from 'react'
 import { CaminhoXml } from '../../../components/ui/CaminhoXml'
+import { cn } from '../../../lib/cn'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import { construirIdLinhaCampo } from '../../provedores/utils/destaqueAncora'
 import type { FormatoDaEstrutura } from '../types/estruturaLayout'
@@ -56,7 +56,7 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
     <tr
       id={construirIdLinhaCampo(slug)}
       onClick={abrirPeloClique}
-      className={clsx(
+      className={cn(
         // A folga cobre o resumo fixo (48px) e o subtítulo, que pode quebrar em até 3 linhas no celular.
         'scroll-mt-40 cursor-pointer border-t border-border align-top hover:bg-surface-hover max-[859px]:scroll-mt-48',
         ativo && 'bg-highlight-anchor',
@@ -64,7 +64,7 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
     >
       <td
         data-coluna="campo"
-        className={clsx(
+        className={cn(
           'border-l-[3px] px-3 py-3',
           ativo ? 'border-l-accent' : 'border-l-transparent',
         )}
@@ -121,7 +121,7 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
         )}
       </td>
 
-      <td data-coluna="significado" className={clsx(CLASSE_SO_NO_DESKTOP, 'px-3 py-3')}>
+      <td data-coluna="significado" className={cn(CLASSE_SO_NO_DESKTOP, 'px-3 py-3')}>
         {campo.significado && (
           <p className="text-sm leading-relaxed text-ink [overflow-wrap:anywhere]">
             {campo.significado}
@@ -129,7 +129,7 @@ export const LinhaDoVerbete = memo(function LinhaDoVerbete({
         )}
       </td>
 
-      <td aria-hidden="true" className={clsx(CLASSE_SO_NO_DESKTOP, 'py-3 pr-3 text-right')}>
+      <td aria-hidden="true" className={cn(CLASSE_SO_NO_DESKTOP, 'py-3 pr-3 text-right')}>
         <ChevronRight className="ml-auto size-4 text-primary-medium" />
       </td>
     </tr>

@@ -1,8 +1,8 @@
-import clsx from 'clsx'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, ChevronDown } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
+import { cn } from '../../../lib/cn'
 import type { ReferenciaCampoLayout, ReferenciaErro } from '../types/artigo'
 import { grupoDoCampo } from './grupoDoCampo'
 
@@ -56,7 +56,7 @@ function CamposRelacionadosDoArtigo({ campos }: { campos: ReferenciaCampoLayout[
                 aria-expanded={estaAberto}
                 aria-controls={idPainel}
                 onClick={() => setSlugAberto(estaAberto ? null : campo.slug)}
-                className={clsx(
+                className={cn(
                   'inline-flex max-w-full items-center gap-1 rounded-[var(--radius-control)] border px-2.5 py-1 font-mono text-xs text-ink hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
                   estaAberto ? 'border-primary-light bg-alert-info' : 'border-border bg-white',
                 )}
@@ -66,7 +66,7 @@ function CamposRelacionadosDoArtigo({ campos }: { campos: ReferenciaCampoLayout[
                   {campo.nome}
                 </span>
                 <ChevronDown
-                  className={clsx(
+                  className={cn(
                     'size-3.5 shrink-0 transition-transform',
                     estaAberto && 'rotate-180',
                   )}

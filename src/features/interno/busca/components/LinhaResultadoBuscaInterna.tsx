@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { BotaoCopiar } from '../../../../components/ui/BotaoCopiar'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
+import { cn } from '../../../../lib/cn'
 import type { ResultadoItem } from '../../../busca/types/resultadoBusca'
 import { caminhoDoItemBuscaInterna, resolverLinkParaCopiar } from '../utils/resolverLinkParaCopiar'
 import { nomeDaListaPorTipo } from '../utils/rotaEdicaoPorTipo'
@@ -51,7 +51,7 @@ export function LinhaResultadoBuscaInterna({
       id={id}
       role={id ? 'option' : undefined}
       aria-selected={id ? ativo : undefined}
-      className={clsx(
+      className={cn(
         'flex items-center justify-between gap-3 rounded-[var(--radius-card)] border px-4 py-3',
         ativo ? 'border-primary-medium bg-surface-hover' : 'border-border',
       )}

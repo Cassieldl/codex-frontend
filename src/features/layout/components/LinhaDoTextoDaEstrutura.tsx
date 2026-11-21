@@ -1,7 +1,7 @@
-import clsx from 'clsx'
 import { ChevronRight } from 'lucide-react'
 import { memo } from 'react'
 import type { ReactNode } from 'react'
+import { cn } from '../../../lib/cn'
 import { realcarTrecho } from '../../../utils/realceDeSintaxe'
 import type { TipoDoTrecho } from '../../../utils/realceDeSintaxe'
 import { construirIdLinhaCampo } from '../../provedores/utils/destaqueAncora'
@@ -140,16 +140,16 @@ export const LinhaDoTextoDaEstrutura = memo(function LinhaDoTextoDaEstrutura({
     <div
       id={idDaAncora ?? undefined}
       data-linha={indice}
-      className={clsx(
+      className={cn(
         'flex min-w-max items-start border-l-[3px] pr-4',
         destacada
-          ? clsx('border-l-accent', escura ? 'bg-white/10' : 'bg-highlight-anchor')
+          ? cn('border-l-accent', escura ? 'bg-white/10' : 'bg-highlight-anchor')
           : 'border-l-transparent',
       )}
     >
       <span
         aria-hidden="true"
-        className={clsx(
+        className={cn(
           'w-12 shrink-0 pr-3 text-right tabular-nums select-none',
           CLASSE_DO_NUMERO[superficie],
         )}
@@ -164,20 +164,20 @@ export const LinhaDoTextoDaEstrutura = memo(function LinhaDoTextoDaEstrutura({
             aria-expanded={!recolhido}
             aria-label={`${recolhido ? 'Expandir' : 'Recolher'} ${no.nome}`}
             onClick={() => onAlternarGrupo(indice)}
-            className={clsx(
+            className={cn(
               'mt-1 inline-flex size-4 items-center justify-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent-hover',
               CLASSE_DO_CONTROLE_DO_GRUPO[superficie],
             )}
           >
             <ChevronRight
               aria-hidden="true"
-              className={clsx('size-3.5 transition-transform', !recolhido && 'rotate-90')}
+              className={cn('size-3.5 transition-transform', !recolhido && 'rotate-90')}
             />
           </button>
         )}
       </span>
 
-      <span className={clsx('whitespace-pre', escura ? 'text-codigo-texto' : 'text-ink')}>
+      <span className={cn('whitespace-pre', escura ? 'text-codigo-texto' : 'text-ink')}>
         {INDENTACAO.repeat(linha.profundidade)}
         {pedacoDoTexto(linha.prefixo, formato, superficie)}
         {no &&
@@ -221,7 +221,7 @@ export const LinhaDoTextoDaEstrutura = memo(function LinhaDoTextoDaEstrutura({
 
       {daReformaTributaria && (
         <SeloReformaTributaria
-          className={clsx('ml-3 self-center', escura && 'ring-1 ring-codigo-texto')}
+          className={cn('ml-3 self-center', escura && 'ring-1 ring-codigo-texto')}
         />
       )}
 
@@ -240,7 +240,7 @@ export const LinhaDoTextoDaEstrutura = memo(function LinhaDoTextoDaEstrutura({
       )}
 
       {repeteNoXml && (
-        <span className={clsx('ml-3 self-center font-sans text-aux', CLASSE_DO_NUMERO[superficie])}>
+        <span className={cn('ml-3 self-center font-sans text-aux', CLASSE_DO_NUMERO[superficie])}>
           pode repetir
         </span>
       )}

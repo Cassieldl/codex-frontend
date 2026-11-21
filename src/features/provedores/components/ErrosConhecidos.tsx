@@ -1,8 +1,8 @@
-import clsx from 'clsx'
 import { ChevronRight, Search } from 'lucide-react'
 import { useId, useMemo, useRef, useState } from 'react'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { Pagination } from '../../../components/ui/Pagination'
+import { cn } from '../../../lib/cn'
 import { caminhoInternoSeguro } from '../../../utils/caminhoInternoSeguro'
 import { resolverMensagemDoErro } from '../../erros/utils/mensagemDoErro'
 import type { ErroResumoPublico, GrupoCampoVersao } from '../types/versaoProvedorPagina'
@@ -167,7 +167,7 @@ export function ErrosConhecidos({ resumo, provedorSlug, camposPorGrupo }: ErrosC
               const campos = camposPorErro.get(erro.slug) ?? []
 
               return (
-                <li key={erro.slug} className={clsx(aberto && 'bg-surface-hover')}>
+                <li key={erro.slug} className={cn(aberto && 'bg-surface-hover')}>
                   <button
                     type="button"
                     aria-expanded={aberto}
@@ -177,7 +177,7 @@ export function ErrosConhecidos({ resumo, provedorSlug, camposPorGrupo }: ErrosC
                   >
                     <ConteudoDoErro erro={erro} campos={campos} />
                     <ChevronRight
-                      className={clsx(
+                      className={cn(
                         'mt-0.5 size-4.5 shrink-0 text-primary-light transition-transform duration-150',
                         aberto && 'rotate-90',
                       )}

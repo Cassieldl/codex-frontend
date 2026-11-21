@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import { cn } from '../../../lib/cn'
 import type { EstadoPreenchimentoCampo } from '../types/versaoProvedorPagina'
 import { ROTULO_DA_OBRIGATORIEDADE } from '../utils/obrigatoriedade'
 
@@ -19,7 +19,7 @@ export function MarcadorObrigatoriedade({ estado, className }: MarcadorObrigator
   return (
     <span
       data-obrigatoriedade={estado}
-      className={clsx(
+      className={cn(
         'inline-flex shrink-0 items-center rounded-[var(--radius-check)] border px-1.5 py-0.5 text-aux leading-none font-bold',
         CLASSE_POR_ESTADO[estado],
         className,

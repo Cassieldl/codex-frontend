@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import clsx from 'clsx'
 import { ArrowRight } from 'lucide-react'
 import { CLASSE_HOVER_DO_CARD_CLICAVEL } from '../../../components/ui/classesDeCard'
+import { cn } from '../../../lib/cn'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { LayoutIndice } from '../types/layoutPublico'
 import { montarCartoesDeVersao } from '../utils/cartoesDeVersao'
@@ -19,7 +19,7 @@ function CartaoDaVersao({ versao, ehVigente, fatos }: CartaoDeVersao) {
       params={{ versaoSlug: versao.slug }}
       activeOptions={{ exact: true }}
       data-cartao-de-versao={versao.slug}
-      className={clsx(
+      className={cn(
         'flex h-full flex-col gap-2.5 rounded-[var(--radius-card)] bg-white px-6 py-5 text-primary no-underline',
         CLASSE_HOVER_DO_CARD_CLICAVEL,
         ehVigente ? 'border-2 border-primary-medium' : 'border border-border',

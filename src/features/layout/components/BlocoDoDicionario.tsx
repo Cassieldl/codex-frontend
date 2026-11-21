@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { ChevronDown } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { cn } from '../../../lib/cn'
 import type { BlocoDoLayout, SubgrupoDoLayout } from '../../../utils/blocosDoLayout'
 import type { CampoLayoutPublico } from '../types/layoutPublico'
 import type { FormatosDoCampo } from '../utils/formatosDoCampoNaEstrutura'
@@ -101,7 +101,7 @@ function TabelasDoBloco({
     >
       {subgrupo.titulo && (
         <h4
-          className={clsx(
+          className={cn(
             'sticky z-[8] flex min-h-8 items-center border-t border-border bg-white px-4 py-1.5 text-xs font-semibold tracking-wide text-muted uppercase [overflow-wrap:anywhere]',
             classeDoTopoDoSubtitulo,
           )}
@@ -116,7 +116,7 @@ function TabelasDoBloco({
           {COLUNAS.map(({ chave, soNoDesktop, largura }) => (
             <col
               key={chave}
-              className={clsx(soNoDesktop && 'hidden min-[860px]:table-column', largura)}
+              className={cn(soNoDesktop && 'hidden min-[860px]:table-column', largura)}
             />
           ))}
         </colgroup>

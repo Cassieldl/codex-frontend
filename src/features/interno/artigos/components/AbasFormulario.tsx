@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
+import { cn } from '../../../../lib/cn'
 
 export interface AbaFormulario {
   /** Identificador estável da aba - vira parte do `id` do tab e do painel. */
@@ -80,7 +80,7 @@ export function AbasFormulario({
   }
 
   return (
-    <div className={clsx('flex flex-col gap-3', className)}>
+    <div className={cn('flex flex-col gap-3', className)}>
       <div
         role="tablist"
         aria-label={ariaLabel}
@@ -102,7 +102,7 @@ export function AbasFormulario({
               tabIndex={ativa ? 0 : -1}
               onClick={() => onValorAtivoChange(aba.valor)}
               onKeyDown={aoTeclar}
-              className={clsx(
+              className={cn(
                 'inline-flex items-center border-b-[3px] px-3 py-2 text-sm transition-shadow duration-150',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
                 ativa

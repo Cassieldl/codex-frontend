@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { ArrowRightLeft, BookOpen, ListOrdered, SlidersHorizontal } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { cn } from '../../../lib/cn'
 import type { TipoArtigo } from '../types/artigo'
 import { ROTULO_TIPO_ARTIGO } from './rotulosTipoArtigo'
 
@@ -36,7 +36,7 @@ export function EtiquetaTipoArtigo({
   if (variante === 'chip') {
     return (
       <span
-        className={clsx(
+        className={cn(
           'inline-flex self-start rounded-[var(--radius-control)] bg-alert-info px-2 py-1 text-xs font-bold tracking-wider text-primary uppercase',
           className,
         )}
@@ -50,7 +50,7 @@ export function EtiquetaTipoArtigo({
 
   return (
     <span
-      className={clsx(
+      className={cn(
         'inline-flex items-center gap-2 text-aux font-semibold tracking-wide text-ink uppercase',
         className,
       )}

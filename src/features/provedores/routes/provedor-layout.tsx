@@ -1,5 +1,4 @@
 import { Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router'
-import clsx from 'clsx'
 import { useEffect, useId, useState } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
@@ -7,6 +6,7 @@ import { RodapeContextual } from '../../../components/layout/RodapeContextual'
 import { AbasNavegaveis, type AbaNavegavel } from '../../../components/ui/AbasNavegaveis'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { cn } from '../../../lib/cn'
 import { corrigirUrlCanonica, type NavegacaoCanonica } from '../../../utils/corrigirUrlCanonica'
 import { ComunicadosDoContexto } from '../../comunicados/components/ComunicadosDoContexto'
 import { EstadoProvedorIndisponivel } from '../components/EstadoProvedorIndisponivel'
@@ -108,7 +108,7 @@ function ConteudoDoProvedor({ provedor, provedorSlug, caminhoAtual }: ConteudoDo
     <>
       <div className="border-b border-border bg-white">
         <div
-          className={clsx(CLASSE_LARGURA, 'flex flex-col gap-4 pt-6', abas.length === 0 && 'pb-6')}
+          className={cn(CLASSE_LARGURA, 'flex flex-col gap-4 pt-6', abas.length === 0 && 'pb-6')}
         >
           <p className="text-xs text-muted">
             <Link to="/provedores" search={{ pagina: 1 }} className="underline hover:text-ink">
@@ -163,7 +163,7 @@ function ConteudoDoProvedor({ provedor, provedorSlug, caminhoAtual }: ConteudoDo
         </div>
       </div>
 
-      <div className={clsx(CLASSE_LARGURA, 'flex flex-1 flex-col gap-6 py-7')}>
+      <div className={cn(CLASSE_LARGURA, 'flex flex-1 flex-col gap-6 py-7')}>
         <Outlet />
       </div>
     </>
@@ -199,7 +199,7 @@ export function ProvedorLayoutPage({
 
       <main id={ID_CONTEUDO_PRINCIPAL} tabIndex={-1} className="flex w-full flex-1 flex-col">
         {!conteudoPronto && (
-          <div className={clsx(CLASSE_LARGURA, 'flex flex-col gap-6 py-8')}>
+          <div className={cn(CLASSE_LARGURA, 'flex flex-col gap-6 py-8')}>
             {(isLoading || correcao) && (
               <div aria-live="polite" aria-busy="true" className="flex flex-col gap-4">
                 <span className="sr-only">

@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import clsx from 'clsx'
 import { isAxiosError } from 'axios'
 import { useEffect } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
@@ -12,6 +11,7 @@ import { SeloVerificacao } from '../../../components/ui/SeloVerificacao'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import { useTituloDaPagina } from '../../../hooks/useTituloDaPagina'
 import { SumarioArtigo } from '../../../components/ui/SumarioArtigo'
+import { cn } from '../../../lib/cn'
 import { corrigirUrlCanonica } from '../../../utils/corrigirUrlCanonica'
 import { handleApiError } from '../../../utils/handleApiError'
 import { EstadoArtigoIndisponivel } from '../components/EstadoArtigoIndisponivel'
@@ -98,7 +98,7 @@ function ArtigoCarregado({ artigo }: { artigo: ArtigoDetalhe }) {
 
       <aside
         aria-label="Navegação do artigo"
-        className={clsx(
+        className={cn(
           'flex-col gap-6 lg:sticky lg:top-8 lg:flex lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto',
           temReferencias ? 'flex' : 'hidden',
         )}

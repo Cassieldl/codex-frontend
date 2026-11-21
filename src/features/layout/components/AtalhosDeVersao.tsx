@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import clsx from 'clsx'
+import { cn } from '../../../lib/cn'
 import { formatarVersaoLayout } from '../../../utils/versaoDoLayout'
 import type { LayoutVersaoResumo } from '../types/layoutPublico'
 
@@ -32,7 +32,7 @@ export function AtalhosDeVersao({ versoes, vigenteSlug }: AtalhosDeVersaoProps) 
                 params={{ versaoSlug: versao.slug }}
                 activeOptions={{ exact: true }}
                 data-atalho-de-versao={versao.slug}
-                className={clsx(
+                className={cn(
                   'flex min-h-11 flex-col justify-center rounded-[var(--radius-control)] px-4 py-1.5 text-primary no-underline hover:shadow-hover',
                   ehVigente && 'bg-white shadow-card',
                 )}

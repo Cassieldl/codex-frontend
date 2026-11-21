@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import clsx from 'clsx'
+import { cn } from '../../../lib/cn'
 
 interface Atalho {
   termo: string
@@ -24,7 +24,7 @@ export function AtalhosDeBusca() {
           key={atalho.termo}
           to="/busca"
           search={{ q: atalho.termo }}
-          className={clsx(
+          className={cn(
             'rounded-[var(--radius-pill)] border border-white/40 px-3 py-1.5 text-xs text-white transition-colors duration-150 hover:border-white',
             atalho.ehCodigo ? 'font-mono' : 'font-semibold',
           )}

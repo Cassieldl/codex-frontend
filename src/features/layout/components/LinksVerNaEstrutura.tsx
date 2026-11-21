@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import clsx from 'clsx'
+import { cn } from '../../../lib/cn'
 import { construirIdLinhaEstrutura } from '../../provedores/utils/destaqueAncora'
 import type { FormatoDaEstrutura } from '../types/estruturaLayout'
 
@@ -46,7 +46,7 @@ export function LinksVerNaEstrutura({
 
   return (
     <Raiz
-      className={clsx(
+      className={cn(
         compacta
           ? 'inline-flex items-baseline gap-2 whitespace-nowrap'
           : 'flex flex-wrap items-center gap-x-3 gap-y-1',
@@ -66,7 +66,7 @@ export function LinksVerNaEstrutura({
               ? `Ver na estrutura ${SIGLA_DO_FORMATO[formato]} (${PROTOCOLO_DO_FORMATO[formato]})`
               : undefined
           }
-          className={clsx(CLASSE_DO_LINK, compacta ? 'font-medium' : 'font-semibold')}
+          className={cn(CLASSE_DO_LINK, compacta ? 'font-medium' : 'font-semibold')}
         >
           {compacta ? (
             // O nome acessível contém o texto visível ("XML") e diz de qual campo é o atalho.

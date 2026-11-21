@@ -1,8 +1,8 @@
-import clsx from 'clsx'
 import { Search } from 'lucide-react'
 import { useId } from 'react'
 import type { ReactNode, RefObject } from 'react'
 import { AlternadorSegmentado } from '../../../components/ui/AlternadorSegmentado'
+import { cn } from '../../../lib/cn'
 
 export interface FiltrosDoDicionarioProps {
   termo: string
@@ -107,7 +107,7 @@ export function FiltrosDoDicionario({
           type="button"
           aria-pressed={somenteReformaTributaria}
           onClick={onAlternarReformaTributaria}
-          className={clsx(
+          className={cn(
             'inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-pill)] border px-4 text-sm font-bold hover:shadow-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover',
             somenteReformaTributaria
               ? 'border-primary bg-primary text-white'
@@ -116,7 +116,7 @@ export function FiltrosDoDicionario({
         >
           <span
             aria-hidden="true"
-            className={clsx(
+            className={cn(
               'rounded-[var(--radius-pill)] px-1.5 py-px text-aux font-bold',
               somenteReformaTributaria ? 'bg-white text-primary' : 'bg-primary text-white',
             )}

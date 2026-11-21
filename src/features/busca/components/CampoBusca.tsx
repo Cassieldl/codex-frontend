@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { Search } from 'lucide-react'
 import { useId, type Ref } from 'react'
+import { cn } from '../../../lib/cn'
 
 export type VarianteCampoBusca = 'padrao' | 'destaque' | 'compacta'
 
@@ -82,7 +82,7 @@ export function CampoBusca({
 
       {/* O input não desenha contorno próprio: o anel de foco fica na moldura inteira. */}
       <div
-        className={clsx(
+        className={cn(
           'flex items-center gap-3 rounded-[var(--radius-input)] border bg-white',
           CLASSE_MOLDURA[variante],
           rotuloDoBotao ? 'h-16 pr-2 pl-4' : CLASSE_TAMANHO[variante],
@@ -90,7 +90,7 @@ export function CampoBusca({
         )}
       >
         <Search
-          className={clsx('size-5 shrink-0', destaque ? 'text-primary-light' : 'text-muted')}
+          className={cn('size-5 shrink-0', destaque ? 'text-primary-light' : 'text-muted')}
           aria-hidden="true"
         />
         <input
@@ -104,7 +104,7 @@ export function CampoBusca({
           aria-keyshortcuts={atalhoTeclado}
           onChange={(evento) => onValorChange(evento.target.value)}
           placeholder={placeholder}
-          className={clsx(
+          className={cn(
             'h-full w-full min-w-0 border-none bg-transparent text-ink outline-none placeholder:text-muted',
             destaque ? 'text-card-titulo' : 'text-sm',
           )}

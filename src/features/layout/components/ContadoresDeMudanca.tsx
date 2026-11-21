@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import { cn } from '../../../lib/cn'
 import type { ChaveDoContador, ContadorDeMudanca } from '../utils/mudancasDaVersao'
 
 export interface ContadoresDeMudancaProps {
@@ -33,7 +33,7 @@ export function ContadoresDeMudanca({ contadores, className }: ContadoresDeMudan
   const contaGruposNaLista = contadores.some(({ camposAfetados }) => camposAfetados !== null)
 
   return (
-    <div className={clsx('flex flex-col gap-2', className)}>
+    <div className={cn('flex flex-col gap-2', className)}>
       <ul className="flex flex-wrap gap-2">
         {contadores.map(({ chave, quantidade, camposAfetados }) => {
           const numero = camposAfetados ?? quantidade
