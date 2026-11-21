@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import { cn } from '../../lib/cn'
 import { agruparSecoes, extrairSecoesDoCorpo } from './secoesDoArtigo'
 import type { ItemSumarioArtigo } from './secoesDoArtigo'
 import { useSecaoAtual } from './useSecaoAtual'
@@ -30,7 +30,7 @@ function LinkDoSumario({
       href={`#${item.ancora}`}
       title={item.titulo}
       aria-current={atual ? 'location' : undefined}
-      className={clsx(
+      className={cn(
         'block rounded-[var(--radius-control)] py-1.5 leading-snug hover:underline',
         ESTILO_POR_NIVEL[nivel],
         atual ? 'bg-alert-info font-semibold text-primary' : 'text-muted',
@@ -57,7 +57,7 @@ export function SumarioArtigo({ corpo, mostrarTitulo = true, className }: Sumari
       {mostrarTitulo && (
         <p className="text-xs font-semibold tracking-wide text-muted uppercase">Nesta página</p>
       )}
-      <ul className={clsx('flex flex-col gap-1', mostrarTitulo && 'mt-3')}>
+      <ul className={cn('flex flex-col gap-1', mostrarTitulo && 'mt-3')}>
         {agruparSecoes(itens).map((topico) => (
           <li key={topico.ancora}>
             <LinkDoSumario

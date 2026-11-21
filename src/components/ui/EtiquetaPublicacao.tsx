@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import { CheckCircle2, EyeOff, PenLine } from 'lucide-react'
+import { cn } from '../../lib/cn'
 
 export interface EtiquetaPublicacaoProps {
   /** Estado de publicação do próprio item, independente dos ancestrais. */
@@ -24,7 +24,7 @@ export function EtiquetaPublicacao({
   if (!publicadoProprio) {
     return (
       <span
-        className={clsx(
+        className={cn(
           'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-solid border-border px-2.5 py-0.5 text-xs font-medium text-ink',
           className,
         )}
@@ -38,7 +38,7 @@ export function EtiquetaPublicacao({
   if (!publicadoEfetivo) {
     return (
       <span
-        className={clsx(
+        className={cn(
           'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-dashed border-muted px-2.5 py-0.5 text-xs font-medium text-ink',
           className,
         )}
@@ -53,7 +53,7 @@ export function EtiquetaPublicacao({
 
   return (
     <span
-      className={clsx(
+      className={cn(
         'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border-2 border-solid border-success px-2.5 py-0.5 text-xs font-medium text-ink',
         className,
       )}

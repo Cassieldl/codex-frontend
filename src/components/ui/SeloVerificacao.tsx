@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import { ShieldCheck } from 'lucide-react'
+import { cn } from '../../lib/cn'
 import { formatarDataVerificacao } from '../../utils/formatarDataVerificacao'
 
 export interface SeloVerificacaoProps {
@@ -20,7 +20,7 @@ export function SeloVerificacao({ data, nota, className }: SeloVerificacaoProps)
   const dataFormatada = formatarDataVerificacao(data)
 
   return (
-    <p className={clsx('flex items-center gap-1.5 text-xs text-muted', className)}>
+    <p className={cn('flex items-center gap-1.5 text-xs text-muted', className)}>
       <ShieldCheck className="size-3.5 shrink-0 text-primary-medium" aria-hidden="true" />
       <span>
         Verificado em <strong className="font-semibold text-ink">{dataFormatada}</strong>

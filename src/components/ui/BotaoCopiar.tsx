@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { Check, Copy, Link2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { cn } from '../../lib/cn'
 
 export type IconeCopiar = 'copiar' | 'link'
 
@@ -100,7 +100,7 @@ export function BotaoCopiar({
       type="button"
       onClick={handleClick}
       aria-label={ariaLabel}
-      className={clsx(
+      className={cn(
         // Caixa visual pequena (h-8), mas alvo de toque 44×44 via ::after
         // com preenchimento invisível: nunca cresce a caixa visível em si.
         "group relative inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-control)] border text-xs after:absolute after:top-1/2 after:left-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
@@ -111,7 +111,7 @@ export function BotaoCopiar({
       )}
     >
       <Icone
-        className={clsx(
+        className={cn(
           'size-3.5 shrink-0',
           superficie === 'clara' && resultado === 'copiado' && 'text-success',
           superficie === 'clara' && resultado === 'falhou' && 'text-error-texto',

@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import { Check, X } from 'lucide-react'
+import { cn } from '../../lib/cn'
 import type { ValorSimNao as Valor } from './blocosDoArtigo'
 
 const CONFIGURACAO = {
@@ -16,7 +16,7 @@ export function ValorSimNao({ valor }: ValorSimNaoProps) {
   const { texto, Icone, classe } = CONFIGURACAO[valor]
 
   return (
-    <span className={clsx('inline-flex items-center gap-1 font-medium', classe)}>
+    <span className={cn('inline-flex items-center gap-1 font-medium', classe)}>
       <Icone className="size-4 shrink-0" aria-hidden="true" />
       {texto}
     </span>

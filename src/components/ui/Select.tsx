@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { ChevronDown } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent } from 'react'
+import { cn } from '../../lib/cn'
 
 export interface SelectOption {
   value: string
@@ -133,10 +133,10 @@ export function Select({
   const describedBy = [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ')
 
   return (
-    <div className={clsx('relative flex flex-col gap-0.5', className)}>
+    <div className={cn('relative flex flex-col gap-0.5', className)}>
       <label
         htmlFor={selectId}
-        className={clsx(
+        className={cn(
           'text-xs font-normal lg:text-sm',
           superficie === 'escura' ? 'text-white' : 'text-ink',
         )}
@@ -166,7 +166,7 @@ export function Select({
         onClick={() => (aberto ? fechar() : abrir())}
         onKeyDown={aoTeclarBotao}
         onBlur={fechar}
-        className={clsx(
+        className={cn(
           // O fundo é explícito para o controle continuar legível sobre qualquer superfície -
           // sem ele, o texto escuro fica invisível dentro do cabeçalho em gradiente.
           'flex h-9 items-center justify-between rounded-[var(--radius-control)] border bg-white px-3 text-sm text-ink',
@@ -198,7 +198,7 @@ export function Select({
                 selecionar(opcao)
               }}
               onMouseEnter={() => setIndiceAtivo(indice)}
-              className={clsx(
+              className={cn(
                 'cursor-pointer px-3 py-2 text-sm',
                 indice === indiceAtivo ? 'bg-surface-hover' : '',
                 opcao.value === value ? 'font-semibold text-ink' : 'text-ink',
@@ -213,7 +213,7 @@ export function Select({
       {hint && !error && (
         <p
           id={hintId}
-          className={clsx('text-xs', superficie === 'escura' ? 'text-white' : 'text-muted')}
+          className={cn('text-xs', superficie === 'escura' ? 'text-white' : 'text-muted')}
         >
           {hint}
         </p>

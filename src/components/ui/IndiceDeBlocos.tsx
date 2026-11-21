@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import { cn } from '../../lib/cn'
 
 export interface EntradaDoIndice {
   raiz: string
@@ -78,7 +78,7 @@ export function IndiceDeBlocos({
                     evento.preventDefault()
                     onIrParaBloco(raiz)
                   }}
-                  className={clsx(
+                  className={cn(
                     CLASSE_DO_LINK,
                     ehAtual ? CLASSE_DO_LINK_ATUAL : 'font-medium text-primary-medium',
                   )}

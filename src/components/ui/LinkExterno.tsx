@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { ExternalLink } from 'lucide-react'
 import type { AnchorHTMLAttributes, ReactNode } from 'react'
+import { cn } from '../../lib/cn'
 
 export interface LinkExternoProps extends Omit<
   AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -25,7 +25,7 @@ export function LinkExterno({
     <a {...props} href={href} target="_blank" rel="noopener noreferrer" className={className}>
       {children}{' '}
       <ExternalLink
-        className={clsx('inline-block shrink-0 align-[-0.125em]', classeDoIcone)}
+        className={cn('inline-block shrink-0 align-[-0.125em]', classeDoIcone)}
         aria-hidden="true"
       />
       <span className="sr-only">(abre em nova aba)</span>

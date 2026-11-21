@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { useRef } from 'react'
 import type { KeyboardEvent } from 'react'
+import { cn } from '../../lib/cn'
 import { indiceDaTecla } from './teclasDeEscolha'
 
 /**
@@ -67,7 +67,7 @@ export function AlternadorSegmentado<T extends string>({
       id={id}
       role="radiogroup"
       aria-label={rotulo}
-      className={clsx(
+      className={cn(
         'inline-flex gap-1 rounded-[var(--radius-control)] bg-surface-hover',
         CLASSES_DO_TRILHO[tamanho],
         className,
@@ -85,7 +85,7 @@ export function AlternadorSegmentado<T extends string>({
             tabIndex={marcada ? 0 : -1}
             onClick={() => onSelecionar(opcao)}
             onKeyDown={aoTeclar}
-            className={clsx(
+            className={cn(
               'rounded-[var(--radius-control)] px-4 text-sm font-bold text-primary transition-[background-color,box-shadow] duration-150',
               CLASSES_DA_OPCAO[tamanho],
               marcada ? 'bg-white shadow-hover' : 'hover:bg-white/60',

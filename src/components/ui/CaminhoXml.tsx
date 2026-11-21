@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import { Fragment } from 'react'
+import { cn } from '../../lib/cn'
 
 export type TamanhoCaminhoXml = 'padrao' | 'destaque'
 
@@ -10,7 +10,7 @@ export interface CaminhoXmlProps {
   className?: string
 }
 
-// Uma classe de tamanho só: `clsx` não faz merge, e duas ficariam ambas no elemento.
+// Uma classe de tamanho por variante: duas no elemento disputariam pela ordem do CSS gerado.
 const tamanhoClasses: Record<TamanhoCaminhoXml, string> = {
   padrao: 'text-[13px]',
   destaque: 'text-[15px]',
@@ -48,7 +48,7 @@ export function CaminhoXml({ caminho, tamanho = 'padrao', className }: CaminhoXm
   const indiceDoNo = segmentos.length - 1
 
   return (
-    <span className={clsx('font-mono leading-6', tamanhoClasses[tamanho], className)}>
+    <span className={cn('font-mono leading-6', tamanhoClasses[tamanho], className)}>
       {prefixo && <span className="text-muted">{prefixo}</span>}
 
       {segmentos.map((segmento, indice) => (

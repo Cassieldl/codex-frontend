@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useId } from 'react'
+import { cn } from '../../lib/cn'
 
 export interface PaginationProps {
   page: number
@@ -103,7 +103,7 @@ export function Pagination({
               aria-label={`Página ${numeroPagina}`}
               aria-current={numeroPagina === page ? 'page' : undefined}
               onClick={() => onPageChange(numeroPagina)}
-              className={clsx(
+              className={cn(
                 'flex size-6 items-center justify-center rounded-[var(--radius-control)] text-xs font-bold hover:shadow-hover',
                 numeroPagina === page ? 'bg-primary text-white' : 'text-ink',
               )}

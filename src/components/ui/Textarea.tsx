@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { CircleAlert } from 'lucide-react'
 import { useId, type TextareaHTMLAttributes } from 'react'
+import { cn } from '../../lib/cn'
 
 export interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id'> {
   label: string
@@ -46,7 +46,7 @@ export function Textarea({
         required={required}
         aria-invalid={Boolean(error)}
         aria-describedby={describedBy || undefined}
-        className={clsx(
+        className={cn(
           'rounded-[var(--radius-input)] border px-3 py-2 text-sm text-ink placeholder:text-muted',
           'focus:outline-none focus:border-[1.5px] focus:border-primary-medium',
           error ? 'border-error' : 'border-border-control',

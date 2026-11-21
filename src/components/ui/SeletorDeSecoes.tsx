@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { createContext, useContext, useEffect, useId, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { cn } from '../../lib/cn'
 import { CLASSE_CARD } from './classesDeCard'
 import { secaoDaAncora } from './secoesDoArtigo'
 
@@ -60,10 +60,10 @@ export function SeletorDeSecoes({ rotulo, secoes, temDica, children }: SeletorDe
       <div
         ref={blocoRef}
         data-bloco="seletor"
-        className={clsx(CLASSE_CARD, 'grid scroll-mt-6 overflow-hidden md:grid-cols-2')}
+        className={cn(CLASSE_CARD, 'grid scroll-mt-6 overflow-hidden md:grid-cols-2')}
       >
         <div
-          className={clsx(
+          className={cn(
             'flex flex-col gap-1 bg-surface-hover p-5',
             temDica ? 'md:pr-3' : 'md:col-span-2',
           )}

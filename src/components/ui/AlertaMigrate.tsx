@@ -1,7 +1,7 @@
-import clsx from 'clsx'
 import { CircleAlert, CircleCheck, Info, TriangleAlert } from 'lucide-react'
 import { useId } from 'react'
 import type { ComponentType, ReactNode } from 'react'
+import { cn } from '../../lib/cn'
 
 export type TipoAlerta = 'informacao' | 'sucesso' | 'alerta' | 'erro'
 
@@ -70,7 +70,7 @@ export function AlertaMigrate({
       aria-labelledby={titulo ? tituloId : undefined}
       aria-label={titulo ? undefined : rotulo}
       data-alerta={tipo}
-      className={clsx(
+      className={cn(
         'flex items-start rounded-[var(--radius-aviso)] border',
         tomClasse,
         compacto ? 'gap-2 px-2.5 py-1.5 text-sm' : 'min-h-[60px] gap-3 py-[18px] pr-5 pl-4',
@@ -78,7 +78,7 @@ export function AlertaMigrate({
       )}
     >
       <Icone
-        className={clsx('shrink-0', compacto ? 'mt-0.5 size-4' : 'mt-px size-5', iconeClasse)}
+        className={cn('shrink-0', compacto ? 'mt-0.5 size-4' : 'mt-px size-5', iconeClasse)}
         aria-hidden="true"
       />
       <div className="flex min-w-0 flex-1 flex-col gap-1">

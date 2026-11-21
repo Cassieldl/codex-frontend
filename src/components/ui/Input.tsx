@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { CircleAlert } from 'lucide-react'
 import { useId, type InputHTMLAttributes } from 'react'
+import { cn } from '../../lib/cn'
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
   label: string
@@ -43,7 +43,7 @@ export function Input({
         required={required}
         aria-invalid={Boolean(error)}
         aria-describedby={describedBy || undefined}
-        className={clsx(
+        className={cn(
           'h-9 rounded-[var(--radius-input)] border px-3 text-sm text-ink placeholder:text-muted',
           'focus:outline-none focus:border-[1.5px] focus:border-primary-medium',
           error ? 'border-error' : 'border-border-control',

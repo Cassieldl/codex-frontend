@@ -1,10 +1,10 @@
-import clsx from 'clsx'
 import { ArrowRight, CircleCheck } from 'lucide-react'
 import type { AnchorHTMLAttributes, ComponentProps, HTMLAttributes, ReactNode } from 'react'
 import { Children, isValidElement } from 'react'
 import Markdown from 'react-markdown'
 import type { Components, ExtraProps } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { cn } from '../../lib/cn'
 import { caminhoInternoSeguro } from '../../utils/caminhoInternoSeguro'
 import { AlertaMigrate } from './AlertaMigrate'
 import type { TipoAlerta } from './AlertaMigrate'
@@ -456,7 +456,7 @@ function TabelaDoCorpo({ children, node }: ComponentProps<'table'> & ExtraProps)
   return (
     <TableRoot
       rotulo={rotuloDaTabela(node)}
-      className={clsx(
+      className={cn(
         'min-w-[32rem] bg-white text-sm leading-relaxed text-ink',
         primeiraColunaCurta(node) &&
           '[&_td:first-child]:whitespace-nowrap [&_th:first-child]:whitespace-nowrap',
@@ -522,7 +522,7 @@ export interface ConteudoArtigoProps {
  */
 export function ConteudoArtigo({ corpo, variante = 'artigo', className }: ConteudoArtigoProps) {
   return (
-    <div className={clsx(ESTILO_COMUM, ESTILO_POR_VARIANTE[variante], className)}>
+    <div className={cn(ESTILO_COMUM, ESTILO_POR_VARIANTE[variante], className)}>
       <Markdown
         remarkPlugins={PLUGINS_DO_REMARK[variante]}
         allowedElements={ELEMENTOS_PERMITIDOS}

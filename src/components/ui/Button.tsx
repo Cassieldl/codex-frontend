@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { Loader2 } from 'lucide-react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { cn } from '../../lib/cn'
 
 export type ButtonVariant = 'primary' | 'secondary'
 export type ButtonSize = 'sm' | 'md'
@@ -49,7 +49,7 @@ export function Button({
       // If-Match - o segundo voltava 409 e a tela dizia "outra pessoa salvou", que era mentira.
       disabled={disabled || isLoading}
       aria-disabled={isLoading || disabled}
-      className={clsx(
+      className={cn(
         'inline-flex items-center justify-center rounded-[var(--radius-control)] font-semibold transition-shadow duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover disabled:cursor-not-allowed',
         variantClasses[variant],
         sizeClasses[size],

@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import { cn } from '../../lib/cn'
 
 export const NOME_DA_REFORMA_TRIBUTARIA = 'Campo da reforma tributária (IBS/CBS)'
 
@@ -16,7 +16,7 @@ export function SeloReformaTributaria({ className }: SeloReformaTributariaProps)
     <span
       title={NOME_DA_REFORMA_TRIBUTARIA}
       data-selo-reforma-tributaria=""
-      className={clsx(
+      className={cn(
         'inline-flex shrink-0 items-center rounded-[var(--radius-pill)] bg-primary px-2 py-px font-sans text-aux font-semibold tracking-wide text-white uppercase',
         className,
       )}

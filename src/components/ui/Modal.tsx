@@ -1,7 +1,7 @@
-import clsx from 'clsx'
 import { X } from 'lucide-react'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { cn } from '../../lib/cn'
 
 export type ModalSize = 'sm' | 'md' | 'lg'
 
@@ -209,7 +209,7 @@ export function Modal(props: ModalProps) {
       type="button"
       onClick={onClose}
       aria-label="Fechar"
-      className={clsx(
+      className={cn(
         // Caixa visual pequena (p-1), mas alvo de toque 44×44 via ::after
         // com preenchimento invisível - mesmo padrão de `BotaoCopiar`.
         "relative rounded p-1 text-ink after:absolute after:top-1/2 after:left-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
@@ -223,7 +223,7 @@ export function Modal(props: ModalProps) {
   const titulo = (
     <h2
       id={titleId}
-      className={clsx(
+      className={cn(
         titleVisuallyHidden && 'sr-only',
         !titleVisuallyHidden &&
           (painel
@@ -238,7 +238,7 @@ export function Modal(props: ModalProps) {
   return createPortal(
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- clique no fundo fecha; pelo teclado, o Escape já fecha
     <div
-      className={clsx(overlayClasses, overlayPorVariante[variante])}
+      className={cn(overlayClasses, overlayPorVariante[variante])}
       onMouseDown={(evento) => {
         if (evento.target === evento.currentTarget) onClose()
       }}
@@ -249,7 +249,7 @@ export function Modal(props: ModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={clsx(
+        className={cn(
           // Sem o "!", o anel global de foco (CSS sem camada) contornaria o diálogo inteiro.
           'w-full rounded-[var(--radius-card)] bg-white shadow-panel focus:outline-none!',
           dialogoPorVariante[variante],
@@ -270,7 +270,7 @@ export function Modal(props: ModalProps) {
           </div>
         ) : (
           <div
-            className={clsx(
+            className={cn(
               'mb-4 flex items-center gap-4',
               titleVisuallyHidden ? 'justify-end' : 'justify-between',
             )}

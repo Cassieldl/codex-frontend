@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { Info, OctagonAlert, TriangleAlert } from 'lucide-react'
 import type { ComponentType } from 'react'
+import { cn } from '../../lib/cn'
 
 export type Severidade = 'critico' | 'alerta' | 'informativo'
 
@@ -63,7 +63,7 @@ export function EtiquetaSeveridade({
 
   if (somenteIcone && semFundo) {
     return (
-      <span title={rotulo} className={clsx('inline-flex shrink-0', iconeClasse, className)}>
+      <span title={rotulo} className={cn('inline-flex shrink-0', iconeClasse, className)}>
         <Icone className="size-4.5" aria-hidden="true" />
         <span className="sr-only">{rotulo}</span>
       </span>
@@ -74,7 +74,7 @@ export function EtiquetaSeveridade({
     return (
       <span
         title={rotulo}
-        className={clsx(
+        className={cn(
           'inline-flex size-7 shrink-0 items-center justify-center rounded-full',
           textoClasse,
           fundoClasse,
@@ -89,7 +89,7 @@ export function EtiquetaSeveridade({
 
   return (
     <span
-      className={clsx(
+      className={cn(
         'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide',
         textoClasse,
         fundoClasse,

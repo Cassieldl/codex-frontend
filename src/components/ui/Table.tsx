@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import type { ReactNode, TdHTMLAttributes, ThHTMLAttributes } from 'react'
+import { cn } from '../../lib/cn'
 
 export interface TableRootProps {
   children: ReactNode
@@ -21,7 +21,7 @@ export function TableRoot({ children, className, rotulo }: TableRootComRotuloPro
       aria-label={rotulo}
       className="overflow-x-auto rounded-[var(--radius-card)] border border-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-hover"
     >
-      <table className={clsx('w-full border-collapse text-left', className)}>{children}</table>
+      <table className={cn('w-full border-collapse text-left', className)}>{children}</table>
     </div>
   )
 }
@@ -29,10 +29,7 @@ export function TableRoot({ children, className, rotulo }: TableRootComRotuloPro
 export function TableHeader({ children, className }: TableRootProps) {
   return (
     <thead
-      className={clsx(
-        'sticky top-0 z-10 rounded-t-[5px] border-b border-border bg-white',
-        className,
-      )}
+      className={cn('sticky top-0 z-10 rounded-t-[5px] border-b border-border bg-white', className)}
     >
       {children}
     </thead>
@@ -47,7 +44,7 @@ export interface TableRowProps {
 
 export function TableRow({ children, className, id }: TableRowProps) {
   return (
-    <tr id={id} className={clsx('h-[38px] border-b border-border last:border-b-0', className)}>
+    <tr id={id} className={cn('h-[38px] border-b border-border last:border-b-0', className)}>
       {children}
     </tr>
   )
@@ -69,7 +66,7 @@ export function TableCell({ children, className, header = false, ...props }: Tab
   return (
     <Tag
       scope={header ? 'col' : undefined}
-      className={clsx(
+      className={cn(
         header
           ? 'px-5 text-center text-xs leading-5 font-medium text-ink'
           : 'px-5 py-[9px] text-xs leading-5 text-ink',

@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import { cn } from '../../lib/cn'
 
 export interface SkeletonProps {
   className?: string
@@ -9,10 +9,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       aria-hidden="true"
-      className={clsx(
-        'animate-pulse rounded-[var(--radius-control)] bg-surface-disabled',
-        className,
-      )}
+      className={cn('animate-pulse rounded-[var(--radius-control)] bg-surface-disabled', className)}
     />
   )
 }

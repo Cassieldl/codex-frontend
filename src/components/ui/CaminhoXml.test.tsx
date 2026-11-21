@@ -65,8 +65,8 @@ describe('CaminhoXml', () => {
   })
 
   /**
-   * O tamanho é UMA classe: `clsx` não faz merge, então aplicar as duas deixaria `text-[13px]` e
-   * `text-[15px]` no mesmo elemento, e quem vence é a ordem no CSS gerado.
+   * O tamanho é UMA classe: com as duas, `text-[13px]` e `text-[15px]` ficariam no mesmo elemento e
+   * quem venceria é a ordem no CSS gerado.
    */
   it('tamanho "destaque" usa só text-[15px]', () => {
     const { container } = render(<CaminhoXml caminho={CAMINHO} tamanho="destaque" />)

@@ -1,5 +1,5 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
-import clsx from 'clsx'
+import { cn } from '../../lib/cn'
 
 export interface AbaNavegavel {
   rotulo: string
@@ -64,7 +64,7 @@ export function AbasNavegaveis({
 
   return (
     <nav aria-label={ariaLabel} className={className}>
-      <ul className={clsx('flex items-center gap-1 overflow-x-auto', classes.lista)}>
+      <ul className={cn('flex items-center gap-1 overflow-x-auto', classes.lista)}>
         {abas.map((aba) => (
           <li
             key={`${aba.to}-${JSON.stringify(aba.params ?? {})}-${JSON.stringify(aba.search ?? {})}`}
@@ -79,18 +79,18 @@ export function AbasNavegaveis({
               // ao mesmo tempo. `ativa` continua sendo a fonte da verdade.
               activeOptions={{ exact: true }}
               aria-current={aba.ativa ? 'page' : undefined}
-              className={clsx(
+              className={cn(
                 'inline-flex items-center gap-2 border-b-[3px] whitespace-nowrap transition-[box-shadow,color] duration-150',
                 classes.aba,
                 aba.ativa
                   ? 'border-accent-hover font-semibold text-ink'
-                  : clsx('border-transparent text-muted', classes.inativa),
+                  : cn('border-transparent text-muted', classes.inativa),
               )}
             >
               {aba.rotulo}
               {aba.contador !== undefined && (
                 <span
-                  className={clsx(
+                  className={cn(
                     'rounded-[var(--radius-pill)] px-2 py-0.5 text-xs font-bold tabular-nums',
                     aba.ativa ? 'bg-primary text-white' : 'bg-alert-info text-primary-medium',
                   )}

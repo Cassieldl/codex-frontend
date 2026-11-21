@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import type { ReactNode } from 'react'
+import { cn } from '../../lib/cn'
 
 interface SobrelinhaProps {
   children: ReactNode
@@ -14,7 +14,7 @@ interface SobrelinhaProps {
 export function Sobrelinha({ children, superficie = 'escura' }: SobrelinhaProps) {
   return (
     <p
-      className={clsx(
+      className={cn(
         'text-xs font-bold tracking-wider uppercase',
         superficie === 'escura' ? 'text-accent-sobre-escuro' : 'text-primary-medium',
       )}

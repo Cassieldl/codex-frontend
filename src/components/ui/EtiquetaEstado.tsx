@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import { cn } from '../../lib/cn'
 
 export type EstadoPreenchimento = 'obrigatorio' | 'opcional' | 'condicional'
 
@@ -29,7 +29,7 @@ export function EtiquetaEstado({ estado, className }: EtiquetaEstadoProps) {
 
   return (
     <span
-      className={clsx(
+      className={cn(
         'inline-flex items-center rounded-[var(--radius-pill)] bg-transparent px-2.5 py-0.5 text-xs font-medium text-ink',
         bordaClasse,
         className,
