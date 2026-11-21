@@ -4,6 +4,7 @@ import { Input } from '../../../../components/ui/Input'
 import { Modal } from '../../../../components/ui/Modal'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { Toast } from '../../../../components/ui/Toast'
+import type { ToastTone } from '../../../../components/ui/Toast'
 import { useDebounce } from '../../../busca/hooks/useDebounce'
 import type { ResultadoItem } from '../../../busca/types/resultadoBusca'
 import { useResultadoBuscaInterna } from '../hooks/useResultadoBuscaInterna'
@@ -15,6 +16,11 @@ const DEBOUNCE_MS = 300
 const TERMO_MINIMO = 2
 /** Mesma duração do estado "Copiado" de `BotaoCopiar` - valor replicado, não vale extrair por isto. */
 const DURACAO_TOAST_MS = 2000
+
+interface AvisoDeCopia {
+  tom: ToastTone
+  mensagem: string
+}
 
 export interface BarraDeComandoProps {
   /**
@@ -51,7 +57,7 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
   const [aberta, setAberta] = useState(false)
   const [termo, setTermo] = useState('')
   const [indiceAtivo, setIndiceAtivo] = useState(0)
-  const [avisoDeCopia, setAvisoDeCopia] = useState<string | null>(null)
+  const [avisoDeCopia, setAvisoDeCopia] = useState<AvisoDeCopia | null>(null)
   const timeoutDoAviso = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const termoComAtraso = useDebounce(termo, DEBOUNCE_MS)
@@ -108,13 +114,25 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
   async function copiarLinkDoItemAtivo(item: ResultadoItem) {
     const link = resolverLinkParaCopiar(item, window.location.origin)
     if (!link) {
-      setAvisoDeCopia('Este item não tem link para copiar.')
+      setAvisoDeCopia({ tom: 'success', mensagem: 'Este item não tem link para copiar.' })
       return
     }
 
-    await navigator.clipboard.writeText(link)
-    setAvisoDeCopia(item.publicado ? 'Link copiado.' : 'Link interno copiado.')
+    // Sem permissão, fora de contexto seguro ou sem a API, a cópia falha: nunca anunciar sucesso.
+    try {
+      await navigator.clipboard.writeText(link)
+      const mensagem = item.publicado ? 'Link copiado.' : 'Link interno copiado.'
+      mostrarAvisoTemporario({ tom: 'success', mensagem })
+    } catch {
+      mostrarAvisoTemporario({
+        tom: 'error',
+        mensagem: 'Não foi possível copiar o link. Abra o item e copie pela barra de endereço.',
+      })
+    }
+  }
 
+  function mostrarAvisoTemporario(aviso: AvisoDeCopia) {
+    setAvisoDeCopia(aviso)
     if (timeoutDoAviso.current) clearTimeout(timeoutDoAviso.current)
     timeoutDoAviso.current = setTimeout(() => setAvisoDeCopia(null), DURACAO_TOAST_MS)
   }
@@ -248,7 +266,11 @@ export function BarraDeComando({ aoNavegar = navegarDeFato }: BarraDeComandoProp
           )}
 
           {avisoDeCopia && (
-            <Toast tone="success" message={avisoDeCopia} onClose={() => setAvisoDeCopia(null)} />
+            <Toast
+              tone={avisoDeCopia.tom}
+              message={avisoDeCopia.mensagem}
+              onClose={() => setAvisoDeCopia(null)}
+            />
           )}
         </div>
       </Modal>

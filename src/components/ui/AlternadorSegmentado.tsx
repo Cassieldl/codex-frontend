@@ -23,6 +23,7 @@ const CLASSES_DA_OPCAO: Record<TamanhoDoAlternador, string> = {
 }
 
 export interface AlternadorSegmentadoProps<T extends string> {
+  id?: string
   /** Nome acessível do grupo, como "Alcance" ou "Formato". */
   rotulo: string
   opcoes: readonly T[]
@@ -39,6 +40,7 @@ export interface AlternadorSegmentadoProps<T extends string> {
  * End trocam a escolha levando o foco junto. A marcada tem fundo branco e sombra sobre o trilho.
  */
 export function AlternadorSegmentado<T extends string>({
+  id,
   rotulo,
   opcoes,
   rotuloDaOpcao,
@@ -62,6 +64,7 @@ export function AlternadorSegmentado<T extends string>({
   return (
     <div
       ref={grupoRef}
+      id={id}
       role="radiogroup"
       aria-label={rotulo}
       className={clsx(

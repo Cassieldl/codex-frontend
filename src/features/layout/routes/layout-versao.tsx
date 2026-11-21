@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { ArchiveX, CircleHelp, Download, Layers } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useId, useMemo, useRef } from 'react'
 import { CabecalhoPublico } from '../../../components/layout/CabecalhoPublico'
 import { ID_CONTEUDO_PRINCIPAL } from '../../../components/layout/PularParaConteudo'
 import { RodapeContextual } from '../../../components/layout/RodapeContextual'
@@ -93,6 +93,18 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
   const { data: indice } = useLayoutIndice()
   const campoDestacado = useCampoDestacadoPorAncora()
   const navigate = useNavigate()
+  const idDoAlternadorDeVisao = useId()
+  const devolverFocoAoAlternador = useRef(false)
+
+  // Trocar entre dicionário e estrutura desmonta a barra que tinha o foco, que cairia no body.
+  useEffect(() => {
+    if (!devolverFocoAoAlternador.current) return
+    devolverFocoAoAlternador.current = false
+    document
+      .getElementById(idDoAlternadorDeVisao)
+      ?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]')
+      ?.focus()
+  }, [visao, idDoAlternadorDeVisao])
 
   const formatoAberto: FormatoDaEstrutura | null = visao === 'dicionario' ? null : visao
   // A estrutura só é buscada com a visão XML ou JSON aberta; no dicionário vale o que houver em cache.
@@ -136,13 +148,17 @@ export function LayoutVersaoPage({ versaoSlug, visao, aoMudarVisao }: LayoutVers
 
   const alternadorDeVisao = (
     <AlternadorSegmentado
+      id={idDoAlternadorDeVisao}
       rotulo="Formas de ver o Layout InvoiCy"
       tamanho="barra"
       opcoes={VISOES_DO_LAYOUT}
       rotuloDaOpcao={ROTULO_DA_VISAO}
       selecionada={visao}
       onSelecionar={(novaVisao) => {
-        if (novaVisao !== visao) aoMudarVisao(novaVisao)
+        if (novaVisao === visao) return
+        const alternador = document.getElementById(idDoAlternadorDeVisao)
+        devolverFocoAoAlternador.current = alternador?.contains(document.activeElement) ?? false
+        aoMudarVisao(novaVisao)
       }}
     />
   )

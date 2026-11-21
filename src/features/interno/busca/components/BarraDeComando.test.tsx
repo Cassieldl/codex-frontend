@@ -254,6 +254,21 @@ describe('BarraDeComando: Ctrl+Enter copia sem fechar', () => {
     )
     expect(await screen.findByText('Link interno copiado.')).toBeInTheDocument()
   })
+
+  it('cópia recusada pelo navegador avisa a falha e não deixa promessa rejeitada solta', async () => {
+    server.use(handlerBuscaInterna())
+    const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
+    escreverNaAreaDeTransferencia.mockRejectedValue(new DOMException('negado', 'NotAllowedError'))
+    renderizar()
+
+    await abrirComResultados(usuario)
+    await usuario.keyboard('{Control>}{Enter}{/Control}')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível copiar o link.')
+    expect(screen.queryByText('Link copiado.')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    // Rejeição solta não aparece aqui: o Vitest a reporta como erro e a execução sai com código 1.
+  })
 })
 
 describe('BarraDeComando: estados da busca', () => {

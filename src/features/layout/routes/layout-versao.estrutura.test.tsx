@@ -205,6 +205,27 @@ describe('LayoutVersaoPage: estrutura XML e JSON', () => {
     expect(buscasDaEstrutura).toBe(1)
   })
 
+  it('trocar de visão pelo teclado mantém o foco no rádio marcado, nos dois sentidos', async () => {
+    const usuario = userEvent.setup()
+    const router = renderPagina('/layout/8')
+
+    await usuario.click(
+      await screen.findByRole('searchbox', { name: /Buscar por nome, caminho ou significado/ }),
+    )
+    await usuario.tab()
+    expect(screen.getByRole('radio', { name: 'Dicionário' })).toHaveFocus()
+
+    await usuario.keyboard('{ArrowRight}')
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ visao: 'xml' }))
+    const visaoXml = await screen.findByRole('radio', { name: 'XML (SOAP)', checked: true })
+    await waitFor(() => expect(document.activeElement).toBe(visaoXml))
+
+    await usuario.keyboard('{ArrowLeft}')
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ visao: 'dicionario' }))
+    const visaoDicionario = await screen.findByRole('radio', { name: 'Dicionário', checked: true })
+    await waitFor(() => expect(document.activeElement).toBe(visaoDicionario))
+  })
+
   it('a tag com campo é botão que abre o verbete daquele campo', async () => {
     const usuario = userEvent.setup()
     renderPagina('/layout/8?visao=xml')
