@@ -64,7 +64,7 @@ export function useEnvioModelo(
     queryFn: async () => {
       try {
         const { data } = await apiPublico.get<EnvelopeEnvioModelo>(
-          `/provedores/${provedorSlug}/versoes/${versaoSlug}/envio-modelo`,
+          `/provedores/${encodeURIComponent(provedorSlug)}/versoes/${encodeURIComponent(versaoSlug)}/envio-modelo`,
           { params: { alcance, cenario } },
         )
         return data.data

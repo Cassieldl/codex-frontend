@@ -66,7 +66,7 @@ export function useVersaoProvedor(provedorSlug: string, versaoSlug: string) {
     queryFn: async () => {
       try {
         const { data } = await apiPublico.get<EnvelopeVersaoProvedorPagina>(
-          `/provedores/${provedorSlug}/versoes/${versaoSlug}`,
+          `/provedores/${encodeURIComponent(provedorSlug)}/versoes/${encodeURIComponent(versaoSlug)}`,
         )
         exigirAvisosPublicos(data.data.avisos)
         return data.data

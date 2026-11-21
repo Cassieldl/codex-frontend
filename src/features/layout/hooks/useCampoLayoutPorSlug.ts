@@ -44,7 +44,9 @@ const DEZ_MINUTOS_MS = 1000 * 60 * 10
 /** `GET /layout/campos/{campoSlug}` (P12). Compartilhado pela resolução e pelos usos do campo. */
 export async function buscarCampoLayout(campoSlug: string): Promise<CampoLayoutVerbete> {
   try {
-    const { data } = await apiPublico.get<EnvelopeCampoLayoutVerbete>(`/layout/campos/${campoSlug}`)
+    const { data } = await apiPublico.get<EnvelopeCampoLayoutVerbete>(
+      `/layout/campos/${encodeURIComponent(campoSlug)}`,
+    )
     return data.data
   } catch (error) {
     throw classificarErro(error) ?? error

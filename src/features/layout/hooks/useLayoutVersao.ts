@@ -61,7 +61,7 @@ export function useLayoutVersao(
     queryFn: async () => {
       try {
         const { data } = await apiPublico.get<EnvelopeLayoutVersaoPagina>(
-          `/layout/versoes/${versaoSlug}`,
+          `/layout/versoes/${encodeURIComponent(versaoSlug)}`,
         )
         return data.data
       } catch (error) {

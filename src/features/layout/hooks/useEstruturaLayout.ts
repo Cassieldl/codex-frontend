@@ -35,7 +35,7 @@ export function useEstruturaLayout(versaoSlug: string, habilitado: boolean) {
     queryFn: async () => {
       try {
         const { data } = await apiPublico.get<EnvelopeEstruturaLayout>(
-          `/layout/versoes/${versaoSlug}/estrutura`,
+          `/layout/versoes/${encodeURIComponent(versaoSlug)}/estrutura`,
         )
         return data.data
       } catch (error) {

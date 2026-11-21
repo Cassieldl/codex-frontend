@@ -20,7 +20,9 @@ export function useArtigoPorSlug(artigoSlug: string) {
   return useQuery({
     queryKey: artigosKeys.detail(artigoSlug),
     queryFn: async () => {
-      const { data } = await apiPublico.get<EnvelopeArtigoDetalhe>(`/artigos/${artigoSlug}`)
+      const { data } = await apiPublico.get<EnvelopeArtigoDetalhe>(
+        `/artigos/${encodeURIComponent(artigoSlug)}`,
+      )
       return data.data
     },
     retry: false,

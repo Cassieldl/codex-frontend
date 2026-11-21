@@ -60,6 +60,24 @@ describe('useEnvioModelo', () => {
     expect(result.current.data?.camposSemPosicao).toEqual(['servico-codigo-cnae'])
   })
 
+  it('codifica cada slug no caminho: barra e interrogação não mudam o endpoint chamado', async () => {
+    let caminhoPedido = ''
+    server.use(
+      http.get(`${API_URL}/provedores/*`, ({ request }) => {
+        caminhoPedido = new URL(request.url).pathname
+        return HttpResponse.json({ data: null, message: null })
+      }),
+    )
+
+    const { result } = renderHook(
+      () => useEnvioModelo('a/b?c', 'v1#x', 'maximo', 'tomador-estrangeiro'),
+      { wrapper: envolverComQueryClient() },
+    )
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(caminhoPedido.endsWith('/provedores/a%2Fb%3Fc/versoes/v1%23x/envio-modelo')).toBe(true)
+  })
+
   it.each([
     ['envelope da API', { error: { code: 'ESTRUTURA_INDISPONIVEL', message: 'Sem estrutura.' } }],
     ['ProblemDetails', { title: 'Sem estrutura.', status: 404, code: 'ESTRUTURA_INDISPONIVEL' }],

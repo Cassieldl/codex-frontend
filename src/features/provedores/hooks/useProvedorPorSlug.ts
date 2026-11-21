@@ -63,7 +63,7 @@ export function useProvedorPorSlug(provedorSlug: string) {
     queryFn: async () => {
       try {
         const { data } = await apiPublico.get<EnvelopeProvedorDetalhe>(
-          `/provedores/${provedorSlug}`,
+          `/provedores/${encodeURIComponent(provedorSlug)}`,
         )
         exigirAvisosPublicos(data.data.avisos)
         return data.data
