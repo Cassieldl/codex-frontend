@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
+import { RodapeDoFormulario } from '../../../../components/ui/RodapeDoFormulario'
 import { ConteudoArtigo } from '../../../../components/ui/ConteudoArtigo'
 import { Input } from '../../../../components/ui/Input'
 import { Select, type SelectOption } from '../../../../components/ui/Select'
@@ -297,14 +298,14 @@ export function ArtigoForm({
         erro={errors.erroIds?.message}
       />
 
-      <div className="flex justify-center gap-3">
+      <RodapeDoFormulario>
         <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancelar
         </Button>
         <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
           Salvar
         </Button>
-      </div>
+      </RodapeDoFormulario>
     </form>
   )
 }

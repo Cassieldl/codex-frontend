@@ -4,6 +4,7 @@ import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvali
 import { z } from 'zod'
 import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
+import { RodapeDoFormulario } from '../../../../components/ui/RodapeDoFormulario'
 import { Input } from '../../../../components/ui/Input'
 import { Textarea } from '../../../../components/ui/Textarea'
 import type { CriarExemploDto, ExemploAdmin } from '../types/exemploAdmin'
@@ -135,14 +136,14 @@ export function ExemploForm({
         {...register('xml')}
       />
 
-      <div className="flex justify-center gap-3">
+      <RodapeDoFormulario>
         <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancelar
         </Button>
         <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
           Salvar
         </Button>
-      </div>
+      </RodapeDoFormulario>
     </form>
   )
 }

@@ -1,4 +1,4 @@
-import { CheckCircle2, EyeOff, PenLine } from 'lucide-react'
+import { EyeOff, PenLine } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 export interface EtiquetaPublicacaoProps {
@@ -12,9 +12,10 @@ export interface EtiquetaPublicacaoProps {
 }
 
 // Uso exclusivo da área interna (§3.4) - nunca renderizado em página pública.
-// É decorativo: publicar/despublicar é sempre um <Button> dedicado ao lado,
-// nunca esta etiqueta. Os três estados nunca dependem só de cor - cada um
-// tem forma de borda + ícone + texto literal distintos.
+// É decorativo: publicar/despublicar é sempre um botão dedicado, nunca esta etiqueta.
+// O peso segue a atenção que o estado pede: publicado é o normal e fica em texto com um ponto;
+// rascunho é a exceção e ganha a pílula destacada. Nenhum estado depende só de cor: cada um tem
+// forma e texto literal distintos.
 export function EtiquetaPublicacao({
   publicadoProprio,
   publicadoEfetivo,
@@ -25,7 +26,7 @@ export function EtiquetaPublicacao({
     return (
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-solid border-border px-2.5 py-0.5 text-xs font-medium text-ink',
+          'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-alert-warning-icone bg-alert-warning px-2.5 py-0.5 text-xs font-semibold text-alert-warning-texto',
           className,
         )}
       >
@@ -52,13 +53,8 @@ export function EtiquetaPublicacao({
   }
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border-2 border-solid border-success px-2.5 py-0.5 text-xs font-medium text-ink',
-        className,
-      )}
-    >
-      <CheckCircle2 className="size-3.5 shrink-0" aria-hidden="true" />
+    <span className={cn('inline-flex items-center gap-1.5 text-xs text-ink', className)}>
+      <span aria-hidden="true" className="size-2 shrink-0 rounded-pill bg-success" />
       Publicado
     </span>
   )

@@ -28,7 +28,7 @@ export function Input({
 
   return (
     <div className="flex flex-col gap-0.5">
-      <label htmlFor={inputId} className="text-xs font-normal text-ink lg:text-sm">
+      <label htmlFor={inputId} className="mb-1 text-xs font-normal text-ink lg:text-sm">
         {required && (
           <span aria-hidden="true" className="text-error-texto">
             *{' '}

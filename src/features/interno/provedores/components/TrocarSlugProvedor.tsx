@@ -8,6 +8,7 @@ import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
 import { Modal } from '../../../../components/ui/Modal'
+import { RodapeDoFormulario } from '../../../../components/ui/RodapeDoFormulario'
 import { Toast } from '../../../../components/ui/Toast'
 import { handleApiError } from '../../../../utils/handleApiError'
 import { extrairCodigoDeErroApi } from '../../utils/codigoDeErroApi'
@@ -142,7 +143,7 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
           <ErroDoServidor mensagem={erroServidor} />
 
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs font-normal text-ink lg:text-sm">Endereço atual</span>
+            <span className="mb-1 text-xs font-normal text-ink lg:text-sm">Endereço atual</span>
             <p className="rounded-[var(--radius-input)] border border-border bg-surface-disabled px-3 py-2 font-mono text-sm text-ink">
               /provedores/{slugAtual}
             </p>
@@ -162,7 +163,7 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
             buscadores externos.
           </p>
 
-          <div className="flex justify-center gap-3">
+          <RodapeDoFormulario>
             <Button
               variant="secondary"
               onClick={() => setAberto(false)}
@@ -173,7 +174,7 @@ export function TrocarSlugProvedor({ provedorId, slugAtual, etag }: TrocarSlugPr
             <Button type="submit" isLoading={trocarSlug.isPending} disabled={trocarSlug.isPending}>
               Confirmar troca
             </Button>
-          </div>
+          </RodapeDoFormulario>
         </form>
       </Modal>
 

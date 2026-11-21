@@ -137,7 +137,7 @@ export function Select({
       <label
         htmlFor={selectId}
         className={cn(
-          'text-xs font-normal lg:text-sm',
+          'mb-1 text-xs font-normal lg:text-sm',
           superficie === 'escura' ? 'text-white' : 'text-ink',
         )}
       >

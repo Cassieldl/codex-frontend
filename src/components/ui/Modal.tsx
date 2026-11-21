@@ -228,7 +228,7 @@ export function Modal(props: ModalProps) {
         !titleVisuallyHidden &&
           (painel
             ? 'font-mono text-lg font-semibold text-ink [overflow-wrap:anywhere]'
-            : 'text-[16px] font-medium text-ink'),
+            : 'text-subtitulo font-semibold text-ink'),
       )}
     >
       {title}

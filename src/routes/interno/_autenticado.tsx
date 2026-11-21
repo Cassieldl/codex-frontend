@@ -2,6 +2,7 @@ import { Link, Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { LogOut } from 'lucide-react'
 import { useEffect } from 'react'
 import { keycloak, verificarSessao } from '../../auth/keycloak'
+import { PontosDeLuz } from '../../components/layout/PontosDeLuz'
 import { ID_CONTEUDO_PRINCIPAL, PularParaConteudo } from '../../components/layout/PularParaConteudo'
 import { BarraDeComando } from '../../features/interno/busca/components/BarraDeComando'
 import {
@@ -68,32 +69,47 @@ export function useNoIndex() {
   }, [])
 }
 
+/**
+ * Item do menu interno, no mesmo desenho do portal público: a página aberta fica em semibold,
+ * laranja e com o traço de 2 px embaixo. O texto usa `accent-sobre-escuro`, que passa de 4,5:1
+ * sobre o cabeçalho escuro; o traço fica no `accent`.
+ */
+const CLASSE_ITEM_NAV =
+  'relative flex h-10 items-center px-1 text-sm font-medium text-white after:absolute after:inset-x-1 after:bottom-1.5 after:h-0.5 after:rounded-pill after:bg-transparent hover:text-accent-sobre-escuro aria-[current=page]:font-semibold aria-[current=page]:text-accent-sobre-escuro aria-[current=page]:after:bg-accent'
+
 function LayoutInterno() {
   useNoIndex()
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-hover">
       {/* Mesmo gesto do portal público: a navegação interna também se repete em toda tela. */}
       <PularParaConteudo />
 
-      <header className="border-b border-border bg-white px-4 py-3 lg:px-8">
+      {/* Mesmo cabeçalho escuro do portal: o logo oficial da Migrate só existe na versão branca. */}
+      <header className="relative isolate bg-primary px-4 py-3 text-white lg:px-8">
+        <PontosDeLuz />
+
         <div className={`${LARGURA_DO_CONTEUDO} flex flex-wrap items-center justify-between gap-4`}>
           <div className="flex flex-wrap items-center gap-6">
-            {/* A marca some da área interna sem isto: a tela abria direto no
-                menu, sem dizer em que produto o editor está. */}
-            <Link to="/" className="text-base font-bold text-ink hover:shadow-hover">
-              Codex
+            <Link
+              to="/"
+              aria-label="Migrate Codex, página inicial do portal"
+              className="flex items-center gap-3"
+            >
+              <img src="/marca/logo-migrate-branco.svg" alt="Migrate" className="h-7 w-auto" />
+              <span aria-hidden="true" className="h-6 w-px bg-white/40" />
+              <span className="text-lg font-extrabold">Codex</span>
             </Link>
 
             <nav aria-label="Navegação da área interna">
-              <ul className="flex flex-wrap gap-1">
+              <ul className="flex flex-wrap gap-4">
                 {ITENS_NAV.map((item) => (
                   <li key={item.to}>
                     <Link
                       to={item.to}
                       activeOptions={{ exact: item.to === '/interno' }}
-                      className="flex h-10 items-center rounded px-2 text-sm font-medium text-muted hover:shadow-hover"
-                      activeProps={{ className: 'text-ink', 'aria-current': 'page' }}
+                      className={CLASSE_ITEM_NAV}
+                      activeProps={{ 'aria-current': 'page' }}
                     >
                       {item.rotulo}
                     </Link>
@@ -103,10 +119,9 @@ function LayoutInterno() {
             </nav>
           </div>
 
-          {/* Ações globais da área interna: a barra de comando (o atalho vale em
-            toda rota autenticada) e a publicação de comunicado, que nasce
-            escondida sem a role. */}
-          <div className="flex items-center gap-1">
+          {/* Ações globais numa faixa clara, como o campo de busca do cabeçalho público: a barra de
+            comando vale em toda rota autenticada e a publicação de comunicado some sem a role. */}
+          <div className="flex items-center gap-1 rounded-[var(--radius-control)] bg-white p-1">
             <BarraDeComando />
             <PublicarComunicadoGlobal />
             <button

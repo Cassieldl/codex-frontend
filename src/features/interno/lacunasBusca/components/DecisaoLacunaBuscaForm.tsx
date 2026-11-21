@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { ErroDoServidor } from '../../../../components/ui/ErroDoServidor'
 import { Button } from '../../../../components/ui/Button'
+import { RodapeDoFormulario } from '../../../../components/ui/RodapeDoFormulario'
 import { Textarea } from '../../../../components/ui/Textarea'
 import { focarPrimeiroCampoInvalido } from '../../utils/focarPrimeiroCampoInvalido'
 import {
@@ -55,14 +56,14 @@ export function DecisaoLacunaBuscaForm({
         {...register('nota')}
       />
 
-      <div className="flex justify-center gap-3">
+      <RodapeDoFormulario>
         <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancelar
         </Button>
         <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
           {rotuloConfirmacao}
         </Button>
-      </div>
+      </RodapeDoFormulario>
     </form>
   )
 }
