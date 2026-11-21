@@ -1,5 +1,14 @@
-# Servidor estático do portal (004). O entrypoint da imagem nginx substitui `${VAR}` por envsubst
-# antes de subir; `$uri` e `$csp` são do nginx e ficam intactos por não usarem chaves.
+# Servidor estático do portal. O entrypoint da imagem nginx substitui `${VAR}` por envsubst antes
+# de subir; `$uri`, `$csp` e `$status` são do nginx e ficam intactos por não usarem chaves.
+
+# Cache longo só para asset que existe. Com o cabeçalho fixo, um 404 de chunk pedido a uma instância
+# antiga durante o deploy ficaria guardado por um ano no navegador ou na CDN. O 304 mantém o cache
+# longo porque é a confirmação de um 200.
+map $status $cache_dos_assets {
+    200     "public, max-age=31536000, immutable";
+    304     "public, max-age=31536000, immutable";
+    default "no-store";
+}
 
 server {
     listen 8080;
@@ -12,68 +21,47 @@ server {
     server_tokens off;
 
     # Compressão do que é texto. O bundle já vem minificado; sem gzip, o JS principal viaja em
-    # ~280 KB em vez de ~90 KB.
+    # ~280 KB em vez de ~90 KB. A fonte woff2 já é comprimida e fica de fora.
     gzip on;
     gzip_types text/css application/javascript application/json image/svg+xml;
     gzip_min_length 1024;
 
-    # A política mora numa variável e é aplicada em cada bloco abaixo. Repetir a string por
-    # location já produziu `font-src` duplicado — e em CSP a PRIMEIRA diretiva vence, então a
-    # segunda era ignorada em silêncio e as fontes seguiam bloqueadas.
+    # A política mora numa variável, aplicada pelo arquivo de cabeçalhos em cada bloco abaixo.
+    # Repetir a string por location já produziu `font-src` duplicado, e em CSP a PRIMEIRA diretiva
+    # vence: a segunda era ignorada em silêncio.
     #
-    # `style-src`/`font-src` liberam o Google Fonts porque `global.css` importa a Montserrat de
-    # lá — sem isso o produto perde a tipografia do design system inteiro, e o navegador só diz
-    # no console. Auto-hospedar a fonte removeria a origem externa e é a melhoria natural.
+    # `style-src` e `font-src` ficam em `'self'`: a Montserrat é servida pelo próprio portal e o
+    # bundle não injeta `<style>` nem atributo `style` no HTML. O `style` do React é aplicado via
+    # CSSOM, que a CSP não bloqueia.
     #
     # `frame-src` cobre o iframe oculto do keycloak-js, que é como ele verifica se a sessão
     # continua viva. Bloqueado, a área interna não percebe logout feito em outra aba.
     #
-    # `frame-ancestors` é `'self'`, NÃO `'none'`: o keycloak-js carrega `/silent-check-sso.html` —
-    # uma página do PRÓPRIO portal — dentro de um iframe, para verificar a sessão sem recarregar.
+    # `frame-ancestors` é `'self'`, NÃO `'none'`: o keycloak-js carrega `/silent-check-sso.html`,
+    # uma página do PRÓPRIO portal, dentro de um iframe para verificar a sessão sem recarregar.
     # Com `'none'` o navegador bloqueia e a verificação silenciosa nunca funciona. `'self'` libera
     # só a mesma origem e continua barrando clickjacking de terceiros.
-    set $csp "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}; frame-src 'self' ${CSP_FRAME_SRC}";
-
-    # ATENÇÃO — `add_header` NÃO é herdado: um único `add_header` dentro de um `location` descarta
-    # TODOS os do nível `server` naquela location. Por isso os cabeçalhos são repetidos em cada
-    # bloco em vez de declarados uma vez acima. Foi assim que eles sumiram da resposta de
-    # `/index.html` na primeira versão deste arquivo — e só apareceu rodando o container.
-    #
-    # HSTS sai daqui mesmo com o TLS terminando no balanceador: o navegador só o aceita em resposta
-    # HTTPS, então em HTTP local ele é ignorado. Sem `includeSubDomains` — o portal não decide pelos
-    # outros hosts do domínio.
+    set $csp "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data:; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self' ${CSP_CONNECT_SRC}; frame-src 'self' ${CSP_FRAME_SRC}";
 
     # Arquivos com hash no nome são imutáveis: trocar o conteúdo troca a URL.
     location /assets/ {
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header Strict-Transport-Security "max-age=31536000" always;
-        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
-        add_header Content-Security-Policy $csp always;
-        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        include /etc/nginx/snippets/cabecalhos-de-seguranca.conf;
+        add_header Cache-Control $cache_dos_assets always;
 
         try_files $uri =404;
     }
 
     # O index nunca é cacheado: é ele que aponta para o bundle novo depois de um deploy.
     location = /index.html {
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header Strict-Transport-Security "max-age=31536000" always;
-        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
-        add_header Content-Security-Policy $csp always;
+        include /etc/nginx/snippets/cabecalhos-de-seguranca.conf;
         add_header Cache-Control "no-cache" always;
     }
 
     # SPA: rota de cliente (/provedores/ipm/2-04) não existe como arquivo. Sem este fallback,
-    # recarregar a página em qualquer rota profunda devolve 404 — e o produto foi desenhado para
-    # ser linkado (premissa §3.2 do escopo).
+    # recarregar a página em qualquer rota profunda devolve 404, e o produto foi desenhado para
+    # ser linkado.
     location / {
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header Strict-Transport-Security "max-age=31536000" always;
-        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
-        add_header Content-Security-Policy $csp always;
+        include /etc/nginx/snippets/cabecalhos-de-seguranca.conf;
 
         try_files $uri $uri/ /index.html;
     }

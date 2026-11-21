@@ -1,6 +1,6 @@
 #!/bin/sh
 # Roda antes do envsubst do entrypoint da imagem. Variável de template ausente não é substituída e
-# chega ao nginx como `${CSP_FRAME_SRC}` literal — ele lê como variável própria inexistente e morre
+# chega ao nginx como `${CSP_FRAME_SRC}` literal: ele lê como variável própria inexistente e morre
 # com "unknown csp_frame_src variable", sem dizer qual configuração faltou.
 set -e
 
