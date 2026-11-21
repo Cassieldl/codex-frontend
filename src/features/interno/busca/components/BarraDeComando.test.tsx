@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import type { ReactNode } from 'react'
@@ -16,8 +16,8 @@ const ITEM_BASE = {
   chave: 'e0117-ipm',
   titulo: 'RPS inválido',
   url: '/erros/e0117-ipm',
-  provedorNome: null,
-  versaoRotulo: null,
+  provedorNome: null as string | null,
+  versaoRotulo: null as string | null,
   versoes: null,
   descricaoCasamento: '',
   publicado: true,
@@ -216,6 +216,70 @@ describe('BarraDeComando: navegação por teclado', () => {
     await usuario.keyboard('{Enter}')
 
     expect(aoNavegar).toHaveBeenCalledWith('/interno/artigos')
+  })
+})
+
+describe('BarraDeComando: linha que distingue resultados de mesmo título', () => {
+  const TITULO = 'Alíquota informada indevidamente.'
+  const ERRO_GISS = criarItem({
+    rotulo: 'REJEIÇÃO',
+    chave: 'A15',
+    titulo: TITULO,
+    url: '/erros/a15-giss',
+    provedorNome: 'GISS',
+    versaoRotulo: '2.04',
+  })
+  const ERRO_ELOTECH = criarItem({
+    rotulo: 'REJEIÇÃO',
+    chave: 'E221',
+    titulo: TITULO,
+    url: '/erros/e221-elotech',
+    provedorNome: 'Elotech',
+    versaoRotulo: '2.03',
+  })
+
+  async function abrirComDuplicados(usuario: ReturnType<typeof userEvent.setup>) {
+    await usuario.click(screen.getByRole('button', { name: /Abrir busca rápida/ }))
+    await usuario.type(screen.getByRole('combobox', { name: /Buscar no Codex/ }), 'aliquota')
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(2))
+    return screen.getAllByRole('option')
+  }
+
+  it('tipo, código, provedor e versão separam duas linhas de título igual', async () => {
+    server.use(handlerBuscaInterna([ERRO_GISS, ERRO_ELOTECH]))
+    const usuario = userEvent.setup()
+    renderizar()
+
+    const [linhaGiss, linhaElotech] = await abrirComDuplicados(usuario)
+
+    expect(linhaGiss).toHaveTextContent(TITULO)
+    expect(linhaElotech).toHaveTextContent(TITULO)
+    expect(linhaGiss.textContent).not.toBe(linhaElotech.textContent)
+
+    expect(within(linhaGiss).getByText('REJEIÇÃO')).toBeInTheDocument()
+    expect(within(linhaGiss).getByText('A15')).toBeInTheDocument()
+    expect(within(linhaGiss).getByText('GISS 2.04')).toBeInTheDocument()
+    expect(within(linhaElotech).getByText('E221')).toBeInTheDocument()
+    expect(within(linhaElotech).getByText('Elotech 2.03')).toBeInTheDocument()
+  })
+
+  it('Enter e Ctrl+Enter seguem agindo sobre a linha escolhida', async () => {
+    server.use(handlerBuscaInterna([ERRO_GISS, ERRO_ELOTECH]))
+    const { usuario, escreverNaAreaDeTransferencia } = configurarUsuarioComClipboard()
+    const { aoNavegar } = renderizar()
+
+    await abrirComDuplicados(usuario)
+    await usuario.keyboard('{ArrowDown}')
+    await usuario.keyboard('{Control>}{Enter}{/Control}')
+
+    await waitFor(() =>
+      expect(escreverNaAreaDeTransferencia).toHaveBeenCalledWith(
+        `${window.location.origin}/erros/e221-elotech?origem=atendimento`,
+      ),
+    )
+
+    await usuario.keyboard('{Enter}')
+    expect(aoNavegar).toHaveBeenCalledWith('/erros/e221-elotech')
   })
 })
 

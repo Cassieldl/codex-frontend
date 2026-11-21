@@ -16,6 +16,7 @@ import { useRemoverExemplo } from '../hooks/useRemoverExemplo'
 import type { CriarExemploDto, ExemploAdmin } from '../types/exemploAdmin'
 import { ExemploForm } from './ExemploForm'
 import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
+import { CLASSE_DAS_ACOES_DA_LINHA } from '../../utils/classesDaTabelaInterna'
 
 /**
  * Cap de exemplos por versão (C3). O `422` do backend é a rede de segurança
@@ -179,7 +180,9 @@ export function SecaoExemplosVersao({
             <tr>
               <TableCell header>Cenário</TableCell>
               <TableCell header>Endereço</TableCell>
-              <TableCell header>Ações</TableCell>
+              <TableCell header alinhamento="direita">
+                Ações
+              </TableCell>
             </tr>
           </TableHeader>
           <tbody>
@@ -189,8 +192,8 @@ export function SecaoExemplosVersao({
                 <TableCell>
                   <code className="font-mono">#exemplo-{exemplo.slug}</code>
                 </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
+                <TableCell alinhamento="direita">
+                  <div className={CLASSE_DAS_ACOES_DA_LINHA}>
                     {podeAtualizar && (
                       <Button
                         variant="secondary"

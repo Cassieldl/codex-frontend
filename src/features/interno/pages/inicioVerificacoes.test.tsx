@@ -7,10 +7,11 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../auth/keycloak'
+import { respostaListaTermos } from '../../../test/mocks/lacunasBusca'
 import { server } from '../../../test/mocks/server'
 import {
   VERSAO_NUNCA_VERIFICADA,
@@ -87,5 +88,27 @@ describe('Início interno: verificações vencidas', () => {
 
     expect(screen.queryByRole('heading', { name: 'Verificações vencidas' })).not.toBeInTheDocument()
     expect(contagem.pedidos).toBe(0)
+  })
+})
+
+describe('Início interno: hierarquia', () => {
+  it('a caixa "Atender um chamado" agrupa busca, parceiro e chamado, com as verificações logo abaixo', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'lacunasbusca-buscar', 'lacunasbusca-adicionar'])
+    usarListaContandoPedidos()
+    server.use(
+      http.get(`${API_URL}/interno/lacunas-busca/termos`, () =>
+        HttpResponse.json(respostaListaTermos([])),
+      ),
+    )
+
+    renderizarInicio()
+
+    const caixa = await screen.findByRole('region', { name: 'Atender um chamado' })
+    expect(within(caixa).getByRole('searchbox', { name: 'Buscar no Codex' })).toBeInTheDocument()
+    expect(within(caixa).getByLabelText('Parceiro')).toBeInTheDocument()
+    expect(within(caixa).getByLabelText('Número do chamado')).toBeInTheDocument()
+
+    const verificacoes = await screen.findByRole('region', { name: 'Verificações vencidas' })
+    expect(caixa.nextElementSibling).toBe(verificacoes)
   })
 })

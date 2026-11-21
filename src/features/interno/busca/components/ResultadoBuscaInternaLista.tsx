@@ -16,9 +16,9 @@ export function ResultadoBuscaInternaLista({ grupos }: ResultadoBuscaInternaList
     <div className="flex flex-col gap-5">
       {grupos.map((grupo) => (
         <section key={grupo.tipo} className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-ink">
+          <h3 className="text-sm font-semibold text-ink">
             {grupo.rotulo} <span className="font-normal text-muted">({grupo.total})</span>
-          </h2>
+          </h3>
           <ul className="flex flex-col gap-2">
             {/* A `url` se repete entre avisos do mesmo provedor e o item não traz id: a posição desempata. */}
             {grupo.itens.map((item, indice) => (

@@ -13,6 +13,7 @@ import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { keycloak } from '../../../../auth/keycloak'
 import { server } from '../../../../test/mocks/server'
+import { versaoSearchSchema, type AbaDaVersao } from '../types/abaDaVersao'
 import { IdVersaoPage } from './idVersao'
 import { MENSAGEM_DE_CONFLITO } from '../../utils/mensagemDeErroDeEscrita'
 
@@ -107,20 +108,23 @@ function criarServidorDeAviso() {
   return { ifMatchRecebidos, simularEdicaoConcorrente }
 }
 
-function renderizarPagina() {
+function renderizarPagina(aba?: AbaDaVersao) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
   const rotaRaiz = createRootRoute({ component: Outlet })
   const rotaVersao = createRoute({
     getParentRoute: () => rotaRaiz,
     path: '/interno/provedores/$provedorId/versoes/$versaoId',
-    component: () => <IdVersaoPage provedorId={ID_PROVEDOR} versaoId={ID_VERSAO} />,
+    validateSearch: versaoSearchSchema,
+    component: function PaginaComAba() {
+      const { aba: abaDaUrl } = rotaVersao.useSearch()
+      return <IdVersaoPage provedorId={ID_PROVEDOR} versaoId={ID_VERSAO} aba={abaDaUrl} />
+    },
   })
+  const caminho = `/interno/provedores/${ID_PROVEDOR}/versoes/${ID_VERSAO}`
   const router = createRouter({
     routeTree: rotaRaiz.addChildren([rotaVersao]),
-    history: createMemoryHistory({
-      initialEntries: [`/interno/provedores/${ID_PROVEDOR}/versoes/${ID_VERSAO}`],
-    }),
+    history: createMemoryHistory({ initialEntries: [aba ? `${caminho}?aba=${aba}` : caminho] }),
   })
 
   return render(
@@ -140,15 +144,22 @@ afterEach(() => {
   keycloak.tokenParsed = undefined
 })
 
+/** O aviso nasce recolhido: abre pelo cabeçalho e devolve o item inteiro da lista. */
+async function abrirAviso(usuario: ReturnType<typeof userEvent.setup>) {
+  const cabecalho = await screen.findByRole('button', {
+    name: /ISSRetido passou a ser obrigatório/,
+  })
+  await usuario.click(cabecalho)
+  return cabecalho.closest('li') as HTMLElement
+}
+
 describe('IdVersaoPage: publicação de aviso', () => {
   it('despublicar e em seguida publicar o mesmo aviso usa o etag novo, e o rótulo acompanha', async () => {
     const { ifMatchRecebidos } = criarServidorDeAviso()
     const usuario = userEvent.setup()
     renderizarPagina()
 
-    const item = (
-      await screen.findByRole('heading', { name: 'ISSRetido passou a ser obrigatório' })
-    ).parentElement as HTMLElement
+    const item = await abrirAviso(usuario)
 
     await usuario.click(within(item).getByRole('button', { name: 'Despublicar' }))
     await usuario.click(await within(item).findByRole('button', { name: 'Publicar' }))
@@ -162,9 +173,7 @@ describe('IdVersaoPage: publicação de aviso', () => {
     const usuario = userEvent.setup()
     renderizarPagina()
 
-    const item = (
-      await screen.findByRole('heading', { name: 'ISSRetido passou a ser obrigatório' })
-    ).parentElement as HTMLElement
+    const item = await abrirAviso(usuario)
     simularEdicaoConcorrente()
 
     await usuario.click(within(item).getByRole('button', { name: 'Despublicar' }))
@@ -183,7 +192,10 @@ describe('IdVersaoPage: trilha', () => {
 
     expect(linkDaLista).not.toHaveAttribute('aria-current')
     expect(linkDoProvedor).not.toHaveAttribute('aria-current')
-    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(0)
+    // A única página atual é a aba aberta, nunca um ponto da trilha.
+    const atuais = Array.from(container.querySelectorAll('[aria-current="page"]'))
+    expect(atuais).toHaveLength(1)
+    expect(atuais[0].closest('nav')).toHaveAccessibleName('Seções da versão')
   })
 })
 
@@ -233,7 +245,7 @@ describe('IdVersaoPage: publicação e verificação da versão', () => {
       ),
     )
     const usuario = userEvent.setup()
-    renderizarPagina()
+    renderizarPagina('verificacao')
 
     await usuario.type(await screen.findByLabelText('Marcar como verificado em'), '2026-10-01')
     await usuario.click(screen.getByRole('button', { name: 'Confirmar verificação' }))
@@ -314,7 +326,7 @@ describe('IdVersaoPage: edição de campo da versão', () => {
       }),
     )
     const usuario = userEvent.setup()
-    renderizarPagina()
+    renderizarPagina('campos')
 
     await usuario.click(await screen.findByRole('button', { name: 'Editar campo Número da RPS' }))
 
@@ -333,63 +345,148 @@ describe('IdVersaoPage: edição de campo da versão', () => {
   })
 })
 
-describe('IdVersaoPage: tabelas da página', () => {
-  it('a tabela de campos e a de exemplos são regiões com nomes distintos', async () => {
-    autenticarCom(['versoesprovedor-buscar', 'exemplos-buscar'])
-    criarServidorDeAviso()
-    // JSON transcrito de `CampoVersaoAdminDto` e `ExemploAdminDto`, sem anotação do tipo do cliente.
-    server.use(
-      http.get(`${API_URL}/interno/versoes/${ID_VERSAO}/campos`, () =>
-        HttpResponse.json({
-          data: {
-            campos: [
-              {
-                id: 81,
-                versaoProvedorId: ID_VERSAO,
-                campoLayoutId: 7,
-                campoLayoutNome: 'Número da RPS',
-                tipo: 'Texto',
-                tamanho: null,
-                mascara: null,
-                dominio: null,
-                estadoPreenchimento: 'Obrigatorio',
-                condicao: null,
-                exemplo: '123',
-                notaPreenchimento: null,
-                destinoXml: null,
-                notaTransformacao: null,
-                ordem: 1,
-                versaoConcorrencia: 6,
-              },
-            ],
-            camposLayoutAusentes: [],
-          },
-          message: null,
-        }),
-      ),
-      http.get(`${API_URL}/interno/versoes/${ID_VERSAO}/exemplos`, () =>
-        HttpResponse.json({
-          data: [
+/** Um campo, dois exemplos: contagens diferentes para o contador de cada aba ser distinguível. */
+function servirCamposEExemplos() {
+  // JSON transcrito de `CampoVersaoAdminDto` e `ExemploAdminDto`, sem anotação do tipo do cliente.
+  server.use(
+    http.get(`${API_URL}/interno/versoes/${ID_VERSAO}/campos`, () =>
+      HttpResponse.json({
+        data: {
+          campos: [
             {
-              id: 3,
+              id: 81,
               versaoProvedorId: ID_VERSAO,
-              slug: 'iss-retido',
-              nome: 'ISS retido',
-              descricao: null,
-              xml: '<Rps />',
-              versaoConcorrencia: 1,
+              campoLayoutId: 7,
+              campoLayoutNome: 'Número da RPS',
+              tipo: 'Texto',
+              tamanho: null,
+              mascara: null,
+              dominio: null,
+              estadoPreenchimento: 'Obrigatorio',
+              condicao: null,
+              exemplo: '123',
+              notaPreenchimento: null,
+              destinoXml: null,
+              notaTransformacao: null,
+              ordem: 1,
+              versaoConcorrencia: 6,
             },
           ],
-          message: null,
-        }),
-      ),
-    )
+          camposLayoutAusentes: [],
+        },
+        message: null,
+      }),
+    ),
+    http.get(`${API_URL}/interno/versoes/${ID_VERSAO}/exemplos`, () =>
+      HttpResponse.json({
+        data: [
+          {
+            id: 3,
+            versaoProvedorId: ID_VERSAO,
+            slug: 'iss-retido',
+            nome: 'ISS retido',
+            descricao: null,
+            xml: '<Rps />',
+            versaoConcorrencia: 1,
+          },
+          {
+            id: 4,
+            versaoProvedorId: ID_VERSAO,
+            slug: 'tomador-exterior',
+            nome: 'Tomador no exterior',
+            descricao: null,
+            xml: '<Rps />',
+            versaoConcorrencia: 1,
+          },
+        ],
+        message: null,
+      }),
+    ),
+  )
+}
+
+function abaPorRotulo(rotulo: string) {
+  const navegacao = screen.getByRole('navigation', { name: 'Seções da versão' })
+  return within(navegacao).getByRole('link', { name: new RegExp(`^${rotulo}`) })
+}
+
+describe('IdVersaoPage: abas da versão', () => {
+  it('abre na aba de avisos e mostra só o conteúdo dela', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'exemplos-buscar'])
+    criarServidorDeAviso()
+    servirCamposEExemplos()
     renderizarPagina()
 
-    expect(await screen.findByRole('region', { name: 'Campos desta versão' })).toBeInTheDocument()
-    expect(await screen.findByRole('region', { name: 'Exemplos desta versão' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Avisos desta versão' })).toBeInTheDocument()
+    expect(abaPorRotulo('Avisos')).toHaveAttribute('aria-current', 'page')
+    expect(screen.queryByRole('region', { name: 'Campos desta versão' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Exemplos desta versão' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Marcar como verificado em')).not.toBeInTheDocument()
+  })
 
-    const nomes = screen.getAllByRole('region').map((regiao) => regiao.getAttribute('aria-label'))
-    expect(new Set(nomes).size).toBe(nomes.length)
+  it('o aviso nasce recolhido: severidade, título e estado à vista, corpo escondido', async () => {
+    criarServidorDeAviso()
+    const usuario = userEvent.setup()
+    renderizarPagina()
+
+    const cabecalho = await screen.findByRole('button', {
+      name: /ISSRetido passou a ser obrigatório/,
+    })
+    expect(cabecalho).toHaveAttribute('aria-expanded', 'false')
+    expect(cabecalho).toHaveTextContent('Alerta')
+    expect(cabecalho).toHaveTextContent('Publicado')
+    expect(screen.getByText('Primeiro parágrafo.')).not.toBeVisible()
+
+    await usuario.click(cabecalho)
+
+    expect(cabecalho).toHaveAttribute('aria-expanded', 'true')
+    expect(await screen.findByText('Primeiro parágrafo.')).toBeVisible()
+  })
+
+  it('?aba= abre direto na aba pedida', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'exemplos-buscar'])
+    criarServidorDeAviso()
+    servirCamposEExemplos()
+    renderizarPagina('exemplos')
+
+    expect(await screen.findByRole('region', { name: 'Exemplos desta versão' })).toBeInTheDocument()
+    expect(abaPorRotulo('Exemplos')).toHaveAttribute('aria-current', 'page')
+    expect(screen.queryByRole('heading', { name: 'Avisos desta versão' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Campos desta versão' })).not.toBeInTheDocument()
+  })
+
+  it('o contador de cada aba é o número de itens dela', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'exemplos-buscar'])
+    criarServidorDeAviso()
+    servirCamposEExemplos()
+    renderizarPagina()
+
+    await waitFor(() => expect(abaPorRotulo('Exemplos')).toHaveTextContent('Exemplos2'))
+    await waitFor(() => expect(abaPorRotulo('Campos')).toHaveTextContent('Campos1'))
+    expect(abaPorRotulo('Avisos')).toHaveTextContent('Avisos1')
+    expect(abaPorRotulo('Verificação')).toHaveTextContent(/^Verificação$/)
+  })
+
+  it('seta move o foco entre as abas e Enter abre a aba focada, que entra na URL', async () => {
+    autenticarCom(['versoesprovedor-buscar', 'exemplos-buscar'])
+    criarServidorDeAviso()
+    servirCamposEExemplos()
+    const usuario = userEvent.setup()
+    renderizarPagina()
+
+    await screen.findByRole('heading', { name: 'Avisos desta versão' })
+    abaPorRotulo('Avisos').focus()
+
+    await usuario.keyboard('{ArrowRight}')
+    expect(abaPorRotulo('Campos')).toHaveFocus()
+
+    await usuario.keyboard('{Enter}')
+
+    expect(await screen.findByRole('region', { name: 'Campos desta versão' })).toBeInTheDocument()
+    expect(abaPorRotulo('Campos')).toHaveAttribute('aria-current', 'page')
+    expect(abaPorRotulo('Campos').getAttribute('href')).toContain('aba=campos')
+
+    await usuario.keyboard('{ArrowLeft}{ArrowLeft}')
+    expect(abaPorRotulo('Verificação')).toHaveFocus()
   })
 })

@@ -14,6 +14,7 @@ import type { DecisaoLacunaBuscaValores } from '../types/decisaoLacunaBuscaSchem
 import type { LacunaBuscaTermoComEtag } from '../types/lacunaBusca'
 import { interpretarErroDeEscritaLacunaBusca } from '../utils/erroDeEscritaLacunaBusca'
 import { DecisaoLacunaBuscaForm } from './DecisaoLacunaBuscaForm'
+import { CLASSE_DAS_ACOES_DA_LINHA } from '../../utils/classesDaTabelaInterna'
 
 const TAMANHO_PAGINA_PADRAO = 25
 
@@ -221,7 +222,10 @@ export function FilaLacunasBusca({ podeAtualizar }: FilaLacunasBuscaProps) {
       )}
 
       {!isLoading && !isError && data && data.items.length === 0 && pagina === 1 && (
-        <EmptyState message="Nenhuma lacuna aberta. Quando uma busca interna não achar nada, ela entra aqui." />
+        <EmptyState
+          variante="linha"
+          message="Nenhuma lacuna aberta. Quando uma busca interna não achar nada, ela entra aqui."
+        />
       )}
 
       {!isLoading && !isError && data && data.items.length > 0 && (
@@ -236,7 +240,11 @@ export function FilaLacunasBusca({ podeAtualizar }: FilaLacunasBuscaProps) {
                 <TableCell header>Primeira ocorrência</TableCell>
                 <TableCell header>Última ocorrência</TableCell>
                 <TableCell header>Último registro por</TableCell>
-                {podeAtualizar && <TableCell header>Ações</TableCell>}
+                {podeAtualizar && (
+                  <TableCell header alinhamento="direita">
+                    Ações
+                  </TableCell>
+                )}
               </tr>
             </TableHeader>
             <tbody>
@@ -254,8 +262,8 @@ export function FilaLacunasBusca({ podeAtualizar }: FilaLacunasBuscaProps) {
                   <TableCell>{formatarDataCurta(termo.ultimaEm)}</TableCell>
                   <TableCell>{termo.ultimoRegistradoPorNome ?? 'Nome não informado'}</TableCell>
                   {podeAtualizar && (
-                    <TableCell>
-                      <div className="flex gap-2">
+                    <TableCell alinhamento="direita">
+                      <div className={CLASSE_DAS_ACOES_DA_LINHA}>
                         <Button
                           variant="secondary"
                           size="sm"

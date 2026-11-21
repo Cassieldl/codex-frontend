@@ -1,25 +1,27 @@
 import { Link } from '@tanstack/react-router'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { AbasNavegaveis, type AbaNavegavel } from '../../../../components/ui/AbasNavegaveis'
 import { Button } from '../../../../components/ui/Button'
-import { ConteudoArtigo } from '../../../../components/ui/ConteudoArtigo'
 import { EmptyState } from '../../../../components/ui/EmptyState'
 import { EtiquetaEstado, type EstadoPreenchimento } from '../../../../components/ui/EtiquetaEstado'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
-import { EtiquetaSeveridade, type Severidade } from '../../../../components/ui/EtiquetaSeveridade'
 import { ErrorState } from '../../../../components/ui/ErrorState'
 import { Input } from '../../../../components/ui/Input'
 import { Modal } from '../../../../components/ui/Modal'
 import { ModalConfirmacao } from '../../../../components/ui/ModalConfirmacao'
 import { Skeleton } from '../../../../components/ui/Skeleton'
 import { TableCell, TableHeader, TableRoot, TableRow } from '../../../../components/ui/Table'
+import { formatarDataCurta } from '../../../../utils/formatarDataVerificacao'
 import { useCamposLayoutPorVersao } from '../../camposLayout/hooks/useCamposLayoutPorVersao'
 import { SecaoExemplosVersao } from '../../exemplos/components/SecaoExemplosVersao'
+import { useExemplosPorVersao } from '../../exemplos/hooks/useExemplosPorVersao'
 import { usePermissoesInterno } from '../../hooks/usePermissoesInterno'
 import { usePublicarAviso } from '../../hooks/usePublicarAviso'
 import { etagNaColecao } from '../../utils/etagDeConcorrencia'
 import { useEtagDeEnvio } from '../../utils/useEtagDeEnvio'
 import { usePublicarVersaoProvedor } from '../../hooks/usePublicarVersaoProvedor'
+import { AvisoDaVersao } from '../components/AvisoDaVersao'
 import { AvisoForm, type AvisoFormDto } from '../components/AvisoForm'
 import { CampoVersaoForm } from '../components/CampoVersaoForm'
 import { useAtualizarAviso } from '../hooks/useAtualizarAviso'
@@ -33,6 +35,7 @@ import { useRemoverCampoVersao } from '../hooks/useRemoverCampoVersao'
 import { useVerificarVersao } from '../hooks/useVerificarVersao'
 import { useVersaoAdminPorId } from '../hooks/useVersaoAdminPorId'
 import { versoesAdminKeys } from '../hooks/versoesAdminKeys'
+import { ABAS_DA_VERSAO, type AbaDaVersao } from '../types/abaDaVersao'
 import type { AvisoAdmin } from '../types/avisoAdmin'
 import type {
   AtualizarCampoVersaoDto,
@@ -40,17 +43,12 @@ import type {
   CriarCampoVersaoDto,
 } from '../types/campoVersaoAdmin'
 import { mensagemDeErroDeEscrita } from '../../utils/mensagemDeErroDeEscrita'
+import { CLASSE_DAS_ACOES_DA_LINHA } from '../../utils/classesDaTabelaInterna'
 
 /** Falha ao publicar ou despublicar um aviso, mostrada junto do aviso que a causou. */
 interface ErroDePublicacaoDoAviso {
   avisoId: number
   mensagem: string
-}
-
-const SEVERIDADE_PARA_TOKEN: Record<AvisoAdmin['severidade'], Severidade> = {
-  Critico: 'critico',
-  Alerta: 'alerta',
-  Informativo: 'informativo',
 }
 
 const ESTADO_PARA_TOKEN: Record<CampoVersaoAdmin['estadoPreenchimento'], EstadoPreenchimento> = {
@@ -67,18 +65,29 @@ function paraAtualizacao({
   return dto
 }
 
+const ROTULO_DA_ABA: Record<AbaDaVersao, string> = {
+  avisos: 'Avisos',
+  campos: 'Campos',
+  exemplos: 'Exemplos',
+  verificacao: 'Verificação',
+}
+
 export interface IdVersaoPageProps {
   provedorId: number
   versaoId: number
+  /** Aba aberta, vinda do `?aba=` da rota. */
+  aba: AbaDaVersao
 }
 
-export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
+export function IdVersaoPage({ provedorId, versaoId, aba }: IdVersaoPageProps) {
   const permissoes = usePermissoesInterno()
 
   const { data: provedor } = useProvedorAdminPorId(provedorId)
   const { data: versao, isLoading, isError, refetch } = useVersaoAdminPorId(versaoId)
   const { data: respostaCampos, isLoading: camposCarregando } = useCamposVersao(versaoId)
   const { data: camposLayout } = useCamposLayoutPorVersao(versao?.versaoLayoutId ?? 0)
+  // Mesma chave da seção de exemplos: o contador da aba não gera requisição a mais.
+  const { data: exemplos } = useExemplosPorVersao(versaoId, permissoes.exemplos.buscar)
 
   const publicarVersao = usePublicarVersaoProvedor()
   const verificarVersao = useVerificarVersao()
@@ -144,6 +153,22 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
   }
 
   const publicadoEfetivo = versao.publicado && (provedor?.publicado ?? true)
+
+  const contadorPorAba: Record<AbaDaVersao, number | undefined> = {
+    avisos: versao.avisos.length,
+    campos: respostaCampos?.campos.length,
+    exemplos: exemplos?.length,
+    verificacao: undefined,
+  }
+
+  const abas: AbaNavegavel[] = ABAS_DA_VERSAO.map((valor) => ({
+    rotulo: ROTULO_DA_ABA[valor],
+    contador: contadorPorAba[valor],
+    to: '/interno/provedores/$provedorId/versoes/$versaoId',
+    params: { provedorId: String(provedorId), versaoId: String(versaoId) },
+    search: { aba: valor },
+    ativa: valor === aba,
+  }))
 
   function aoSalvarCampo(dto: CriarCampoVersaoDto) {
     setErroCampo(null)
@@ -318,202 +343,219 @@ export function IdVersaoPage({ provedorId, versaoId }: IdVersaoPageProps) {
         </p>
       )}
 
-      {permissoes.versoesProvedor.atualizar && (
-        <section className="flex items-end gap-3">
-          <Input
-            label="Marcar como verificado em"
-            type="date"
-            value={dataVerificacao}
-            onChange={(evento) => setDataVerificacao(evento.target.value)}
-          />
-          <Button
-            variant="secondary"
-            isLoading={verificarVersao.isPending}
-            disabled={!dataVerificacao}
-            onClick={() => confirmarVerificacao(dataVerificacao, versao.etag)}
-          >
-            Confirmar verificação
-          </Button>
-          {versao.verificadoEm && (
-            <p className="text-xs text-muted">Última verificação: {versao.verificadoEm}</p>
+      <AbasNavegaveis abas={abas} ariaLabel="Seções da versão" navegacaoPorSetas />
+
+      {aba === 'avisos' && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-subtitulo font-medium text-ink">Avisos desta versão</h2>
+            {permissoes.avisos.adicionar && (
+              <Button
+                size="sm"
+                variant="secondary"
+                leftIcon={<Plus className="size-4" />}
+                onClick={() => setModalAvisoAberto('novo')}
+              >
+                Novo aviso
+              </Button>
+            )}
+          </div>
+
+          {versao.avisos.length === 0 && (
+            <p className="text-xs text-muted italic">Nenhum aviso cadastrado para esta versão.</p>
+          )}
+
+          <ul className="flex flex-col gap-3">
+            {versao.avisos.map((aviso) => (
+              <AvisoDaVersao
+                key={aviso.id}
+                aviso={aviso}
+                versaoPublicadaEfetiva={publicadoEfetivo}
+                rotuloVersao={versao.rotulo}
+                erroDePublicacao={
+                  erroDePublicacaoDoAviso?.avisoId === aviso.id
+                    ? erroDePublicacaoDoAviso.mensagem
+                    : null
+                }
+                acoes={
+                  <>
+                    {permissoes.avisos.atualizar && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setModalAvisoAberto(aviso)}
+                      >
+                        Editar
+                      </Button>
+                    )}
+                    {permissoes.avisos.publicar && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        isLoading={
+                          publicarAviso.isPending && publicarAviso.variables?.id === aviso.id
+                        }
+                        onClick={() => alternarPublicacaoDoAviso(aviso)}
+                      >
+                        {aviso.publicado ? 'Despublicar' : 'Publicar'}
+                      </Button>
+                    )}
+                    {permissoes.avisos.remover && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        aria-label={`Remover aviso ${aviso.titulo}`}
+                        onClick={() => {
+                          setErroRemocao(null)
+                          setAvisoParaRemover(aviso)
+                        }}
+                      >
+                        <Trash2 className="size-4" aria-hidden="true" />
+                      </Button>
+                    )}
+                  </>
+                }
+              />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {aba === 'campos' && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-subtitulo font-medium text-ink">Campos desta versão</h2>
+            {permissoes.camposVersao.adicionar && (
+              <Button
+                size="sm"
+                variant="secondary"
+                leftIcon={<Plus className="size-4" />}
+                onClick={() => setModalCampoAberto('novo')}
+              >
+                Novo campo
+              </Button>
+            )}
+          </div>
+
+          {camposCarregando && <Skeleton className="h-10 w-full" />}
+
+          {!camposCarregando && respostaCampos && respostaCampos.campos.length === 0 && (
+            <EmptyState message="Nenhum campo documentado nesta versão ainda." />
+          )}
+
+          {!camposCarregando && respostaCampos && respostaCampos.campos.length > 0 && (
+            <TableRoot rotulo="Campos desta versão">
+              <TableHeader>
+                <tr>
+                  <TableCell header>Campo</TableCell>
+                  <TableCell header>Estado</TableCell>
+                  <TableCell header>Tipo</TableCell>
+                  <TableCell header alinhamento="direita">
+                    Ações
+                  </TableCell>
+                </tr>
+              </TableHeader>
+              <tbody>
+                {respostaCampos.campos.map((campo) => (
+                  <TableRow key={campo.id}>
+                    <TableCell>{campo.campoLayoutNome}</TableCell>
+                    <TableCell>
+                      <EtiquetaEstado estado={ESTADO_PARA_TOKEN[campo.estadoPreenchimento]} />
+                    </TableCell>
+                    <TableCell>{campo.tipo}</TableCell>
+                    <TableCell alinhamento="direita">
+                      <div className={CLASSE_DAS_ACOES_DA_LINHA}>
+                        {permissoes.camposVersao.atualizar && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            aria-label={`Editar campo ${campo.campoLayoutNome}`}
+                            onClick={() => setModalCampoAberto(campo)}
+                          >
+                            <Pencil className="size-4" aria-hidden="true" />
+                          </Button>
+                        )}
+                        {permissoes.camposVersao.remover && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            aria-label={`Remover campo ${campo.campoLayoutNome}`}
+                            onClick={() => {
+                              setErroRemocao(null)
+                              setCampoParaRemover(campo)
+                            }}
+                          >
+                            <Trash2 className="size-4" aria-hidden="true" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </tbody>
+            </TableRoot>
+          )}
+
+          {respostaCampos && respostaCampos.camposLayoutAusentes.length > 0 && (
+            <div className="flex flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-surface-hover p-4">
+              <h3 className="text-sm font-medium text-ink">
+                Campos do Layout InvoiCy ainda não documentados nesta versão
+              </h3>
+              <ul className="text-sm text-ink/70">
+                {respostaCampos.camposLayoutAusentes.map((ausente) => (
+                  <li key={ausente.id}>{ausente.nome}</li>
+                ))}
+              </ul>
+            </div>
           )}
         </section>
       )}
 
-      {erroDeVerificacao && (
-        <p role="alert" className="text-sm text-error-texto">
-          {erroDeVerificacao}
-        </p>
+      {aba === 'exemplos' && (
+        <SecaoExemplosVersao
+          versaoId={versaoId}
+          podeBuscar={permissoes.exemplos.buscar}
+          podeAdicionar={permissoes.exemplos.adicionar}
+          podeAtualizar={permissoes.exemplos.atualizar}
+          podeRemover={permissoes.exemplos.remover}
+        />
       )}
 
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-subtitulo font-medium text-ink">Avisos desta versão</h2>
-          {permissoes.avisos.adicionar && (
-            <Button
-              size="sm"
-              variant="secondary"
-              leftIcon={<Plus className="size-4" />}
-              onClick={() => setModalAvisoAberto('novo')}
-            >
-              Novo aviso
-            </Button>
+      {aba === 'verificacao' && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-subtitulo font-medium text-ink">Verificação</h2>
+          <p className="text-sm text-muted">
+            {versao.verificadoEm
+              ? `Última verificação: ${formatarDataCurta(versao.verificadoEm)}`
+              : 'Esta versão nunca foi verificada.'}
+          </p>
+
+          {permissoes.versoesProvedor.atualizar && (
+            <div className="flex items-end gap-3">
+              <Input
+                label="Marcar como verificado em"
+                type="date"
+                value={dataVerificacao}
+                onChange={(evento) => setDataVerificacao(evento.target.value)}
+              />
+              <Button
+                variant="secondary"
+                isLoading={verificarVersao.isPending}
+                disabled={!dataVerificacao}
+                onClick={() => confirmarVerificacao(dataVerificacao, versao.etag)}
+              >
+                Confirmar verificação
+              </Button>
+            </div>
           )}
-        </div>
 
-        {versao.avisos.length === 0 && (
-          <p className="text-xs text-muted italic">Nenhum aviso cadastrado para esta versão.</p>
-        )}
-
-        <ul className="flex flex-col gap-3">
-          {versao.avisos.map((aviso) => (
-            <li
-              key={aviso.id}
-              className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border p-4"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <EtiquetaSeveridade severidade={SEVERIDADE_PARA_TOKEN[aviso.severidade]} />
-                <EtiquetaPublicacao
-                  publicadoProprio={aviso.publicado}
-                  publicadoEfetivo={aviso.publicado && publicadoEfetivo}
-                  motivoOculto={!publicadoEfetivo ? versao.rotulo : undefined}
-                />
-              </div>
-              <h3 className="text-card-titulo font-medium text-ink">{aviso.titulo}</h3>
-              <ConteudoArtigo corpo={aviso.corpo} variante="aviso" />
-              <div className="flex gap-2">
-                {permissoes.avisos.atualizar && (
-                  <Button variant="secondary" size="sm" onClick={() => setModalAvisoAberto(aviso)}>
-                    Editar
-                  </Button>
-                )}
-                {permissoes.avisos.publicar && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    isLoading={publicarAviso.isPending && publicarAviso.variables?.id === aviso.id}
-                    onClick={() => alternarPublicacaoDoAviso(aviso)}
-                  >
-                    {aviso.publicado ? 'Despublicar' : 'Publicar'}
-                  </Button>
-                )}
-                {permissoes.avisos.remover && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    aria-label={`Remover aviso ${aviso.titulo}`}
-                    onClick={() => {
-                      setErroRemocao(null)
-                      setAvisoParaRemover(aviso)
-                    }}
-                  >
-                    <Trash2 className="size-4" aria-hidden="true" />
-                  </Button>
-                )}
-              </div>
-              {erroDePublicacaoDoAviso?.avisoId === aviso.id && (
-                <p role="alert" className="text-sm text-error-texto">
-                  {erroDePublicacaoDoAviso.mensagem}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-subtitulo font-medium text-ink">Campos desta versão</h2>
-          {permissoes.camposVersao.adicionar && (
-            <Button
-              size="sm"
-              variant="secondary"
-              leftIcon={<Plus className="size-4" />}
-              onClick={() => setModalCampoAberto('novo')}
-            >
-              Novo campo
-            </Button>
+          {erroDeVerificacao && (
+            <p role="alert" className="text-sm text-error-texto">
+              {erroDeVerificacao}
+            </p>
           )}
-        </div>
-
-        {camposCarregando && <Skeleton className="h-10 w-full" />}
-
-        {!camposCarregando && respostaCampos && respostaCampos.campos.length === 0 && (
-          <EmptyState message="Nenhum campo documentado nesta versão ainda." />
-        )}
-
-        {!camposCarregando && respostaCampos && respostaCampos.campos.length > 0 && (
-          <TableRoot rotulo="Campos desta versão">
-            <TableHeader>
-              <tr>
-                <TableCell header>Campo</TableCell>
-                <TableCell header>Estado</TableCell>
-                <TableCell header>Tipo</TableCell>
-                <TableCell header>Ações</TableCell>
-              </tr>
-            </TableHeader>
-            <tbody>
-              {respostaCampos.campos.map((campo) => (
-                <TableRow key={campo.id}>
-                  <TableCell>{campo.campoLayoutNome}</TableCell>
-                  <TableCell>
-                    <EtiquetaEstado estado={ESTADO_PARA_TOKEN[campo.estadoPreenchimento]} />
-                  </TableCell>
-                  <TableCell>{campo.tipo}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {permissoes.camposVersao.atualizar && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Editar campo ${campo.campoLayoutNome}`}
-                          onClick={() => setModalCampoAberto(campo)}
-                        >
-                          <Pencil className="size-4" aria-hidden="true" />
-                        </Button>
-                      )}
-                      {permissoes.camposVersao.remover && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Remover campo ${campo.campoLayoutNome}`}
-                          onClick={() => {
-                            setErroRemocao(null)
-                            setCampoParaRemover(campo)
-                          }}
-                        >
-                          <Trash2 className="size-4" aria-hidden="true" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </tbody>
-          </TableRoot>
-        )}
-
-        {respostaCampos && respostaCampos.camposLayoutAusentes.length > 0 && (
-          <div className="flex flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-surface-hover p-4">
-            <h3 className="text-sm font-medium text-ink">
-              Campos do Layout InvoiCy ainda não documentados nesta versão
-            </h3>
-            <ul className="text-sm text-ink/70">
-              {respostaCampos.camposLayoutAusentes.map((ausente) => (
-                <li key={ausente.id}>{ausente.nome}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      <SecaoExemplosVersao
-        versaoId={versaoId}
-        podeBuscar={permissoes.exemplos.buscar}
-        podeAdicionar={permissoes.exemplos.adicionar}
-        podeAtualizar={permissoes.exemplos.atualizar}
-        podeRemover={permissoes.exemplos.remover}
-      />
+        </section>
+      )}
 
       <Modal
         isOpen={modalCampoAberto !== null}

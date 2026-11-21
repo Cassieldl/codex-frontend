@@ -96,7 +96,7 @@ export function VerificacoesVencidas() {
       )}
 
       {!isLoading && !isError && data && data.items.length === 0 && pagina === 1 && (
-        <EmptyState message="Nenhuma versão com verificação vencida." />
+        <EmptyState variante="linha" message="Nenhuma versão com verificação vencida." />
       )}
 
       {!isLoading && !isError && data && data.items.length > 0 && (

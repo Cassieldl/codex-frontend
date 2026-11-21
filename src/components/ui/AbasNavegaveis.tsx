@@ -1,4 +1,5 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
+import type { KeyboardEvent } from 'react'
 import { cn } from '../../lib/cn'
 
 export interface AbaNavegavel {
@@ -26,6 +27,8 @@ export interface AbasNavegaveisProps {
    * própria borda inferior.
    */
   tamanho?: TamanhoDasAbas
+  /** Setas, `Home` e `End` movem o foco entre as abas; `Enter` abre a aba focada. */
+  navegacaoPorSetas?: boolean
   className?: string
 }
 
@@ -58,6 +61,7 @@ export function AbasNavegaveis({
   abas,
   ariaLabel,
   tamanho = 'padrao',
+  navegacaoPorSetas = false,
   className,
 }: AbasNavegaveisProps) {
   const classes = CLASSES_DO_TAMANHO[tamanho]
@@ -79,6 +83,7 @@ export function AbasNavegaveis({
               // ao mesmo tempo. `ativa` continua sendo a fonte da verdade.
               activeOptions={{ exact: true }}
               aria-current={aba.ativa ? 'page' : undefined}
+              onKeyDown={navegacaoPorSetas ? moverFocoEntreAbas : undefined}
               className={cn(
                 'inline-flex items-center gap-2 border-b-[3px] whitespace-nowrap transition-[box-shadow,color] duration-150',
                 classes.aba,
@@ -104,4 +109,26 @@ export function AbasNavegaveis({
       </ul>
     </nav>
   )
+}
+
+// Só move o foco, sem navegar: cada aba é um link, e abrir continua sendo `Enter`.
+function moverFocoEntreAbas(evento: KeyboardEvent<HTMLAnchorElement>) {
+  const lista = evento.currentTarget.closest('ul')
+  if (!lista) return
+
+  const links = Array.from(lista.querySelectorAll<HTMLAnchorElement>('a'))
+  const atual = links.indexOf(evento.currentTarget)
+
+  const destinoPorTecla: Record<string, number> = {
+    ArrowRight: (atual + 1) % links.length,
+    ArrowLeft: (atual - 1 + links.length) % links.length,
+    Home: 0,
+    End: links.length - 1,
+  }
+
+  const destino = destinoPorTecla[evento.key]
+  if (destino === undefined) return
+
+  evento.preventDefault()
+  links[destino]?.focus()
 }

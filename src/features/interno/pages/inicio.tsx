@@ -53,10 +53,18 @@ export function InicioPage() {
   const mostrarResultados = termoComAtraso.trim().length >= 2
 
   return (
-    <div className="flex flex-col gap-10">
-      <section className="flex flex-col gap-4">
+    <div className="flex flex-col gap-8">
+      <h1 className="sr-only">Início</h1>
+
+      {/* Busca, parceiro e chamado numa caixa só: os três servem ao mesmo atendimento. */}
+      <section
+        aria-labelledby="atender-chamado-titulo"
+        className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-white p-6"
+      >
         <div>
-          <h1 className="text-titulo font-bold text-ink">Início</h1>
+          <h2 id="atender-chamado-titulo" className="text-subtitulo font-semibold text-ink">
+            Atender um chamado
+          </h2>
           <p className="text-sm text-muted">
             Ache o conteúdo certo e copie o link em segundos. O índice interno enxerga rascunho.
           </p>
@@ -131,11 +139,11 @@ export function InicioPage() {
         )}
       </section>
 
+      {permissoes.versoesProvedor.buscar && <VerificacoesVencidas />}
+
       {permissoes.lacunasBusca.buscar && (
         <FilaLacunasBusca podeAtualizar={permissoes.lacunasBusca.atualizar} />
       )}
-
-      {permissoes.versoesProvedor.buscar && <VerificacoesVencidas />}
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {ATALHOS.map(({ to, titulo, descricao, Icone }) => (

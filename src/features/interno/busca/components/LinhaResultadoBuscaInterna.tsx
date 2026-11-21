@@ -2,6 +2,7 @@ import { BotaoCopiar } from '../../../../components/ui/BotaoCopiar'
 import { EtiquetaPublicacao } from '../../../../components/ui/EtiquetaPublicacao'
 import { cn } from '../../../../lib/cn'
 import type { ResultadoItem } from '../../../busca/types/resultadoBusca'
+import { contextoDoResultado } from '../utils/contextoDoResultado'
 import { caminhoDoItemBuscaInterna, resolverLinkParaCopiar } from '../utils/resolverLinkParaCopiar'
 import { nomeDaListaPorTipo } from '../utils/rotaEdicaoPorTipo'
 
@@ -14,9 +15,9 @@ export interface LinhaResultadoBuscaInternaProps {
 }
 
 /**
- * Uma linha de resultado da busca INTERNA: título + estado de publicação +
- * botão de copiar. Compartilhada pela tela 11 (dentro do agrupamento por tipo)
- * e pela barra de comando (lista plana) - a regra de qual link copiar existe
+ * Uma linha de resultado da busca INTERNA: tipo e código, título com estado de
+ * publicação, provedor e versão, e botão de copiar. Compartilhada pela tela 11
+ * (dentro do agrupamento por tipo) e pela barra de comando (lista plana) - a regra de qual link copiar existe
  * uma vez só, em `resolverLinkParaCopiar`.
  *
  * **PQ-09: o bug que a paleta amplificaria:** a busca interna enxerga
@@ -45,6 +46,8 @@ export function LinhaResultadoBuscaInterna({
 }: LinhaResultadoBuscaInternaProps) {
   const caminho = caminhoDoItemBuscaInterna(item)
   const linkParaCopiar = resolverLinkParaCopiar(item, window.location.origin)
+  const codigo = item.tipo === 'erro' ? item.chave : null
+  const contexto = contextoDoResultado(item)
 
   return (
     <li
@@ -52,17 +55,31 @@ export function LinhaResultadoBuscaInterna({
       role={id ? 'option' : undefined}
       aria-selected={id ? ativo : undefined}
       className={cn(
-        'flex items-center justify-between gap-3 rounded-[var(--radius-card)] border px-4 py-3',
+        'flex items-center gap-3 rounded-[var(--radius-card)] border px-4 py-3',
         ativo ? 'border-primary-medium bg-surface-hover' : 'border-border',
       )}
     >
-      <span className="flex min-w-0 flex-col gap-1">
+      <span className="flex w-36 shrink-0 items-baseline gap-2">
+        <span className="text-xs font-semibold tracking-wide text-muted uppercase">
+          {item.rotulo}
+        </span>
+        {codigo && (
+          <span className="truncate font-mono text-sm font-bold text-primary" title={codigo}>
+            {codigo}
+          </span>
+        )}
+      </span>
+
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
         {caminho ? (
-          <a href={caminho} className="truncate font-medium text-primary-medium hover:underline">
+          <a
+            href={caminho}
+            className="line-clamp-2 font-medium text-primary-medium hover:underline"
+          >
             {item.titulo}
           </a>
         ) : (
-          <span className="truncate font-medium text-ink">{item.titulo}</span>
+          <span className="line-clamp-2 font-medium text-ink">{item.titulo}</span>
         )}
         {!item.publicado && (
           <EtiquetaPublicacao
@@ -72,6 +89,12 @@ export function LinhaResultadoBuscaInterna({
           />
         )}
       </span>
+
+      {contexto && (
+        <span className="max-w-[30%] shrink-0 truncate text-sm text-muted" title={contexto}>
+          {contexto}
+        </span>
+      )}
 
       {linkParaCopiar ? (
         <BotaoCopiar
