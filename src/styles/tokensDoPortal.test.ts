@@ -65,9 +65,10 @@ function fundosDeAviso(): string[] {
 // Fundos em que o portal põe texto com link: página, avisos, bloco realçado e linha da âncora.
 const FUNDOS_COM_LINK = ['white', 'surface-hover', 'highlight-anchor', ...fundosDeAviso()]
 
-// Pega `hover:`, `group-hover:`, `group-hover/nome:`, `peer-hover:` e `has-[...]:hover:`.
+// Pega `hover:`, `group-hover:`, `group-hover/nome:`, `peer-hover:`, `has-[...]:hover:`,
+// `[&:hover]:` e o `!` de importante, antes ou depois da classe.
 const HOVER_PARA_PRIMARY_LIGHT =
-  /(?<![\w-])(?:(?:group|peer)-)?hover(?:\/[\w-]+)?:text-primary-light(?![\w-])/
+  /(?<![\w-])(?:(?:(?:group|peer)-)?hover(?:\/[\w-]+)?|\[&:hover\]):!?text-primary-light!?(?![\w-])/
 
 describe('links do portal', () => {
   const cores = coresDoLinkTexto()
@@ -88,6 +89,9 @@ describe('links do portal', () => {
     'group-hover:text-primary-light',
     'group-hover/linha:text-primary-light',
     'has-[a:focus]:hover:text-primary-light',
+    '[&:hover]:text-primary-light',
+    'hover:!text-primary-light',
+    'hover:text-primary-light!',
   ])('a varredura de hover reconhece `%s`', (classe) => {
     expect(HOVER_PARA_PRIMARY_LIGHT.test(`className="${classe}"`)).toBe(true)
   })
@@ -110,6 +114,19 @@ describe('links do portal', () => {
   })
 })
 
+/** Raio de uma caixa de aviso: o token `radius-*` quando vem dele, a classe crua quando não. */
+function raioDoAviso(classes: string): string | null {
+  const porToken = classes.match(/(?<![\w-])rounded-\[var\(--(radius-[a-z]+)\)\]/)
+  if (porToken) return porToken[1]
+  return classes.match(/(?<![\w-])rounded(?:-[^\s"'`]+)?/)?.[0] ?? null
+}
+
+// Cartão lateral com tom de aviso e selo em pílula: uma ocorrência de cada.
+const RAIOS_DE_AVISO_FORA_DO_TOKEN_ACEITOS = [
+  '../features/provedores/components/LateralDaNatureza.tsx: radius-card',
+  '../features/provedores/components/ModalDoCampo.tsx: radius-pill',
+]
+
 describe('avisos', () => {
   it('o raio dos avisos vem de um token de 12px', () => {
     expect(cssGlobal).toMatch(/--radius-aviso:\s*12px;/)
@@ -125,17 +142,16 @@ describe('avisos', () => {
     expect(fontes[caminho]).toContain('rounded-[var(--radius-aviso)]')
   })
 
-  it('caixa com fundo e borda de aviso não usa raio de controle nem raio solto, nem na área interna', () => {
-    const RAIOS_ACEITOS = /rounded-\[var\(--radius-(?:aviso|pill|card)\)\]/
+  it('cada caixa de aviso usa o raio de aviso, nem na área interna; card e pill só nas exceções', () => {
+    // Por aviso, não por arquivo: um segundo aviso com outro raio no mesmo arquivo entra na lista.
     const foraDoPadrao = Object.entries(fontes).flatMap(([caminho, fonte]) =>
       [...fonte.matchAll(/["'`][^"'`]*\bborder-alert-[a-z]+-borda\b[^"'`]*["'`]/g)]
-        .map((achado) => achado[0])
-        .filter((classes) => /(?<![\w-])rounded\b/.test(classes))
-        .filter((classes) => !RAIOS_ACEITOS.test(classes))
-        .map((classes) => `${caminho}: ${classes}`),
+        .map((achado) => raioDoAviso(achado[0]))
+        .filter((raio): raio is string => raio !== null && raio !== 'radius-aviso')
+        .map((raio) => `${caminho}: ${raio}`),
     )
 
-    expect(foraDoPadrao).toEqual([])
+    expect(foraDoPadrao.sort()).toEqual(RAIOS_DE_AVISO_FORA_DO_TOKEN_ACEITOS)
   })
 })
 
