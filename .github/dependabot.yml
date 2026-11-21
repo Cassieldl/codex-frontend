@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Mantém os SHAs fixados no ci.yml atualizados, com a versão no comentário.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Base do Dockerfile: a troca de versão do nginx e do Node vira PR em vez de auditoria.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly

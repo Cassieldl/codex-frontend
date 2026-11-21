@@ -2,24 +2,28 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [develop, main]
   pull_request:
-    branches: [main]
+    branches: [develop, main]
+
+# O token do workflow só lê o repositório, independente do padrão configurado no GitHub.
+permissions:
+  contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-e-testes:
+  qualidade:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '22' # a mesma do estágio de build do Dockerfile
           cache: npm
 
       # `npm ci` e não `npm install`: instala exatamente o que está no lock e falha se o lock
@@ -27,60 +31,104 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Dependências sem vulnerabilidade alta
+        run: npm audit --audit-level=high
+
       - name: Formatação
         run: npm run format:check
 
-      # O lint usa os tipos, e as rotas tipam a partir do `src/routeTree.gen.ts`, que não é versionado.
+      # Typecheck, lint e testes leem `src/routeTree.gen.ts`, que é gerado e não é versionado. Num
+      # clone limpo, pular este passo parece defeito de código e é só ordem de step.
       - name: Gerar a árvore de rotas
         run: npm run prebuild
+
+      # `tsc -b`, nunca `tsc --noEmit`: nesta raiz o tsconfig tem `files: []` e só referencia os
+      # projetos, então o `--noEmit` checa zero arquivo e sai 0 sempre.
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Lint
         run: npm run lint
 
-      # `npm run build` é `tsc -b && vite build`. O typecheck tem de ser ESTE comando: nesta raiz
-      # `tsc --noEmit` lê um tsconfig com `files: []`, checa ZERO arquivo e sai 0 sempre — já
-      # custou uma demanda inteira de gate inerte neste projeto.
-      - name: Typecheck e build
-        run: npm run build
-
-      # Depende do step acima, e não por estilo: `src/routeTree.gen.ts` é GERADO (pelo `prebuild`)
-      # e não é versionado, e há teste que o importa. Num clone limpo, rodar os testes primeiro
-      # falha por arquivo ausente — o que parece defeito de código e é ordem de step.
       - name: Testes
         run: npm test
 
-      # Só dependências de produção: as de desenvolvimento (ambiente de teste) não vão para o
-      # bundle. `high` para cima reprova.
-      - name: Dependências de produção sem vulnerabilidade alta
-        run: npm audit --omit=dev --audit-level=high
+      - name: Build
+        run: npm run build
+
+  vazamento:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # segredo apagado depois continua nos commits antigos
+
+      - name: gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" \
+            -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo \
+            zricethezav/gitleaks:v8.30.1 git /repo --redact --no-banner
 
   imagem:
-    # Constrói a imagem e sobe o container de verdade: a configuração do nginx só é validada na
-    # partida, e uma variável de template ausente já derrubaria o portal em produção.
+    # Constrói a imagem, escaneia e sobe o container de verdade: a configuração do nginx só é
+    # validada na partida, e uma variável de template ausente já derrubaria o portal em produção.
+    needs: qualidade
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
+    steps:
+      - uses: actions/checkout@v7
+
+      # `--pull` busca a base de novo: sem ele, a imagem herda a camada que estiver em cache.
       - name: Construir a imagem do portal
         run: |
-          docker build -t codex-portal:ci \
+          docker build --pull -t codex-portal:ci \
             --build-arg VITE_API_URL=https://api.exemplo.com.br/api/v1 \
             --build-arg VITE_KEYCLOAK_URL=https://auth.exemplo.com.br \
             --build-arg VITE_KEYCLOAK_REALM=codex \
             --build-arg VITE_KEYCLOAK_CLIENT_ID=codex-front .
+
+      - name: Vulnerabilidades da imagem
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: codex-portal:ci
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
+          version: 'v0.76.2'
 
       - name: Subir o container e responder
         run: |
           docker run -d --name portal -p 8080:8080 \
             -e CSP_CONNECT_SRC="https://api.exemplo.com.br https://auth.exemplo.com.br" \
             -e CSP_FRAME_SRC="https://auth.exemplo.com.br" codex-portal:ci
-          for tentativa in $(seq 1 20); do
+          for _ in $(seq 1 20); do
             curl -sf -o /dev/null http://localhost:8080/ && break
             sleep 1
           done
           curl -sf -o /dev/null http://localhost:8080/provedores
-          curl -sfI http://localhost:8080/ | grep -qi '^strict-transport-security:'
           curl -sf http://localhost:8080/robots.txt | grep -q 'Disallow: /interno'
+
+      # Os cabeçalhos valem também na resposta de erro, e o 404 de asset não pode sair com cache de
+      # um ano: uma CDN guardaria o chunk quebrado até alguém purgar.
+      - name: Cabeçalhos de segurança e cache
+        run: |
+          for caminho in / /assets/inexistente.js; do
+            curl -sI "http://localhost:8080$caminho" > cabecalhos.txt
+            for cabecalho in strict-transport-security content-security-policy x-content-type-options \
+              x-frame-options cross-origin-opener-policy cross-origin-resource-policy; do
+              grep -qi "^$cabecalho:" cabecalhos.txt || { echo "::error::$cabecalho ausente em $caminho"; exit 1; }
+            done
+          done
+          curl -sI http://localhost:8080/ | grep -i '^content-security-policy:' > csp.txt
+          if grep -qiE "unsafe-inline|fonts\.googleapis|fonts\.gstatic" csp.txt; then
+            echo "::error::CSP com unsafe-inline ou origem do Google Fonts"; exit 1
+          fi
+          curl -sI http://localhost:8080/assets/inexistente.js > cabecalhos.txt
+          grep -q '^HTTP/1.1 404' cabecalhos.txt
+          if grep -qi '^cache-control:.*immutable' cabecalhos.txt; then
+            echo "::error::404 de /assets/ saiu com cache imutável"; exit 1
+          fi
 
       - name: Recusar subir sem as variáveis da CSP
         run: |
